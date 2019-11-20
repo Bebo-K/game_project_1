@@ -1,5 +1,6 @@
 
 #include <chrono>
+#include "client.h"
 using namespace std::chrono;
 
 class Game{
@@ -12,13 +13,17 @@ class Game{
 
 
     public:
+
+    static Client* client;
+    //static Server server;
+
     
     bool running;
 
     void start();
-    void poll();
     void paint();
     void update(int ms);
+    void poll();
     
 
 

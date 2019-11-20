@@ -1,2 +1,6 @@
 bin/*
 dat/*
+obj/*
+.vscode/*
+*.dll
+*.exe

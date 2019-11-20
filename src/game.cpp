@@ -1,28 +1,30 @@
 #include "game.h"
-#include <stdio.h>
 
-
+Client* Game::client = nullptr;
 
 void Game::start(){
-    printf("start\n");
+    Game::client = new Client();
+
     return;
 }
 
 void Game::update(int ms){
-    printf("hey\n");
+    if(Game::client != nullptr){
+        Game::client->update(ms);
+    }
     return;
-
 }
 
 void Game::paint(){
-    printf("ho\n");
+    if(Game::client != nullptr){
+        Game::client->paint();
+    }
     return;
 }
 
 
 
 void Game::poll(){
-
     time_point<system_clock> current_time = high_resolution_clock::now();
     duration<double, std::milli> time_delta = current_time - last_frame;
     if(time_delta.count() > frame_interval){
