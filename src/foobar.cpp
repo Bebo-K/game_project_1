@@ -1,39 +1,34 @@
-#include "io/data_structs.h"
+#include "io/file.h"
+#include "io/json.h"
 #include <iostream>
 
 using namespace std;
 
-void PrintBitArray(BitArray* ba){
 
-    printf("Bit array: ");
-    for(int i=0;i<ba->bits;i++){
-        cout << (ba->get(i))?"1":"0";
-        cout << ",";
-    }
-    cout << endl;
+JsParser getJayson(){
 
+    FILE *f = fopen("dat/test.json", "rb");
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char *string = (char *)malloc(fsize + 1);
+    fread(string, fsize, 1, f);
+    fclose(f);
+
+    string[fsize] = 0;
+    return JsParser(string,fsize);
 }
 
-int foomain(int argc, char** args){
 
-    BitArray bit_array(16);
 
-    int char_count = (16/8) + (((16 % 8) > 0)?1:0);
-    printf("allocating %d bytes...\n",char_count);
-    printf("Setting bit #3, 6, and 9\n");
-    bit_array.set(3);
-    bit_array.set(6);
-    bit_array.set(9);
-    
-    printf("Un setting bit #2 and 9\n");
-    bit_array.unset(2);
-    bit_array.unset(9);
+int main(int argc, char** args){
 
-    printf("Toggling bit 5 and 9, only 3 and 5 should be set\n");
-    bit_array.toggle(5);
-    bit_array.toggle(6);
+    JsParser parser = getJayson();
 
-    PrintBitArray(&bit_array);
+    JsObject* obj = parser.parse();
+    obj->print(0);
+
 
     return 0;
 }

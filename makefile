@@ -20,8 +20,8 @@ SRC := $(MAIN_SRC) $(IO_SRC) $(GFX_SRC) $(GAME_SRC) $(COMPONENTS_SRC) $(SYSTEMS_
 OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
 
 
-#foobar.exe: $(IO_SRC) foobar.cpp
-#	g++ $(CFLAGS) -o $@ $^ $(LIBS)
+foobar.exe: $(IO_SRC) foobar.cpp
+	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
 game.exe: $(OBJS)
 	g++ $(CFLAGS) -o $@ $^ $(LIBS)
