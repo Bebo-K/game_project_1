@@ -1,5 +1,7 @@
-#include "gload.h"
-#include "types.h"
+#ifndef PRIMITIVE_H
+#define PRIMITIVE_H
+
+#include "camera.h"
 
 class Primitive{
     float x,y,z;
@@ -10,4 +12,9 @@ class Primitive{
     unsigned int vertex_count;
     bool hide;
 
+
+    void draw(Camera* cam);
 };
+
+
+#endif

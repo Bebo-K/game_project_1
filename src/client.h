@@ -1,3 +1,6 @@
+#ifndef CLIENT_H
+#define CLIENT_H
+
 #include "gfx/renderer.h"
 
 
@@ -19,3 +22,5 @@ class Client{
 
 
 };
+
+#endif

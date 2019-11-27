@@ -1,3 +1,5 @@
+#ifndef GAME_H
+#define GAME_H
 
 #include <chrono>
 #include "client.h"
@@ -30,3 +32,4 @@ class Game{
 };
 
 
+#endif

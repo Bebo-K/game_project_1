@@ -19,6 +19,10 @@ SRC := $(MAIN_SRC) $(IO_SRC) $(GFX_SRC) $(GAME_SRC) $(COMPONENTS_SRC) $(SYSTEMS_
 
 OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
 
+
+#foobar.exe: $(IO_SRC) foobar.cpp
+#	g++ $(CFLAGS) -o $@ $^ $(LIBS)
+
 game.exe: $(OBJS)
 	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
@@ -28,5 +32,5 @@ obj/%.o: %.cpp
 
 .PHONY: clean
 clean:
-	rm obj/*
-	rm game.exe
+	rd /s "obj/*  "
+	rd /s "bin/game.exe"

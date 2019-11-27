@@ -4,26 +4,6 @@
 #define RENDER_LAYER_COUNT 8
 #include "primitive.h"
 
-class Camera{
-    public:
-    
-    float x,y,z;
-    vec3  rotation;
-    
-    bool ortho;
-    float width,height;
-    float fov;
-    float near_clip;
-    float far_clip;
-    //Shader* shader;
-
-    Camera();
-    vec3 ToWorldSpace(vec3 v);
-    void ToCameraSpace(mat4* m);
-
-
-};
-
 struct RenderLayer
 {
     int primitive_count;
@@ -32,17 +12,19 @@ struct RenderLayer
     
 };
 
-
-
 class Renderer{
-
+public:
     Camera camera;
     RenderLayer layers[RENDER_LAYER_COUNT];
+    mat4 modelview_matrix;
+    mat4 projection_matrix;
 
-
-
-
+    Renderer();
+    void add(Primitive* p);
+    void remove(Primitive* p);
+    void draw(Camera* cam);
 
 };
+
 
 #endif

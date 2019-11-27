@@ -12,32 +12,31 @@
 
 //Typedef function pointers 
 /*
-extern PFNGLACTIVETEXTUREPROC blActiveTexture;
-extern PFNGLGENBUFFERSPROC blGenBuffers;
-extern PFNGLDELETEBUFFERSPROC blDeleteBuffers;
-extern PFNGLBUFFERDATAPROC blBufferData;
-extern PFNGLCREATEPROGRAMPROC blCreateProgram;
-extern PFNGLCREATESHADERPROC blCreateShader;
-extern PFNGLSHADERSOURCEPROC blShaderSource;
-extern PFNGLCOMPILESHADERPROC blCompileShader;
-extern PFNGLGETSHADERIVPROC blGetShaderiv;
-extern PFNGLATTACHSHADERPROC blAttachShader;
-extern PFNGLLINKPROGRAMPROC blLinkProgram;
-extern PFNGLGETPROGRAMIVPROC blGetProgramiv;
-extern PFNGLGETUNIFORMLOCATIONPROC blGetUniformLocation;
-extern PFNGLBINDATTRIBLOCATIONPROC blBindAttribLocation;
-extern PFNGLGETSHADERINFOLOGPROC blGetShaderInfoLog;
-extern PFNGLUSEPROGRAMPROC blUseProgram;
-extern PFNGLENABLEVERTEXATTRIBARRAYPROC blEnableVertexAttribArray;
-extern PFNGLUNIFORM4FVPROC blUniform4fv;
-extern PFNGLUNIFORMMATRIX4FVPROC blUniformMatrix4fv;
-extern PFNGLBINDBUFFERPROC blBindBuffer;
-extern PFNGLVERTEXATTRIBPOINTERPROC blVertexAttribPointer;
-extern PFNGLUNIFORM1IPROC blUniform1i;
-extern PFNGLDISABLEVERTEXATTRIBARRAYPROC blDisableVertexAttribArray;
-extern PFNGLUSEPROGRAMPROC blUseProgram;
-*/
-/*
+extern PFNGLACTIVETEXTUREPROC glActiveTexture;
+extern PFNGLGENBUFFERSPROC glGenBuffers;
+extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+extern PFNGLBUFFERDATAPROC glBufferData;
+extern PFNGLCREATEPROGRAMPROC glCreateProgram;
+extern PFNGLCREATESHADERPROC glCreateShader;
+extern PFNGLSHADERSOURCEPROC glShaderSource;
+extern PFNGLCOMPILESHADERPROC glCompileShader;
+extern PFNGLGETSHADERIVPROC glGetShaderiv;
+extern PFNGLATTACHSHADERPROC glAttachShader;
+extern PFNGLLINKPROGRAMPROC glLinkProgram;
+extern PFNGLGETPROGRAMIVPROC glGetProgramiv;
+extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+extern PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
+extern PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+extern PFNGLUSEPROGRAMPROC glUseProgram;
+extern PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+extern PFNGLUNIFORM4FVPROC glUniform4fv;
+extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+extern PFNGLBINDBUFFERPROC glBindBuffer;
+extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+extern PFNGLUNIFORM1IPROC glUniform1i;
+extern PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+extern PFNGLUSEPROGRAMPROC glUseProgram;
+
 typedef void   (*ptr_glGenBuffers)(GLsizei,GLuint*);
 typedef void   (*ptr_glBufferData)(GLenum,GLsizeiptr,const GLvoid*,GLenum);
 typedef GLuint (*ptr_glCreateProgram)(void);
