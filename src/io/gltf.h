@@ -7,16 +7,23 @@
 #define JSON_CHUNK 0x4E4F534A
 #define BINARY_CHUNK 0x004E4942
 
-typedef unsigned int uint32;
-typedef unsigned char byte;
+#define CTYPE_BYTE 5120
+#define CTYPE_UBYTE 5121
+#define CTYPE_SHORT 5122
+#define CTYPE_USHORT 5123
+#define CTYPE_UINT 5125
+#define CTYPE_FLOAT 5126
+
 
 using namespace std;
 #include <stdlib.h>
+#include "json.h"
 
 class GLTFScene{
+	public:
 	void load(File file);
-	void parse_json_chunk(byte* data);
-	void parse_binary_chunk(byte* data);
+	JSONObject* parse_json_chunk(byte* data,int length);
+	void getMeshes(JSONObject* asset,byte* buffer);
 };
 
 
