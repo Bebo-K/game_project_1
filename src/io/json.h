@@ -10,10 +10,10 @@ struct JSONString{//allocate new memory and conver to ascii null terminated stri
 	int			len;
 	
 	JSONString(char* data,int length);
-	void destroy();
-	void print();
-	void print(int tabs);
-	bool equals(const char* str);
+	void Destroy();
+	void Print();
+	void Print(int tabs);
+	bool Equals(const char* str);
 };
 
 union JSONData{
@@ -37,15 +37,15 @@ struct JSONValue{
     JSONValue(JSONObject* value);
     JSONValue(JSONArray* value);
 
-	int intValue();
-	bool boolValue();
-	float floatValue();
-	JSONString* stringValue();
-	JSONObject* objectValue();
-	JSONArray* arrayValue();
+	int IntValue();
+	bool BoolValue();
+	float FloatValue();
+	JSONString* StringValue();
+	JSONObject* ObjectValue();
+	JSONArray* ArrayValue();
 
-	void destroy();
-	void print(int tabs);
+	void Destroy();
+	void Print(int tabs);
 };
 
 struct JSONArray{
@@ -54,10 +54,10 @@ struct JSONArray{
 	JSONValue* elements;
 	
 	JSONArray();
-	void add_value(JSONValue* value_data);
-	JSONValue* at(int index);
-	void destroy();
-	void print(int tabs);
+	void AddValue(JSONValue* value_data);
+	JSONValue*  At(int index);
+	void Destroy();
+	void Print(int tabs);
 };
 
 struct JSONObject{
@@ -67,29 +67,30 @@ struct JSONObject{
 	JSONValue*	values;
 	
 	JSONObject();
-	void add_member(JSONString* key, JSONValue* value_data);
-	JSONValue* get(const char* key);
+	void AddMember(JSONString* key, JSONValue* value_data);
+	JSONValue* Get(const char* key);
+	JSONValue* &operator[](const char*);
 
-	bool hasInt(const char* key);
-	int getInt(const char* key);
+	bool HasInt(const char* key);
+	int GetInt(const char* key);
 
-	bool hasBool(const char* key);
-	bool getBool(const char* key);
+	bool HasBool(const char* key);
+	bool GetBool(const char* key);
 	
-	bool hasFloat(const char* key);
-	float getFloat(const char* key);
+	bool HasFloat(const char* key);
+	float GetFloat(const char* key);
 
-	bool hasString(const char* key);
-	JSONString* getString(const char* key);
+	bool HasString(const char* key);
+	JSONString* GetString(const char* key);
 	
-	bool hasObject(const char* key);
-	JSONObject* getObject(const char* key);
+	bool HasObject(const char* key);
+	JSONObject* GetObject(const char* key);
 
-	bool hasArray(const char* key);
-	JSONArray* getArray(const char* key);
+	bool HasArray(const char* key);
+	JSONArray* GetArray(const char* key);
 
-	void destroy();
-	void print(int tabs);
+	void Destroy();
+	void Print(int tabs);
 };
 
 class JSONParser{
@@ -100,17 +101,17 @@ public:
 	char* data;
 	int end;
 	
-	JSONObject* 	parse();
-	JSONValue* 		parse_value(int* index);
-	JSONObject* 	parse_object(int* index);//sets index to position of ending '}'
-	JSONArray* 		parse_array(int* index);//sets index to position of ending ']'
-	JSONString* 	parse_string(int* index);//sets index to position of second non-escaped '"'
-	JSONValue* 		parse_number(int* index);//sets index to position of last character digit in number
-	bool 			parse_boolean(int* index);//sets index to position of last letter of true/false string
-	JSONValue*		parse_null(int* index);//sets index to position of second 'l'
+	JSONObject* 	Parse();
+	JSONValue* 		ParseValue(int* index);
+	JSONObject* 	ParseObject(int* index);//sets index to position of ending '}'
+	JSONArray* 		ParseArray(int* index);//sets index to position of ending ']'
+	JSONString* 	ParseString(int* index);//sets index to position of second non-escaped '"'
+	JSONValue* 		ParseNumber(int* index);//sets index to position of last character digit in number
+	bool 			ParseBoolean(int* index);//sets index to position of last letter of true/false string
+	JSONValue*		ParseNull(int* index);//sets index to position of second 'l'
 
-	int next_non_whitespace(int start);
-	int next_instance_of(char token,int start);
+	int NextNonWhitespace(int start);
+	int NextInstanceOf(char token,int start);
 };
 
 #endif

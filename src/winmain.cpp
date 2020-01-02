@@ -1,8 +1,7 @@
 #include <windows.h>
 #include <wingdi.h>
-//#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "gfx/gload.h"
+#include "io/log.h"
 #include <tchar.h>
 #include "game.h"
 
@@ -45,7 +44,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             800,640,
             NULL,NULL,
             instance,NULL);
-        if(window){
+        if(window){ 
             ShowWindow(window,show_hint);
             UpdateWindow(window);
             glClearColor(0,0,0,1.0);
@@ -54,7 +53,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
 
 /*Entry Point*/ 
             game_instance = Game();
-            game_instance.start();
+            game_instance.Start();
 
             MSG window_message;
             do {
@@ -62,7 +61,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
                     TranslateMessage(&window_message);
                     DispatchMessage(&window_message);
                 }
-                game_instance.poll();
+                game_instance.Poll();
             } while (window_message.message != WM_QUIT) ;
         }
         else{
@@ -74,9 +73,6 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
         MessageBox(NULL,_T("Call to RegisterClassEx failed!"),window_title,MB_OK);
         return 1;
     }
-
-  
-    
     return 0;
 }
 
@@ -103,7 +99,6 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
     device_context = GetDC(window_handle);
-    gl_rendering_context = wglCreateContext(device_context);
 
     PIXELFORMATDESCRIPTOR target_format =
         {
@@ -128,7 +123,16 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
     int pixel_format = ChoosePixelFormat(device_context, &target_format);
     SetPixelFormat(device_context,pixel_format,&target_format);
 
+    gl_rendering_context = wglCreateContext(device_context);
     wglMakeCurrent(device_context, gl_rendering_context);
+
+    GLenum err=glewInit();
+    if(err!=GLEW_OK) {
+        logger::info("glewInit failure (code %d). Error string:\n",err);
+        logger::info((char*)glewGetErrorString(err));
+        MessageBox(NULL,_T("Fatal error: glewInit failed. See log for more info."),window_title,MB_OK);
+        exit(1);
+    }
 }
 
 void DestroyOpenGL(){

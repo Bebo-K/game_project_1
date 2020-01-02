@@ -24,9 +24,9 @@ class Image{
     Image(const char* filename);
     Image(byte* raw_png);
 
-    bool load(byte* data);
-    bool blit(Image* dest,int x,int y);
-    void unload();
+    bool Load(byte* data);
+    bool Blit(Image* dest,int x,int y);
+    void Unload();
 };
 
 

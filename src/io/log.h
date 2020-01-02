@@ -1,8 +1,14 @@
 #ifndef LOG_H
 #define LOG_H
 
-void indent_log(int tabs);
-void log(const char* text, ...);
+#include <stdexcept>
 
+namespace logger{
+void info(const char* text, ...);
+void warn(const char* text,...);
+void exception(const char* text,...);
+void fatal(const char* text,...);
+
+};
 
 #endif

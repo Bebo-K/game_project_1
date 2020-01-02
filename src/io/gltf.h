@@ -14,16 +14,13 @@
 #define CTYPE_UINT 5125
 #define CTYPE_FLOAT 5126
 
-
-using namespace std;
-#include <stdlib.h>
 #include "json.h"
 
 class GLTFScene{
 	public:
-	void load(File file);
-	JSONObject* parse_json_chunk(byte* data,int length);
-	void getMeshes(JSONObject* asset,byte* buffer);
+	void Load(File file);
+	JSONObject* ParseJsonChunk(byte* data,int length);
+	void GetMeshes(JSONObject* asset,byte* buffer);
 };
 
 

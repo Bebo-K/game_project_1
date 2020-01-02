@@ -13,10 +13,23 @@ class File{
 	long amount_read;
 	long length;
 	bool error;
+	File();
 	File(const char* filename);
 	void read(void* dest,int bytes);
 	void close();
 };
+
+class FileBuffer{
+
+	public:
+	File  source;
+	byte* contents;
+
+	FileBuffer(const char* filename);
+	int Length();
+	~FileBuffer();
+};
+
 
 byte* getFile(const char* filename);
 

@@ -1,5 +1,5 @@
 #include "image.h"
-#include "log.h"
+#include "../io/log.h"
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -54,42 +54,44 @@ byte read_byte(byte* base,int *p_offset){
 		*p_offset += 1;
 	}
 	else{
-		ret = (byte)&base;
+		ret = (byte)*base;
 	}
 	return ret;
 }
 
 void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,unsigned char *tPalette,int Width,int Height,int BPP);
 
-
-
 Image::Image(){
     width=0;height=0;
     image_data=nullptr;
+}
+Image::Image(int width,int height){
+    width = width;
+    height = height;
+    image_data = (byte*)malloc(width*height*4);
 }
 Image::Image(const char* filename){
     File f = File(filename);
     if(!f.error){
         byte* filedata = (byte*)malloc(f.length);
         f.read(filedata,f.length);
-        if(!load(filedata)){
-            log("Error @ Image::Image -> Failed to parse file as PNG: %s\n",filename);
+        if(!Load(filedata)){
+            logger::exception("Image::Image -> Failed to parse file as PNG: %s\n",filename);
         }
         free(filedata);
     }else{
-        log("Error @ Image::Image -> Failed to read file %s\n",filename);
+        logger::exception("Image::Image -> Failed to read file %s\n",filename);
     }
 }
 Image::Image(byte* raw_png){
-    if(!load(raw_png)){
-        log("Error @ Image::Image -> Failed to parse PNG data.");
+    if(!Load(raw_png)){
+        logger::exception("Image::Image -> Failed to parse PNG data.");
     }
 }
-void Image::unload(){
+void Image::Unload(){
     free(image_data);
 }
-
-bool Image::load(byte* data){
+bool Image::Load(byte* data){
     int offset = 0;
 
 	int BytesPerPixel =3; //will be 4 by the end of this
@@ -123,7 +125,7 @@ bool Image::load(byte* data){
 	//Load File + Check Sig
     Sig = read_int(data,&offset);
 	if(Sig != IPNG && Sig != BPNG){
-        log("Error @ Image::load -> invaid PNG signature %x\n",Sig);
+        logger::exception("Image::load -> invaid PNG signature %x\n",Sig);
         return -1;
     } //wrong filetype
 
@@ -150,7 +152,7 @@ bool Image::load(byte* data){
 			read_byte(data,&offset);//Compression Method. Is DEFLATE.
 			read_byte(data,&offset);//Filter Method. If this not be 0, we got problems
 			if(read_byte(data,&offset)){
-                log("Warning @ Image::load -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.");
+                logger::warn("Image::load -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.");
             }
 
             DecompresseDataSz = (height+1)*width*BytesPerPixel;
@@ -165,47 +167,49 @@ bool Image::load(byte* data){
 			break;
 		case PLTE:{
 			if((Length%3 !=0) |(Paletted== 0)){
-                log("Error @ Image::load -> PNG palette is invalid.");
+                logger::exception("Image::load -> PNG palette is invalid.");
                 return -2;
             }
 			Palette = (byte*)malloc(Length);
             memcpy(Palette,&data[offset],Length);
             offset += Length;
 			break;
-            }//TODO: start here
+            }
 		//Transparent Palleted images are not in PNG baseline.
 		case tRNS:{
-			TPalette = malloc(Length);
-			File_Read(&f,TPalette,Length);break;}
+			TPalette = (byte*)malloc(Length);
+			memcpy(TPalette,&data[offset],Length);
+			offset += Length;
+			break;
+			}
 		case IDAT:{ //Compressed, Possibly Filtered and/or Palleted Data
 			z.avail_in = Length;
-			z.next_in = (unsigned char*)(f.dat+f.read_index);//Saves an unnecessary copy.
-			f.read_index +=Length;
+			z.next_in = (unsigned char*)(&data[offset]);//Saves an unnecessary copy.
+			offset += Length;
 			ret = inflate(&z,Z_NO_FLUSH);
 			if(ret == Z_STREAM_END)inflateEnd(&z);
 			if(ret < 0) {
-				/*"ZStream Error"*/
-				printf("Z Stream Error:%s\n",z.msg);
+				logger::exception("Image::load -> Z Stream Error:%s\n",z.msg);
 				return 0;
 				}
 			break;
-			
 			}
-		default:f.read_index+=Length;break;
+		default:offset+=Length;break;
 		}
-	File_Read(&f,&CRC,sizeof(int)); //CRC value unused for now. Don't hex edit your pics kids.
+	CRC = read_int(data,&offset);
+	if(CRC == 0){
+		//wow that's noteworthy
+	}
 	}
 
-	long long size = i->width*i->height*4;
-	File_Close(&f);
-	i->image_data= malloc(size);
-	FormatImage(DecompressedData,i->image_data,Palette,TPalette,i->width,i->height,BytesPerPixel);
+	long long size = width*height*4;
+	image_data= (byte*)malloc(size);
+	FormatImage(DecompressedData,image_data,Palette,TPalette,width,height,BytesPerPixel);
 	free(Palette);
 	free(TPalette);
 	free(DecompressedData);
 	return 1;
 }
-
 void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,unsigned char *tPalette,int Width,int Height,int BPP){
 	memset(out,0,Width*Height*4);
 	unsigned char fil= in[0];
@@ -257,14 +261,14 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 				out[i*row+j] +=PAETH(out[i*row+j-4],out[(i-1)*row+j],out[(i-1)*row+j-4]);}
 			break;} //PAETH(Last,Up,Up+Last)
 
-		default:printf("Invalid PNG filter method:%d\n",fil);break;
+		default:logger::exception("Invalid PNG filter method:%d\n",fil);break;
 		}
 	}
 	///depalette
 	if(Palette){
-		unsigned int Index =0;
-		for(unsigned int i=0; i<Height;i++){
-			for(unsigned int j=0; j<Width;j++){
+		int Index =0;
+		for(int i=0; i<Height;i++){
+			for(int j=0; j<Width;j++){
 			Index = out[i*row+(j*4)];
 			out[i*row+(j*4)]  =Palette[Index*3];
 			out[i*row+(j*4)+1]=Palette[Index*3+1];
@@ -278,8 +282,8 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 	else{
 		switch(BPP){
 		case 1://greyscale
-		for(unsigned int i=0; i<Height;i++){
-			for(unsigned int j=0; j<Width;j++){
+		for(int i=0; i<Height;i++){
+			for(int j=0; j<Width;j++){
 				out[(i*Width+j)*4+1]=out[(i*Width+j)*4];
 				out[(i*Width+j)*4+2]=out[(i*Width+j)*4];
 				out[(i*Width+j)*4+3]=255;
@@ -287,8 +291,8 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 			}
 		break;
 		case 2://greyscale w/alpha?
-		for(unsigned int i=0; i<Height;i++){
-			for(unsigned int j=0; j<Width;j++){
+		for(int i=0; i<Height;i++){
+			for(int j=0; j<Width;j++){
 				out[(i*Width+j)*4+1]=out[(i*Width+j)*4];
 				out[(i*Width+j)*4+2]=out[(i*Width+j)*4];
 				out[(i*Width+j)*4+3]=255;
@@ -296,8 +300,8 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 			}
 		break;
 		case 3://RGB
-		for(unsigned int i=0; i<Height;i++){
-			for(unsigned int j=0; j<Width;j++){
+		for(int i=0; i<Height;i++){
+			for(int j=0; j<Width;j++){
 				out[(i*Width+j)*4 +3]=255;
 			}
 		}
@@ -308,16 +312,9 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 		}
 	}
 }
-
-Image::Image(int width,int height){
-    width = width;
-    height = height;
-    image_data = (byte*)malloc(width*height*4);
-}
-
-bool Image::blit(Image* dest,int x,int y){
+bool Image::Blit(Image* dest,int x,int y){
     if(dest->width + x > width || dest->height + y > height || x <0 || y <0){return false;}
-	for(unsigned int i=0; i<height;i++){
+	for(int i=0; i<height;i++){
         memcpy(&dest->image_data[(y+i)*dest->width + (x)*4],&image_data[i*width*4],width*4);
 	}
     return true;

@@ -12,6 +12,14 @@ const char* JSONTYPE_ARRAY = "array";
 
 const char* JSON_TYPE_STRINGS[] = {JSONTYPE_BOOL,JSONTYPE_INT,JSONTYPE_FLOAT,JSONTYPE_STRING,JSONTYPE_OBJECT,JSONTYPE_ARRAY};
 
+
+//utility print method
+void indent_log(int tabs){
+  for(int i=0;i<tabs;i++){
+    printf("    ");
+  }
+}
+
 //------------------------------------------------------------------------------JSON STRING
 JSONString::JSONString(char* data,int length){
 	string = (char*)calloc(length+1,1);
@@ -19,16 +27,16 @@ JSONString::JSONString(char* data,int length){
 	string[length]=0;
 	len=length;
 }
-void JSONString::destroy(){
+void JSONString::Destroy(){
 	free(string);
 }
-void JSONString::print(int tabs){
-	log("'%s'",string);
+void JSONString::Print(int tabs){
+	printf("'%s'",string);
 }
-void JSONString::print(){
-	log("%s",string);
+void JSONString::Print(){
+	printf("%s",string);
 }
-bool JSONString::equals(const char* str){
+bool JSONString::Equals(const char* str){
 	for(int i=0;i< len;i++){
 		if(str[i] != string[i])return false;
 	}
@@ -47,55 +55,67 @@ JSONValue::JSONValue(JSONString* svalue)  : JSONValue() {value.str_value = svalu
 JSONValue::JSONValue(JSONObject* ovalue)  : JSONValue() {value.obj_value = ovalue;value_type = 4;}
 JSONValue::JSONValue(JSONArray* avalue) : JSONValue() {value.array_value = avalue;value_type = 5;}
 
-bool JSONValue::boolValue(){
+bool JSONValue::BoolValue(){
 	if(value_type ==0){return value.bool_value;}
-	else{log("Error @ JSONValue::boolValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return false;}
+	else{logger::exception("JSONValue::boolValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return false;}
 }
-int JSONValue::intValue(){
+int JSONValue::IntValue(){
 	if(value_type ==1){return value.int_value;}
-	else{log("Error @ JSONValue::intValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return 0;}
+	else{logger::exception("JSONValue::intValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return 0;}
 }
-float JSONValue::floatValue(){
+float JSONValue::FloatValue(){
 	if(value_type ==2){return value.float_value;}
-	else{log("Error @ JSONValue::floatValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return 0;}
+	else{
+		logger::exception("JSONValue::floatValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);
+		return 0;
+	}
 }
-JSONString* JSONValue::stringValue(){
+JSONString* JSONValue::StringValue(){
 	if(value_type ==3){return value.str_value;}
-	else{log("Error @ JSONValue::stringValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return nullptr;}
+	else{
+		logger::exception("JSONValue::stringValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);
+		return nullptr;
+	}
 }
-JSONObject* JSONValue::objectValue(){
+JSONObject* JSONValue::ObjectValue(){
 	if(value_type ==4){return value.obj_value;}
-	else{log("Error @ JSONValue::objectValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return nullptr;}
+	else{
+		logger::exception("JSONValue::objectValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);
+		return nullptr;
+	}
 }
-JSONArray* JSONValue::arrayValue(){
+JSONArray* JSONValue::ArrayValue(){
 	if(value_type ==5){return value.array_value;}
-	else{log("Error @ JSONValue::arrayValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);return nullptr;}
+	else{
+		logger::exception("JSONValue::arrayValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);
+		return nullptr;
+	}
 }
 
-void JSONValue::destroy(){
-	if(value_type==3){value.str_value->destroy();free(value.str_value);}
-	if(value_type==4){value.obj_value->destroy();free(value.obj_value);}
-	if(value_type==5){value.array_value->destroy();free(value.array_value);}
+void JSONValue::Destroy(){
+	if(value_type==3){value.str_value->Destroy();free(value.str_value);}
+	if(value_type==4){value.obj_value->Destroy();free(value.obj_value);}
+	if(value_type==5){value.array_value->Destroy();free(value.array_value);}
 }
-void JSONValue::print(int tabs){
+void JSONValue::Print(int tabs){
 	switch(value_type){
 		case 0:	
-			if(value.bool_value){ log("true "); }
-			else{ log("false "); }
+			if(value.bool_value){ printf("true "); }
+			else{ printf("false "); }
 		break;
-		case 1: log("%d ",value.int_value);
+		case 1: printf("%d ",value.int_value);
 		break;
-		case 2: log("%f ",value.float_value);
+		case 2: printf("%f ",value.float_value);
 		break;
-		case 3: value.str_value->print(tabs);
+		case 3: value.str_value->Print(tabs);
 		break;
-		case 4: value.obj_value->print(tabs);
+		case 4: value.obj_value->Print(tabs);
 		break;
-		case 5: value.array_value ->print(tabs);
+		case 5: value.array_value->Print(tabs);
 		break;
-		case 6:log("null ");
+		case 6:printf("null ");
 		break;
-		default:log("ERROR_VALUE ");
+		default:printf("ERROR_VALUE ");
 		break;
 	}
 }
@@ -106,7 +126,7 @@ JSONArray::JSONArray(){
 	count=0;
 	elements = (JSONValue*)calloc(_value_slots,sizeof(JSONValue));
 }
-void JSONArray::add_value(JSONValue* value_data){
+void JSONArray::AddValue(JSONValue* value_data){
 	if((count + 1) > _value_slots){
 		_value_slots *= 2;
 		JSONValue*	new_elements = (JSONValue*)calloc(_value_slots,sizeof(JSONValue));
@@ -117,26 +137,26 @@ void JSONArray::add_value(JSONValue* value_data){
 	memcpy(&elements[count],value_data,sizeof(JSONValue));	
 	count += 1;
 }
-void JSONArray::destroy(){
+void JSONArray::Destroy(){
 	for(int i=0;i<count;i++){
-		elements[i].destroy();
+		elements[i].Destroy();
 	}
 	free(elements);
 }
-void JSONArray::print(int tabs){
-	log("[\n");
+void JSONArray::Print(int tabs){
+	printf("[\n");
 	for(int i=0;i<count;i++){
 		indent_log(tabs+1);
-		elements[i].print(tabs+1);
-		if(i+1 < count){log(",\n");}
-		else{log("\n");}
+		elements[i].Print(tabs+1);
+		if(i+1 < count){printf(",\n");}
+		else{printf("\n");}
 	}
 	indent_log(tabs);
-	log("]");
+	printf("]");
 }
-JSONValue* JSONArray::at(int index){
+JSONValue* JSONArray::At(int index){
 	if(index < 0 || index > count){
-	log("Error @ JSONArray::at -> index %d is invalid",index);
+		logger::exception("JSONArray::at -> index %d is invalid",index);
 		return nullptr;
 	}
 	else return &elements[index];
@@ -149,7 +169,7 @@ JSONObject::JSONObject(){
 	keys = (JSONString*)calloc(_value_slots,sizeof(JSONString));
 	values = (JSONValue*)calloc(_value_slots,sizeof(JSONValue));
 }
-void JSONObject::add_member(JSONString* key, JSONValue* value_data){
+void JSONObject::AddMember(JSONString* key, JSONValue* value_data){
 	if((count + 1) > _value_slots){
 		_value_slots *= 2;
 		JSONString*	new_keys = (JSONString*)calloc(_value_slots,sizeof(JSONString));
@@ -169,76 +189,76 @@ void JSONObject::add_member(JSONString* key, JSONValue* value_data){
 
 	count += 1;
 }
-JSONValue* JSONObject::get(const char* key){
+JSONValue* JSONObject::Get(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key)){return &values[i];}
+		if(keys[i].Equals(key)){return &values[i];}
 	}
-	log("Error @ JSONObject::get-> key '%s' not found.",key);
+	logger::warn("JSONObject::get-> key '%s' not found.",key);
 	return nullptr;
 }
-int JSONObject::getInt(const char* key){return get(key)->intValue();}
-bool JSONObject::getBool(const char* key){return get(key)->boolValue();}
-float JSONObject::getFloat(const char* key){return get(key)->floatValue();}
-JSONString* JSONObject::getString(const char* key){return get(key)->stringValue();}
-JSONObject* JSONObject::getObject(const char* key){return get(key)->objectValue();}
-JSONArray* JSONObject::getArray(const char* key){return get(key)->arrayValue();}
+int JSONObject::GetInt(const char* key){return Get(key)->IntValue();}
+bool JSONObject::GetBool(const char* key){return Get(key)->BoolValue();}
+float JSONObject::GetFloat(const char* key){return Get(key)->FloatValue();}
+JSONString* JSONObject::GetString(const char* key){return Get(key)->StringValue();}
+JSONObject* JSONObject::GetObject(const char* key){return Get(key)->ObjectValue();}
+JSONArray* JSONObject::GetArray(const char* key){return Get(key)->ArrayValue();}
 
-bool JSONObject::hasInt(const char* key){
+bool JSONObject::HasInt(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==1){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==1){return true;}
 	}
 	return false;
 }
-bool JSONObject::hasBool(const char* key){
+bool JSONObject::HasBool(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==0){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==0){return true;}
 	}
 	return false;
 }
-bool JSONObject::hasFloat(const char* key){
+bool JSONObject::HasFloat(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==2){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==2){return true;}
 	}
 	return false;
 }
-bool JSONObject::hasString(const char* key){
+bool JSONObject::HasString(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==3){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==3){return true;}
 	}
 	return false;
 }
-bool JSONObject::hasObject(const char* key){
+bool JSONObject::HasObject(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==4){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==4){return true;}
 	}
 	return false;
 }
-bool JSONObject::hasArray(const char* key){
+bool JSONObject::HasArray(const char* key){
 	for(int i=0; i< count; i++){
-		if(keys[i].equals(key) && values[i].value_type==5){return true;}
+		if(keys[i].Equals(key) && values[i].value_type==5){return true;}
 	}
 	return false;
 }
 
-void JSONObject::destroy(){
+void JSONObject::Destroy(){
 	for(int i=0;i<count;i++){
-		keys[i].destroy();
-		values[i].destroy();
+		keys[i].Destroy();
+		values[i].Destroy();
 	}
 	free(keys);
 	free(values);
 }
-void JSONObject::print(int tabs){
-	log("{\n");
+void JSONObject::Print(int tabs){
+	printf("{\n");
 	indent_log(tabs);
 	for(int i=0;i<count;i++){
-		keys[i].print(tabs+1);
-		log(":");
-		values[i].print(tabs+1);
-		if(i+1 < count){log(",\n");indent_log(tabs);}
+		keys[i].Print(tabs+1);
+		printf(":");
+		values[i].Print(tabs+1);
+		if(i+1 < count){printf(",\n");indent_log(tabs);}
 	}
-	log("\n");indent_log(tabs);
-	log("}\n");
+	printf("\n");indent_log(tabs);
+	printf("}\n");
 }
 
 //------------------------------------------------------------------------------JSON PARSER
@@ -247,16 +267,16 @@ JSONParser::JSONParser(char* JSON,int length){
 	end=length;
 }
 
-int JSONParser::next_instance_of(char token,int start){
+int JSONParser::NextInstanceOf(char token,int start){
 	int index = start;
 	while(data[index] != token && index < end){index++;}
 	if(index >= end){
-		log("Error @ JSONParser::next_instance_of -> End of stream reached looking for %c",token);
+		logger::exception("JSONParser::next_instance_of -> End of stream reached looking for %c",token);
 	}
 	return index;
 }
 
-int JSONParser::next_non_whitespace(int start){
+int JSONParser::NextNonWhitespace(int start){
 	int index = start;
 	bool whitespace_only = true;
 	char next_char;
@@ -266,41 +286,41 @@ int JSONParser::next_non_whitespace(int start){
 		else{index++;}
 	}
 	if(index >= end){
-		log("Error @ JSONParser::next_non_whitespace -> End of stream reached looking for non_whitespace");
+		logger::exception("JSONParser::next_non_whitespace -> End of stream reached looking for non_whitespace");
 	}
 	return index;
 }
 
 
-JSONObject* JSONParser::parse(){
+JSONObject* JSONParser::Parse(){
 int initial_mark=0;
-return parse_object(&initial_mark);
+return ParseObject(&initial_mark);
 }
 
 
-JSONObject* JSONParser::parse_object(int* index){
+JSONObject* JSONParser::ParseObject(int* index){
 	JSONObject* new_object = new JSONObject();
 
-	int pos = next_instance_of('{',*index) +1;
+	int pos = NextInstanceOf('{',*index) +1;
 	char token = 0;
 
 	while(token != '}'){
-		pos = next_non_whitespace(pos);
+		pos = NextNonWhitespace(pos);
 		token = data[pos];
 		
 		switch(token){
 			case '\'':
 			case '"': {
-				JSONString* key = parse_string(&pos);
-				pos = next_instance_of(':',pos)+1; 
-				JSONValue* value = parse_value(&pos);
-				new_object->add_member(key,value);
+				JSONString* key = ParseString(&pos);
+				pos = NextInstanceOf(':',pos)+1; 
+				JSONValue* value = ParseValue(&pos);
+				new_object->AddMember(key,value);
 				break;
 			}
 			case '}': break;
 			case ',': pos ++;break;
 			default:
-				log("Error @ JSONParser::parse_object -> Parsing error at index %d",pos);
+				logger::exception("JSONParser::parse_object -> Parsing error at index %d",pos);
 				return nullptr;
 		}
 	}
@@ -308,64 +328,63 @@ JSONObject* JSONParser::parse_object(int* index){
 	return new_object;
 }
 
-JSONArray* JSONParser::parse_array(int* index){
+JSONArray* JSONParser::ParseArray(int* index){
 	JSONArray* new_array = new JSONArray();
 
-	int pos = next_instance_of('[',*index) +1;
+	int pos = NextInstanceOf('[',*index) +1;
 	char token = 0;
 
 	while(token != ']'){
-		pos = next_non_whitespace(pos);
+		pos = NextNonWhitespace(pos);
 		token = data[pos];
 		
 		if(token == ','){pos++;}
 		if(token == ']')break;
 		else{
-			JSONValue* value = parse_value(&pos);
-			new_array->add_value(value);
-			//pos++;
+			JSONValue* value = ParseValue(&pos);
+			new_array->AddValue(value);
 		}
 	}
 	*index = pos;
 	return new_array;
 }
-JSONValue* JSONParser::parse_value(int* index){
+JSONValue* JSONParser::ParseValue(int* index){
 	JSONValue* new_value = nullptr;
 
-	int pos = next_non_whitespace(*index);
+	int pos = NextNonWhitespace(*index);
 	char token = data[pos];
 
 	if(token == '\'' || token == '"'){
-		JSONString* str = parse_string(&pos);
+		JSONString* str = ParseString(&pos);
 		new_value = new JSONValue(str);
 	}
 	else if((token >= '0' && token <= '9')|| token =='-'){
-		new_value = parse_number(&pos);
+		new_value = ParseNumber(&pos);
 	}
 	else if(token == 't' || token =='T' || token == 'f' || token =='F'){
-		bool val = parse_boolean(&pos);
+		bool val = ParseBoolean(&pos);
 		new_value = new JSONValue(val);
 	}	
 	else if(token == '{'){
-		JSONObject* obj = parse_object(&pos);
+		JSONObject* obj = ParseObject(&pos);
 		new_value = new JSONValue(obj);
 	}
 	else if(token == '['){
-		JSONArray* array = parse_array(&pos);
+		JSONArray* array = ParseArray(&pos);
 		new_value = new JSONValue(array);
 	}
 	else if(token == 'n' || token =='N'){
-		new_value = parse_null(&pos);
+		new_value = ParseNull(&pos);
 	}
 	else{
-		log("Error @ JSONParser::parse_value -> Undefined value at index %d, first character %c",*index,token);
+		logger::exception("JSONParser::parse_value -> Undefined value at index %d, first character %c",*index,token);
 	}
 
 	pos++;
 	*index = pos;
 	return new_value;
 }
-JSONString* JSONParser::parse_string(int* index){
+JSONString* JSONParser::ParseString(int* index){
 	int pos = *index;
 	char quote = data[pos];
 
@@ -378,7 +397,7 @@ JSONString* JSONParser::parse_string(int* index){
 	*index=end_index;
 	return new JSONString(&data[begin_index],string_length);
 }
-JSONValue* JSONParser::parse_number(int* index){
+JSONValue* JSONParser::ParseNumber(int* index){
 	JSONValue* new_value = nullptr;
 	int pos = *index;
 
@@ -405,14 +424,14 @@ JSONValue* JSONParser::parse_number(int* index){
 	*index = end_index;
 	return new_value;
 }
-bool JSONParser::parse_boolean(int* index){
+bool JSONParser::ParseBoolean(int* index){
 	char token = data[*index];
 	bool result = false;
 	if(token == 't' ||token == 'T'){result=true; *index += 4;}//true
 	if(token == 'f' ||token == 'F'){result=false;*index += 5;}//false
 	return result;
 }
-JSONValue* JSONParser::parse_null(int* index){
+JSONValue* JSONParser::ParseNull(int* index){
 	*index += 3;
 	JSONValue* nullval = new JSONValue();
 	nullval->value_type=6;

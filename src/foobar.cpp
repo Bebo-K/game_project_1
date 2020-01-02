@@ -4,11 +4,11 @@
 
 //using namespace std;
 
-int main(int argc, char** args){
+int foomain(int argc, char** args){
     File levelfile = File("dat/test_level.glb");
 
     GLTFScene gltf = GLTFScene();
-    gltf.load(levelfile);
+    gltf.Load(levelfile);
 
 
     return 0;

@@ -3,15 +3,15 @@
 
 Client::Client(){
 
+    
+}
+
+void Client::Paint(){
+
 
 }
 
-void Client::paint(){
-
-
-}
-
-void Client::update(int ms){
+void Client::Update(int ms){
 
 
 }

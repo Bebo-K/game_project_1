@@ -1,13 +1,15 @@
 #ifndef GLOAD_H
 #define GLOAD_H
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
 
 #include <windows.h>
 #include <wingdi.h>
-#define GETGLPROC(a) wglGetProcAddress(a)
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/wglew.h>
+
+//#define GETGLPROC(a) wglGetProcAddress(a)
 
 
 //Typedef function pointers 

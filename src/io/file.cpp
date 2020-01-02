@@ -2,14 +2,19 @@
 #include "file.h"
 #include "log.h"
 
-
+File::File(){
+	file_handle=nullptr;
+	length=-1;
+	error=true;
+	amount_read=0;
+}
 File::File(const char* filename){
 	file_handle = fopen(filename,"rb");
 	amount_read = 0;
 	length = -1;
 	error=false;
 	if(file_handle == nullptr){
-		log("Error @ File::open -> Cannot open file %s",filename);
+		logger::warn("File::open -> Cannot open file %s",filename);
 		error=true;
 	}
 	else{
@@ -20,12 +25,12 @@ File::File(const char* filename){
 }
 void File::read(void* dest, int bytes){
 	if(error){
-		log("Error @ File::read -> File is closed or in an error state.");
+		logger::warn("File::read -> File is closed or in an error state.");
 		return;
 	}
 	int read_amount = fread(dest,1,bytes,file_handle);
 	if(read_amount != bytes){
-		log("Error @ File::read -> Failed to read %d bytes from file.",bytes);
+		logger::warn("File::read -> Failed to read %d bytes from file.",bytes);
 		error=true;
 		return;
 	}
@@ -37,6 +42,23 @@ void File::close(){
 	error=true;//to keep people from reading.
 }
 
+FileBuffer::FileBuffer(const char* filename){
+	source = File(filename);
+	contents=nullptr;
+	if(source.length > 0){
+		contents = (byte*)malloc(source.length+1);
+		source.read(contents,source.length);
+		contents[source.length] = 0;
+	}
+};
+
+int FileBuffer::Length(){
+	return (int)source.length;
+}
+
+FileBuffer::~FileBuffer(){
+	free(contents);
+}
 
 byte* getFile(const char* filename){
     FILE *f = fopen(filename, "rb");
@@ -50,7 +72,7 @@ byte* getFile(const char* filename){
 		fclose(f);
 	}
 	else{
-		log("Error @ getFile: could not open filename %s",filename);
+		logger::warn("getFile -> could not open filename %s",filename);
 	}
 	return data;
 }

@@ -3,7 +3,7 @@
 
 
 
-void GLTFScene::load(File file){
+void GLTFScene::Load(File file){
 	uint32 magic_number;
 	uint32 version;
 	uint32 length;
@@ -27,44 +27,41 @@ void GLTFScene::load(File file){
 		
 		switch(chunk_id){
 			case JSON_CHUNK:
-				asset = parse_json_chunk(data,chunk_length);
+				asset = ParseJsonChunk(data,chunk_length);
 				free(data);
 				break;
 			case BINARY_CHUNK:
 				binary_data = data;
 				break;
 			default:
-				log("GLTF unrecoginized chunk: %d, skipping", chunk_id);
+				logger::info("GLTF unrecoginized chunk: %d, skipping", chunk_id);
 				free(data);
 				break;
 		}
 	}	
 
-	asset->getObject("asset")->getInt("generator");
+	asset->GetObject("asset")->GetString("generator")->Print(0);
 	printf("\n");
-
 }
 
-JSONObject* GLTFScene::parse_json_chunk(byte* data,int length){
+JSONObject* GLTFScene::ParseJsonChunk(byte* data,int length){
     JSONParser parser = JSONParser((char*)data,length);
 
-    JSONObject* obj = parser.parse();
+    JSONObject* obj = parser.Parse();
     //obj->print(0);
 	return obj;
 }
 
-void GLTFScene::getMeshes(JSONObject* asset,byte* buffer){
-	JSONArray* objects = asset->getArray("nodes");
+void GLTFScene::GetMeshes(JSONObject* asset,byte* buffer){
+	JSONArray* objects = asset->GetArray("nodes");
 
 	int mesh_count = 0;
 
 	for(int i=0;i<objects->count;i++){
-		JSONObject* current_object = objects->at(i)->objectValue();
+		JSONObject* current_object = objects->At(i)->ObjectValue();
 
-		if(current_object->hasInt("mesh")){
+		if(current_object->HasInt("mesh")){
 			mesh_count++;
-
-
 		}
 
 	}

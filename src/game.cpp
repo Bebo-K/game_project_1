@@ -2,40 +2,40 @@
 
 Client* Game::client = nullptr;
 
-void Game::start(){
+void Game::Start(){
     Game::client = new Client();
 
     return;
 }
 
-void Game::update(int ms){
+void Game::Update(int ms){
     if(Game::client != nullptr){
-        Game::client->update(ms);
+        Game::client->Update(ms);
     }
     return;
 }
 
-void Game::paint(){
+void Game::Paint(){
     if(Game::client != nullptr){
-        Game::client->paint();
+        Game::client->Paint();
     }
     return;
 }
 
 
 
-void Game::poll(){
+void Game::Poll(){
     time_point<system_clock> current_time = high_resolution_clock::now();
     duration<double, std::milli> time_delta = current_time - last_frame;
     if(time_delta.count() > frame_interval){
         int elapsed_ms = (time_delta.count() > frame_interval)?frame_interval:time_delta.count();
-        update(elapsed_ms);
+        Update(elapsed_ms);
         last_frame = high_resolution_clock::now();
     }
     current_time = high_resolution_clock::now();
     time_delta = current_time - last_render;
     if(time_delta.count() > render_interval){
-        paint();
+        Paint();
         last_render = high_resolution_clock::now();
     }
 }  

@@ -1,24 +1,21 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "gfx/renderer.h"
-
+#include "game/scene.h"
+#include "gui/ui.h"
 
 class Client{
 
     public:
 
-    //Scene scene;
-    //UI ui;
-    Renderer scene_renderer;
-    Renderer ui_renderer;
-
+    Scene scene;
+    UI ui;
 
     Client();
 
 
-    void paint();
-    void update(int ms);
+    void Paint();
+    void Update(int ms);
 
 
 };

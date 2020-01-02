@@ -22,13 +22,11 @@ class Game{
     
     bool running;
 
-    void start();
-    void paint();
-    void update(int ms);
-    void poll();
+    void Start();
+    void Paint();
+    void Update(int ms);
+    void Poll();
     
-
-
 };
 
 
