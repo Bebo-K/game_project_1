@@ -2,10 +2,8 @@
 
 void Primitive:: Draw(Camera* cam,mat4* modelview, mat4* projection){
 
-
-
-
 }
+void Primitive::Destroy(){}
 
 
 Sprite::Sprite(){}

@@ -1,8 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "game/scene.h"
 #include "gui/ui.h"
+#include "game/scene.h"
 
 class Client{
 

@@ -65,23 +65,21 @@ bool BitArray::Toggle(int index){
     return ((data[index/8] >> (index%8)) & 1) > 0;
 }
 
-template <typename T>
-DataArray<T>::DataArray(int object_size){
+DataArray::DataArray(int object_size){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
     slot_size=object_size;
     slot_is_filled=BitArray(slots);
-    data = calloc(slots,slot_size);
+    data = (byte*)calloc(slots,slot_size);
 }
-template <typename T>
-DataArray<T>::DataArray(int count,int object_size){
+
+DataArray::DataArray(int count,int object_size){
     slots=count;
     slot_size=object_size;
     slot_is_filled=BitArray(slots);
-    data = calloc(slots,slot_size);
+    data = (byte*)calloc(slots,slot_size);
 }
 
-template <typename T>
-int DataArray<T>::Add(){
+int DataArray::Add(){
     int added_slot = -1;
     for(int i=0;i < slots; i++){
         if(!slot_is_filled.Get(i)){
@@ -97,60 +95,45 @@ int DataArray<T>::Add(){
     slot_is_filled.Set(added_slot);
     return added_slot;
 }
-template <typename T>
-int DataArray<T>::Add(T* object){
+
+int DataArray::Add(void* object){
     int added_slot = Add();
     memcpy((char*)data+(added_slot*slot_size),object,slot_size);
     return added_slot;
 }
-template <typename T>
-void DataArray<T>::Remove(int index){
+void DataArray::Remove(int index){
     if(index < 0 || index >= slots){logger::exception("DataArray::Remove -> Index %d is out of range.",index);}
     slot_is_filled.Unset(index);
     memset ((char*)data+(index*slot_size),0,slot_size);
 }
-template <typename T>
-T& DataArray<T>::operator[](int index){
-    if(index < 0 || index >= slots){logger::exception("DataArray::operator[] -> Index %d is out of range.",index);}
-    if(!slot_is_filled.Get(index)){logger::exception("DataArray::operator[] -> Index %d is not allocated.",index);}
-    return (const T*)(data+index*slot_size);
-}
-template <typename T>
-T* DataArray<T>::Get(int index){
+void* DataArray::Get(int index){
     if(index < 0 || index >= slots){logger::exception("DataArray::Get -> Index %d is out of range.",index);}
     if(!slot_is_filled.Get(index)){return null;}
     return (char*)data+(index*slot_size);
 }
-template <typename T>
-T* DataArray<T>::GetArray(){
-    return (T*)data;
+byte* DataArray::GetArray(){
+    return data;
 }
-template <typename T>
-int DataArray<T>::Count(){
+int DataArray::Count(){
     return slot_is_filled.CountBitsSet();
 }
-template <typename T>
-void DataArray<T>::Resize(int new_count){
-    void* new_data = calloc(new_count,slot_size);
+void DataArray::Resize(int new_count){
+    byte* new_data = (byte*)calloc(new_count,slot_size);
     memcpy(new_data,data,slots*slot_size);
     slots = new_count;
     free(data);
     data = new_data;
     return;
 }
-
-template <typename T>
-PointerArray<T>::PointerArray(){
+PointerArray::PointerArray(){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
-    data= (T**)calloc(slots,sizeof(T*));
+    data= (byte**)calloc(slots,sizeof(byte*));
 }
-template <typename T>
-PointerArray<T>::PointerArray(int size){
+PointerArray::PointerArray(int size){
     slots=size;
-    data= (T**)calloc(slots,sizeof(T*));
+    data= (byte**)calloc(slots,sizeof(byte*));
 }
-template <typename T>
-int PointerArray<T>::Add(T* object){
+int PointerArray::Add(void* object){
     int slot_to_add=-1;
     for(int i=0;i<slots;i++){
         if(data[i] == null){slot_to_add = i;break;}
@@ -159,31 +142,38 @@ int PointerArray<T>::Add(T* object){
         slot_to_add = slots;
         Resize(slots*2);
     }
-    data[slot_to_add] = object;
+    data[slot_to_add] = (byte*)object;
     return slot_to_add;
 }
-template <typename T>
-T* PointerArray<T>::Remove(int index){
+void* PointerArray::Remove(int index){
     if(index < 0 || index >= slots){logger::exception("PointerArray::Remove -> Index %d is out of range.",index);}
+    byte* ret = data[index];
     data[index] = null;
-    return null;
+    return ret;
 }
-template <typename T>
-T* PointerArray<T>::Get(int index){
+int PointerArray::Remove(void* object){
+    for(int i=0;i<slots;i++){
+        if(data[i] == object){
+            data[i] = null;
+            return i;
+        }
+    }
+    logger::warn("PointerArray::Remove -> Object not found in array.");
+    return -1;
+}
+void* PointerArray::Get(int index){
     if(index < 0 || index >= slots){logger::exception("PointerArray::Get -> Index %d is out of range.",index);}
     return data[index];
 }
-template <typename T>
-int PointerArray<T>::Count(){
+int PointerArray::Count(){
     int count =0;
     for(int i=0;i<slots;i++){
-        if(data[i]!= (T*)null){count++;}
+        if(data[i]!= null){count++;}
         }
     return count;
 }
-template <typename T>
-void PointerArray<T>::Resize(int newsize){
-    T** newdata = (T**)calloc(newsize,sizeof(T*));
+void PointerArray::Resize(int newsize){
+    byte** newdata = (byte**)calloc(newsize,sizeof(byte*));
     for(int i=0;i<slots;i++){newdata[i] = data[i];}
     free(data);
     slots=newsize;

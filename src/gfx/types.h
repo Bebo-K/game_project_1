@@ -13,7 +13,7 @@ struct vec3{
     vec3(float x,float y,float z);
 
     void set(float x,float y,float z);
-    float dot(vec3 b);
+    float dot(struct vec3 b);
     float length();
     float length_sqr();
     void rotate_x(float theta);

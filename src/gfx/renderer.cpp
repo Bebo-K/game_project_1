@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 Renderer::Renderer(){
-    modelview_matrix.identity();
+    view_matrix.identity();
     projection_matrix.identity();
 
     glClearColor(0.1, 0.1, 0.1, 1.0);
@@ -10,54 +10,77 @@ Renderer::Renderer(){
     glEnable(GL_DEPTH_TEST);
 }
 
-void Renderer::add(Primitive* p){
-    //int first_empty_slot = -1;
-    /*
-    for(var i=0;i< draw_objects.length;i++){
-        if(drawable === this.draw_objects[i])return;
-        if(this.draw_objects[i]===null && first_empty_slot< 0){
-            first_empty_slot = i;
-        }
-    }
-    if(first_empty_slot > 0){
-        this.draw_objects[first_empty_slot] = drawable;
-    }
-    else{
-        this.draw_objects.push(drawable);
-    }
-    */
+void Renderer::Add(Primitive* p){
+    primitives.Add(p);
+    primitive_count++;
 }
 
-void Renderer::remove(Primitive* p){
-/*
-    for(var i=0;i<this.draw_objects.length;i++){
-        if(drawable === this.draw_objects[i]){
-            this.draw_objects[i] = null;
-        }
-    }
-    */
+void Renderer::Remove(Primitive* p){
+    primitives.Remove(p);
+    primitive_count--;
 }
 
-void Renderer::draw(Camera* cam){
-    /*
-    camera->shader.Use();
-    modelview_matrix.SetIdentity();
-    if(cam->ortho == true){
-        projection_matrix.SetOrtho(camera.width,camera.height,camera.near,camera.far);
+
+void Renderer::Draw(){
+    camera.shader->Use();
+    
+    view_matrix.identity(); 
+    if(camera.ortho == true){
+        projection_matrix.ortho(camera.width,camera.height,camera.near_clip,camera.far_clip);
     }
     else{
-        projection_matrix.SetPerspective(camera.width,camera.height,camera.near,camera.far,camera.fov);
+        projection_matrix.perspective(camera.width,camera.height,camera.near_clip,camera.far_clip,camera.fov);
     }
     
-    glEnableVertexAttribArray(camera.shader.VERTICES);
-    glEnableVertexAttribArray(camera.shader.TEXCOORDS);
+    glEnableVertexAttribArray(camera.shader->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(camera.shader->ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(camera.shader->ATTRIB_NORMAL);
+    glEnableVertexAttribArray(camera.shader->ATTRIB_POSE_INDEX);
 
-    camera.SetToCameraSpace(modelview_matrix);
+    camera.ToCameraSpace(&view_matrix);
 
-    for(var i=0;i<draw_objects.length;i++){
-        if(draw_objects[i]){
-            draw_objects[i]->Draw(camera,&modelview_matrix,&projection_matrix);
-        }
+    Primitive** sorted_list = SortPrimitives();
+    for(int p=0; p < primitive_count; p++){
+        sorted_list[p]->Draw(&camera,&view_matrix,&projection_matrix);
     }
-    */
+    free(sorted_list);
+}
+
+boolean PrimitiveIsCloser(Primitive* p1,Primitive* p2,vec3 camera_pos,vec3 camera_axis){
+    if(p1->layer < p2->layer)return true;
+    if(p2->layer > p1->layer)return false;
+    float p1_zdist = camera_axis.dot({p1->x-camera_pos.x, p1->y-camera_pos.y, p1->z-camera_pos.z});
+    float p2_zdist = camera_axis.dot({p2->x-camera_pos.x, p2->y-camera_pos.y, p2->z-camera_pos.z});
+
+    return p1_zdist <= p2_zdist;
+}
+
+//return a sorted list of primitive pointers based on layer and distance on camera's z axis
+Primitive** Renderer::SortPrimitives(){
+	Primitive** ret = new Primitive*[primitive_count];
+
+    vec3 camera_axis = {0.0f,0.0f,1.0f};
+    vec3 camera_pos = {camera.x,camera.y,camera.z};
+
+    view_matrix.multiply_vec3(&camera_axis);	
+    
+    //insertion sort because it's quick and works well if we pre-sort. Also am lazy
+    Primitive* to_insert =  null;
+    Primitive* current = null;
+    int last=0;
+    for(int p=0;p<primitives.slots;p++){
+        to_insert=(Primitive*)primitives.Get(p);
+        if(to_insert==null)continue;
+
+        for(int i=0;i <last;i++){
+            current=ret[i];
+            if(PrimitiveIsCloser(to_insert,current,camera_pos,camera_axis)){
+                ret[i] = to_insert;
+                to_insert=current;
+            }
+        }
+        ret[last]=to_insert;
+        last++;
+    }
+    return ret;
 }

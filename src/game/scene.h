@@ -15,7 +15,7 @@ class Scene{
     void Unload();
 
 
-    void Update(int delta, Scene* scene);
+    void Update(int delta);
     void Paint();
 
 };

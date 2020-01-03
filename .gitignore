@@ -4,3 +4,4 @@ obj/*
 .vscode/*
 *.dll
 *.exe
+log.txt

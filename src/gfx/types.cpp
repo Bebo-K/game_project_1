@@ -23,6 +23,9 @@ void vec3::set(float _x,float _y,float _z){
     y=_y;
     z=_z;
 }
+float vec3::dot(vec3 b){
+    return x*b.x + y*b.y + z*b.z;
+}
 
 float vec3::length(){
     return sqrtf(x*x+y*y+z*z);

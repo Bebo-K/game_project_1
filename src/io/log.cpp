@@ -4,13 +4,19 @@
 
 #define MAX_ERRSPRINTF_LENGTH 256
 
+FILE* logfile = nullptr;
 
+void logger::start(const char* filename){
+  logfile = fopen(filename,"w");
+}
 
 void WriteLog(const char* text, ...){
   va_list args;
   va_start (args,text);
   vprintf (text, args);
+  fprintf(logfile,text,args);
   printf("\n");
+  fprintf(logfile,"\n");
   va_end (args);
 }
 

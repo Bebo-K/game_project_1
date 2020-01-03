@@ -20,6 +20,8 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
 
+    logger::start("log.txt");
+
     WNDCLASSEX window_class;
         window_class.cbSize=sizeof(WNDCLASSEX);
         window_class.style= CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
@@ -52,6 +54,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             SwapBuffers(device_context);
 
 /*Entry Point*/ 
+            logger::info("Initializing engine...");
             game_instance = Game();
             game_instance.Start();
 
@@ -66,11 +69,13 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
         }
         else{
             MessageBox(NULL,_T("Call to CreateWindow failed!"),window_title,MB_OK);
+            logger::fatal("Call to CreateWindow failed! Aborting!");
             return 1;
         }
     }
     else{
         MessageBox(NULL,_T("Call to RegisterClassEx failed!"),window_title,MB_OK);
+        logger::fatal("Call to RegisterClassEx failed! Aborting!");
         return 1;
     }
     return 0;
@@ -88,6 +93,7 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             break;
         case WM_DESTROY:
             DestroyOpenGL();
+            logger::info("Exiting.");
             PostQuitMessage(0);
             break;
         default:

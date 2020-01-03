@@ -12,17 +12,13 @@ class Shader{
 
 	static const int MAX_BONES = 32;
 
-	//uniform IDs
+	//attribute IDs
 	static const GLuint ATTRIB_VERTEX = 0;
 	static const GLuint ATTRIB_TEXCOORD = 1;
 	static const GLuint ATTRIB_NORMAL = 2;
 	static const GLuint ATTRIB_POSE_INDEX=3;
 	
-    //attribute IDs
-	static const GLuint ATTR_VERTEX=0;
-	static const GLuint ATTR_TEXCOORD=1;
-	static const GLuint ATTR_BONE1 =2;
-	
+	//uniform IDs
 	GLuint MODELVIEW_MATRIX;
 	GLuint PROJECTION_MATRIX;
 	GLuint POSE_MATRIX[MAX_BONES];
