@@ -65,9 +65,9 @@ Image::Image(){
     width=0;height=0;
     image_data=nullptr;
 }
-Image::Image(int width,int height){
-    width = width;
-    height = height;
+Image::Image(int wid,int hgt){
+    width = wid;
+    height = hgt;
     image_data = (byte*)malloc(width*height*4);
 }
 Image::Image(const char* filename){
@@ -76,16 +76,19 @@ Image::Image(const char* filename){
         byte* filedata = (byte*)malloc(f.length);
         f.read(filedata,f.length);
         if(!Load(filedata)){
-            logger::exception("Image::Image -> Failed to parse file as PNG: %s\n",filename);
+            logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",filename);
         }
         free(filedata);
     }else{
-        logger::exception("Image::Image -> Failed to read file %s\n",filename);
+        logger::warn("Image::Image -> Failed to read file %s\n",filename);
+		width=0;
+		height=0;
+		image_data=0;
     }
 }
 Image::Image(byte* raw_png){
     if(!Load(raw_png)){
-        logger::exception("Image::Image -> Failed to parse PNG data.");
+        logger::warn("Image::Image -> Failed to parse PNG data.");
     }
 }
 void Image::Unload(){

@@ -14,7 +14,7 @@ void WriteLog(const char* text, ...){
   va_list args;
   va_start (args,text);
   vprintf (text, args);
-  fprintf(logfile,text,args);
+  vfprintf(logfile,text,args);
   printf("\n");
   fprintf(logfile,"\n");
   va_end (args);
@@ -31,6 +31,7 @@ void logger::warn(const char* text,...){
   va_list args;
   va_start (args,text);
   WriteLog(text,args);
+  vfprintf(stderr,text,args);
   //Raise warning flag
   va_end (args);
 }

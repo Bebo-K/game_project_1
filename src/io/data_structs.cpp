@@ -65,17 +65,15 @@ bool BitArray::Toggle(int index){
     return ((data[index/8] >> (index%8)) & 1) > 0;
 }
 
-DataArray::DataArray(int object_size){
+DataArray::DataArray(int object_size):slot_is_filled(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
     slot_size=object_size;
-    slot_is_filled=BitArray(slots);
     data = (byte*)calloc(slots,slot_size);
 }
 
-DataArray::DataArray(int count,int object_size){
+DataArray::DataArray(int count,int object_size):slot_is_filled(count){
     slots=count;
     slot_size=object_size;
-    slot_is_filled=BitArray(slots);
     data = (byte*)calloc(slots,slot_size);
 }
 
@@ -89,7 +87,6 @@ int DataArray::Add(){
     }
     if(added_slot == -1){
         added_slot = slots;
-        slot_is_filled.Resize(slots*2);
         Resize(slots*2);
     }
     slot_is_filled.Set(added_slot);
@@ -118,6 +115,7 @@ int DataArray::Count(){
     return slot_is_filled.CountBitsSet();
 }
 void DataArray::Resize(int new_count){
+    slot_is_filled.Resize(new_count);
     byte* new_data = (byte*)calloc(new_count,slot_size);
     memcpy(new_data,data,slots*slot_size);
     slots = new_count;
@@ -125,10 +123,7 @@ void DataArray::Resize(int new_count){
     data = new_data;
     return;
 }
-PointerArray::PointerArray(){
-    slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
-    data= (byte**)calloc(slots,sizeof(byte*));
-}
+
 PointerArray::PointerArray(int size){
     slots=size;
     data= (byte**)calloc(slots,sizeof(byte*));
@@ -178,4 +173,126 @@ void PointerArray::Resize(int newsize){
     free(data);
     slots=newsize;
     data=newdata;
+}
+
+
+AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size){
+    slots=initial_size;
+    key_data= (u_associative_array_key*)calloc(slots,sizeof(u_associative_array_key));
+    value_data= (byte**)calloc(slots,sizeof(byte*));
+}
+bool AssociativeArray::Add(int key,byte* value){
+    u_associative_array_key u_key; u_key.intvalue=key;
+    if(IndexOf(u_key) >= 0)return false;//already in map.
+    int added_slot = -1;
+    for(int i=0;i < slots; i++){
+        if(!slot_is_filled.Get(i)){
+            added_slot =i;
+            break;
+        }
+    }
+    if(added_slot == -1){
+        added_slot = slots;
+        Resize(slots*2);
+    }
+    slot_is_filled.Set(added_slot);
+    key_data[added_slot] = u_key;
+    value_data[added_slot] = value;
+    return added_slot;
+}
+bool AssociativeArray::Add(byte* key,byte* value){
+    u_associative_array_key u_key; u_key.ptrvalue=key;
+    if(IndexOf(u_key) >= 0)return false;//already in map.
+    int added_slot = -1;
+    for(int i=0;i < slots; i++){
+        if(!slot_is_filled.Get(i)){
+            added_slot =i;
+            break;
+        }
+    }
+    if(added_slot == -1){
+        added_slot = slots;
+        Resize(slots*2);
+    }
+    slot_is_filled.Set(added_slot);
+    key_data[added_slot] = u_key;
+    value_data[added_slot] = value;
+    return added_slot;
+}
+byte* AssociativeArray::Remove(int key){
+    u_associative_array_key u_key; u_key.intvalue=key;
+    int value_index = IndexOf(u_key);
+    if(value_index >= 0){
+        slot_is_filled.Unset(value_index);
+        return value_data[value_index];
+    }
+    return null;
+}
+byte* AssociativeArray::Remove(byte* key){
+    u_associative_array_key u_key; u_key.ptrvalue=key;
+    int value_index = IndexOf(u_key);
+    if(value_index >= 0){
+        slot_is_filled.Unset(value_index);
+        return value_data[value_index];
+    }
+    return null;
+}
+byte* AssociativeArray::Get(int index){
+    u_associative_array_key key; key.intvalue =index;
+    int value_index = IndexOf(key);
+    return (value_index >= 0)?value_data[value_index]:null;
+}
+byte* AssociativeArray::Get(byte* index){
+    u_associative_array_key key; key.ptrvalue=index;
+    int value_index = IndexOf(key);
+    return (value_index >= 0)?value_data[value_index]:null;
+}
+int   AssociativeArray::IndexOf(u_associative_array_key key){
+    for(int i=0; i<slots;i++){
+        if(slot_is_filled.Get(i)==true){
+            if(key_data[i].ptrvalue == key.ptrvalue ||
+                key_data[i].intvalue == key.intvalue){
+                    return i;
+                }
+        }
+    }
+    return -1;
+}
+byte* AssociativeArray::StrGet(char* index){
+    for(int i=0; i<slots;i++){
+        if(slot_is_filled.Get(i)==true){
+            if((char*)key_data[i].ptrvalue == index||
+                strcmp((char*)key_data[i].ptrvalue,index)==0){
+                    return value_data[i];
+                }
+        }
+    }
+    return null;
+}
+byte* AssociativeArray::StrRemove(char* index){
+    for(int i=0; i<slots;i++){
+        if(slot_is_filled.Get(i)==true){
+            if((char*)key_data[i].ptrvalue == index||
+                strcmp((char*)key_data[i].ptrvalue,index)==0){
+                    slot_is_filled.Unset(i);
+                    return value_data[i];
+                }
+        }
+    }
+    return null;
+}
+int AssociativeArray::Count(){
+    return slot_is_filled.CountBitsSet();
+}
+void AssociativeArray::Resize(int new_count){
+    slot_is_filled.Resize(new_count);
+    byte** new_value_data = (byte**)calloc(new_count,sizeof(byte*));
+    byte** new_key_data = (byte**)calloc(new_count,sizeof(u_associative_array_key));
+    memcpy(new_value_data,value_data,sizeof(byte*)*slots);
+    memcpy(new_key_data,key_data,sizeof(u_associative_array_key)*slots);
+    free(value_data);
+    free(key_data);
+    value_data=new_value_data;
+    key_data=(u_associative_array_key*)new_key_data;
+    slots=new_count;
 }

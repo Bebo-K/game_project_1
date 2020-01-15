@@ -1,25 +1,9 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "gload.h"
+#include "texture.h"
 #include "types.h"
 
-struct TextureRectangle{
-    float x,y,w,h;
-};
-
-class Texture{
-    public:
-
-    GLuint atlas_id;
-	TextureRectangle tex_coords;
-    int width_px,height_px;
-	
-	Texture();
-	
-	TextureRectangle GetSubTexture(int x,int y,int w,int h);
-	
-};
 
 class Material{
     public:

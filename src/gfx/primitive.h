@@ -20,7 +20,7 @@ class Primitive{
 };
 
 //Sprite: A primitive consisting of an image on a plane.
-class Sprite : Primitive {
+class Sprite : public Primitive {
     public:
     GLuint      vertex_buffer, texcoord_buffer;
     Material*   mat;

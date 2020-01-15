@@ -1,28 +1,26 @@
 #include "game.h"
 
-Client* Game::client = nullptr;
+double Game::frame_interval=1000.0f;
+double Game::render_interval=2000.0f;
+time_point<system_clock> last_frame;
+time_point<system_clock> last_render;
+bool Game::running=false;
+Client Game::client;
 
 void Game::Start(){
-    Game::client = new Client();
+    running=true;
+    client.Load();
 
     return;
 }
 
 void Game::Update(int ms){
-    if(Game::client != nullptr){
-        Game::client->Update(ms);
-    }
-    return;
+    client.Update(ms);
 }
 
 void Game::Paint(){
-    if(Game::client != nullptr){
-        Game::client->Paint();
-    }
-    return;
+    client.Paint();
 }
-
-
 
 void Game::Poll(){
     time_point<system_clock> current_time = high_resolution_clock::now();

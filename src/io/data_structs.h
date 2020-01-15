@@ -60,7 +60,9 @@ struct DataArray{
 //Memory allocation for objects are not done by this array, only pointers are stored.
 //Add() will overwrite+return the first null pointer, or double the array size if there are none.
 //Remove() simply nulls out the indexed pointer.
-//Since any slot could contain a null pointer,
+//Since any slot could contain a null pointer, null checks should be done before accessing data.
+//Relative to the start of the array, there are no methods defined to move data,
+//  so the integer index of an object should be a safe reference.
 struct PointerArray{
     byte** data;
     int slots;
@@ -77,8 +79,47 @@ struct PointerArray{
     void Resize(int new_count);
 };
 
+//Associative Array: Dynamic Array with an integer/pointer key association. As close to a map as it gets.
+// Uses both the PointerArray system and DataArray vacancy bit array system, so 0/null values are valid
+//Memory allocation for keys(if any) and values are not done by this array, only pointers are stored.
+//Add() will overwrite+return the first empty slot, or double the array size if there are none.
+//Remove() simply frees the array's slot.
+//Relative to the start of the array, there are no methods defined to move data,
+//  so the integer index of an object should be a safe reference if the user does not move array data.
+
+//BIG CAVEAT to this is that the array is only safe for as many spaces as min(sizeof(int),sizeof(byte*)).
+//On most systems both are 4, but...
+
+union u_associative_array_key{
+    int intvalue;
+    byte* ptrvalue;
+};
+struct AssociativeArray{
+    u_associative_array_key* key_data;
+    BitArray slot_is_filled;
+    byte** value_data;
+    int slots;
+    
+    AssociativeArray(int initial_size);
+    AssociativeArray();
+
+    bool Add(int key,byte* value);
+    bool Add(byte* key,byte* object);
+    byte* Remove(int key);
+    byte* Remove(byte* key);
+    byte* Get(int index);
+    byte* Get(byte* index);
+    int   IndexOf(u_associative_array_key key);
+    //StrGet is a special form of get that assumes the compares the key as a cstring pointer.
+    byte* StrGet(char* index);
+    byte* StrRemove(char* index);
+
+    int Count();
+    void Resize(int new_count);
+};
+
 /*
-namespace str{
+namespace cstr{
     int integer_from_string(char* str,int index);
     char* write_integer_string(int a, char *str, int index);
 

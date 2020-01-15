@@ -1,13 +1,13 @@
 #include "scene.h"
 #include "../io/log.h"
 
-Scene::Scene(){
-    renderer = Renderer();
-
-}
-
+Sprite* defaultSprite;
 void Scene::Load(){
     logger::info("loading default scene...");
+
+    defaultSprite = new Sprite("dat/img/atlas_1.png",1024,1024,1,1);
+
+    renderer.Add(defaultSprite);
 
 }
 void Scene::Load(int area_id){
@@ -16,6 +16,8 @@ void Scene::Load(int area_id){
 }
 void Scene::Unload(){
     logger::info("unloading scene...");
+
+    renderer.Remove(defaultSprite);
 
 }
 void Scene::Update(int delta){

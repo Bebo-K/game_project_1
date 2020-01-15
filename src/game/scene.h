@@ -8,8 +8,6 @@ class Scene{
 
     Renderer renderer;
 
-    Scene();
-
     void Load();//loads default scene
     void Load(int area_id);
     void Unload();

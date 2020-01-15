@@ -11,9 +11,7 @@ class Client{
     Scene scene;
     UI ui;
 
-    Client();
-
-
+    void Load();
     void Paint();
     void Update(int ms);
 

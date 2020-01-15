@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-Renderer::Renderer(){
+Renderer::Renderer():camera(),primitives(8){
     view_matrix.identity();
     projection_matrix.identity();
 

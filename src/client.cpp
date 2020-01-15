@@ -1,14 +1,17 @@
 #include "client.h"
 #include "io/log.h"
 #include "io/config.h"
+#include "gfx/texture.h"
+#include "gfx/shader.h"
 #include <stdio.h>
 
-Client::Client(){
+void Client::Load(){
     logger::info("Initializing client...");
-    scene = Scene();
-    ui = UI();
+    TextureManager::Init();
+    ShaderManager::Init();
+
     scene.Load();
-    
+    ui.Load();
 }
 
 void Client::Paint(){

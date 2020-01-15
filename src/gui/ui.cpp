@@ -1,9 +1,5 @@
 #include "ui.h"
 
-UI::UI(){
-
-}
-
 void UI::Load(){
 
 

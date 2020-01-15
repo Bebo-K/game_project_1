@@ -11,7 +11,6 @@ class UI{
 
     Renderer renderer;
 
-    UI();
     void Load();
     void Paint();
     void Update(int delta, Scene* scene);
