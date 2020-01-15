@@ -32,19 +32,17 @@ class Shader{
 	GLuint EMISSIVE;
 	//public int SHININESS;
 
-    bool Load(const char* vertexFile,const char* fragmentFile);
-	void Unload();
+    Shader(const char* vertexFile,const char* fragmentFile);
+	~Shader();
 	void Use();
 };
 
 namespace ShaderManager{
-
 	void Init();
     void AddShader(char* name, char* vertexFile,char* fragmentFile);
     Shader* GetShader(char* name);
     void RemoveShader(char* name);
     Shader* DefaultShader();
-
 
 };
 

@@ -3,5 +3,5 @@
 
 
 
-int config::window_height = 600;
-int config::window_width = 800;
+int config::window_height = 1200;
+int config::window_width = 1600;

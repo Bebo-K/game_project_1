@@ -1,4 +1,6 @@
 #include "game.h"
+#include "gfx/texture.h"
+#include "gfx/shader.h"
 
 double Game::frame_interval=1000.0f;
 double Game::render_interval=2000.0f;
@@ -9,9 +11,9 @@ Client Game::client;
 
 void Game::Start(){
     running=true;
+    ShaderManager::Init();
+    TextureManager::Init();
     client.Load();
-
-    return;
 }
 
 void Game::Update(int ms){
@@ -33,7 +35,7 @@ void Game::Poll(){
     current_time = high_resolution_clock::now();
     time_delta = current_time - last_render;
     if(time_delta.count() > render_interval){
-        Paint();
+        //Paint();
         last_render = high_resolution_clock::now();
     }
 }  

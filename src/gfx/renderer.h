@@ -14,6 +14,7 @@ public:
     mat4 projection_matrix;
 
     Renderer();
+    void Load();
     void Add(Primitive* p);
     void Remove(Primitive* p);
 

@@ -1,8 +1,6 @@
 #include "gltf.h"
 #include "log.h"
 
-
-
 void GLTFScene::Load(File file){
 	uint32 magic_number;
 	uint32 version;

@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-Renderer::Renderer():camera(),primitives(8){
+Renderer::Renderer():camera(),primitives(){
     view_matrix.identity();
     projection_matrix.identity();
 
@@ -8,6 +8,14 @@ Renderer::Renderer():camera(),primitives(8){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::Load(){
+    camera.SetShader(ShaderManager::DefaultShader());
+
+    camera.z = 10.0f;
+
+    primitives.Resize(8);
 }
 
 void Renderer::Add(Primitive* p){
@@ -31,12 +39,7 @@ void Renderer::Draw(){
     else{
         projection_matrix.perspective(camera.width,camera.height,camera.near_clip,camera.far_clip,camera.fov);
     }
-    
-    glEnableVertexAttribArray(camera.shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(camera.shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(camera.shader->ATTRIB_NORMAL);
-    glEnableVertexAttribArray(camera.shader->ATTRIB_POSE_INDEX);
-
+     
     camera.ToCameraSpace(&view_matrix);
 
     Primitive** sorted_list = SortPrimitives();

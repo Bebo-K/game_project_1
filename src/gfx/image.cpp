@@ -75,7 +75,7 @@ Image::Image(const char* filename){
     if(!f.error){
         byte* filedata = (byte*)malloc(f.length);
         f.read(filedata,f.length);
-        if(!Load(filedata)){
+        if(!LoadData(filedata)){
             logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",filename);
         }
         free(filedata);
@@ -87,14 +87,14 @@ Image::Image(const char* filename){
     }
 }
 Image::Image(byte* raw_png){
-    if(!Load(raw_png)){
+    if(!LoadData(raw_png)){
         logger::warn("Image::Image -> Failed to parse PNG data.");
     }
 }
-void Image::Unload(){
-    free(image_data);
+Image::~Image(){
+	free(image_data);
 }
-bool Image::Load(byte* data){
+bool Image::LoadData(byte* data){
     int offset = 0;
 
 	int BytesPerPixel =3; //will be 4 by the end of this
@@ -128,7 +128,7 @@ bool Image::Load(byte* data){
 	//Load File + Check Sig
     Sig = read_int(data,&offset);
 	if(Sig != IPNG && Sig != BPNG){
-        logger::exception("Image::load -> invaid PNG signature %x\n",Sig);
+        logger::exception("Image::LoadData -> invaid PNG signature %x\n",Sig);
         return -1;
     } //wrong filetype
 
@@ -155,7 +155,7 @@ bool Image::Load(byte* data){
 			read_byte(data,&offset);//Compression Method. Is DEFLATE.
 			read_byte(data,&offset);//Filter Method. If this not be 0, we got problems
 			if(read_byte(data,&offset)){
-                logger::warn("Image::load -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.");
+                logger::warn("Image::LoadData -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.");
             }
 
             DecompresseDataSz = (height+1)*width*BytesPerPixel;
@@ -170,7 +170,7 @@ bool Image::Load(byte* data){
 			break;
 		case PLTE:{
 			if((Length%3 !=0) |(Paletted== 0)){
-                logger::exception("Image::load -> PNG palette is invalid.");
+                logger::exception("Image::LoadData -> PNG palette is invalid.");
                 return -2;
             }
 			Palette = (byte*)malloc(Length);
@@ -192,7 +192,7 @@ bool Image::Load(byte* data){
 			ret = inflate(&z,Z_NO_FLUSH);
 			if(ret == Z_STREAM_END)inflateEnd(&z);
 			if(ret < 0) {
-				logger::exception("Image::load -> Z Stream Error:%s\n",z.msg);
+				logger::exception("Image::LoadData -> Z Stream Error:%s\n",z.msg);
 				return 0;
 				}
 			break;

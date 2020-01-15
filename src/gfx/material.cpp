@@ -2,11 +2,6 @@
 
 
 
-Material::Material(){
-	texture = Texture();
-
-}
-
 Material::Material(char* texture_filename){
 	texture = TextureManager::Get(texture_filename);
 	ambient = {0,0,0};

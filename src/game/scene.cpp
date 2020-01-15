@@ -1,9 +1,9 @@
 #include "scene.h"
 #include "../io/log.h"
 
-Sprite* defaultSprite;
 void Scene::Load(){
     logger::info("loading default scene...");
+    renderer.Load();
 
     defaultSprite = new Sprite("dat/img/atlas_1.png",1024,1024,1,1);
 
@@ -12,6 +12,7 @@ void Scene::Load(){
 }
 void Scene::Load(int area_id){
     logger::info("loading scene for area id %d...",area_id);
+    renderer.Load();
 
 }
 void Scene::Unload(){
@@ -24,5 +25,5 @@ void Scene::Update(int delta){
 
 }
 void Scene::Paint(){
-
+    renderer.Draw(); 
 }

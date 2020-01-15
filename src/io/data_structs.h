@@ -42,8 +42,10 @@ struct DataArray{
     BitArray slot_is_filled;
     byte* data;
 
+    DataArray();
     DataArray(int object_size);
     DataArray(int count,int object_size);
+    ~DataArray();
 
     int Add();
     int Add(void* object);
@@ -67,8 +69,9 @@ struct PointerArray{
     byte** data;
     int slots;
     
-    PointerArray(int initial_size);
     PointerArray();
+    PointerArray(int initial_size);
+    ~PointerArray();
 
     int Add(void* object);
     void* Remove(int index);
@@ -100,8 +103,9 @@ struct AssociativeArray{
     byte** value_data;
     int slots;
     
-    AssociativeArray(int initial_size);
     AssociativeArray();
+    AssociativeArray(int initial_size);
+    ~AssociativeArray();
 
     bool Add(int key,byte* value);
     bool Add(byte* key,byte* object);

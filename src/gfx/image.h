@@ -23,10 +23,10 @@ class Image{
     Image(int width,int height);
     Image(const char* filename);
     Image(byte* raw_png);
+    ~Image();
 
-    bool Load(byte* data);
+    bool LoadData(byte* data);
     bool Blit(Image* dest,int x,int y);
-    void Unload();
 };
 
 

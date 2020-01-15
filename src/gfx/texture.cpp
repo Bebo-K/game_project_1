@@ -16,7 +16,7 @@ TextureRectangle Texture::GetSubTexture(int  x,int y,int w,int h) {
 	TextureRectangle ret = {0,0,0,0};
 	
 	ret.x = tex_coords.x + (tex_coords.w/width_px) * x;
-	ret.y = tex_coords.y + (tex_coords.h/height_px) * h;
+	ret.y = tex_coords.y + (tex_coords.h/height_px) * y;
 	ret.w = (tex_coords.w/width_px) * h;
 	ret.h = (tex_coords.h/height_px) * w;
 	return ret;

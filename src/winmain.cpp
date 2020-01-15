@@ -2,6 +2,7 @@
 #include <wingdi.h>
 #include "gfx/gload.h"
 #include "io/log.h"
+#include "io/config.h"
 #include <tchar.h>
 #include "game.h"
 
@@ -12,7 +13,6 @@ HWND window;
 HDC device_context;
 HGLRC gl_rendering_context;
 
-Game game_instance;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
@@ -43,7 +43,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             window_title,
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT,
-            800,640,
+            config::window_width,config::window_height,
             NULL,NULL,
             instance,NULL);
         if(window){ 
@@ -53,10 +53,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             SwapBuffers(device_context);
 
-/*Entry Point*/ 
-            logger::info("Initializing engine...");
-            game_instance = Game();
-            game_instance.Start();
+/*Loop Entry Point*/ 
 
             MSG window_message;
             do {
@@ -64,7 +61,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
                     TranslateMessage(&window_message);
                     DispatchMessage(&window_message);
                 }
-                game_instance.Poll();
+                Game::Poll();
             } while (window_message.message != WM_QUIT) ;
         }
         else{
@@ -85,10 +82,13 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
+            logger::info("Initializing engine...");
+            Game::Start();
             break;
         case WM_PAINT: /*Ignore for games as we're constantly redrawing anyways.*/
             glClearColor(0,0,0,1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            Game::Paint();
             SwapBuffers(device_context);
             break;
         case WM_DESTROY:
@@ -139,6 +139,14 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
         MessageBox(NULL,_T("Fatal error: glewInit failed. See log for more info."),window_title,MB_OK);
         exit(1);
     }
+
+    
+	glViewport(0, 0,config::window_width,config::window_height);
+	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+	glEnable(GL_ALPHA_TEST);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void DestroyOpenGL(){

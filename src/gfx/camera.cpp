@@ -9,12 +9,16 @@ Camera::Camera(){
     rotation = vec3();
 
     ortho = true;
-    width = 600.0f;
-    height = 400.0f;
+    width = 1920.0f;
+    height = 1080.0f;
     fov = 60.0f;
     near_clip = 1.0f;
     far_clip = 100.0f;
-    shader = ShaderManager::DefaultShader();
+    shader = nullptr;
+}
+
+void Camera::SetShader(Shader* new_shader){
+    shader = new_shader;
 }
 
 void Camera::ToCameraSpace(mat4* m){

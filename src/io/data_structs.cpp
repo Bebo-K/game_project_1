@@ -64,7 +64,11 @@ bool BitArray::Toggle(int index){
     data[index/8] = (data[index/8] ^ (1 << (index%8)));
     return ((data[index/8] >> (index%8)) & 1) > 0;
 }
-
+DataArray::DataArray():slot_is_filled(){
+    slots=0;
+    slot_size=0;
+    data=null;
+}
 DataArray::DataArray(int object_size):slot_is_filled(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
     slot_size=object_size;
@@ -75,6 +79,9 @@ DataArray::DataArray(int count,int object_size):slot_is_filled(count){
     slots=count;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
+}
+DataArray::~DataArray(){
+    free(data);
 }
 
 int DataArray::Add(){
@@ -124,9 +131,16 @@ void DataArray::Resize(int new_count){
     return;
 }
 
+PointerArray::PointerArray(){
+    slots=0;
+    data=null;
+}
 PointerArray::PointerArray(int size){
     slots=size;
     data= (byte**)calloc(slots,sizeof(byte*));
+}
+PointerArray::~PointerArray(){
+    free(data); 
 }
 int PointerArray::Add(void* object){
     int slot_to_add=-1;
@@ -181,6 +195,11 @@ AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size
     key_data= (u_associative_array_key*)calloc(slots,sizeof(u_associative_array_key));
     value_data= (byte**)calloc(slots,sizeof(byte*));
 }
+AssociativeArray::~AssociativeArray(){
+    free(key_data);
+    free(value_data);
+}
+
 bool AssociativeArray::Add(int key,byte* value){
     u_associative_array_key u_key; u_key.intvalue=key;
     if(IndexOf(u_key) >= 0)return false;//already in map.

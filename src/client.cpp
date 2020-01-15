@@ -1,28 +1,14 @@
 #include "client.h"
 #include "io/log.h"
-#include "io/config.h"
-#include "gfx/texture.h"
-#include "gfx/shader.h"
 #include <stdio.h>
 
 void Client::Load(){
     logger::info("Initializing client...");
-    TextureManager::Init();
-    ShaderManager::Init();
-
     scene.Load();
     ui.Load();
 }
 
 void Client::Paint(){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-	glViewport(0, 0,config::window_width,config::window_height);
-	glEnable(GL_BLEND);
-	glEnable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
-	glEnable(GL_ALPHA_TEST);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
- 
     scene.Paint();
     ui.Paint();
 }

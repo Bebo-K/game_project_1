@@ -16,8 +16,7 @@
 
 #include "json.h"
 
-class GLTFScene{
-	public:
+namespace GLTFScene{
 	void Load(File file);
 	JSONObject* ParseJsonChunk(byte* data,int length);
 	void GetMeshes(JSONObject* asset,byte* buffer);

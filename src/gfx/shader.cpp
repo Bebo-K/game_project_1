@@ -2,24 +2,21 @@
 #include "../io/log.h"
 #include "../io/data_structs.h"
 
-Shader defaultShader;
+Shader* defaultShader=nullptr;
 AssociativeArray cachedShaders(2);
 
 
-bool Shader::Load(const char* vertexFile,const char* fragmentFile){
+Shader::Shader(const char* vertexFile,const char* fragmentFile){
 
     FileBuffer vertexProgram(vertexFile);
     FileBuffer fragmentProgram(fragmentFile);
 
     if(vertexProgram.contents == null){
-        logger::exception("Shader::Load -> Vertex shader not found: %s",vertexFile);
-        return false;
+        logger::exception("Shader::Shader -> Vertex shader not found: %s",vertexFile);
     }
-    if(vertexProgram.contents == null){
-        logger::exception("Shader::Load -> Fragment shader not found: %s",fragmentFile);
-        return false;
+    if(fragmentProgram.contents == null){
+        logger::exception("Shader::Shader -> Fragment shader not found: %s",fragmentFile);
     }
-
 
     vertex = glCreateShader(GL_VERTEX_SHADER);
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -68,7 +65,6 @@ bool Shader::Load(const char* vertexFile,const char* fragmentFile){
             int err = glGetError();
             if(err !=0){
                 logger::warn("Shader::Shader -> got GLError %d binding shader.",err);
-                return false;
             }
         }
         else{//Linker error
@@ -80,8 +76,7 @@ bool Shader::Load(const char* vertexFile,const char* fragmentFile){
 
             logger::warn("Shader::Shader -> GLSL Linker Error: %n%s",error_info_log);
             free(error_info_log);
-            return false;
-            }
+        }
     }
     else{//Compile Error
             char* error_info_log = (char*)malloc(MAX_INFO_LOG_LENGTH);
@@ -97,12 +92,10 @@ bool Shader::Load(const char* vertexFile,const char* fragmentFile){
 
             logger::warn("Shader::Shader -> GLSL Compile Error.");
             free(error_info_log);
-            return false;
     }
-    return true;
 }
 
-void Shader::Unload(){
+Shader::~Shader(){
     glDetachShader(program,vertex);
     glDetachShader(program,fragment);
     glDeleteShader(vertex);
@@ -112,20 +105,18 @@ void Shader::Unload(){
 
 void Shader::Use(){
     glUseProgram(program);
+    int err = glGetError();
+    if(err != 0){logger::warn("USESHADER-> GL error: %d",err);}
 }
 
-
-void ShaderManager::Init(){ 
-    bool success = defaultShader.Load("dat/gfx/blank.vrt","dat/gfx/blank.frg");
-    if(!success){
-        logger::fatal("ShaderManager::DefaultShader -> Failed to initialize default shader!");
-    }
+void ShaderManager::Init(){
+    defaultShader = new Shader("dat/gfx/blank.vrt","dat/gfx/blank.frg");
+    cachedShaders.Add((byte*)"default",(byte*)&defaultShader);
 }
 
 void ShaderManager::AddShader(char* name, char* vertexFile,char* fragmentFile){
     if(cachedShaders.StrGet(name)!=null)return;
-    Shader* newshader = new Shader();
-    newshader->Load(vertexFile,fragmentFile);
+    Shader* newshader = new Shader(vertexFile,fragmentFile);
     cachedShaders.Add((byte*)name,(byte*)newshader);
 }
 
@@ -137,12 +128,11 @@ Shader* ShaderManager::GetShader(char* name){
     return ret;
 }
 void ShaderManager::RemoveShader(char* name){
-    Shader* ret = (Shader*)cachedShaders.StrGet(name);
+    Shader* ret = (Shader*)cachedShaders.StrRemove(name);
     if(ret != null){
-        ret->Unload();
-    }
-    cachedShaders.StrRemove(name);
+        delete ret;
+    }   
 }
 Shader* ShaderManager::DefaultShader(){
-    return &defaultShader;
+    return defaultShader;
 }

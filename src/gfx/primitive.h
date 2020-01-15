@@ -15,12 +15,15 @@ class Primitive{
     char layer;
     bool hidden;
 
+    Primitive();
     virtual void Draw(Camera* cam,mat4* modelview, mat4* projection);
     virtual void Destroy();
 };
 
 //Sprite: A primitive consisting of an image on a plane.
 class Sprite : public Primitive {
+    private:
+    void Load(char* spritesheet,int frame_w,int frame_h,int max_frames,int max_strips,float x_center,float y_center);
     public:
     GLuint      vertex_buffer, texcoord_buffer;
     Material*   mat;
@@ -36,13 +39,12 @@ class Sprite : public Primitive {
 	int			max_strips;
 	bool		x_flip=false,y_flip=false;
     
-    Sprite();
     Sprite(char* spritesheet,int frame_w,int frame_h);
     Sprite(char* spritesheet,int frame_w,int frame_h,int max_frames,int max_strips);
     Sprite(char* spritesheet,int frame_w,int frame_h,int max_frames,int max_strips,float x_center,float y_center);
+    ~Sprite();
  
     void Draw(Camera* cam,mat4* modelview, mat4* projection);
-    void Destroy();
 };
 
 #endif

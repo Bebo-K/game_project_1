@@ -7,9 +7,8 @@
 int foomain(int argc, char** args){
     File levelfile = File("dat/test_level.glb");
 
-    GLTFScene gltf = GLTFScene();
-    gltf.Load(levelfile);
+    GLTFScene::Load(levelfile);
 
 
     return 0;
-}
+} 

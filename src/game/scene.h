@@ -7,6 +7,7 @@ class Scene{
     public:
 
     Renderer renderer;
+    Sprite* defaultSprite;
 
     void Load();//loads default scene
     void Load(int area_id);

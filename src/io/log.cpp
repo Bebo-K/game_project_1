@@ -8,6 +8,7 @@ FILE* logfile = nullptr;
 
 void logger::start(const char* filename){
   logfile = fopen(filename,"w");
+  setbuf(stdout, NULL);
 }
 
 void WriteLog(const char* text, ...){
