@@ -5,7 +5,8 @@ void Scene::Load(){
     logger::info("loading default scene...");
     renderer.Load();
 
-    defaultSprite = new Sprite("dat/img/atlas_1.png",1024,1024,1,1);
+    defaultSprite = new Sprite((char*)"dat/img/atlas_1.png",1024,1024,1,1,512,912);
+    //defaultSprite->y += 100;
 
     renderer.Add(defaultSprite);
 

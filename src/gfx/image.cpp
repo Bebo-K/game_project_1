@@ -91,6 +91,28 @@ Image::Image(byte* raw_png){
         logger::warn("Image::Image -> Failed to parse PNG data.");
     }
 }
+
+Image::Image(bool do_the_gradient){
+    width = 255;
+    height = 255;
+    image_data = (byte*)malloc(width*height*4);
+
+	for(int i=0;i<255;i++){
+		for(int j=0;j<255;j++){
+			image_data[4*(i*255+j)] = i;
+			image_data[4*(i*255+j)+1] = 0;
+			image_data[4*(i*255+j)+2] = j;
+			image_data[4*(i*255+j)+3] = 255;
+			if((i%4==0)){
+				image_data[4*(i*255+j)] = 255;
+				image_data[4*(i*255+j)+1] = 255;
+				image_data[4*(i*255+j)+2] = 255;
+			}
+		}
+	}
+
+}
+
 Image::~Image(){
 	free(image_data);
 }
@@ -316,9 +338,9 @@ void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,uns
 	}
 }
 bool Image::Blit(Image* dest,int x,int y){
-    if(dest->width + x > width || dest->height + y > height || x <0 || y <0){return false;}
+    if(x + width > dest->width || y + height > dest->height || x <0 || y <0){return false;}
 	for(int i=0; i<height;i++){
-        memcpy(&dest->image_data[(y+i)*dest->width + (x)*4],&image_data[i*width*4],width*4);
+        memcpy(&dest->image_data[((y+i)*dest->width + x)*4],&image_data[i*width*4],width*4);
 	}
     return true;
 }

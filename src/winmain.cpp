@@ -86,8 +86,6 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             Game::Start();
             break;
         case WM_PAINT: /*Ignore for games as we're constantly redrawing anyways.*/
-            glClearColor(0,0,0,1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             Game::Paint();
             SwapBuffers(device_context);
             break;
@@ -95,6 +93,14 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             DestroyOpenGL();
             logger::info("Exiting.");
             PostQuitMessage(0);
+            break;
+        case WM_SIZE:
+            RECT new_client_area;
+            if(GetClientRect(window_handle,&new_client_area)){
+                Game::window_width = new_client_area.right;
+                Game::window_height = new_client_area.bottom;
+                glViewport(0, 0,Game::window_width,Game::window_height);
+            }
             break;
         default:
             return DefWindowProc(window_handle,msg,wparam,lparam);

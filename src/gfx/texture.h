@@ -26,8 +26,8 @@ class Texture{
 namespace TextureManager{
     const int ATLAS_SIZE = 1024;
     void Init();
-    void CreateAtlas();
-    void SubmitAtlas();
+    Image* CreateAtlas();
+    void SubmitImage(Image* i);
     bool IsMappable(int width,int height,int *mapped_pos);
     Texture Get(char* texname);
 };

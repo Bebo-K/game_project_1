@@ -165,8 +165,8 @@ void mat4::identity(){
 }
 
 void mat4::ortho(float width,float height,float near,float far){
-    float l = (-width/2); float r = width/2;
-    float t = height/2; float b = -height/2;
+    float l = (-width/2.0); float r = width/2.0;
+    float t = height/2.0; float b = -height/2.0;
     float n = near; float f = far;
 
     for(int i=0;i<16;i++){m[i]=0.0f;}

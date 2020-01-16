@@ -2,26 +2,31 @@
 #include "gfx/texture.h"
 #include "gfx/shader.h"
 
-double Game::frame_interval=1000.0f;
-double Game::render_interval=2000.0f;
+double Game::frame_interval = 100.0f;
+double Game::render_interval = 100.0f;
+int Game::window_width = 720;
+int Game::window_height = 1280;
 time_point<system_clock> last_frame;
 time_point<system_clock> last_render;
-bool Game::running=false;
-Client Game::client;
+bool Game::running = false;
+Client* Game::client;
 
 void Game::Start(){
+    client = new Client();
     running=true;
     ShaderManager::Init();
     TextureManager::Init();
-    client.Load();
+    client->Load();
 }
 
 void Game::Update(int ms){
-    client.Update(ms);
+    client->Update(ms);
 }
 
 void Game::Paint(){
-    client.Paint();
+    glClearColor(0.1,0.1,0.1,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    client->Paint();
 }
 
 void Game::Poll(){

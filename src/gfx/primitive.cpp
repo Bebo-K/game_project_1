@@ -34,17 +34,17 @@ void Sprite::Load(char* spritesheet,int frame_w,int frame_h,int frames,int strip
 
     float left,right,top,bottom;
         left = 				-center_x;
-        right = 	 frame_w-center_x;
-        top = 		 frame_h-center_y;
+        right = 	 (float)frame_w-center_x;
+        top = 		 (float)frame_h-center_y;
         bottom = 			-center_y;
     
     float verts[]= {
-        left,	top,			0,
-        right,	top,			0,
-        right,	bottom,			0,
-        right,	bottom,			0,
         left,	bottom,			0,
+        right,	bottom,			0,
+        right,	top,			0,
+        right,	top,			0,
         left,	top,			0,
+        left,	bottom,			0
     };
     
     float texcoords[] = {
@@ -72,28 +72,38 @@ Sprite::~Sprite(){
     if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}	
 }
 
+
+void PrintGLError(){
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("Got GLError %d",err);
+    }
+}
+
 void Sprite::Draw(Camera* cam,mat4* view, mat4* projection){
 
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     
-    int true_frame = (frame < 0)?(-frame)-1:frame;
+    int true_frame = (frame < 0)?(-frame)-1:frame; 
     int true_strip = (strip < 0)?(-strip)-1:strip;
     
     //glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat->ambient);
     //glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat->diffuse);
     //glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat->specular);
     //glUniform3fv(cam->shader->EMISSIVE,1,(GLfloat*)&mat->emissive);
-
+    PrintGLError();
     if(mat->texture.atlas_id >= 0) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,mat->texture.atlas_id);
         glUniform1i(cam->shader->TEXTURE_0,0);
         TextureRectangle texLocation = mat->texture.GetSubTexture(width*true_frame,height*true_strip, width, height);
         glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&texLocation);
+        PrintGLError();
     }
     mat4 model;
     model.identity();
+    model.translate(x,y,z);
     //model = transform.ToMat4();
     if(x_flip != (frame < 0))model.scale(-1,1,1);
     if(y_flip != (strip < 0))model.scale(1,-1,1);
@@ -111,7 +121,7 @@ void Sprite::Draw(Camera* cam,mat4* view, mat4* projection){
     glVertexAttribPointer(1,2,GL_FLOAT,false,0,0);
     
     glDrawArrays(GL_TRIANGLES,0,vertices);
-
+    PrintGLError();
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
 }

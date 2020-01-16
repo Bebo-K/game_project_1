@@ -23,6 +23,7 @@ class Image{
     Image(int width,int height);
     Image(const char* filename);
     Image(byte* raw_png);
+    Image(bool do_the_gradient);
     ~Image();
 
     bool LoadData(byte* data);

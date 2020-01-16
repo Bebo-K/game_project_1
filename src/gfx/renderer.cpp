@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "../io/config.h"
 
 Renderer::Renderer():camera(),primitives(){
     view_matrix.identity();
@@ -13,6 +14,8 @@ Renderer::Renderer():camera(),primitives(){
 void Renderer::Load(){
     camera.SetShader(ShaderManager::DefaultShader());
 
+    camera.width= config::ui_width;
+    camera.height= config::ui_height;
     camera.z = 10.0f;
 
     primitives.Resize(8);

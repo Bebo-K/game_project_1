@@ -23,30 +23,30 @@ TextureRectangle Texture::GetSubTexture(int  x,int y,int w,int h) {
 }
 
 void TextureManager::Init(){
-    CreateAtlas();
+    SubmitImage(CreateAtlas());
 }
     
-void TextureManager::CreateAtlas() {
+Image* TextureManager::CreateAtlas() {
     glGenTextures(1,&current_atlas_id);
     Image* img = new Image(ATLAS_SIZE,ATLAS_SIZE);
     texture_atlases.Add((int)current_atlas_id,(byte*)img);
     atlas_x = 0;
     atlas_y = 0;
     atlas_h = 0;
+    return img;
 }
 
-void TextureManager::SubmitAtlas(){		
-    Image* atlas = (Image*)texture_atlases.Get(current_atlas_id);
+void TextureManager::SubmitImage(Image* image){		
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,current_atlas_id);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,ATLAS_SIZE,ATLAS_SIZE,0,
-            GL_RGBA,GL_UNSIGNED_BYTE,atlas->image_data);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image->width,image->height,0,
+            GL_RGBA,GL_UNSIGNED_BYTE,image->image_data);
 }
 
 Texture TextureManager::Get(char* texname){
@@ -72,10 +72,10 @@ Texture TextureManager::Get(char* texname){
         tex.tex_coords.y = (float)map_pos[1]/ATLAS_SIZE;
         tex.tex_coords.w = (float)tex.width_px/ATLAS_SIZE;
         tex.tex_coords.h = (float)tex.height_px/ATLAS_SIZE;
-        SubmitAtlas();
+        SubmitImage(atlas);
     }
     //if the image is unmappable, make the texture it's own atlas.
-    else if(tex.width_px > ATLAS_SIZE || tex.height_px > ATLAS_SIZE) {
+    else if(tex.width_px >= ATLAS_SIZE || tex.height_px >= ATLAS_SIZE) {
         glGenTextures(1,&tex.atlas_id);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,tex.atlas_id);
@@ -109,7 +109,7 @@ Texture TextureManager::Get(char* texname){
         atlas_y = 0;
         atlas_h = tex.height_px;
         
-        SubmitAtlas();			
+        SubmitImage(atlas);	
     }
     Texture* cached_tex = new Texture();
         memcpy(cached_tex,&tex,sizeof(Texture));
