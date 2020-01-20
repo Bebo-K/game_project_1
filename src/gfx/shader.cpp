@@ -48,11 +48,11 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
         if(linkStatus != 0){
             MODELVIEW_MATRIX 	= glGetUniformLocation(program,"modelview_matrix");
             PROJECTION_MATRIX 	= glGetUniformLocation(program,"projection_matrix");
+            NORMAL_MATRIX    	= glGetUniformLocation(program,"normal_matrix");
             TEXTURE_0 			= glGetUniformLocation(program,"texture0");
             AMBIENT				= glGetUniformLocation(program,"ambient");
             DIFFUSE				= glGetUniformLocation(program,"diffuse");
             SPECULAR			= glGetUniformLocation(program,"specular");
-            EMISSIVE			= glGetUniformLocation(program,"emissive");
             TEXTURE_LOCATION 	= glGetUniformLocation(program,"texture_location");
             IMAGE_SIZE 			= glGetUniformLocation(program,"image_size");
 
@@ -84,12 +84,14 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
 
             glGetShaderInfoLog(vertex,MAX_INFO_LOG_LENGTH,&error_info_log_length,error_info_log);
             error_info_log[error_info_log_length]=0;
-            logger::info("Vertex Shader:%n%s",error_info_log);
+            logger::info("Vertex Shader:\n");
+            logger::info(error_info_log);
 
             glGetShaderInfoLog(fragment,MAX_INFO_LOG_LENGTH,&error_info_log_length,error_info_log);
             error_info_log[error_info_log_length]=0;
-            logger::info("Fragment Shader:%n%s",error_info_log);
-
+            logger::info("Fragment Shader:\n");
+            logger::info(error_info_log);
+            
             logger::warn("Shader::Shader -> GLSL Compile Error.");
             free(error_info_log);
     }
@@ -110,24 +112,24 @@ void Shader::Use(){
 }
 
 void ShaderManager::Init(){
-    defaultShader = new Shader("dat/gfx/blank.vrt","dat/gfx/blank.frg");
+    defaultShader = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
     cachedShaders.Add((byte*)"default",(byte*)&defaultShader);
 }
 
-void ShaderManager::AddShader(char* name, char* vertexFile,char* fragmentFile){
+void ShaderManager::AddShader(const char* name,const char* vertexFile,const char* fragmentFile){
     if(cachedShaders.StrGet(name)!=null)return;
     Shader* newshader = new Shader(vertexFile,fragmentFile);
     cachedShaders.Add((byte*)name,(byte*)newshader);
 }
 
-Shader* ShaderManager::GetShader(char* name){
+Shader* ShaderManager::GetShader(const char* name){
     Shader* ret = (Shader*)cachedShaders.StrGet(name);
     if(ret == null){
         ret = DefaultShader();
     }
     return ret;
 }
-void ShaderManager::RemoveShader(char* name){
+void ShaderManager::RemoveShader(const char* name){
     Shader* ret = (Shader*)cachedShaders.StrRemove(name);
     if(ret != null){
         delete ret;

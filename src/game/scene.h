@@ -7,7 +7,8 @@ class Scene{
     public:
 
     Renderer renderer;
-    Sprite* defaultSprite;
+    CubePrimitive* my_cube;
+
 
     void Load();//loads default scene
     void Load(int area_id);

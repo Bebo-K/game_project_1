@@ -218,3 +218,35 @@ void mat4::multiply_vec3(vec3* vec){
     
     vec->set(_x,_y,_z);
 }
+
+void mat3::set(mat4* mat){
+    m[0] = mat->m[0]; m[1] = mat->m[1]; m[2] = mat->m[2];
+    m[3] = mat->m[4]; m[4] = mat->m[5]; m[5] = mat->m[6];
+    m[6] = mat->m[8]; m[7] = mat->m[9]; m[8] = mat->m[10];
+}
+
+void mat3:: transpose(){
+    float swap;
+    swap=m[1]; m[1]=m[3]; m[3]=swap;
+    swap=m[2]; m[2]=m[6]; m[6]=swap;
+    swap=m[5]; m[5]=m[7]; m[7]=swap;
+}
+float mat3::determinant(){
+return   m[0] * (m[4] * m[8] - m[7] * m[5])
+        -m[3] * (m[1] * m[8] - m[7] * m[2])
+        +m[6] * (m[1] * m[5] - m[4] * m[2]);
+}
+
+void mat3::invert(){
+    float det = determinant();
+    float c[] = {m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8]};
+    m[0] =  (c[4] * c[8] - c[7] * c[5])/ det;
+    m[1] = -(c[1] * c[8] - c[7] * c[2])/ det;
+    m[2] =  (c[1] * c[5] - c[4] * c[2])/ det;
+    m[3] = -(c[3] * c[8] - c[6] * c[5])/ det;
+    m[4] =  (c[0] * c[8] - c[6] * c[2])/ det;
+    m[5] = -(c[0] * c[5] - c[3] * c[2])/ det;
+    m[6] =  (c[3] * c[7] - c[6] * c[4])/ det;
+    m[7] = -(c[0] * c[7] - c[6] * c[1])/ det;
+    m[8] =  (c[0] * c[4] - c[3] * c[1])/ det;
+}

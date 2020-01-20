@@ -4,12 +4,13 @@
 AssociativeArray texture_atlases(2);
 AssociativeArray cached_textures(8);
 GLuint current_atlas_id =-1;
+GLuint empty_texture_id = -1;
 int atlas_x=0,atlas_y=0,atlas_h=0;
 
 Texture::Texture() {
-	atlas_id = -1;
+	atlas_id = empty_texture_id;
 	tex_coords = {0.0f,0.0f,1.0f,1.0f};
-	width_px=height_px=0;
+	width_px=height_px=1;
 }
 
 TextureRectangle Texture::GetSubTexture(int  x,int y,int w,int h) {
@@ -24,6 +25,18 @@ TextureRectangle Texture::GetSubTexture(int  x,int y,int w,int h) {
 
 void TextureManager::Init(){
     SubmitImage(CreateAtlas());
+
+    unsigned char empty_image[] = {255,255,255,255};
+    glGenTextures(1,&empty_texture_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,empty_texture_id);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,1,1,0,GL_RGBA,GL_UNSIGNED_BYTE,empty_image);
 }
     
 Image* TextureManager::CreateAtlas() {
@@ -49,7 +62,7 @@ void TextureManager::SubmitImage(Image* image){
             GL_RGBA,GL_UNSIGNED_BYTE,image->image_data);
 }
 
-Texture TextureManager::Get(char* texname){
+Texture TextureManager::Get(const char* texname){
     Texture* cache_pointer = (Texture*)cached_textures.StrGet(texname);
     if(cache_pointer != null) {
         return *cache_pointer;			
@@ -57,7 +70,7 @@ Texture TextureManager::Get(char* texname){
     Texture tex = Texture();
     Image* texture_image = new Image(texname);
     if(texture_image == null || texture_image->image_data==null){
-        logger::exception("Texture image not found: %s ",texname);
+        logger::warn("Texture image not found: %s ",texname);
         return tex;
     }
     tex.width_px = texture_image->width;

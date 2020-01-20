@@ -5,13 +5,23 @@
 #include "../gfx/renderer.h"
 
 
+
+
 class UI{
 
     public:
 
+
     Renderer renderer;
+    //Sprite* defaultSprite;
 
     void Load();
+
+    //void PushMenu(Menu* newmenu);
+    //void PopMenu(Menu* newmenu);
+
+    void Unload();
+
     void Paint();
     void Update(int delta, Scene* scene);
 

@@ -45,9 +45,12 @@ void Renderer::Draw(){
      
     camera.ToCameraSpace(&view_matrix);
 
+    mat4 view,projection;
     Primitive** sorted_list = SortPrimitives();
     for(int p=0; p < primitive_count; p++){
-        sorted_list[p]->Draw(&camera,&view_matrix,&projection_matrix);
+        view.set(&view_matrix);
+        projection.set(&projection_matrix); 
+        sorted_list[p]->Draw(&camera,&view,&projection);
     }
     free(sorted_list);
 }

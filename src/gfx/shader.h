@@ -22,6 +22,7 @@ class Shader{
 	//uniform IDs
 	GLuint MODELVIEW_MATRIX;
 	GLuint PROJECTION_MATRIX;
+	GLuint NORMAL_MATRIX;
 	GLuint POSE_MATRIX[MAX_BONES];
     GLuint TEXTURE_0;
 	GLuint IMAGE_SIZE;
@@ -39,9 +40,9 @@ class Shader{
 
 namespace ShaderManager{
 	void Init();
-    void AddShader(char* name, char* vertexFile,char* fragmentFile);
-    Shader* GetShader(char* name);
-    void RemoveShader(char* name);
+    void AddShader(const char* name,const char* vertexFile,const char* fragmentFile);
+    Shader* GetShader(const char* name);
+    void RemoveShader(const char* name);
     Shader* DefaultShader();
 
 };

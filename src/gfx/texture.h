@@ -29,7 +29,7 @@ namespace TextureManager{
     Image* CreateAtlas();
     void SubmitImage(Image* i);
     bool IsMappable(int width,int height,int *mapped_pos);
-    Texture Get(char* texname);
+    Texture Get(const char* texname);
 };
 
 #endif

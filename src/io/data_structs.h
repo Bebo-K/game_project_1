@@ -115,8 +115,8 @@ struct AssociativeArray{
     byte* Get(byte* index);
     int   IndexOf(u_associative_array_key key);
     //StrGet is a special form of get that assumes the compares the key as a cstring pointer.
-    byte* StrGet(char* index);
-    byte* StrRemove(char* index);
+    byte* StrGet(const char* index);
+    byte* StrRemove(const char* index);
 
     int Count();
     void Resize(int new_count);

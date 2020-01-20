@@ -11,10 +11,9 @@ class Material{
     vec3    ambient;
     vec3    diffuse;
     vec3    specular;
-    vec3    emissive;
 
     Material();
-    Material(char* texture_filename);
+    Material(const char* texture_filename);
 
 
 };

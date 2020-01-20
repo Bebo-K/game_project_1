@@ -33,6 +33,8 @@ void logger::warn(const char* text,...){
   va_start (args,text);
   WriteLog(text,args);
   vfprintf(stderr,text,args);
+  fflush(stderr);
+  fflush(logfile);
   //Raise warning flag
   va_end (args);
 }
@@ -40,6 +42,11 @@ void logger::warn(const char* text,...){
 void logger::exception(const char* text,...){
   va_list args;
   va_start (args,text);
+  WriteLog(text,args);
+  vfprintf(stderr,text,args);
+  fflush(stderr);
+  fflush(logfile);
+  
   char* exception_string = (char*)malloc(MAX_ERRSPRINTF_LENGTH);
   snprintf(exception_string,MAX_ERRSPRINTF_LENGTH,text,args);
   throw std::runtime_error(exception_string);

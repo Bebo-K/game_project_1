@@ -52,4 +52,13 @@ struct mat4{
     void rotate_z(float theta);
 };
 
+struct mat3{
+    float m[9];
+
+    void set(mat4* m);
+    void invert();
+    void transpose();
+    float determinant();
+};
+
 #endif

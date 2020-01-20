@@ -4,12 +4,15 @@
 void Scene::Load(){
     logger::info("loading default scene...");
     renderer.Load();
+    ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
+    renderer.camera.SetShader(ShaderManager::GetShader("basic_lighting"));
 
-    defaultSprite = new Sprite((char*)"dat/img/atlas_1.png",1024,1024,1,1,512,912);
-    //defaultSprite->y += 100;
+    renderer.camera.ortho=false;
 
-    renderer.Add(defaultSprite);
+    my_cube = new CubePrimitive("dat/img/atlas_1.png",1,1,1);
+    my_cube->rotation.y=45;
 
+    renderer.Add(my_cube);
 }
 void Scene::Load(int area_id){
     logger::info("loading scene for area id %d...",area_id);
@@ -18,9 +21,8 @@ void Scene::Load(int area_id){
 }
 void Scene::Unload(){
     logger::info("unloading scene...");
-
-    renderer.Remove(defaultSprite);
-
+    renderer.Remove(my_cube);
+    delete my_cube;
 }
 void Scene::Update(int delta){
 

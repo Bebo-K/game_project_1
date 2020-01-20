@@ -277,7 +277,7 @@ int   AssociativeArray::IndexOf(u_associative_array_key key){
     }
     return -1;
 }
-byte* AssociativeArray::StrGet(char* index){
+byte* AssociativeArray::StrGet(const char* index){
     for(int i=0; i<slots;i++){
         if(slot_is_filled.Get(i)==true){
             if((char*)key_data[i].ptrvalue == index||
@@ -288,7 +288,7 @@ byte* AssociativeArray::StrGet(char* index){
     }
     return null;
 }
-byte* AssociativeArray::StrRemove(char* index){
+byte* AssociativeArray::StrRemove(const char* index){
     for(int i=0; i<slots;i++){
         if(slot_is_filled.Get(i)==true){
             if((char*)key_data[i].ptrvalue == index||
