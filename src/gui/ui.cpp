@@ -1,6 +1,6 @@
 #include "ui.h"
-#include "../io/config.h"
-#include "../io/log.h"
+#include "../config.h"
+#include "../log.h"
 
 void UI::Load(){
     logger::info("loading ui...");

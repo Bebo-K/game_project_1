@@ -1,5 +1,5 @@
 #include "scene.h"
-#include "../io/log.h"
+#include "../log.h"
 
 void Scene::Load(){
     logger::info("loading default scene...");
@@ -8,8 +8,8 @@ void Scene::Load(){
     renderer.camera.SetShader(ShaderManager::GetShader("basic_lighting"));
 
     renderer.camera.ortho=false;
-
-    my_cube = new CubePrimitive("dat/img/atlas_1.png",1,1,1);
+    //"dat/img/atlas_1.png"
+    my_cube = new WirePrimitive(CUBE,{.4,1.0,.4},2,1,1);
     my_cube->rotation.y=45;
 
     renderer.Add(my_cube);
@@ -25,7 +25,7 @@ void Scene::Unload(){
     delete my_cube;
 }
 void Scene::Update(int delta){
-
+my_cube->rotation.y += delta /10;
 }
 void Scene::Paint(){
     renderer.Draw(); 

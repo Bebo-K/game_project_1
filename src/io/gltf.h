@@ -3,7 +3,7 @@
 
 #include "file.h"
 
-
+#define GLB_MAGIC_NUMBER 0x46546C67
 #define JSON_CHUNK 0x4E4F534A
 #define BINARY_CHUNK 0x004E4942
 
@@ -14,12 +14,21 @@
 #define CTYPE_UINT 5125
 #define CTYPE_FLOAT 5126
 
+#include "../data_structs.h"
 #include "json.h"
 
-namespace GLTFScene{
-	void Load(File file);
-	JSONObject* ParseJsonChunk(byte* data,int length);
-	void GetMeshes(JSONObject* asset,byte* buffer);
+class GLTFScene{
+	private:
+	void LoadAsGLTF(File gltf_file);
+	void LoadAsGLB(File glb_file);
+	public:
+	JSONObject* gltf_data;
+	PointerArray binary_buffers;
+
+	GLTFScene(File model_file);
+	byte* GetBufferData(int buffer_id,int offset);
+
+	~GLTFScene();
 };
 
 

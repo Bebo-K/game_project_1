@@ -1,6 +1,5 @@
 #include "camera.h"
-#include "../io/log.h"
-
+#include "../log.h"
 
 Camera::Camera(){
     x = 0.0f;

@@ -1,6 +1,4 @@
 #include "sprite.h"
-#include "../io/log.h"
-
 
 void Sprite::Draw(Camera* cam,mat4* view, mat4* projection){
 

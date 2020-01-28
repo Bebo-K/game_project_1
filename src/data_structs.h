@@ -122,8 +122,12 @@ struct AssociativeArray{
     void Resize(int new_count);
 };
 
-/*
+
 namespace cstr{
+
+    char* new_copy(char* old_string);
+    char* append(char* str1, char* str2);
+    /*
     int integer_from_string(char* str,int index);
     char* write_integer_string(int a, char *str, int index);
 
@@ -132,8 +136,9 @@ namespace cstr{
 
     int bool_from_string(char* str,int index);
     char* write_bool_string(int a, char *str, int index);
+    */
 };
-*/
+
 
 
 #endif

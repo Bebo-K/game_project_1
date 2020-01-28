@@ -1,5 +1,5 @@
 #include "image.h"
-#include "../io/log.h"
+#include "../log.h"
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -70,17 +70,16 @@ Image::Image(int wid,int hgt){
     height = hgt;
     image_data = (byte*)malloc(width*height*4);
 }
-Image::Image(const char* filename){
-    File f = File(filename);
-    if(!f.error){
-        byte* filedata = (byte*)malloc(f.length);
-        f.read(filedata,f.length);
+Image::Image(File image_file){
+    if(!image_file.error){
+        byte* filedata = (byte*)malloc(image_file.length);
+        image_file.read(filedata,image_file.length);
         if(!LoadData(filedata)){
-            logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",filename);
+            logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",image_file.path);
         }
         free(filedata);
     }else{
-        logger::warn("Image::Image -> Failed to read file %s\n",filename);
+        logger::warn("Image::Image -> Failed to read file %s\n",image_file.path);
 		width=0;
 		height=0;
 		image_data=0;
@@ -90,27 +89,6 @@ Image::Image(byte* raw_png){
     if(!LoadData(raw_png)){
         logger::warn("Image::Image -> Failed to parse PNG data.");
     }
-}
-
-Image::Image(bool do_the_gradient){
-    width = 255;
-    height = 255;
-    image_data = (byte*)malloc(width*height*4);
-
-	for(int i=0;i<255;i++){
-		for(int j=0;j<255;j++){
-			image_data[4*(i*255+j)] = i;
-			image_data[4*(i*255+j)+1] = 0;
-			image_data[4*(i*255+j)+2] = j;
-			image_data[4*(i*255+j)+3] = 255;
-			if((i%4==0)){
-				image_data[4*(i*255+j)] = 255;
-				image_data[4*(i*255+j)+1] = 255;
-				image_data[4*(i*255+j)+2] = 255;
-			}
-		}
-	}
-
 }
 
 Image::~Image(){
@@ -343,4 +321,25 @@ bool Image::Blit(Image* dest,int x,int y){
         memcpy(&dest->image_data[((y+i)*dest->width + x)*4],&image_data[i*width*4],width*4);
 	}
     return true;
+}
+
+
+Image* AlgorithmicImage::Gradient(){
+	Image* ret = new Image(255,255);
+	byte* image_data = ret->image_data;
+
+	for(int i=0;i<255;i++){
+		for(int j=0;j<255;j++){
+			image_data[4*(i*255+j)] = i;
+			image_data[4*(i*255+j)+1] = 0;
+			image_data[4*(i*255+j)+2] = j;
+			image_data[4*(i*255+j)+3] = 255;
+			if((i%4==0)){
+				image_data[4*(i*255+j)] = 255;
+				image_data[4*(i*255+j)+1] = 255;
+				image_data[4*(i*255+j)+2] = 255;
+			}
+		}
+	}
+	return ret;
 }

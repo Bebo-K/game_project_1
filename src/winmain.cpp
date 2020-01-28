@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <wingdi.h>
 #include "gfx/gload.h"
-#include "io/log.h"
-#include "io/config.h"
+#include "log.h"
+#include "config.h"
 #include <tchar.h>
 #include "game.h"
 

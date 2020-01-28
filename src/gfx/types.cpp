@@ -97,7 +97,7 @@ void mat4::translate(float x,float y,float z){
     multiply_by(&m2);
 }
 
-void mat4::scale(vec3 vec){translate(vec.x,vec.y,vec.z);}
+void mat4::scale(vec3 vec){scale(vec.x,vec.y,vec.z);}
 void mat4::scale(float x, float y, float z){
     mat4 m2 ={{
         x,0,0,0,

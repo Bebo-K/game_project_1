@@ -1,67 +1,72 @@
 #include "gltf.h"
-#include "log.h"
+#include "../log.h"
+#include "../data_structs.h"
 
-void GLTFScene::Load(File file){
+GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
+	uint32 magic_number;
+	model_file.read(&magic_number,4);
+	if(magic_number == GLB_MAGIC_NUMBER){LoadAsGLB(model_file);}
+	else{LoadAsGLTF(model_file);}
+}
+
+GLTFScene::~GLTFScene(){
+	delete gltf_data;
+}
+
+void GLTFScene::LoadAsGLB(File glb_file){
 	uint32 magic_number;
 	uint32 version;
-	uint32 length;
+	uint32 file_length;
 	
 	uint32 chunk_length;
 	uint32 chunk_id;
 	byte* data;
 	
-	file.read(&magic_number,4);
-	file.read(&version,4);
-	file.read(&length,4);
+	glb_file.read(&magic_number,4);
+	glb_file.read(&version,4);
+	glb_file.read(&file_length,4);
 
-	JSONObject* asset;
-	byte* binary_data;
-	
-	while((uint32)file.amount_read < length){
-		file.read(&chunk_length,4);
-		file.read(&chunk_id,4);
+	while((uint32)glb_file.amount_read < file_length){
+		glb_file.read(&chunk_length,4);
+		glb_file.read(&chunk_id,4);
 		data = (byte*)malloc(chunk_length);
-		file.read(data,chunk_length);
+		glb_file.read(data,chunk_length);
 		
 		switch(chunk_id){
-			case JSON_CHUNK:
-				asset = ParseJsonChunk(data,chunk_length);
+			case JSON_CHUNK:{
+				JSONParser parser = JSONParser((char*)data,chunk_length);
+				gltf_data = parser.Parse();
 				free(data);
-				break;
+				break;}
 			case BINARY_CHUNK:
-				binary_data = data;
+				binary_buffers.Add(data);
 				break;
 			default:
-				logger::info("GLTF unrecoginized chunk: %d, skipping", chunk_id);
+				logger::info("GLB unrecoginized chunk: %d, skipping", chunk_id);
 				free(data);
 				break;
 		}
 	}	
-
-	asset->GetObject("asset")->GetString("generator")->Print(0);
-	printf("\n");
 }
 
-JSONObject* GLTFScene::ParseJsonChunk(byte* data,int length){
-    JSONParser parser = JSONParser((char*)data,length);
+void GLTFScene::LoadAsGLTF(File gltf_file){
+	byte* gltf_json = (byte*)malloc(gltf_file.length);
+	gltf_file.read(gltf_json,gltf_file.length);
 
-    JSONObject* obj = parser.Parse();
-    //obj->print(0);
-	return obj;
-}
+	JSONParser parser = JSONParser((char*)gltf_json,gltf_file.length);
+	gltf_data = parser.Parse();
 
-void GLTFScene::GetMeshes(JSONObject* asset,byte* buffer){
-	JSONArray* objects = asset->GetArray("nodes");
+	JSONArray* buffers = gltf_data->GetArray("buffers");
+	for(int i=0;i< buffers->count;i++){
+		if(buffers->At(i)->ObjectValue()->HasString("uri")){
 
-	int mesh_count = 0;
-
-	for(int i=0;i<objects->count;i++){
-		JSONObject* current_object = objects->At(i)->ObjectValue();
-
-		if(current_object->HasInt("mesh")){
-			mesh_count++;
+			JSONString* bufferURI = buffers->At(i)->ObjectValue()->GetString("uri");
+			binary_buffers.Add(GetRelativeFile(bufferURI->string,gltf_file.path));
 		}
-
 	}
+	free(gltf_json);
+}
 
+byte* GLTFScene::GetBufferData(int buffer_id,int offset){
+	return &((byte*)binary_buffers.Get(buffer_id))[offset];
 }

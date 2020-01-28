@@ -21,14 +21,19 @@ class Image{
 
     Image();
     Image(int width,int height);
-    Image(const char* filename);
+    Image(File image_file);
     Image(byte* raw_png);
-    Image(bool do_the_gradient);
     ~Image();
 
     bool LoadData(byte* data);
     bool Blit(Image* dest,int x,int y);
 };
+
+namespace AlgorithmicImage{
+    Image* Gradient();
+
+
+}
 
 
 #endif

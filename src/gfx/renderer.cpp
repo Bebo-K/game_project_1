@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "../io/config.h"
+#include "../config.h"
 
 Renderer::Renderer():camera(),primitives(){
     view_matrix.identity();

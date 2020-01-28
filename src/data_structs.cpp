@@ -315,3 +315,22 @@ void AssociativeArray::Resize(int new_count){
     key_data=(u_associative_array_key*)new_key_data;
     slots=new_count;
 }
+
+
+char* cstr::new_copy(char* old_string){
+    int str_len = strlen(old_string);
+    char* str = (char*)malloc(str_len+1);
+    strcpy(str,old_string);
+    str[str_len]=0;
+    return str;
+}
+
+char* cstr::append(char* str1, char* str2){
+    int str1_len = strlen(str1);
+    int str2_len = strlen(str2);
+    char* str = (char*)malloc(str1_len+str2_len+1);
+    strcpy(str,str1);
+    strcpy(&str[str1_len],str1);
+    str[str1_len+str2_len]=0;
+    return str;
+}

@@ -1,6 +1,6 @@
 #include "shader.h"
-#include "../io/log.h"
-#include "../io/data_structs.h"
+#include "../log.h"
+#include "../data_structs.h"
 
 Shader* defaultShader=nullptr;
 AssociativeArray cachedShaders(2);

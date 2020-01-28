@@ -4,9 +4,6 @@
 #include "../game/scene.h"
 #include "../gfx/renderer.h"
 
-
-
-
 class UI{
 
     public:

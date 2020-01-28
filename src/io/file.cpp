@@ -1,6 +1,6 @@
 
 #include "file.h"
-#include "log.h"
+#include "../log.h"
 
 File::File(){
 	file_handle=nullptr;
@@ -9,6 +9,7 @@ File::File(){
 	amount_read=0;
 }
 File::File(const char* filename){
+	path=filename;
 	file_handle = fopen(filename,"rb");
 	amount_read = 0;
 	length = -1;
@@ -36,6 +37,20 @@ void File::read(void* dest, int bytes){
 	}
 	amount_read += bytes;
 }
+void File::peek(void* dest,int bytes){
+	if(error){
+		logger::warn("File::peek -> File is closed or in an error state.");
+		return;
+	}
+	int read_amount = fread(dest,1,bytes,file_handle);
+	fseek(file_handle,-bytes,SEEK_CUR);
+	if(read_amount != bytes){
+		logger::warn("File::peek -> Failed to peek %d bytes from file.",bytes);
+		error=true;
+		return;
+	}
+}
+
 void File::close(){
 	fclose(file_handle);
 	amount_read = -1;
@@ -60,7 +75,7 @@ FileBuffer::~FileBuffer(){
 	free(contents);
 }
 
-byte* getFile(const char* filename){
+byte* GetFile(const char* filename){
     FILE *f = fopen(filename, "rb");
 	byte* data = nullptr;
 	if(f != nullptr){
@@ -77,3 +92,31 @@ byte* getFile(const char* filename){
 	return data;
 }
 
+
+char* GetRelativeFilename(const char* filename,const char* reference_file){
+	int last_instance_of_seperator=0;
+	for(int i=0;reference_file[i]!= 0;i++){
+		if(reference_file[i] == '/' ||
+		reference_file[i] == '\\' ){last_instance_of_seperator=i;}
+	}
+	int filename_len = 0;
+	for(filename_len=0;filename[filename_len] != 0;filename_len++);
+	filename_len += last_instance_of_seperator;
+	char* relativename = (char*)malloc(sizeof(char)*(filename_len+1));
+	for(int c=0;c<=last_instance_of_seperator;c++){
+		relativename[c]=reference_file[c];
+	}
+	for(int d=0;d < (filename_len-last_instance_of_seperator);d++){
+		relativename[last_instance_of_seperator+d]=filename[d];
+	}
+	relativename[filename_len] =0;
+	return relativename;
+}
+
+//gets a file starting relatively from the path of reference_file
+byte* GetRelativeFile(const char* filename,const char* reference_file){
+	char* relative_filename = GetRelativeFilename(filename,reference_file);
+	byte* file= GetFile(relative_filename);
+	free(relative_filename);
+	return file;
+}

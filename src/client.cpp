@@ -1,5 +1,5 @@
 #include "client.h"
-#include "io/log.h"
+#include "log.h"
 #include <stdio.h>
 
 void Client::Load(){

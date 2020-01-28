@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "../io/data_structs.h"
+#include "../data_structs.h"
 #include "primitive.h"
 
 class Renderer{

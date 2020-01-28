@@ -7,7 +7,7 @@ class Scene{
     public:
 
     Renderer renderer;
-    CubePrimitive* my_cube;
+    WirePrimitive* my_cube;
 
 
     void Load();//loads default scene

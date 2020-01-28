@@ -10,12 +10,14 @@ typedef unsigned char byte;
 class File{
 	FILE* file_handle;
     public:
+	const char* path;
 	long amount_read;
 	long length;
 	bool error;
 	File();
 	File(const char* filename);
 	void read(void* dest,int bytes);
+	void peek(void* dest,int bytes);
 	void close();
 };
 
@@ -31,7 +33,8 @@ class FileBuffer{
 };
 
 
-byte* getFile(const char* filename);
+byte* GetFile(const char* filename);
+byte* GetRelativeFile(const char* filename,const char* reference_file);
 
 
 
