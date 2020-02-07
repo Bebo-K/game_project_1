@@ -36,7 +36,7 @@ float cube_normals[] = {
 
 
 ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d){
-    mat = new Material(texture);
+    mat = new Material();
 
     scale.x=w;
     scale.y=h;

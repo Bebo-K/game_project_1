@@ -1,6 +1,7 @@
 #include "game.h"
 #include "gfx/texture.h"
 #include "gfx/shader.h"
+#include "gfx/model.h"
 
 double Game::frame_interval = 100.0f;
 double Game::render_interval = 100.0f;
@@ -16,6 +17,7 @@ void Game::Start(){
     running=true;
     ShaderManager::Init();
     TextureManager::Init();
+    ModelManager::Init();
     client->Load();
 }
 

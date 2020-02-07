@@ -11,27 +11,19 @@ void logger::start(const char* filename){
   setbuf(stdout, NULL);
 }
 
-void WriteLog(const char* text, ...){
+void logger::info(const char* text,...){
   va_list args;
   va_start (args,text);
   vprintf (text, args);
   vfprintf(logfile,text,args);
-  printf("\n");
-  fprintf(logfile,"\n");
-  va_end (args);
-}
-
-void logger::info(const char* text,...){
-  va_list args;
-  va_start (args,text);
-  WriteLog(text,args);
   va_end (args);
 }
 
 void logger::warn(const char* text,...){
   va_list args;
   va_start (args,text);
-  WriteLog(text,args);
+  vprintf (text, args);
+  vfprintf(logfile,text,args);
   vfprintf(stderr,text,args);
   fflush(stderr);
   fflush(logfile);
@@ -42,7 +34,8 @@ void logger::warn(const char* text,...){
 void logger::exception(const char* text,...){
   va_list args;
   va_start (args,text);
-  WriteLog(text,args);
+  vprintf (text, args);
+  vfprintf(logfile,text,args);
   vfprintf(stderr,text,args);
   fflush(stderr);
   fflush(logfile);
@@ -54,10 +47,18 @@ void logger::exception(const char* text,...){
   va_end (args);
 }
 
+void logger::flush(){
+  fflush(stderr);
+  fflush(logfile);
+}
+
 void logger::fatal(const char* text,...){
   va_list args;
   va_start (args,text);
-  WriteLog(text,args);
+  vprintf (text, args);
+  vfprintf(logfile,text,args);
   va_end (args);
+  fflush(stderr);
+  fflush(logfile);
   exit(1);
 }

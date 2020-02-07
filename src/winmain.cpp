@@ -146,6 +146,8 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
         exit(1);
     }
 
+    gload_init();
+
     
 	glViewport(0, 0,config::window_width,config::window_height);
 	glEnable(GL_BLEND);
@@ -156,6 +158,7 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
 }
 
 void DestroyOpenGL(){
+    gload_destroy();
     wglMakeCurrent(NULL,NULL);
     wglDeleteContext(gl_rendering_context);
 }

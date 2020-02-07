@@ -125,8 +125,9 @@ struct AssociativeArray{
 
 namespace cstr{
 
-    char* new_copy(char* old_string);
-    char* append(char* str1, char* str2);
+    char* new_copy(const char* old_string);
+    char* append(const char* str1, const char* str2);
+    bool compare(const char* str1, const char* str2);
     /*
     int integer_from_string(char* str,int index);
     char* write_integer_string(int a, char *str, int index);

@@ -1,5 +1,6 @@
 #include "model.h"
 #include <string.h>
+#include "../log.h"
 
 AssociativeArray cached_models(8);
 Model empty_model;
@@ -10,13 +11,17 @@ Model::Model(){
     mesh_count=0;
     meshes=null;
 }
-Model::Model(int num_meshes){
+void Model::SetMeshCount(int num_meshes){
     mesh_count=num_meshes;
     meshes=(Mesh*)malloc(sizeof(Mesh)*mesh_count);
+    for(int i=0;i<num_meshes;i++){
+        meshes[i].Clear();
+    }
 }
-
 Model::~Model(){
-    free(meshes);
+    //free(name);
+	free(matrix_pallette);//this needs a more descriptive name
+    //free(meshes);
 }
 
 void Model::DrawMesh(Camera* cam,Mesh* m){
@@ -25,20 +30,26 @@ void Model::DrawMesh(Camera* cam,Mesh* m){
     glUniform1i(cam->shader->TEXTURE_0,0);
     glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat->texture.tex_coords);
 
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&m->mat->ambient);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&m->mat->diffuse);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat->specular);
+    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&m->mat->base_color);
+    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&m->mat->base_color);
+    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat->base_color);
     
     glBindBuffer(GL_ARRAY_BUFFER,m->vertex_buffer);
     glVertexAttribPointer(0,3,GL_FLOAT,false,0,0);
 
-    glBindBuffer(GL_ARRAY_BUFFER,m->texcoord_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER,m->texcoord_0_buffer);
     glVertexAttribPointer(1,2,GL_FLOAT,false,0,0);
 
     glBindBuffer(GL_ARRAY_BUFFER,m->normal_buffer);
     glVertexAttribPointer(2,3,GL_FLOAT,false,0,0);
     
-    glDrawArrays(GL_TRIANGLES,0,m->element_count);
+    if(m->index_buffer > 0){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index_buffer);
+        glDrawElements(GL_TRIANGLES,m->element_count,GL_UNSIGNED_SHORT,nullptr);
+    }
+    else{
+        glDrawArrays(GL_TRIANGLES,0,m->element_count);
+    } 
 }
 
 void Model::Draw(Camera* cam,mat4* view, mat4* projection){
@@ -73,13 +84,21 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
 }
 
 void ModelManager::Init(){ 
-    //somehow init an error model.
+    ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
+
+    empty_model.x=empty_model.y=empty_model.z=0;
+    empty_model.name="ErrorModel";
+    empty_model.SetMeshCount(1);
+    empty_model.meshes[0].index_buffer = 0;
+    empty_model.meshes[0].element_count = error_cube.vertices;
+    empty_model.meshes[0].mat = error_cube.mat;error_cube.mat=null;
+    empty_model.meshes[0].vertex_buffer = error_cube.vertex_buffer;error_cube.vertex_buffer=0;
+    empty_model.meshes[0].texcoord_0_buffer = error_cube.texcoord_buffer;error_cube.texcoord_buffer=0;
+    empty_model.meshes[0].normal_buffer = error_cube.normal_buffer;error_cube.vertex_buffer=0;
 }
 
-Model* ModelManager::Add(const char* name, GLTFScene scene){
-    Model* new_model = new Model();
-    cached_models.Add((byte*)name,(byte*)new_model);
-    return new_model;
+void ModelManager::Add(const char* name, Model* model){
+    cached_models.Add((byte*)name,(byte*)model);
 }
 Model* ModelManager::Get(const char* name){
     Model* ret = (Model*)cached_models.StrGet(name);
@@ -94,34 +113,23 @@ Model* ModelManager::ErrorModel(){
     return &empty_model;
 }
 
-void ModelManager::BuildMesh(Mesh* dest,char* meshname,Material* m,int count,float* verts,float* texcoords, float* normals,int* bones){
-    dest->name = cstr::new_copy(meshname);
-    dest->mat = m;
-    dest->element_count=count;
-
-    glGenBuffers(1,&dest->vertex_buffer);
-    glGenBuffers(1,&dest->texcoord_buffer);
-    glGenBuffers(1,&dest->normal_buffer);
-    glGenBuffers(1,&dest->bone_index_buffer);
-
-    glBindBuffer(GL_ARRAY_BUFFER, dest->vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*count, verts,GL_STATIC_DRAW);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, dest->texcoord_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*count, texcoords,GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, dest->normal_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*count, normals,GL_STATIC_DRAW);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, bone_index_buffer);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(int)*count, bones,GL_STATIC_DRAW);
+void Mesh::Clear(){
+    index_buffer=0;
+    vertex_buffer=0;
+    texcoord_0_buffer=0;
+    normal_buffer=0;
+    bone_0_index_buffer=0;
+    bone_0_weight_buffer=0;
+    mat=nullptr;
+	element_count=0;
 }
 
-void ModelManager::DeleteMesh(Mesh* m){
-    free(m->name);
-    delete(m->mat);
-    if(m->vertex_buffer > 0) {glDeleteBuffers(1,&m->vertex_buffer);}
-    if(m->texcoord_buffer > 0) {glDeleteBuffers(1,&m->texcoord_buffer);}
-    if(m->normal_buffer > 0) {glDeleteBuffers(1,&m->normal_buffer);}	
-    if(m->bone_index_buffer > 0) {glDeleteBuffers(1,&m->bone_index_buffer);}	
+void Mesh::Destroy(){
+    delete(mat);
+    if(index_buffer > 0) {glDeleteBuffers(1,&index_buffer);}
+    if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
+    if(texcoord_0_buffer > 0) {glDeleteBuffers(1,&texcoord_0_buffer);}
+    if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	
+    if(bone_0_index_buffer > 0) {glDeleteBuffers(1,&bone_0_index_buffer);}	
+    if(bone_0_weight_buffer > 0){glDeleteBuffers(1,&bone_0_weight_buffer);}
 }

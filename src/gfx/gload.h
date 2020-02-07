@@ -9,6 +9,9 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
+void gload_init();
+void gload_destroy();
+
 //#define GETGLPROC(a) wglGetProcAddress(a)
 
 

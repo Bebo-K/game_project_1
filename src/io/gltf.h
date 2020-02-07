@@ -16,17 +16,26 @@
 
 #include "../data_structs.h"
 #include "json.h"
+#include "../gfx/model.h"
 
 class GLTFScene{
 	private:
 	void LoadAsGLTF(File gltf_file);
 	void LoadAsGLB(File glb_file);
+
+	Material* GetMaterial(int id);
+	JSONObject* GetAccessor(int id);
+	byte* GetBufferViewData(int buffer_view_id,int* len);
+	GLuint BuildAccessorBuffer(int id,GLuint bufferType);
+	int* BuildIndexBuffer(int id);
+
 	public:
 	JSONObject* gltf_data;
 	PointerArray binary_buffers;
 
 	GLTFScene(File model_file);
-	byte* GetBufferData(int buffer_id,int offset);
+	int GetModels(Model* models,int max_count);
+	int GetModels(Model* models,int max_count,int start_index);
 
 	~GLTFScene();
 };

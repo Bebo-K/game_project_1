@@ -65,6 +65,7 @@ int JSONValue::IntValue(){
 }
 float JSONValue::FloatValue(){
 	if(value_type ==2){return value.float_value;}
+	else if(value_type ==1){return (float)value.int_value;}
 	else{
 		logger::exception("JSONValue::floatValue -> invalid access of data type: %s",JSON_TYPE_STRINGS[value_type]);
 		return 0;
@@ -200,7 +201,7 @@ int JSONObject::GetInt(const char* key){return Get(key)->IntValue();}
 bool JSONObject::GetBool(const char* key){return Get(key)->BoolValue();}
 float JSONObject::GetFloat(const char* key){return Get(key)->FloatValue();}
 JSONString* JSONObject::GetString(const char* key){return Get(key)->StringValue();}
-JSONObject* JSONObject::GetObject(const char* key){return Get(key)->ObjectValue();}
+JSONObject* JSONObject::GetJObject(const char* key){return Get(key)->ObjectValue();}
 JSONArray* JSONObject::GetArray(const char* key){return Get(key)->ArrayValue();}
 
 bool JSONObject::HasInt(const char* key){
@@ -227,7 +228,7 @@ bool JSONObject::HasString(const char* key){
 	}
 	return false;
 }
-bool JSONObject::HasObject(const char* key){
+bool JSONObject::HasJObject(const char* key){
 	for(int i=0; i< count; i++){
 		if(keys[i].Equals(key) && values[i].value_type==4){return true;}
 	}
@@ -413,11 +414,13 @@ JSONValue* JSONParser::ParseNumber(int* index){
 	}
 
 	if(integer){
-		int ivalue = atoi(&data[*index]);
+		char* int_str=&data[*index];
+		int ivalue = atoi(int_str);
 		new_value = new JSONValue(ivalue);
 	}
 	else{
-		float fvalue = strtof(&data[*index],nullptr);
+		char* float_str=&data[*index];
+		float fvalue = strtof(float_str,nullptr);
 		new_value = new JSONValue(fvalue);
 	}
 	

@@ -317,7 +317,7 @@ void AssociativeArray::Resize(int new_count){
 }
 
 
-char* cstr::new_copy(char* old_string){
+char* cstr::new_copy(const char* old_string){
     int str_len = strlen(old_string);
     char* str = (char*)malloc(str_len+1);
     strcpy(str,old_string);
@@ -325,7 +325,12 @@ char* cstr::new_copy(char* old_string){
     return str;
 }
 
-char* cstr::append(char* str1, char* str2){
+bool cstr::compare(const char* str1,const char* str2){
+    if(str1 == str2)return true;//pointer comparison shortcut
+    return strcmp(str1,str2)==0;
+}
+
+char* cstr::append(const char* str1,const char* str2){
     int str1_len = strlen(str1);
     int str2_len = strlen(str2);
     char* str = (char*)malloc(str1_len+str2_len+1);

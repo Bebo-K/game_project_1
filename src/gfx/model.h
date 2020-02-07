@@ -1,35 +1,41 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "3dstructs.h"
 #include "primitive.h"
-#include "../io/gltf.h"
 
 struct Mesh{
-    char*       name;
+    GLuint      index_buffer;
     GLuint      vertex_buffer;
-    GLuint      texcoord_buffer;
+    GLuint      texcoord_0_buffer;
     GLuint      normal_buffer;
-    GLuint      bone_index_buffer;
+    GLuint      bone_0_index_buffer;
+    GLuint      bone_0_weight_buffer;
     Material*   mat;
 	int		    element_count;// must be a multiple of 3 ('cause triangles)
 
+    void Clear();
+    void Build(char* meshname,Material* m,int count,float* verts,float* texcoords, float* normals,int* bones);
+    void Destroy();
 };
 	
 class Model: public Primitive{
     public:
 	static const int MAX_BONES = 32;
     
+    char*   name;
     int     mesh_count;
 	Mesh*   meshes;
     //char* mesh_visible;
 	//Bone*   skeleton;
 	//Pose    pose;
 	mat4*  matrix_pallette;//this needs a more descriptive name
+    AABB        bounds;
 	
 	//Map<String,Animation> Animations=null;
 
     Model();
-	Model(int num_meshes);
+	void SetMeshCount(int num_meshes);
     ~Model();
 
     void Draw(Camera* cam,mat4* view, mat4* projection);
@@ -39,13 +45,12 @@ class Model: public Primitive{
 namespace ModelManager{
     void Init();
 
-    Model* Add(const char* name, GLTFScene scene);
+    void Add(const char* name, Model* model);
     Model* Get(const char* name);
     void Remove(const char* name);
     Model* ErrorModel();
 
-    void BuildMesh(Mesh* dest,char* meshname,Material* m,int count,float* verts,float* texcoords, float* normals,int* bones);
-    void DeleteMesh(Mesh* m);
+
 };
 
 #endif

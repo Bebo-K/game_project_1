@@ -2,12 +2,14 @@
 #define SCENE_H
 
 #include "../gfx/renderer.h"
+#include "../gfx/model.h"
 
 class Scene{
     public:
 
     Renderer renderer;
-    WirePrimitive* my_cube;
+    //WirePrimitive* my_cube;
+    Model* my_model;
 
 
     void Load();//loads default scene

@@ -2,15 +2,17 @@
 
 
 Material::Material(){
+	name="Default";
 	texture = TextureManager::DefaultTexture();
-	ambient = {0.5,0.5,0.5};
-	diffuse = {1,1,1};
-	specular = {0,0,0};
+	cull_backface=false;
+	metallic_factor=0;
+	roughness_factor=0;
 }
 Material::Material(const char* texture_filename){
+	name="Default";
 	texture = TextureManager::Get(texture_filename);
-	ambient = {0.1,0.1,0.1};
-	diffuse = {1,1,1};
-	specular = {0,0,0};
+	cull_backface=false;
+	metallic_factor=0;
+	roughness_factor=0;
 }
 

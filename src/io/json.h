@@ -83,8 +83,8 @@ struct JSONObject{
 	bool HasString(const char* key);
 	JSONString* GetString(const char* key);
 	
-	bool HasObject(const char* key);
-	JSONObject* GetObject(const char* key);
+	bool HasJObject(const char* key);//curse you winapi!
+	JSONObject* GetJObject(const char* key);
 
 	bool HasArray(const char* key);
 	JSONArray* GetArray(const char* key);

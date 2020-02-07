@@ -20,9 +20,9 @@ void ShapePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat->ambient);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat->diffuse);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat->specular);
+    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat->base_color);
+    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat->base_color);
+    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat->base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat->texture.atlas_id);
@@ -67,9 +67,9 @@ void WirePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat->ambient);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat->diffuse);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat->specular);
+    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat->base_color);
+    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat->base_color);
+    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat->base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat->texture.atlas_id);
