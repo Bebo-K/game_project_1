@@ -34,6 +34,31 @@ float cube_normals[] = {
     -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0  // Left face
 };
 
+GLuint cube_vertex_buffer=0;
+GLuint cube_texcoord_buffer=0;
+GLuint cube_normal_buffer=0;
+
+
+void BuildPrimitive(GLuint* vertex_buffer,GLuint* texcoord_buffer,GLuint* normal_buffer,
+    float* verts,float* texcoords,float* normals,int tris){
+    glGenBuffers(1,vertex_buffer);
+    glGenBuffers(1,texcoord_buffer);
+    glGenBuffers(1,normal_buffer);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*3, verts,GL_STATIC_DRAW);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, *texcoord_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*2, texcoords,GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *normal_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*3, normals,GL_STATIC_DRAW);
+}
+
+void BuildCubePrimitive(){
+    BuildPrimitive(&cube_vertex_buffer,&cube_texcoord_buffer,&cube_normal_buffer,
+            cube_verts,cube_texcoords,cube_normals,36);
+}
 
 ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d){
     mat = new Material();
@@ -42,13 +67,12 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
     scale.y=h;
     scale.z=d;
 
-    float *verts,*texcoords,*normals;
-
     switch(shape){
         case EPrimitiveShape::CUBE:
-            verts = cube_verts;
-            texcoords = cube_texcoords;
-            normals = cube_normals;
+            if(cube_vertex_buffer==0){BuildCubePrimitive();}
+            vertex_buffer=cube_vertex_buffer;
+            texcoord_buffer=cube_texcoord_buffer;
+            normal_buffer=cube_normal_buffer;
             vertices = 36;
             break;
         default:
@@ -56,18 +80,8 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
             return;
     }
 
-    glGenBuffers(1, &vertex_buffer);
-    glGenBuffers(1,&texcoord_buffer);
-    glGenBuffers(1,&normal_buffer);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*108, verts,GL_STATIC_DRAW);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, texcoord_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*72, texcoords,GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*108, normals,GL_STATIC_DRAW);
 }
 
 ShapePrimitive::~ShapePrimitive(){

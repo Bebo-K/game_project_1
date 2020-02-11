@@ -65,6 +65,50 @@ void vec3::rotate_z(float theta){
     x = _x; y = _y; z = _z;
 }
 
+void quaternion::clear(){
+    x=y=z=0;
+    w=1;
+}
+
+void quaternion::set_euler(float x,float y,float z){
+    double cz = cosf(_X86_ * 0.5);
+    double sz = sinf(x * 0.5);
+    double cy = cosf(y * 0.5);
+    double sy = sinf(y * 0.5);
+    double cx = cosf(z * 0.5);
+    double sx = sinf(z * 0.5);
+
+    w = cz * cy * cx + sz * sy * sx;
+    x = cz * cy * sx - sz * sy * cx;
+    y = sz * cy * sx + cz * sy * cx;
+    z = sz * cy * cx - cz * sy * sx;
+}
+
+void quaternion::rotate_by(quaternion q2){
+    float qx,qy,qz,qw;
+    qx = x*q2.x - y*q2.y - z*q2.z - w*q2.w;
+    qx = x*q2.x + y*q2.y - z*q2.z + w*q2.w;
+    qx = x*q2.x + y*q2.y + z*q2.z - w*q2.w;
+    qx = x*q2.x - y*q2.y + z*q2.z + w*q2.w;
+
+    x=qx;y=qy;z=qz;w=qw;
+}
+void quaternion::rotate_by(float x,float y,float z){
+    quaternion q2;
+    q2.set_euler(x,y,z);
+    rotate_by(q2);
+}
+
+mat4 quaternion::to_matrix(){
+    mat4 ret;
+    ret.identity();
+    ret.m[0]=1-2*y*y-2*z*z;ret.m[1]=  2*x*y-2*w*z;ret.m[2]=   2*x*z+2*w*y;
+    ret.m[4]=  2*x*y+2*w*z;ret.m[5]=1-2*x*x-2*z*z;ret.m[6]=   2*y*z-2*w*x;
+    ret.m[8]=  2*x*z-2*w*y;ret.m[9]=  2*y*z+2*w*x;ret.m[10]=1-2*x*x-2*y*y;
+
+    return ret;
+}
+
 void mat4::set(mat4* m2){
     for(int i=0;i<16;i++){m[i]=m2->m[i];}
 }
@@ -114,6 +158,10 @@ void mat4::rotate(float x, float y, float z){
     rotate_y(y);
     rotate_z(z);
 }
+void mat4::rotate(quaternion q){
+    mat4 rotation_matrix = q.to_matrix();
+    multiply_by(&rotation_matrix);
+}
 
 void mat4::rotate_x(float theta){
     if(FLOAT_IS_ZERO(theta))return;
@@ -141,7 +189,6 @@ void mat4::rotate_y(float theta){
     }};
     multiply_by(&rotate);
 }
-
 void mat4::rotate_z(float theta){
     if(FLOAT_IS_ZERO(theta))return;
     float rx = -theta*PI_OVER_180;
@@ -211,6 +258,12 @@ void mat4::transform(float x,float y,float z,vec3 rotation, vec3 scl){
     scale(scl);
 }
 
+void mat4::transform(float x,float y,float z,quaternion rotation, vec3 scl){
+    translate(x,y,z);
+    rotate(rotation);
+    scale(scl);
+}
+
 void mat4::multiply_vec3(vec3* vec){
     float _x = m[0]*vec->x + m[1]*vec->y + m[2]* vec->z + m[3];
     float _y = m[4]*vec->x + m[5]*vec->y + m[6]* vec->z + m[7];
@@ -249,4 +302,11 @@ void mat3::invert(){
     m[6] =  (c[3] * c[7] - c[6] * c[4])/ det;
     m[7] = -(c[0] * c[7] - c[6] * c[1])/ det;
     m[8] =  (c[0] * c[4] - c[3] * c[1])/ det;
+}
+
+
+void Transform::Clear(){
+    x=y=z=0;
+    rotation.x=rotation.y=rotation.z=0;
+    scale.x=scale.y=scale.z=1.0f;
 }

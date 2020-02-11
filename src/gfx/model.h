@@ -3,6 +3,7 @@
 
 #include "3dstructs.h"
 #include "primitive.h"
+#include "skeleton.h"
 
 struct Mesh{
     GLuint      index_buffer;
@@ -13,29 +14,21 @@ struct Mesh{
     GLuint      bone_0_weight_buffer;
     Material*   mat;
 	int		    element_count;// must be a multiple of 3 ('cause triangles)
-
-    void Clear();
-    void Build(char* meshname,Material* m,int count,float* verts,float* texcoords, float* normals,int* bones);
-    void Destroy();
 };
-	
+
 class Model: public Primitive{
     public:
 	static const int MAX_BONES = 32;
     
-    char*   name;
-    int     mesh_count;
-	Mesh*   meshes;
-    //char* mesh_visible;
-	//Bone*   skeleton;
-	//Pose    pose;
-	mat4*  matrix_pallette;//this needs a more descriptive name
-    AABB        bounds;
-	
-	//Map<String,Animation> Animations=null;
+    char*    name;//Pointer shared across clones.
+    int      mesh_count;
+	Mesh*    meshes;//Pointer shared across clones.
+    AABB     bounds;
+    Skeleton* skeleton;
 
     Model();
-	void SetMeshCount(int num_meshes);
+    Model* Clone();//Same shared data among all clones.
+    void DestroySharedData();
     ~Model();
 
     void Draw(Camera* cam,mat4* view, mat4* projection);
@@ -49,8 +42,6 @@ namespace ModelManager{
     Model* Get(const char* name);
     void Remove(const char* name);
     Model* ErrorModel();
-
-
 };
 
 #endif

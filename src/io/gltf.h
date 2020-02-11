@@ -36,6 +36,7 @@ class GLTFScene{
 	GLTFScene(File model_file);
 	int GetModels(Model* models,int max_count);
 	int GetModels(Model* models,int max_count,int start_index);
+	Skeleton* GetSkeleton(int skin_id);
 
 	~GLTFScene();
 };

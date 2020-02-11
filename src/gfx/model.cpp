@@ -6,23 +6,16 @@ AssociativeArray cached_models(8);
 Model empty_model;
 
 
-
 Model::Model(){
+    name=null;
     mesh_count=0;
-    meshes=null;
-}
-void Model::SetMeshCount(int num_meshes){
-    mesh_count=num_meshes;
-    meshes=(Mesh*)malloc(sizeof(Mesh)*mesh_count);
-    for(int i=0;i<num_meshes;i++){
-        meshes[i].Clear();
-    }
+	meshes=null;
+	skeleton=null;
 }
 Model::~Model(){
-    //free(name);
-	free(matrix_pallette);//this needs a more descriptive name
-    //free(meshes);
+    if(skeleton != null){delete skeleton;}
 }
+
 
 void Model::DrawMesh(Camera* cam,Mesh* m){
     glActiveTexture(GL_TEXTURE0);
@@ -83,12 +76,52 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
 }
 
+
+void DestroyMesh(Mesh* m){
+    delete(m->mat);
+    if(m->index_buffer > 0) {glDeleteBuffers(1,&m->index_buffer);}
+    if(m->vertex_buffer > 0) {glDeleteBuffers(1,&m->vertex_buffer);}
+    if(m->texcoord_0_buffer > 0) {glDeleteBuffers(1,&m->texcoord_0_buffer);}
+    if(m->normal_buffer > 0) {glDeleteBuffers(1,&m->normal_buffer);}	
+    if(m->bone_0_index_buffer > 0) {glDeleteBuffers(1,&m->bone_0_index_buffer);}	
+    if(m->bone_0_weight_buffer > 0){glDeleteBuffers(1,&m->bone_0_weight_buffer);}
+}
+
+Model* Model::Clone(){
+    Model* ret = new Model;
+
+    ret->name=name;
+    ret->mesh_count=mesh_count;
+    ret->meshes=meshes;
+    if(skeleton != null){
+        ret->skeleton=skeleton->Clone();
+    }
+    ret->bounds = bounds;
+
+    return ret;
+}
+
+void Model::DestroySharedData(){//Will break all instances of a model, be careful!
+    free(name);
+    if(meshes != null){
+        for(int i=0;i<mesh_count;i++){DestroyMesh(&meshes[i]);}
+        mesh_count=0;
+        meshes=null;
+    }
+    if(skeleton != null){
+        skeleton->DestroySharedData();
+        delete(skeleton);
+        skeleton=null;
+    };
+}
+
 void ModelManager::Init(){ 
     ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
 
     empty_model.x=empty_model.y=empty_model.z=0;
     empty_model.name="ErrorModel";
-    empty_model.SetMeshCount(1);
+    empty_model.mesh_count=1;
+    empty_model.meshes = (Mesh*)calloc(1,sizeof(Mesh));
     empty_model.meshes[0].index_buffer = 0;
     empty_model.meshes[0].element_count = error_cube.vertices;
     empty_model.meshes[0].mat = error_cube.mat;error_cube.mat=null;
@@ -103,33 +136,13 @@ void ModelManager::Add(const char* name, Model* model){
 Model* ModelManager::Get(const char* name){
     Model* ret = (Model*)cached_models.StrGet(name);
     if(ret == nullptr){ret = ErrorModel();}
-    return ret;
+    return ret->Clone();
 }
 void ModelManager::Remove(const char* name){
     Model* mdl = (Model*)cached_models.StrRemove(name);
+    mdl->DestroySharedData();
     delete mdl;
 }
 Model* ModelManager::ErrorModel(){
     return &empty_model;
-}
-
-void Mesh::Clear(){
-    index_buffer=0;
-    vertex_buffer=0;
-    texcoord_0_buffer=0;
-    normal_buffer=0;
-    bone_0_index_buffer=0;
-    bone_0_weight_buffer=0;
-    mat=nullptr;
-	element_count=0;
-}
-
-void Mesh::Destroy(){
-    delete(mat);
-    if(index_buffer > 0) {glDeleteBuffers(1,&index_buffer);}
-    if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
-    if(texcoord_0_buffer > 0) {glDeleteBuffers(1,&texcoord_0_buffer);}
-    if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	
-    if(bone_0_index_buffer > 0) {glDeleteBuffers(1,&bone_0_index_buffer);}	
-    if(bone_0_weight_buffer > 0){glDeleteBuffers(1,&bone_0_weight_buffer);}
 }

@@ -199,28 +199,21 @@ Material* GLTFScene::GetMaterial(int id){
 
 int GLTFScene::GetModels(Model* models,int max_count){return GetModels(models,max_count,0);}
 int GLTFScene::GetModels(Model* models,int max_count,int start_index){
-	//Json structure is roughly
-	//Scene{
-	//  Nodes[] (Bone info)
-	//  Meshes[]{(Models by our naming)
-	//    Primitives[]{ (Meshes by our naming)
-	//       Accessor*[]
-	//    }
-	//  }
-	//  Accesors[]
-	//  BufferViews[]
-	//Buffers (can be different places)
-	JSONArray* meshes = gltf_data->GetArray("meshes");
-	int get_count = (max_count > meshes->count)?meshes->count:max_count;
+	JSONArray* gltf_meshes = gltf_data->GetArray("meshes");
+	int get_count = (max_count > gltf_meshes->count)?gltf_meshes->count:max_count;
 
 	for(int mdl=start_index;mdl<(start_index+get_count);mdl++){
-		JSONObject* gltf_mesh = meshes->At(mdl)->ObjectValue();
+		JSONObject* gltf_mesh = gltf_meshes->At(mdl)->ObjectValue();
 		JSONArray* primitives = gltf_mesh->GetArray("primitives");
+		JSONObject* primitive = null; 
 		models[mdl].name = cstr::new_copy(gltf_mesh->GetString("name")->string);
-		models[mdl].SetMeshCount(primitives->count);
+		Mesh* meshes = (Mesh*)calloc(primitives->count,sizeof(Mesh));
+		
+		models[mdl].meshes = meshes;
+		models[mdl].mesh_count = primitives->count;	
 		for(int msh=0;msh<primitives->count;msh++){
-			JSONObject* primitive = primitives->At(msh)->ObjectValue();
-			Mesh* mesh = &models[mdl].meshes[msh];
+			Mesh* mesh = &meshes[msh];
+			primitive = primitives->At(msh)->ObjectValue();
 
 			JSONObject* attribs = primitive->GetJObject("attributes");
 				int pos_attrib_id=attribs->GetInt("POSITION");
@@ -256,8 +249,72 @@ int GLTFScene::GetModels(Model* models,int max_count,int start_index){
 				mesh->index_buffer = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
 				mesh->element_count = GetAccessor(index_accessor_id)->GetInt("count");
 			}
-
 		}		
 	}
 	return get_count;
+}
+
+Skeleton* GLTFScene::GetSkeleton(int skin_id){
+	if(!gltf_data->HasArray("skins"))return null;
+
+	JSONArray* skins = gltf_data->GetArray("skins");
+	JSONObject* skin = skins->At(skin_id)->ObjectValue;
+	JSONArray* nodes_array = gltf_data->GetArray("nodes");
+
+	if(skin_id < 0 || skin_id > skins->count)return null;
+
+	Skeleton* new_skeleton = new Skeleton();
+	char* new_skeleton_name = skin->GetString("name")->string;
+	JSONArray* joint_nodes = skin->GetArray("joints");
+	new_skeleton->Setup(joint_nodes->count);
+
+	int ibm_data_buffer_id = GetAccessor(skin->GetInt("inverseBindMatrices"))->GetInt("bufferView");
+	int read =0;
+	byte* ibm_data_buffer=GetBufferViewData(ibm_data_buffer_id,&read);
+	int ibm_expected_size = sizeof(mat4)*new_skeleton->bone_count;
+	if(ibm_expected_size != read){
+		logger::exception("Expected inverse bind matrix buffer of size %d, got %d\n",ibm_expected_size,read);
+	}
+	memcpy(new_skeleton->inverse_bind_mats,ibm_data_buffer,read);
+
+	for(int i=0;i<new_skeleton->bone_count;i++){
+		JSONObject* bone_node = nodes_array->At(joint_nodes->At(i)->IntValue())->ObjectValue();
+		JSONArray *pos_array=null,*rot_array=null,*scale_array=null,*child_array=null;
+		new_skeleton->bones[i].name = cstr::new_copy(bone_node->GetString("name")->string);
+		float px=0,py=0,pz=0;
+		quaternion rotation;rotation.clear();
+		vec3 scale = {1,1,1};
+
+		if(bone_node->HasArray("position")){
+			pos_array=bone_node->GetArray("position");
+			px = pos_array->At(0)->FloatValue();
+			py = pos_array->At(1)->FloatValue();
+			pz = pos_array->At(2)->FloatValue();
+		}
+		if(bone_node->HasArray("rotation")){
+			rot_array=bone_node->GetArray("rotation");
+			rotation.x = rot_array->At(0)->FloatValue();
+			rotation.y = rot_array->At(1)->FloatValue();
+			rotation.z = rot_array->At(2)->FloatValue();
+			rotation.w = rot_array->At(3)->FloatValue();
+		}
+		if(bone_node->HasArray("scale")){
+			scale_array=bone_node->GetArray("scale");
+			px = scale_array->At(0)->FloatValue();
+			py = scale_array->At(1)->FloatValue();
+			pz = scale_array->At(2)->FloatValue();
+		}
+		if(bone_node->HasArray("children")){
+			child_array=bone_node->GetArray("children");
+			new_skeleton->bones[i].child_count=child_array->count;
+			new_skeleton->bones[i].child_indices = (int*)calloc(child_array->count,sizeof(int*));
+			for(int j=0;j < child_array->count;j++){
+				int child_index = child_array->At(j)->IntValue();
+				new_skeleton->bones[i].child_indices[j] = child_index;
+				new_skeleton->bones[child_index].parent_index = i;
+			}
+		}
+		new_skeleton->bones[i].bind_transform.identity();
+		new_skeleton->bones[i].bind_transform.transform(px,py,pz,rotation,scale);
+	}
 }
