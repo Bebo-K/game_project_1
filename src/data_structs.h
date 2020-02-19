@@ -127,6 +127,7 @@ namespace cstr{
 
     char* new_copy(const char* old_string);
     char* append(const char* str1, const char* str2);
+    char* append(const char* str1, char seperator, const char* str2);
     bool compare(const char* str1, const char* str2);
     /*
     int integer_from_string(char* str,int index);

@@ -339,3 +339,14 @@ char* cstr::append(const char* str1,const char* str2){
     str[str1_len+str2_len]=0;
     return str;
 }
+
+char* append(const char* str1, char seperator, const char* str2){
+    int str1_len = strlen(str1);
+    int str2_len = strlen(str2);
+    char* str = (char*)malloc(str1_len+str2_len+2);
+    strcpy(str,str1);
+    str[str1_len]=seperator;
+    strcpy(&str[str1_len+1],str1);
+    str[str1_len+str2_len+1]=0;
+    return str;
+}

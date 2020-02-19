@@ -2,8 +2,9 @@
 #include "../log.h"
 #include "../data_structs.h"
 
-GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
+GLTFScene::GLTFScene(File model_file,char* name) :binary_buffers(1){
 	if(model_file.error)return;
+	base_name=name;
 	uint32 magic_number;
 	model_file.peek(&magic_number,4);
 	if(magic_number == GLB_MAGIC_NUMBER){LoadAsGLB(model_file);}
@@ -171,116 +172,128 @@ byte* GLTFScene::GetBufferViewData(int buffer_view_id,int* len){
 	return &buffer[offset];
 }
 
-Material* GLTFScene::GetMaterial(int id){
-	Material* ret = new Material();
+Material GLTFScene::GetMaterial(int mat_id){
+	Material ret;
 	if(!gltf_data->HasArray("materials")){return ret;}
-	JSONArray* materials = gltf_data->GetArray("materials");
-	if(materials->count < id || id < 0){return ret;}
-	JSONObject* material = materials->At(id)->ObjectValue();
+	JSONArray* gltf_mats = gltf_data->GetArray("materials");
+	if(mat_id < 0 || mat_id > gltf_mats->count);
+	JSONObject* material = gltf_mats->At(mat_id)->ObjectValue();
 	
 	if(material->HasBool("doubleSided")){
-		ret->cull_backface=!(material->GetBool("doubleSided"));
+		ret.cull_backface=!(material->GetBool("doubleSided"));
 	}
 	if(material->HasJObject("pbrMetallicRoughness")){
 		JSONObject* PBRMaterial = material->GetJObject("pbrMetallicRoughness");
 		JSONArray* baseColor=PBRMaterial->GetArray("baseColorFactor");	
-			ret->base_color[0] = baseColor->At(0)->FloatValue();
-			ret->base_color[1] = baseColor->At(1)->FloatValue();
-			ret->base_color[2] = baseColor->At(2)->FloatValue();
-			ret->base_color[3] = baseColor->At(3)->FloatValue();
-		ret->metallic_factor=PBRMaterial->GetFloat("metallicFactor");
-		ret->roughness_factor=PBRMaterial->GetFloat("roughnessFactor");
+			ret.base_color[0] = baseColor->At(0)->FloatValue();
+			ret.base_color[1] = baseColor->At(1)->FloatValue();
+			ret.base_color[2] = baseColor->At(2)->FloatValue();
+			ret.base_color[3] = baseColor->At(3)->FloatValue();
+		ret.metallic_factor=PBRMaterial->GetFloat("metallicFactor");
+		ret.roughness_factor=PBRMaterial->GetFloat("roughnessFactor");
 	}
-	
-	//TODO: textures
-
 	return ret;
 }
 
-int GLTFScene::GetModels(Model* models,int max_count){return GetModels(models,max_count,0);}
-int GLTFScene::GetModels(Model* models,int max_count,int start_index){
-	JSONArray* gltf_meshes = gltf_data->GetArray("meshes");
-	int get_count = (max_count > gltf_meshes->count)?gltf_meshes->count:max_count;
-
-	for(int mdl=start_index;mdl<(start_index+get_count);mdl++){
-		JSONObject* gltf_mesh = gltf_meshes->At(mdl)->ObjectValue();
-		JSONArray* primitives = gltf_mesh->GetArray("primitives");
-		JSONObject* primitive = null; 
-		models[mdl].name = cstr::new_copy(gltf_mesh->GetString("name")->string);
-		Mesh* meshes = (Mesh*)calloc(primitives->count,sizeof(Mesh));
-		
-		models[mdl].meshes = meshes;
-		models[mdl].mesh_count = primitives->count;	
-		for(int msh=0;msh<primitives->count;msh++){
-			Mesh* mesh = &meshes[msh];
-			primitive = primitives->At(msh)->ObjectValue();
-
-			JSONObject* attribs = primitive->GetJObject("attributes");
-				int pos_attrib_id=attribs->GetInt("POSITION");
-				JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
-				mesh->element_count = pos_accessor->GetInt("count");
-
-				JSONArray* max_array = pos_accessor->GetArray("max");
-				JSONArray* min_array = pos_accessor->GetArray("min");
-				AABB mesh_bounds;
-					mesh_bounds.hi_corner.x= max_array->At(0)->FloatValue();
-					mesh_bounds.hi_corner.y= max_array->At(1)->FloatValue();
-					mesh_bounds.hi_corner.z= max_array->At(2)->FloatValue();
-					mesh_bounds.lo_corner.x= min_array->At(0)->FloatValue();
-					mesh_bounds.lo_corner.y= min_array->At(1)->FloatValue();
-					mesh_bounds.lo_corner.z= min_array->At(2)->FloatValue();
-				models[mdl].bounds.Union(mesh_bounds);
-
-				mesh->vertex_buffer=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
-				if(attribs->HasInt("NORMAL")){
-					mesh->normal_buffer=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
-				if(attribs->HasInt("TEXCOORD_0")){
-					mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
-				if(attribs->HasInt("JOINTS_0")){
-					mesh->bone_0_index_buffer=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
-				if(attribs->HasInt("WEIGHTS_0")){
-					mesh->bone_0_weight_buffer=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
-				//if(attribs->HasInt("TEXCOORD_1")){
-				//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
-				
-			mesh->mat = GetMaterial(primitive->GetInt("material"));
-			if(primitive->HasInt("indices")){
-				int index_accessor_id=primitive->GetInt("indices"); 
-				mesh->index_buffer = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
-				mesh->element_count = GetAccessor(index_accessor_id)->GetInt("count");
+char* GLTFScene::FindMeshGroupName(int group_id){
+	JSONArray* nodes = gltf_data->GetArray("nodes");
+	for(int i=0;i<nodes->count;i++){
+		JSONObject* node = nodes->At(i)->ObjectValue();
+		if(node->HasInt("mesh") && node->GetInt("mesh") == group_id){
+			if(node->HasString("name")){
+				return cstr::new_copy(node->GetString("name")->string);
 			}
-		}		
+		}
 	}
-	return get_count;
+	return null;
 }
 
-Skeleton* GLTFScene::GetSkeleton(int skin_id){
-	if(!gltf_data->HasArray("skins"))return null;
+MeshGroup* GLTFScene::GetMeshGroup(int group_id){
+	if(!gltf_data->HasArray("meshes")){return nullptr;}
+	JSONArray* meshes = gltf_data->GetArray("meshes");
+	if(group_id < 0 || group_id >= meshes->count){return nullptr;}
 
+	MeshGroup* ret = (MeshGroup*)calloc(1,sizeof(MeshGroup));
+
+	JSONObject* mesh = meshes->At(group_id)->ObjectValue();
+	JSONArray* primitives = mesh->GetArray("primitives");
+
+
+	ret->name = FindMeshGroupName(group_id);
+	if(ret->name== null){ret->name = cstr::new_copy(mesh->GetString("name")->string);}
+	ret->mesh_count=primitives->count;
+	ret->meshes = (Mesh*)calloc(primitives->count,sizeof(Mesh));
+
+	for(int i=0;i<primitives->count;i++){
+		Mesh* prim = &ret->meshes[i];
+		JSONObject* primitive = primitives->At(i)->ObjectValue();
+		JSONObject* attribs = primitive->GetJObject("attributes");
+
+		int pos_attrib_id=attribs->GetInt("POSITION");
+		JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
+		prim->element_count = pos_accessor->GetInt("count");
+
+		JSONArray* max_array = pos_accessor->GetArray("max");
+		JSONArray* min_array = pos_accessor->GetArray("min");
+		AABB prim_bounds;
+			prim_bounds.hi_corner.x= max_array->At(0)->FloatValue();
+			prim_bounds.hi_corner.y= max_array->At(1)->FloatValue();
+			prim_bounds.hi_corner.z= max_array->At(2)->FloatValue();
+			prim_bounds.lo_corner.x= min_array->At(0)->FloatValue();
+			prim_bounds.lo_corner.y= min_array->At(1)->FloatValue();
+			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
+		ret->bounds.Union(prim_bounds);
+
+		prim->vertex_buffer=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
+		if(attribs->HasInt("NORMAL")){
+			prim->normal_buffer=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("TEXCOORD_0")){
+			prim->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("JOINTS_0")){
+			prim->bone_0_index_buffer=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("WEIGHTS_0")){
+			prim->bone_0_weight_buffer=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
+		//if(attribs->HasInt("TEXCOORD_1")){
+		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
+		
+		prim->mat = GetMaterial(primitive->GetInt("material"));
+		if(primitive->HasInt("indices")){
+			int index_accessor_id=primitive->GetInt("indices"); 
+			prim->index_buffer = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
+			prim->element_count = GetAccessor(index_accessor_id)->GetInt("count");
+		}
+	}
+	return ret;
+}
+
+Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
+	if(!gltf_data->HasArray("skins")){return nullptr;}
 	JSONArray* skins = gltf_data->GetArray("skins");
-	JSONObject* skin = skins->At(skin_id)->ObjectValue;
+	if(skeleton_id < 0 || skeleton_id >= skins->count){return nullptr;}
+
 	JSONArray* nodes_array = gltf_data->GetArray("nodes");
 
-	if(skin_id < 0 || skin_id > skins->count)return null;
+	Skeleton* ret = (Skeleton*)calloc(1,sizeof(Skeleton));
 
-	Skeleton* new_skeleton = new Skeleton();
-	char* new_skeleton_name = skin->GetString("name")->string;
+	JSONObject* skin = skins->At(skeleton_id)->ObjectValue();
 	JSONArray* joint_nodes = skin->GetArray("joints");
-	new_skeleton->Setup(joint_nodes->count);
+
+	//char* skeleton_name = skin->GetString("name")->string;
+	ret->AllocateBoneCount(joint_nodes->count);
 
 	int ibm_data_buffer_id = GetAccessor(skin->GetInt("inverseBindMatrices"))->GetInt("bufferView");
 	int read =0;
 	byte* ibm_data_buffer=GetBufferViewData(ibm_data_buffer_id,&read);
-	int ibm_expected_size = sizeof(mat4)*new_skeleton->bone_count;
+	int ibm_expected_size = sizeof(mat4)*ret->bone_count;
 	if(ibm_expected_size != read){
 		logger::exception("Expected inverse bind matrix buffer of size %d, got %d\n",ibm_expected_size,read);
 	}
-	memcpy(new_skeleton->inverse_bind_mats,ibm_data_buffer,read);
+	memcpy(ret->inverse_bind_mats,ibm_data_buffer,read);
 
-	for(int i=0;i<new_skeleton->bone_count;i++){
+	for(int i=0;i<ret->bone_count;i++){
 		JSONObject* bone_node = nodes_array->At(joint_nodes->At(i)->IntValue())->ObjectValue();
 		JSONArray *pos_array=null,*rot_array=null,*scale_array=null,*child_array=null;
-		new_skeleton->bones[i].name = cstr::new_copy(bone_node->GetString("name")->string);
+		ret->bones[i].name = cstr::new_copy(bone_node->GetString("name")->string);
 		float px=0,py=0,pz=0;
 		quaternion rotation;rotation.clear();
 		vec3 scale = {1,1,1};
@@ -306,15 +319,55 @@ Skeleton* GLTFScene::GetSkeleton(int skin_id){
 		}
 		if(bone_node->HasArray("children")){
 			child_array=bone_node->GetArray("children");
-			new_skeleton->bones[i].child_count=child_array->count;
-			new_skeleton->bones[i].child_indices = (int*)calloc(child_array->count,sizeof(int*));
+			ret->bones[i].child_count=child_array->count;
+			ret->bones[i].child_indices = (int*)calloc(child_array->count,sizeof(int*));
 			for(int j=0;j < child_array->count;j++){
 				int child_index = child_array->At(j)->IntValue();
-				new_skeleton->bones[i].child_indices[j] = child_index;
-				new_skeleton->bones[child_index].parent_index = i;
+				ret->bones[i].child_indices[j] = child_index;
+				ret->bones[child_index].parent_index = i;
 			}
 		}
-		new_skeleton->bones[i].bind_transform.identity();
-		new_skeleton->bones[i].bind_transform.transform(px,py,pz,rotation,scale);
+		ret->bones[i].bind_transform.identity();
+		ret->bones[i].bind_transform.transform(px,py,pz,rotation,scale);
+	}
+	return ret;
+}
+
+Model* GLTFScene::LoadAsModel(char* name){
+	Model* ret = new Model();
+	ret->name = cstr::new_copy(name);
+	ret->mesh_group_count=0;
+
+	PointerArray model_meshes(1);
+	int skeleton_id =-1;
+
+	JSONArray* nodes_array = gltf_data->GetArray("nodes");
+	JSONObject* node =nullptr;
+	for(int i=0;i<nodes_array->count;i++){
+		node = nodes_array->At(i)->ObjectValue();
+		if(node->HasInt("mesh")){
+			if(node->HasInt("skin")){
+				int mesh_skeleton_id = node->GetInt("skin");
+				if(skeleton_id < 0){
+					skeleton_id = mesh_skeleton_id;
+					ret->skeleton=GetSkeleton(skeleton_id);
+				}
+				else if(skeleton_id != mesh_skeleton_id){
+					logger::warn("Skipping mesh group %d using a different skeleton(id %d)\n",i,skeleton_id);
+					continue;
+				}
+			}
+			ret->mesh_group_count++;
+			model_meshes.Add((byte*)GetMeshGroup(node->GetInt("mesh")));
+		}
+	}
+
+	ret->mesh_groups = (MeshGroup*)calloc(ret->mesh_group_count,sizeof(MeshGroup));
+	int mesh_slot=0;
+
+	for(int i=0;i<ret->mesh_group_count;i++){
+		MeshGroup* group =(MeshGroup*)model_meshes.Get(i);
+		memcpy(&ret->mesh_groups[i],group,sizeof(MeshGroup));
+		free(group);
 	}
 }

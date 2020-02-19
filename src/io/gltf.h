@@ -23,20 +23,24 @@ class GLTFScene{
 	void LoadAsGLTF(File gltf_file);
 	void LoadAsGLB(File glb_file);
 
-	Material* GetMaterial(int id);
+	char* FindMeshGroupName(int group_id);
 	JSONObject* GetAccessor(int id);
 	byte* GetBufferViewData(int buffer_view_id,int* len);
 	GLuint BuildAccessorBuffer(int id,GLuint bufferType);
 	int* BuildIndexBuffer(int id);
 
 	public:
+	char* base_name;
 	JSONObject* gltf_data;
 	PointerArray binary_buffers;
 
-	GLTFScene(File model_file);
-	int GetModels(Model* models,int max_count);
-	int GetModels(Model* models,int max_count,int start_index);
-	Skeleton* GetSkeleton(int skin_id);
+
+	GLTFScene(File model_file,char* name);
+	Material   GetMaterial(int material_id);
+	MeshGroup* GetMeshGroup(int group_id);
+	Skeleton*  GetSkeleton(int skeleton_id);
+	
+	Model* LoadAsModel(char* model_name);
 
 	~GLTFScene();
 };

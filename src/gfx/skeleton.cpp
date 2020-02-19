@@ -16,7 +16,7 @@ Skeleton::~Skeleton(){
 }
 
 //Allocate and clear inital data once we know the number of bones.
-void Skeleton::Setup(int num_bones){
+void Skeleton::AllocateBoneCount(int num_bones){
     bone_count=num_bones;
     bones=(Bone*)calloc(num_bones,sizeof(Bone));
     pose_matrices=(mat4*)calloc(num_bones,sizeof(mat4));

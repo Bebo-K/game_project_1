@@ -9,7 +9,7 @@ class Sprite : public Primitive {
     void Load(char* spritesheet,int frame_w,int frame_h,int max_frames,int max_strips,float x_center,float y_center);
     public:
     GLuint      vertex_buffer, texcoord_buffer;
-    Material*   mat;
+    Texture     texture;
 	int		    vertices;// must be a multiple of 3 ('cause triangles)
 	
 	float		center_x;//offset from image coords to center of rotation.

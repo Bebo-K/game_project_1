@@ -26,7 +26,7 @@ struct Skeleton{
     Skeleton();
     ~Skeleton();
 
-    void Setup(int num_bones);
+    void AllocateBoneCount(int num_bones);
 
     Skeleton* Clone();
     void DestroySharedData();

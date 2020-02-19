@@ -9,9 +9,9 @@ void Sprite::Draw(Camera* cam,mat4* view, mat4* projection){
     int true_strip = (strip < 0)?(-strip)-1:strip;
     
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,mat->texture.atlas_id);
+    glBindTexture(GL_TEXTURE_2D,texture.atlas_id);
     glUniform1i(cam->shader->TEXTURE_0,0);
-    TextureRectangle texLocation = mat->texture.GetSubTexture(width*true_frame,height*true_strip, width, height);
+    TextureRectangle texLocation = texture.GetSubTexture(width*true_frame,height*true_strip, width, height);
     glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&texLocation);
 
     mat4 model;
@@ -48,7 +48,7 @@ Sprite:: Sprite(char* spritesheet,int frame_w,int frame_h,int max_frames,int max
     Load(spritesheet,frame_w,frame_h,max_frames,max_strips,x_center,y_center);
 }
 void Sprite::Load(char* spritesheet,int frame_w,int frame_h,int frames,int strips,float x_center,float y_center){
-    mat = new Material(spritesheet);
+    texture = TextureManager::Get(spritesheet);
     max_frames=(frames<=0)?1:frames;//never zero these.
     max_strips=(strips<=0)?1:strips;
     center_x = x_center;
@@ -93,7 +93,6 @@ void Sprite::Load(char* spritesheet,int frame_w,int frame_h,int frames,int strip
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*12, texcoords,GL_STATIC_DRAW);
 }
 Sprite::~Sprite(){
-    free(mat);
     if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
     if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}	
 }

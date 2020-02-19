@@ -60,9 +60,7 @@ void BuildCubePrimitive(){
             cube_verts,cube_texcoords,cube_normals,36);
 }
 
-ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d){
-    mat = new Material();
-
+ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d):mat(){
     scale.x=w;
     scale.y=h;
     scale.z=d;
@@ -85,14 +83,12 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
 }
 
 ShapePrimitive::~ShapePrimitive(){
-    delete(mat);
     if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
     if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}
     if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	
 }
 
-WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d){
-    mat = new Material();
+WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d):mat(){
     color[0] = prim_color.x;
     color[1] = prim_color.y;
     color[2] = prim_color.z;
@@ -131,7 +127,6 @@ WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float
 }
 
 WirePrimitive::~WirePrimitive(){
-    delete(mat);
     if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
     if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}
     if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	

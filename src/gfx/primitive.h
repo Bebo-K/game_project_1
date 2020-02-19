@@ -24,7 +24,7 @@ class ShapePrimitive : public Primitive{
     public:
     
     GLuint      vertex_buffer, texcoord_buffer,normal_buffer;
-    Material*   mat;
+    Material    mat;
 	int		    vertices;// must be a multiple of 3 ('cause triangles)
     float       color[4];
 	
@@ -38,7 +38,7 @@ class WirePrimitive : public Primitive{
     public:
     
     GLuint      vertex_buffer, texcoord_buffer,normal_buffer;
-    Material*   mat;
+    Material    mat;
 	int		    vertices;// must be a multiple of 3 ('cause triangles)
     float       color[4];
 	
