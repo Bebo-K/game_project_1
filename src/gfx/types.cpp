@@ -71,7 +71,7 @@ void quaternion::clear(){
 }
 
 void quaternion::set_euler(float x,float y,float z){
-    double cz = cosf(_X86_ * 0.5);
+    double cz = cosf(x * 0.5);
     double sz = sinf(x * 0.5);
     double cy = cosf(y * 0.5);
     double sy = sinf(y * 0.5);
@@ -87,9 +87,9 @@ void quaternion::set_euler(float x,float y,float z){
 void quaternion::rotate_by(quaternion q2){
     float qx,qy,qz,qw;
     qx = x*q2.x - y*q2.y - z*q2.z - w*q2.w;
-    qx = x*q2.x + y*q2.y - z*q2.z + w*q2.w;
-    qx = x*q2.x + y*q2.y + z*q2.z - w*q2.w;
-    qx = x*q2.x - y*q2.y + z*q2.z + w*q2.w;
+    qy = x*q2.x + y*q2.y - z*q2.z + w*q2.w;
+    qz = x*q2.x + y*q2.y + z*q2.z - w*q2.w;
+    qw = x*q2.x - y*q2.y + z*q2.z + w*q2.w;
 
     x=qx;y=qy;z=qz;w=qw;
 }

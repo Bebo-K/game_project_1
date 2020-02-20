@@ -16,8 +16,7 @@ void Scene::Load(){
     File modelFile("dat/models/placeholder_person.glb");
     GLTFScene gltf_file(modelFile);
 
-    my_model=new Model();
-    gltf_file.GetModels(my_model,1);
+    my_model= gltf_file.LoadAsModel("person");
 
 
     renderer.Add(my_model);

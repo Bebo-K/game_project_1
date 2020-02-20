@@ -2,9 +2,8 @@
 #include "../log.h"
 #include "../data_structs.h"
 
-GLTFScene::GLTFScene(File model_file,char* name) :binary_buffers(1){
+GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
 	if(model_file.error)return;
-	base_name=name;
 	uint32 magic_number;
 	model_file.peek(&magic_number,4);
 	if(magic_number == GLB_MAGIC_NUMBER){LoadAsGLB(model_file);}
@@ -74,13 +73,21 @@ JSONObject* GLTFScene::GetAccessor(int id){
 	return accessors->At(id)->ObjectValue();
 }
 
+/*
 int* GLTFScene::BuildIndexBuffer(int id){
 	GLuint ret = -1;
 	JSONObject* accessor = gltf_data->GetArray("accessors")->At(id)->ObjectValue();
 	int element_size=4;
 	int element_count = accessor->GetInt("count");
+
+	glGenBuffers(1,&ret);
+    glBindBuffer(bufferType, ret);
+    glBufferData(bufferType, element_size*element_count, element_data ,GL_STATIC_DRAW);
+
+
 	return null;
 }
+*/
 
 GLuint GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
 	GLuint ret = -1;
@@ -146,19 +153,7 @@ GLuint GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
     glBindBuffer(bufferType, ret);
     glBufferData(bufferType, element_size*element_count, element_data ,GL_STATIC_DRAW);
 
-	logger::info("\n");
-	float first,second,third;
-	for(int i=0; i<element_count;i++){
-		first = ((float*)element_data)[i*3];
-		second = ((float*)element_data)[i*3 +1];
-		third = ((float*)element_data)[i*3 +2];
-
-		logger::info("%d,%d,%d\n",first,second,third);
-	}
-		logger::info("\n");
-		logger::flush();
-
-	if(new_data){free(new_data);}
+	if(new_data != null){free(new_data);}
 	return ret;
 }
 
@@ -335,6 +330,7 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 
 Model* GLTFScene::LoadAsModel(char* name){
 	Model* ret = new Model();
+	base_name=name;
 	ret->name = cstr::new_copy(name);
 	ret->mesh_group_count=0;
 
@@ -363,11 +359,12 @@ Model* GLTFScene::LoadAsModel(char* name){
 	}
 
 	ret->mesh_groups = (MeshGroup*)calloc(ret->mesh_group_count,sizeof(MeshGroup));
-	int mesh_slot=0;
-
 	for(int i=0;i<ret->mesh_group_count;i++){
 		MeshGroup* group =(MeshGroup*)model_meshes.Get(i);
 		memcpy(&ret->mesh_groups[i],group,sizeof(MeshGroup));
+		ret->bounds.Union(group->bounds);
 		free(group);
 	}
+
+	return ret;
 }

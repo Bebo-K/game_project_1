@@ -35,7 +35,7 @@ class GLTFScene{
 	PointerArray binary_buffers;
 
 
-	GLTFScene(File model_file,char* name);
+	GLTFScene(File model_file);
 	Material   GetMaterial(int material_id);
 	MeshGroup* GetMeshGroup(int group_id);
 	Skeleton*  GetSkeleton(int skeleton_id);
