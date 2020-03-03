@@ -7,7 +7,7 @@ const float x = 0.5f;
 const float y = 0.5f;
 const float z = 0.5f;
 
-float cube_verts[] ={
+float cube_vert_data[] ={
     -x, -y,  z,   x, -y,  z,   x,  y,  z,    -x, -y,  z,   x,  y,  z,  -x,  y,  z,// Front face
     -x, -y, -z,  -x,  y, -z,   x,  y, -z,    -x, -y, -z,   x,  y, -z,   x, -y, -z,// Back face
     -x,  y, -z,  -x,  y,  z,   x,  y,  z,    -x,  y, -z,   x,  y,  z,   x,  y, -z,// Top face
@@ -16,7 +16,7 @@ float cube_verts[] ={
     -x, -y, -z,  -x, -y,  z,  -x,  y,  z,    -x, -y, -z,  -x,  y,  z,  -x,  y, -z// Left face
 };
 
-float cube_texcoords[] = {
+float cube_texcoord_data[] = {
     lo,hi, hi,hi, hi,lo,  lo,hi, hi,lo, lo,lo, //Front
     hi,hi, hi,lo, lo,lo,  hi,hi, lo,lo, lo,hi, //Back
     lo,lo, lo,hi, hi,hi,  lo,lo, hi,hi, hi,lo, //Top
@@ -25,7 +25,7 @@ float cube_texcoords[] = {
     lo,hi, hi,hi, hi,lo,  lo,hi, hi,lo, lo,lo //Left
 };
 
-float cube_normals[] = {
+float cube_normal_data[] = {
     0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1, // Front face
     0, 0,-1,  0, 0,-1,  0, 0,-1,  0, 0,-1,  0, 0,-1,  0, 0,-1, // Back face
     0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0, // Top face
@@ -34,30 +34,14 @@ float cube_normals[] = {
     -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0  // Left face
 };
 
-GLuint cube_vertex_buffer=0;
-GLuint cube_texcoord_buffer=0;
-GLuint cube_normal_buffer=0;
-
-
-void BuildPrimitive(GLuint* vertex_buffer,GLuint* texcoord_buffer,GLuint* normal_buffer,
-    float* verts,float* texcoords,float* normals,int tris){
-    glGenBuffers(1,vertex_buffer);
-    glGenBuffers(1,texcoord_buffer);
-    glGenBuffers(1,normal_buffer);
-
-    glBindBuffer(GL_ARRAY_BUFFER, *vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*3, verts,GL_STATIC_DRAW);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, *texcoord_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*2, texcoords,GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, *normal_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tris*3, normals,GL_STATIC_DRAW);
-}
+VBO cube_vertices;
+VBO cube_texcoords;
+VBO cube_normals;
 
 void BuildCubePrimitive(){
-    BuildPrimitive(&cube_vertex_buffer,&cube_texcoord_buffer,&cube_normal_buffer,
-            cube_verts,cube_texcoords,cube_normals,36);
+    cube_vertices.Create(cube_vert_data,GL_FLOAT,3,36);
+    cube_texcoords.Create(cube_texcoord_data,GL_FLOAT,3,36);
+    cube_normals.Create(cube_normal_data,GL_FLOAT,3,36);
 }
 
 ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d):mat(){
@@ -67,25 +51,19 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
 
     switch(shape){
         case EPrimitiveShape::CUBE:
-            if(cube_vertex_buffer==0){BuildCubePrimitive();}
-            vertex_buffer=cube_vertex_buffer;
-            texcoord_buffer=cube_texcoord_buffer;
-            normal_buffer=cube_normal_buffer;
-            vertices = 36;
+            if(!cube_vertices.Valid()){BuildCubePrimitive();}
+            vertices=cube_vertices;
+            tex_coords=cube_texcoords;
+            normals=cube_normals;
+            vertex_count = 36;
             break;
         default:
             logger::warn("tried to instantiate primitive with invalid shape %d",shape);
             return;
     }
-
-
-
 }
 
 ShapePrimitive::~ShapePrimitive(){
-    if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
-    if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}
-    if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	
 }
 
 WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d):mat(){
@@ -98,36 +76,19 @@ WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float
     scale.y=h;
     scale.z=d;
 
-    float *verts,*texcoords,*normals;
-
     switch(shape){
         case EPrimitiveShape::CUBE:
-            verts = cube_verts;
-            texcoords = cube_texcoords;
-            normals = cube_normals;
-            vertices = 36;
+            if(!cube_vertices.Valid()){BuildCubePrimitive();}
+            vertices=cube_vertices;
+            tex_coords=cube_texcoords;
+            normals=cube_normals;
+            vertex_count = 36;
             break;
         default:
             logger::warn("tried to instantiate primitive with invalid shape %d",shape);
             return;
     }
-
-    glGenBuffers(1, &vertex_buffer);
-    glGenBuffers(1,&texcoord_buffer);
-    glGenBuffers(1,&normal_buffer);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*108, verts,GL_STATIC_DRAW);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, texcoord_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*72, texcoords,GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*108, normals,GL_STATIC_DRAW);
 }
 
 WirePrimitive::~WirePrimitive(){
-    if(vertex_buffer > 0) {glDeleteBuffers(1,&vertex_buffer);}
-    if(texcoord_buffer > 0) {glDeleteBuffers(1,&texcoord_buffer);}
-    if(normal_buffer > 0) {glDeleteBuffers(1,&normal_buffer);}	
 }

@@ -12,9 +12,9 @@ Model::Model(){
 	mesh_groups=null;
 	skeleton=null;
 }
+
 Model::~Model(){
 }
-
 
 void Model::DrawMesh(Camera* cam,Mesh* m){
     glActiveTexture(GL_TEXTURE0);
@@ -26,21 +26,17 @@ void Model::DrawMesh(Camera* cam,Mesh* m){
     glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&m->mat.base_color);
     glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat.base_color);
     
-    glBindBuffer(GL_ARRAY_BUFFER,m->vertex_buffer);
-    glVertexAttribPointer(0,3,GL_FLOAT,false,0,0);
+    m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
+    m->normal.Bind(cam->shader->ATTRIB_NORMAL);
+    m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
+    m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);
 
-    glBindBuffer(GL_ARRAY_BUFFER,m->texcoord_0_buffer);
-    glVertexAttribPointer(1,2,GL_FLOAT,false,0,0);
-
-    glBindBuffer(GL_ARRAY_BUFFER,m->normal_buffer);
-    glVertexAttribPointer(2,3,GL_FLOAT,false,0,0);
-    
-    if(m->index_buffer > 0){
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index_buffer);
-        glDrawElements(GL_TRIANGLES,m->element_count,GL_UNSIGNED_SHORT,nullptr);
+    if(m->index.Valid()){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
+        glDrawElements(GL_TRIANGLES,m->vertex_count,m->index.element_type,nullptr);
     }
     else{
-        glDrawArrays(GL_TRIANGLES,0,m->element_count);
+        glDrawArrays(GL_TRIANGLES,0,m->vertex_count);
     } 
 }
 
@@ -48,9 +44,13 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
+    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
     
     mat4 model;
     mat3 normal;
+    mat4 identity;
+
+    identity.identity();
 
     model.identity();
     model.scale(scale);
@@ -62,6 +62,12 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.transpose();
     normal.invert();
     
+    if(skeleton != null){
+        for(int i=0;i< skeleton->bone_count;i++){
+            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&skeleton->pose_matrices[i]);
+        } 
+    }
+
     glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
     glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
     glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
@@ -72,20 +78,27 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
         }
     }
 
+    if(skeleton != null){
+        for(int i=0;i< skeleton->bone_count;i++){ 
+            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
+        }
+    }
+
+    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
+    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
 }
 
 
 void DestroyMesh(Mesh* m){
     //TODO: texture, model smart pointers?
-    if(m->index_buffer > 0) {glDeleteBuffers(1,&m->index_buffer);}
-    if(m->vertex_buffer > 0) {glDeleteBuffers(1,&m->vertex_buffer);}
-    if(m->texcoord_0_buffer > 0) {glDeleteBuffers(1,&m->texcoord_0_buffer);}
-    if(m->normal_buffer > 0) {glDeleteBuffers(1,&m->normal_buffer);}	
-    if(m->bone_0_index_buffer > 0) {glDeleteBuffers(1,&m->bone_0_index_buffer);}	
-    if(m->bone_0_weight_buffer > 0){glDeleteBuffers(1,&m->bone_0_weight_buffer);}
+    m->vertex.Destroy();
+    m->normal.Destroy();
+    m->texcoord_0.Destroy();
+    m->bone_0_index.Destroy();
+    m->bone_0_weight.Destroy();
+    m->index.Destroy();
 }
 
 void DestroyMeshGroup(MeshGroup* m){
@@ -132,12 +145,11 @@ void ModelManager::Init(){
     empty_model.mesh_group_count=1;
     empty_model.mesh_groups[0].meshes = (Mesh*)calloc(1,sizeof(Mesh));
     empty_model.mesh_groups[0].name = "ErrorModel.MeshGroup";
-    empty_model.mesh_groups[0].meshes[0].index_buffer = 0;
-    empty_model.mesh_groups[0].meshes[0].element_count = error_cube.vertices;
+    empty_model.mesh_groups[0].meshes[0].vertex_count = error_cube.vertex_count;
     empty_model.mesh_groups[0].meshes[0].mat = error_cube.mat;
-    empty_model.mesh_groups[0].meshes[0].vertex_buffer = error_cube.vertex_buffer;error_cube.vertex_buffer=0;
-    empty_model.mesh_groups[0].meshes[0].texcoord_0_buffer = error_cube.texcoord_buffer;error_cube.texcoord_buffer=0;
-    empty_model.mesh_groups[0].meshes[0].normal_buffer = error_cube.normal_buffer;error_cube.vertex_buffer=0;
+    empty_model.mesh_groups[0].meshes[0].vertex = error_cube.vertices;
+    empty_model.mesh_groups[0].meshes[0].texcoord_0 = error_cube.tex_coords;
+    empty_model.mesh_groups[0].meshes[0].normal = error_cube.normals;
 }
 
 void ModelManager::Add(const char* name, Model* model){

@@ -18,14 +18,26 @@ class Primitive{
     virtual ~Primitive();
 };
 
+struct VBO{
+    GLuint buffer_id;
+    GLuint element_type;
+    short  elements_per_vertex;
+
+    bool Valid();
+    void Create(void* data,GLuint type,int per_vertex,int count);
+    void Create(void* data,GLuint type,int per_vertex,int count,GLuint buffer_type);
+    void Bind(int attrib_slot);
+    void Bind(int attrib_slot, int stride, int start);
+    void Destroy();
+};
+
 enum EPrimitiveShape{CUBE=0,SPHERE,CONE};
 
 class ShapePrimitive : public Primitive{
     public:
-    
-    GLuint      vertex_buffer, texcoord_buffer,normal_buffer;
+    VBO         vertices,tex_coords,normals;
     Material    mat;
-	int		    vertices;// must be a multiple of 3 ('cause triangles)
+	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
     float       color[4];
 	
     ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d);
@@ -37,9 +49,9 @@ class ShapePrimitive : public Primitive{
 class WirePrimitive : public Primitive{
     public:
     
-    GLuint      vertex_buffer, texcoord_buffer,normal_buffer;
+    VBO         vertices,tex_coords,normals;
     Material    mat;
-	int		    vertices;// must be a multiple of 3 ('cause triangles)
+	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
     float       color[4];
 	
     WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d);

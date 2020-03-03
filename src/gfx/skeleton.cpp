@@ -56,25 +56,55 @@ void Skeleton::DestroySharedData(){
         free(inverse_bind_mats);
         inverse_bind_mats=nullptr;
     }
+    if(pose_order != nullptr){
+        free(pose_order);
+        pose_order=nullptr;
+    }
+}
+
+void Skeleton::SolvePoseOrder(){
+    pose_order = (int*)calloc(bone_count,sizeof(int));
+    int start_of_heirarchy=0;
+    int end_of_list=0;
+    while(end_of_list < bone_count){
+        for(int i=0;i<bone_count;i++){
+            if(bones[i].parent_index < 0){
+                pose_order[end_of_list] = i;
+                start_of_heirarchy=end_of_list;
+                end_of_list += 1;
+                break;
+            }
+        }
+        for(int i=start_of_heirarchy;i<end_of_list;i++){
+            int bone_index = pose_order[i];
+            for(int j=0;j<bones[bone_index].child_count;j++){
+                pose_order[end_of_list]=bones[bone_index].child_indices[j];
+                end_of_list++;
+            }
+        }
+    }
 }
 
 void Skeleton::CalculatePose(){
     mat4 bone_matrix;
     for(int i=0; i < bone_count;i++){
+        int bone_index = i;//pose_order[i];
+        Bone* bone = &bones[bone_index];
         bone_matrix.identity(); 
-        int parent = bones[i].parent_index;
+        int parent = bone->parent_index;
         if(parent >= 0){
             bone_matrix.set(&pose_matrices[parent]);
         }
         if(parent > i){
-            logger::exception("Skeleton is using a non-ascending bone order. Who would do this?");
+            logger::exception("Bone ordered non-heirarchically. who would to this?!");
         }
-        bone_matrix.multiply_by(&bones[i].bind_transform);
+        bone_matrix.multiply_by(&bone->bind_transform);
+        //bone_matrix.translate(pose_transforms[bone_index].x,
+        //                        pose_transforms[bone_index].y,
+        //                        pose_transforms[bone_index].z);
+        //bone_matrix.rotate(pose_transforms[bone_index].rotation);
 
-        bone_matrix.translate(pose_transforms[i].x,pose_transforms[i].y,pose_transforms[i].z);
-        bone_matrix.rotate(pose_transforms[i].rotation);
-
-        pose_matrices[i].set(&bone_matrix);
+        pose_matrices[bone_index].set(&bone_matrix);
     }
     for(int i=0; i < bone_count;i++){
         pose_matrices[i].multiply_by(&inverse_bind_mats[i]);

@@ -14,7 +14,10 @@ class Shader{
 	static const GLuint ATTRIB_VERTEX = 0;
 	static const GLuint ATTRIB_TEXCOORD = 1;
 	static const GLuint ATTRIB_NORMAL = 2;
-	static const GLuint ATTRIB_POSE_INDEX=3;
+	static const GLuint ATTRIB_BONE_INDEX=3;
+	//static const GLuint ATTRIB_BONE_0_WEIGHT=4;
+	//static const GLuint ATTRIB_BONE_1_INDEX=5;
+	//static const GLuint ATTRIB_BONE_1_WEIGHT=6;
 	
     //Shader program ID
 	GLuint vertex,fragment;
@@ -23,7 +26,7 @@ class Shader{
 	GLuint MODELVIEW_MATRIX;
 	GLuint PROJECTION_MATRIX;
 	GLuint NORMAL_MATRIX;
-	GLuint POSE_MATRIX[MAX_BONES];
+	GLuint POSE_MATRICES;
     GLuint TEXTURE_0;
 	GLuint IMAGE_SIZE;
 	GLuint TEXTURE_LOCATION;

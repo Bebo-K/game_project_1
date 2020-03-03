@@ -40,6 +40,7 @@ struct mat4{
 
 
     void identity();
+    void transpose();
     void ortho(float width,float height,float near,float far);
     void frustum(float l,float r,float b,float t,float n,float f);
     void perspective(float width,float height,float near,float far,float fov);

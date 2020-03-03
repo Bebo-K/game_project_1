@@ -40,7 +40,10 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
         glBindAttribLocation(program,ATTRIB_VERTEX,"a_vertex");
         glBindAttribLocation(program,ATTRIB_TEXCOORD,"a_tex_coord");
         glBindAttribLocation(program,ATTRIB_NORMAL,"a_normal");
-        glBindAttribLocation(program,ATTRIB_POSE_INDEX,"a_pose_index");
+        glBindAttribLocation(program,ATTRIB_BONE_INDEX,"a_bone_index");
+        //glBindAttribLocation(program,ATTRIB_BONE_0_WEIGHT,"a_bone_0_weight");
+        //glBindAttribLocation(program,ATTRIB_BONE_1_INDEX,"a_bone_1_index");
+        //glBindAttribLocation(program,ATTRIB_BONE_1_WEIGHT,"a_bone_1_index");
 
         glLinkProgram(program);
         glGetProgramiv(program,GL_LINK_STATUS,&linkStatus);
@@ -55,12 +58,7 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             SPECULAR			= glGetUniformLocation(program,"specular");
             TEXTURE_LOCATION 	= glGetUniformLocation(program,"texture_location");
             IMAGE_SIZE 			= glGetUniformLocation(program,"image_size");
-
-            char pose_matrix_index_str[32];
-            for(int i=0;i<MAX_BONES;i++){
-                sprintf(pose_matrix_index_str,"pose_matrix[%d]",i);
-                POSE_MATRIX[i] 	= glGetUniformLocation(program,pose_matrix_index_str);
-            }
+            POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices[0]");
 
             int err = glGetError();
             if(err !=0){
@@ -93,6 +91,7 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             logger::info(error_info_log);
             
             logger::warn("Shader::Shader -> GLSL Compile Error.");
+            logger::flush();
             free(error_info_log);
     }
 }

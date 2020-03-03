@@ -21,8 +21,6 @@ class Camera{
     void SetShader(Shader* new_shader);
     vec3 ToWorldSpace(vec3 v);
     void ToCameraSpace(mat4* m);
-
-
 };
 
 

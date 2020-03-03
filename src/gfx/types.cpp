@@ -264,6 +264,16 @@ void mat4::transform(float x,float y,float z,quaternion rotation, vec3 scl){
     scale(scl);
 }
 
+void mat4::transpose(){
+    float swap;
+    swap=m[1]; m[1]=m[4]; m[4]=swap;
+    swap=m[2]; m[2]=m[8]; m[8]=swap;
+    swap=m[3]; m[3]=m[12]; m[12]=swap;
+    swap=m[6]; m[6]=m[9]; m[9]=swap;
+    swap=m[7]; m[7]=m[13]; m[13]=swap;
+    swap=m[11]; m[11]=m[14]; m[14]=swap;
+}
+
 void mat4::multiply_vec3(vec3* vec){
     float _x = m[0]*vec->x + m[1]*vec->y + m[2]* vec->z + m[3];
     float _y = m[4]*vec->x + m[5]*vec->y + m[6]* vec->z + m[7];

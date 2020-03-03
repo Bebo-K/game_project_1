@@ -73,46 +73,32 @@ JSONObject* GLTFScene::GetAccessor(int id){
 	return accessors->At(id)->ObjectValue();
 }
 
-/*
-int* GLTFScene::BuildIndexBuffer(int id){
-	GLuint ret = -1;
+VBO GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
+	VBO ret;
 	JSONObject* accessor = gltf_data->GetArray("accessors")->At(id)->ObjectValue();
-	int element_size=4;
-	int element_count = accessor->GetInt("count");
-
-	glGenBuffers(1,&ret);
-    glBindBuffer(bufferType, ret);
-    glBufferData(bufferType, element_size*element_count, element_data ,GL_STATIC_DRAW);
-
-
-	return null;
-}
-*/
-
-GLuint GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
-	GLuint ret = -1;
-	JSONObject* accessor = gltf_data->GetArray("accessors")->At(id)->ObjectValue();
-	int element_size=4;
-	int element_count = accessor->GetInt("count");
-
-	switch(accessor->GetInt("componentType")){
-		case 5120:element_size=1;break;
-		case 5121:element_size=1;break;
-		case 5122:element_size=2;break;
-		case 5123:element_size=2;break;
-		case 5126:element_size=4;break;
-		case 5125:element_size=4;break;
-		default:element_size=4;break;
-	}
-	
+	int attrib_count = accessor->GetInt("count");
+	int elements_per_attrib = 1;
+	int element_type = accessor->GetInt("componentType");
 	char* type = accessor->GetString("type")->string;
-	if(cstr::compare(type,"SCALAR")){element_size *= 1;}
-	if(cstr::compare(type,"VEC2")){element_size *= 2;}
-	if(cstr::compare(type,"VEC3")){element_size *= 3;}
-	if(cstr::compare(type,"VEC4")){element_size *= 4;}
-	if(cstr::compare(type,"MAT2")){element_size *= 4;}
-	if(cstr::compare(type,"MAT3")){element_size *= 9;}
-	if(cstr::compare(type,"MAT4")){element_size *= 16;}
+	if(cstr::compare(type,"SCALAR")){elements_per_attrib = 1;}
+	if(cstr::compare(type,"VEC2")){elements_per_attrib = 2;}
+	if(cstr::compare(type,"VEC3")){elements_per_attrib = 3;}
+	if(cstr::compare(type,"VEC4")){elements_per_attrib = 4;}
+	if(cstr::compare(type,"MAT2")){elements_per_attrib = 4;}
+	if(cstr::compare(type,"MAT3")){elements_per_attrib = 9;}
+	if(cstr::compare(type,"MAT4")){elements_per_attrib = 16;}
+
+	int element_size = 1;
+	switch(element_type){
+		case 5120:element_size*=1;break;
+		case 5121:element_size*=1;break;
+		case 5122:element_size*=2;break;
+		case 5123:element_size*=2;break;
+		case 5126:element_size*=4;break;
+		case 5125:element_size*=4;break;
+		default:element_size*=4;break;
+	}
+	int attrib_size = element_size*elements_per_attrib;
 
 	byte* element_data = null;
 	byte* new_data = null;
@@ -124,7 +110,7 @@ GLuint GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
 		JSONObject* sparse = accessor->GetJObject("sparse");
 		int sparse_count= sparse->GetInt("count");
 		if(element_data == null){
-			new_data=(byte*)calloc(element_size,element_count);
+			new_data=(byte*)calloc(attrib_size,attrib_count);
 			element_data = new_data;
 		}
 		
@@ -142,16 +128,14 @@ GLuint GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
 		}
 		
 		for(int i=0;i<sparse_count;i++){
-			memcpy(&element_data[element_size*indices[i]],&values_data[element_size*i],element_size);
+			memcpy(&element_data[attrib_size*indices[i]],&values_data[attrib_size*i],attrib_size);
 		}
 	}
 	if(accessor->HasInt("byteOffset")){
 		element_data = &element_data[accessor->GetInt("byteOffset")];
 	}
 
-	glGenBuffers(1,&ret);
-    glBindBuffer(bufferType, ret);
-    glBufferData(bufferType, element_size*element_count, element_data ,GL_STATIC_DRAW);
+	ret.Create(element_data,element_type,elements_per_attrib,attrib_count,bufferType);
 
 	if(new_data != null){free(new_data);}
 	return ret;
@@ -226,7 +210,7 @@ MeshGroup* GLTFScene::GetMeshGroup(int group_id){
 
 		int pos_attrib_id=attribs->GetInt("POSITION");
 		JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
-		prim->element_count = pos_accessor->GetInt("count");
+		prim->vertex_count = pos_accessor->GetInt("count");
 
 		JSONArray* max_array = pos_accessor->GetArray("max");
 		JSONArray* min_array = pos_accessor->GetArray("min");
@@ -239,23 +223,23 @@ MeshGroup* GLTFScene::GetMeshGroup(int group_id){
 			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
 		ret->bounds.Union(prim_bounds);
 
-		prim->vertex_buffer=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
+		prim->vertex=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
 		if(attribs->HasInt("NORMAL")){
-			prim->normal_buffer=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
+			prim->normal=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
 		if(attribs->HasInt("TEXCOORD_0")){
-			prim->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
+			prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
 		if(attribs->HasInt("JOINTS_0")){
-			prim->bone_0_index_buffer=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
+			prim->bone_0_index=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
 		if(attribs->HasInt("WEIGHTS_0")){
-			prim->bone_0_weight_buffer=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
+			prim->bone_0_weight=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
 		//if(attribs->HasInt("TEXCOORD_1")){
 		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
 		
 		prim->mat = GetMaterial(primitive->GetInt("material"));
 		if(primitive->HasInt("indices")){
 			int index_accessor_id=primitive->GetInt("indices"); 
-			prim->index_buffer = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
-			prim->element_count = GetAccessor(index_accessor_id)->GetInt("count");
+			prim->index = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
+			prim->vertex_count = GetAccessor(index_accessor_id)->GetInt("count");
 		}
 	}
 	return ret;
@@ -284,17 +268,25 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 		logger::exception("Expected inverse bind matrix buffer of size %d, got %d\n",ibm_expected_size,read);
 	}
 	memcpy(ret->inverse_bind_mats,ibm_data_buffer,read);
+	for(int i=0;i<ret->bone_count;i++){
+		ret->inverse_bind_mats[i].transpose();
+	}
 
+	float px=0,py=0,pz=0;
+	quaternion rotation;
+	vec3 scale = {1,1,1};
 	for(int i=0;i<ret->bone_count;i++){
 		JSONObject* bone_node = nodes_array->At(joint_nodes->At(i)->IntValue())->ObjectValue();
 		JSONArray *pos_array=null,*rot_array=null,*scale_array=null,*child_array=null;
-		ret->bones[i].name = cstr::new_copy(bone_node->GetString("name")->string);
-		float px=0,py=0,pz=0;
-		quaternion rotation;rotation.clear();
-		vec3 scale = {1,1,1};
-
-		if(bone_node->HasArray("position")){
-			pos_array=bone_node->GetArray("position");
+		Bone* bone = &ret->bones[i];
+		bone->name = cstr::new_copy(bone_node->GetString("name")->string);
+		
+		px=0;py=0;pz=0;
+		scale.set(1,1,1);
+		rotation.clear();
+		
+		if(bone_node->HasArray("translation")){
+			pos_array=bone_node->GetArray("translation");
 			px = pos_array->At(0)->FloatValue();
 			py = pos_array->At(1)->FloatValue();
 			pz = pos_array->At(2)->FloatValue();
@@ -308,23 +300,30 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 		}
 		if(bone_node->HasArray("scale")){
 			scale_array=bone_node->GetArray("scale");
-			px = scale_array->At(0)->FloatValue();
-			py = scale_array->At(1)->FloatValue();
-			pz = scale_array->At(2)->FloatValue();
+			scale.x = scale_array->At(0)->FloatValue();
+			scale.y = scale_array->At(1)->FloatValue();
+			scale.z = scale_array->At(2)->FloatValue();
 		}
 		if(bone_node->HasArray("children")){
 			child_array=bone_node->GetArray("children");
 			ret->bones[i].child_count=child_array->count;
 			ret->bones[i].child_indices = (int*)calloc(child_array->count,sizeof(int*));
 			for(int j=0;j < child_array->count;j++){
-				int child_index = child_array->At(j)->IntValue();
-				ret->bones[i].child_indices[j] = child_index;
-				ret->bones[child_index].parent_index = i;
+				int child_node_index = child_array->At(j)->IntValue();
+				int child_bone_index= -1;
+				for(int k=0;k<joint_nodes->count;k++){
+					if(joint_nodes->At(k)->IntValue() == child_node_index){
+						child_bone_index=k;
+					}
+				}
+				ret->bones[i].child_indices[j] = child_bone_index;
+				ret->bones[child_bone_index].parent_index = i;
 			}
 		}
-		ret->bones[i].bind_transform.identity();
-		ret->bones[i].bind_transform.transform(px,py,pz,rotation,scale);
+		bone->bind_transform.identity();
+		bone->bind_transform.transform(px,py,pz,rotation,scale);
 	}
+	//ret->SolvePoseOrder();
 	return ret;
 }
 

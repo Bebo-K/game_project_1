@@ -18,6 +18,9 @@ void Scene::Load(){
 
     my_model= gltf_file.LoadAsModel("person");
 
+    //my_model->skeleton->pose_transforms[13].rotation.rotate_z(90);
+    //my_model->skeleton->pose_transforms[4].rotation.rotate_y(90);
+    my_model->skeleton->CalculatePose();
 
     renderer.Add(my_model);
 }
@@ -32,7 +35,7 @@ void Scene::Unload(){
     delete my_model;
 }
 void Scene::Update(int delta){
-my_model->rotation.y += delta /10;
+//my_model->rotation.y += delta /10;
 }
 void Scene::Paint(){
     renderer.Draw(); 

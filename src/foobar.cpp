@@ -7,7 +7,7 @@
 int foomain(int argc, char** args){
     File levelfile = File("dat/test_level.glb");
 
-    GLTFScene levelscene(levelfile);
+    //GLTFScene levelscene(levelfile);
 
 
     return 0;

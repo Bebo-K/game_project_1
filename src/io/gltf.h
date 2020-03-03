@@ -26,8 +26,7 @@ class GLTFScene{
 	char* FindMeshGroupName(int group_id);
 	JSONObject* GetAccessor(int id);
 	byte* GetBufferViewData(int buffer_view_id,int* len);
-	GLuint BuildAccessorBuffer(int id,GLuint bufferType);
-	int* BuildIndexBuffer(int id);
+	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
 
 	public:
 	char* base_name;

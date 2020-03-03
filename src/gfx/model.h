@@ -7,13 +7,13 @@
 
 struct Mesh{
     Material   mat;
-    GLuint      index_buffer;
-    GLuint      vertex_buffer;
-    GLuint      texcoord_0_buffer;
-    GLuint      normal_buffer;
-    GLuint      bone_0_index_buffer;
-    GLuint      bone_0_weight_buffer;
-	int		    element_count;// must be a multiple of 3 ('cause triangles)
+    VBO      vertex;
+    VBO      index;
+    VBO      texcoord_0;
+    VBO      normal;
+    VBO      bone_0_index;
+    VBO      bone_0_weight;
+	int		 vertex_count;// must be a multiple of 3 ('cause triangles)
 };
 
 

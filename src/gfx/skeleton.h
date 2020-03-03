@@ -15,13 +15,17 @@ struct Bone{
     mat4 bind_transform;
 };
 
-struct Skeleton{
+class Skeleton{
+    public:
     int         bone_count;
 	Bone*       bones;//Pointer shared across clones
 	mat4*       inverse_bind_mats;//Pointer shared across clones
     Transform*  pose_transforms;
 	mat4*       pose_matrices;//matrix form of bones transform.
 	//Map<String,Animation> Animations=null; Shared across clones
+     
+    //private:
+    int*        pose_order;
 
     Skeleton();
     ~Skeleton();
@@ -30,7 +34,10 @@ struct Skeleton{
 
     Skeleton* Clone();
     void DestroySharedData();
+    void SolvePoseOrder();
     void CalculatePose();
+
+   
 };
 
 
