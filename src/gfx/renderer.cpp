@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "../config.h"
+#include "../log.h"
 
 Renderer::Renderer():camera(),primitives(){
     view_matrix.identity();

@@ -50,7 +50,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             ShowWindow(window,show_hint);
             UpdateWindow(window);
             glClearColor(0,0,0,1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             SwapBuffers(device_context);
 
 /*Loop Entry Point*/ 
@@ -66,13 +66,13 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
         }
         else{
             MessageBox(NULL,_T("Call to CreateWindow failed!"),window_title,MB_OK);
-            logger::fatal("Call to CreateWindow failed! Aborting!");
+            logger::fatal("Call to CreateWindow failed! Aborting!\n");
             return 1;
         }
     }
     else{
         MessageBox(NULL,_T("Call to RegisterClassEx failed!"),window_title,MB_OK);
-        logger::fatal("Call to RegisterClassEx failed! Aborting!");
+        logger::fatal("Call to RegisterClassEx failed! Aborting!\n");
         return 1;
     }
     return 0;
@@ -82,16 +82,17 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
-            logger::info("Initializing engine...");
+            logger::info("Initializing engine...\n");
             Game::Start();
             break;
         case WM_PAINT: /*Ignore for games as we're constantly redrawing anyways.*/
+            glDrawBuffer(GL_BACK);
             Game::Paint();
             SwapBuffers(device_context);
             break;
         case WM_DESTROY:
             DestroyOpenGL();
-            logger::info("Exiting.");
+            logger::info("Exiting.\n");
             PostQuitMessage(0);
             break;
         case WM_SIZE:
@@ -133,7 +134,7 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
         };
 
     int pixel_format = ChoosePixelFormat(device_context, &target_format);
-    SetPixelFormat(device_context,pixel_format,&target_format);
+     SetPixelFormat(device_context,pixel_format,&target_format);
 
     gl_rendering_context = wglCreateContext(device_context);
     wglMakeCurrent(device_context, gl_rendering_context);

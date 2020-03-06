@@ -29,7 +29,10 @@ void Model::DrawMesh(Camera* cam,Mesh* m){
     m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
     m->normal.Bind(cam->shader->ATTRIB_NORMAL);
     m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
-    m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);
+    //m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX,0,0);
+
+    glBindBuffer(GL_ARRAY_BUFFER,m->bone_0_index.buffer_id);
+    glVertexAttribIPointer(cam->shader->ATTRIB_BONE_INDEX,4,GL_SHORT,0,0);
 
     if(m->index.Valid()){
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
@@ -38,6 +41,10 @@ void Model::DrawMesh(Camera* cam,Mesh* m){
     else{
         glDrawArrays(GL_TRIANGLES,0,m->vertex_count);
     } 
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("Model.Mesh.glDrawXXX-> GL error: %d \n",err);
+    }
 }
 
 void Model::Draw(Camera* cam,mat4* view, mat4* projection){

@@ -12,10 +12,10 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
     FileBuffer fragmentProgram(fragmentFile);
 
     if(vertexProgram.contents == null){
-        logger::exception("Shader::Shader -> Vertex shader not found: %s",vertexFile);
+        logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertexFile);
     }
     if(fragmentProgram.contents == null){
-        logger::exception("Shader::Shader -> Fragment shader not found: %s",fragmentFile);
+        logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragmentFile);
     }
 
     vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -58,11 +58,11 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             SPECULAR			= glGetUniformLocation(program,"specular");
             TEXTURE_LOCATION 	= glGetUniformLocation(program,"texture_location");
             IMAGE_SIZE 			= glGetUniformLocation(program,"image_size");
-            POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices[0]");
+            POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices");
 
             int err = glGetError();
             if(err !=0){
-                logger::warn("Shader::Shader -> got GLError %d binding shader.",err);
+                logger::warn("Shader::Shader -> got GLError %d binding shader.\n",err);
             }
         }
         else{//Linker error
@@ -72,7 +72,7 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             glGetProgramInfoLog(program,MAX_INFO_LOG_LENGTH,&error_info_log_length,error_info_log);
             error_info_log[error_info_log_length]=0;
 
-            logger::warn("Shader::Shader -> GLSL Linker Error: %n%s",error_info_log);
+            logger::warn("Shader::Shader -> GLSL Linker Error: %n%s\n",error_info_log);
             free(error_info_log);
         }
     }
@@ -90,9 +90,13 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             logger::info("Fragment Shader:\n");
             logger::info(error_info_log);
             
-            logger::warn("Shader::Shader -> GLSL Compile Error.");
+            logger::warn("Shader::Shader -> GLSL Compile Error.\n");
             logger::flush();
             free(error_info_log);
+    }
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("Shader.Build-> GL error: %d \n",err);
     }
 }
 
@@ -107,7 +111,7 @@ Shader::~Shader(){
 void Shader::Use(){
     glUseProgram(program);
     int err = glGetError();
-    if(err != 0){logger::warn("USESHADER-> GL error: %d",err);}
+    if(err != 0){logger::warn("Shader.Use-> GL error: %d \n",err);}
 }
 
 void ShaderManager::Init(){

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void Client::Load(){
-    logger::info("Initializing client...");
+    logger::info("Initializing client...\n");
     scene.Load();
     ui.Load();
 }

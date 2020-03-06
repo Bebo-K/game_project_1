@@ -3,7 +3,7 @@
 #include "../log.h"
 
 void Scene::Load(){
-    logger::info("loading default scene...");
+    logger::info("loading default scene...\n");
     renderer.Load();
     ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
     renderer.camera.SetShader(ShaderManager::GetShader("basic_lighting"));
@@ -25,12 +25,12 @@ void Scene::Load(){
     renderer.Add(my_model);
 }
 void Scene::Load(int area_id){
-    logger::info("loading scene for area id %d...",area_id);
+    logger::info("loading scene for area id %d...\n",area_id);
     renderer.Load();
 
 }
 void Scene::Unload(){
-    logger::info("unloading scene...");
+    logger::info("unloading scene...\n");
     renderer.Remove(my_model);
     delete my_model;
 }

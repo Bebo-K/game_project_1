@@ -2,6 +2,7 @@
 #include "gfx/texture.h"
 #include "gfx/shader.h"
 #include "gfx/model.h"
+#include "log.h"
 
 double Game::frame_interval = 100.0f;
 double Game::render_interval = 100.0f;

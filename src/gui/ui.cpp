@@ -3,7 +3,7 @@
 #include "../log.h"
 
 void UI::Load(){
-    logger::info("loading ui...");
+    logger::info("loading ui...\n");
 
     renderer.Load();
 
@@ -27,7 +27,7 @@ void UI::Update(int delta, Scene* scene){
 }
 
 void UI::Unload(){
-    logger::info("unloading ui...");
+    logger::info("unloading ui...\n");
 
     //renderer.Remove(defaultSprite);
 }
