@@ -22,6 +22,9 @@ void Skeleton::AllocateBoneCount(int num_bones){
     pose_matrices=(mat4*)calloc(num_bones,sizeof(mat4));
     pose_transforms=(Transform*)calloc(num_bones,sizeof(Transform));
     inverse_bind_mats=(mat4*)calloc(num_bones,sizeof(mat4));
+    pose_hook.num_targets = num_bones*3;
+    pose_hook.targets = (AnimationTarget*)calloc(num_bones*3,sizeof(AnimationHook));
+
     for(int i=0;i<bone_count;i++){
         bones[i].parent_index=-1;
         bones[i].bind_transform.identity();
@@ -29,14 +32,36 @@ void Skeleton::AllocateBoneCount(int num_bones){
         pose_transforms[i].Clear();
         pose_matrices[i].identity();
         inverse_bind_mats[i].identity();
+
+        pose_hook.targets[i*3].value_type = AnimationType::TRANSFORM;
+        pose_hook.targets[i*3].num_values=3;
+        pose_hook.values[i*3]= &pose_transforms[i].x;//,y,z
+
+        pose_hook.targets[i*3+1].value_type = AnimationType::ROTATION;
+        pose_hook.targets[i*3+1].num_values=3;
+        pose_hook.values[i*3+1]= &pose_transforms[i].rotation.x;//,y,z
+
+        pose_hook.targets[i*3+2].value_type = AnimationType::SCALE;
+        pose_hook.targets[i*3+2].num_values=3;
+        pose_hook.values[i*3+2]= &pose_transforms[i].scale.x;//,y,z
     }
 }
+
+void Skeleton::SetBoneName(int bone_id, char* bone_name){
+    bones[bone_id].name = cstr::new_copy(bone_name);
+
+    pose_hook.targets[bone_id*3    ].object_name = bones[bone_id].name;
+    pose_hook.targets[bone_id*3 + 1].object_name = bones[bone_id].name;
+    pose_hook.targets[bone_id*3 + 2].object_name = bones[bone_id].name;
+}
+
 
 Skeleton* Skeleton::Clone(){
     Skeleton* ret = new Skeleton();
     ret->bone_count=bone_count;
     ret->bones=bones;
     ret->inverse_bind_mats=inverse_bind_mats;
+    ret->animations = animations;
     ret->pose_transforms = (Transform*)calloc(bone_count,sizeof(Transform));
     for(int i=0;i<bone_count;i++){ret->pose_transforms->Clear();}
     ret->pose_matrices = (mat4*)calloc(bone_count,sizeof(mat4));
@@ -56,32 +81,15 @@ void Skeleton::DestroySharedData(){
         free(inverse_bind_mats);
         inverse_bind_mats=nullptr;
     }
-    if(pose_order != nullptr){
-        free(pose_order);
-        pose_order=nullptr;
+    if(animations != nullptr){
+        for(int i=0;i<animation_count;i++){
+            animations[i].Destroy();
+        }
+        free(animations);
+        animations=nullptr;
     }
-}
-
-void Skeleton::SolvePoseOrder(){
-    pose_order = (int*)calloc(bone_count,sizeof(int));
-    int start_of_heirarchy=0;
-    int end_of_list=0;
-    while(end_of_list < bone_count){
-        for(int i=0;i<bone_count;i++){
-            if(bones[i].parent_index < 0){
-                pose_order[end_of_list] = i;
-                start_of_heirarchy=end_of_list;
-                end_of_list += 1;
-                break;
-            }
-        }
-        for(int i=start_of_heirarchy;i<end_of_list;i++){
-            int bone_index = pose_order[i];
-            for(int j=0;j<bones[bone_index].child_count;j++){
-                pose_order[end_of_list]=bones[bone_index].child_indices[j];
-                end_of_list++;
-            }
-        }
+    if(pose_hook.num_targets > 0){
+        pose_hook.Destroy();
     }
 }
 
@@ -108,5 +116,23 @@ void Skeleton::CalculatePose(){
     }
     for(int i=0; i < bone_count;i++){
         pose_matrices[i].multiply_by(&inverse_bind_mats[i]);
+    }
+}
+
+
+Animation* Skeleton::GetAnimation(char* name){
+    for(int i=0;i<animation_count;i++){
+        if(cstr::compare(name,animations[i].name)){
+            return &animations[i];
+        }
+    }
+    return null;
+}
+
+void Skeleton::StartAnimation(char* name){
+    for(int i=0;i<animation_count;i++){
+        if(cstr::compare(name,animations[i].name)){
+            AnimationManager::StartClip(&animations[i],&pose_hook);
+        }
     }
 }

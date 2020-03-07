@@ -279,7 +279,7 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 		JSONObject* bone_node = nodes_array->At(joint_nodes->At(i)->IntValue())->ObjectValue();
 		JSONArray *pos_array=null,*rot_array=null,*scale_array=null,*child_array=null;
 		Bone* bone = &ret->bones[i];
-		bone->name = cstr::new_copy(bone_node->GetString("name")->string);
+		ret->SetBoneName(i,bone_node->GetString("name")->string);
 		
 		px=0;py=0;pz=0;
 		scale.set(1,1,1);
@@ -323,8 +323,13 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 		bone->bind_transform.identity();
 		bone->bind_transform.transform(px,py,pz,rotation,scale);
 	}
-	//ret->SolvePoseOrder();
 	return ret;
+}
+
+void GLTFScene::GetAnimation(int animation_id,Animation* dest){
+	//TODO: start here
+
+
 }
 
 Model* GLTFScene::LoadAsModel(char* name){
@@ -354,6 +359,14 @@ Model* GLTFScene::LoadAsModel(char* name){
 			}
 			ret->mesh_group_count++;
 			model_meshes.Add((byte*)GetMeshGroup(node->GetInt("mesh")));
+		}
+	}
+
+	if(gltf_data->HasArray("animations") ||ret->skeleton != nullptr){
+		int anim_count = gltf_data->GetArray("animations")->count;
+		ret->skeleton->animations = (Animation*)calloc(anim_count,sizeof(Animation));
+		for(int i=0;i<anim_count;i++){
+			GetAnimation(i,&ret->skeleton->animations[i]);
 		}
 	}
 

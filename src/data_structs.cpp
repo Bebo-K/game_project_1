@@ -12,7 +12,6 @@ BitArray::BitArray(){
 BitArray::BitArray(int bit_count){
     bits = bit_count;
     int char_count = bit_count/8 + ((bit_count % 8) > 0);
-
     data = (unsigned char*)calloc(char_count,1);
 }
 BitArray::~BitArray(){
@@ -28,6 +27,12 @@ void BitArray::Resize(int new_bit_count){
     free(data);
     data = new_data;
 }
+void BitArray::Initialize(int bit_count){
+    bits = bit_count;
+    int char_count = bit_count/8 + ((bit_count % 8) > 0);
+    data = (unsigned char*)calloc(char_count,1);
+}
+
 int BitArray::CountBitsSet(){
     int count = 0;
     for(int i=0; i< bits/8;i++){
@@ -84,7 +89,7 @@ DataArray::~DataArray(){
     free(data);
 }
 
-int DataArray::Add(){
+void* DataArray::Add(){
     int added_slot = -1;
     for(int i=0;i < slots; i++){
         if(!slot_is_filled.Get(i)){
@@ -97,11 +102,21 @@ int DataArray::Add(){
         Resize(slots*2);
     }
     slot_is_filled.Set(added_slot);
-    return added_slot;
+    return (char*)data+(added_slot*slot_size);
 }
-
 int DataArray::Add(void* object){
-    int added_slot = Add();
+    int added_slot = -1;
+    for(int i=0;i < slots; i++){
+        if(!slot_is_filled.Get(i)){
+            added_slot =i;
+            break;
+        }
+    }
+    if(added_slot == -1){
+        added_slot = slots;
+        Resize(slots*2);
+    }
+    slot_is_filled.Set(added_slot);
     memcpy((char*)data+(added_slot*slot_size),object,slot_size);
     return added_slot;
 }
@@ -128,8 +143,14 @@ void DataArray::Resize(int new_count){
     slots = new_count;
     free(data);
     data = new_data;
-    return;
 }
+void DataArray::Initialize(int count,int object_size){
+    slots=count;
+    slot_size=object_size;
+    data = (byte*)calloc(slots,slot_size);
+    slot_is_filled.Initialize(count);
+}
+
 
 PointerArray::PointerArray(){
     slots=0;
@@ -303,6 +324,7 @@ byte* AssociativeArray::StrRemove(const char* index){
 int AssociativeArray::Count(){
     return slot_is_filled.CountBitsSet();
 }
+
 void AssociativeArray::Resize(int new_count){
     slot_is_filled.Resize(new_count);
     byte** new_value_data = (byte**)calloc(new_count,sizeof(byte*));

@@ -2,6 +2,7 @@
 #define SKELETON_H
 
 #include "types.h"
+#include "animation.h"
 
 //https://www.youtube.com/watch?v=aBN_dEA4jO0
 
@@ -22,22 +23,23 @@ class Skeleton{
 	mat4*       inverse_bind_mats;//Pointer shared across clones
     Transform*  pose_transforms;
 	mat4*       pose_matrices;//matrix form of bones transform.
-	//Map<String,Animation> Animations=null; Shared across clones
+    int         animation_count;
+    Animation*  animations;//Pointer shared across clones
+    AnimationHook pose_hook;
      
-    //private:
-    int*        pose_order;
-
     Skeleton();
     ~Skeleton();
 
     void AllocateBoneCount(int num_bones);
+    void SetBoneName(int bone_id,char* bone_name);
 
     Skeleton* Clone();
     void DestroySharedData();
-    void SolvePoseOrder();
     void CalculatePose();
 
-   
+    Animation* GetAnimation(char* name);
+    void StartAnimation(char* name);
+
 };
 
 

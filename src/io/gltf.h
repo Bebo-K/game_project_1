@@ -38,6 +38,7 @@ class GLTFScene{
 	Material   GetMaterial(int material_id);
 	MeshGroup* GetMeshGroup(int group_id);
 	Skeleton*  GetSkeleton(int skeleton_id);
+	void GetAnimation(int animation_id,Animation* dest);
 	
 	Model* LoadAsModel(char* model_name);
 

@@ -16,6 +16,7 @@ struct BitArray{
     BitArray(int bit_count);
     ~BitArray();
     void Resize(int new_bit_count);
+    void Initialize(int bit_count);
 
     void Print();
     int CountBitsSet();
@@ -47,7 +48,7 @@ struct DataArray{
     DataArray(int count,int object_size);
     ~DataArray();
 
-    int Add();
+    void* Add();
     int Add(void* object);
     void Remove(int index);
 
@@ -56,6 +57,7 @@ struct DataArray{
 
     int Count();
     void Resize(int new_count);
+    void Initialize(int count,int object_size);
 };
 
 //A dynamic array of pointers to objects. 
