@@ -24,6 +24,7 @@ void Skeleton::AllocateBoneCount(int num_bones){
     inverse_bind_mats=(mat4*)calloc(num_bones,sizeof(mat4));
     pose_hook.num_targets = num_bones*3;
     pose_hook.targets = (AnimationTarget*)calloc(num_bones*3,sizeof(AnimationHook));
+    pose_hook.values = (float**)calloc(num_bones*3,sizeof(float*));
 
     for(int i=0;i<bone_count;i++){
         bones[i].parent_index=-1;
@@ -33,12 +34,12 @@ void Skeleton::AllocateBoneCount(int num_bones){
         pose_matrices[i].identity();
         inverse_bind_mats[i].identity();
 
-        pose_hook.targets[i*3].value_type = AnimationType::TRANSFORM;
+        pose_hook.targets[i*3].value_type = AnimationType::TRANSLATION;
         pose_hook.targets[i*3].num_values=3;
         pose_hook.values[i*3]= &pose_transforms[i].x;//,y,z
 
         pose_hook.targets[i*3+1].value_type = AnimationType::ROTATION;
-        pose_hook.targets[i*3+1].num_values=3;
+        pose_hook.targets[i*3+1].num_values=4;
         pose_hook.values[i*3+1]= &pose_transforms[i].rotation.x;//,y,z
 
         pose_hook.targets[i*3+2].value_type = AnimationType::SCALE;
@@ -106,11 +107,11 @@ void Skeleton::CalculatePose(){
         if(parent > i){
             logger::exception("Bone ordered non-heirarchically. who would to this?!");
         }
-        bone_matrix.multiply_by(&bone->bind_transform);
-        //bone_matrix.translate(pose_transforms[bone_index].x,
-        //                        pose_transforms[bone_index].y,
-        //                        pose_transforms[bone_index].z);
-        //bone_matrix.rotate(pose_transforms[bone_index].rotation);
+        //bone_matrix.multiply_by(&bone->bind_transform);
+        bone_matrix.translate(pose_transforms[bone_index].x,
+                                pose_transforms[bone_index].y,
+                                pose_transforms[bone_index].z);
+        bone_matrix.rotate(pose_transforms[bone_index].rotation);
 
         pose_matrices[bone_index].set(&bone_matrix);
     }
@@ -129,10 +130,14 @@ Animation* Skeleton::GetAnimation(char* name){
     return null;
 }
 
+
 void Skeleton::StartAnimation(char* name){
+   StartAnimation(name,LOOP);
+}
+void Skeleton::StartAnimation(char* name,AnimationEndAction end_action){
     for(int i=0;i<animation_count;i++){
         if(cstr::compare(name,animations[i].name)){
-            AnimationManager::StartClip(&animations[i],&pose_hook);
+            AnimationManager::StartClip(&animations[i],&pose_hook, end_action);
         }
     }
 }

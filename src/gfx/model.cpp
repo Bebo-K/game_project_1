@@ -70,6 +70,7 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.invert();
     
     if(skeleton != null){
+        skeleton->CalculatePose();   
         for(int i=0;i< skeleton->bone_count;i++){
             glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&skeleton->pose_matrices[i]);
         } 

@@ -81,7 +81,7 @@ struct mat3{
 
 struct Transform{
     float x,y,z;
-    vec3 rotation;
+    quaternion rotation;
     vec3 scale;
 
     void Clear();

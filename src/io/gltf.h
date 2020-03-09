@@ -27,6 +27,7 @@ class GLTFScene{
 	JSONObject* GetAccessor(int id);
 	byte* GetBufferViewData(int buffer_view_id,int* len);
 	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
+	float* BuildAccessorFloatArray(int id,int* count);
 
 	public:
 	char* base_name;

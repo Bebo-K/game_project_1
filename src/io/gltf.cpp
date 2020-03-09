@@ -141,6 +141,80 @@ VBO GLTFScene::BuildAccessorBuffer(int id,GLuint bufferType){
 	return ret;
 }
 
+float* GLTFScene::BuildAccessorFloatArray(int id,int* count){
+	JSONObject* accessor = gltf_data->GetArray("accessors")->At(id)->ObjectValue();
+	int attrib_count = accessor->GetInt("count");
+	int elements_per_attrib = 1;
+	int element_type = accessor->GetInt("componentType");
+	char* type = accessor->GetString("type")->string;
+	if(cstr::compare(type,"SCALAR")){elements_per_attrib = 1;}
+	if(cstr::compare(type,"VEC2")){elements_per_attrib = 2;}
+	if(cstr::compare(type,"VEC3")){elements_per_attrib = 3;}
+	if(cstr::compare(type,"VEC4")){elements_per_attrib = 4;}
+	if(cstr::compare(type,"MAT2")){elements_per_attrib = 4;}
+	if(cstr::compare(type,"MAT3")){elements_per_attrib = 9;}
+	if(cstr::compare(type,"MAT4")){elements_per_attrib = 16;}
+
+	int element_size = 1;
+	switch(element_type){
+		case 5120:element_size*=1;break;
+		case 5121:element_size*=1;break;
+		case 5122:element_size*=2;break;
+		case 5123:element_size*=2;break;
+		case 5126:element_size*=4;break;
+		case 5125:element_size*=4;break;
+		default:element_size*=4;break;
+	}
+	int attrib_size = element_size*elements_per_attrib;
+
+	byte* element_data = null;
+	byte* new_data = null;
+	if(accessor->HasInt("bufferView")){
+		int element_buffer = accessor->GetInt("bufferView");
+		element_data=GetBufferViewData(element_buffer,nullptr) ;
+	}
+	if(accessor->HasJObject("sparse")){
+		JSONObject* sparse = accessor->GetJObject("sparse");
+		int sparse_count= sparse->GetInt("count");
+		if(element_data == null){
+			new_data=(byte*)calloc(attrib_size,attrib_count);
+			element_data = new_data;
+		}
+		
+		JSONObject* indices_obj = sparse->GetJObject("indices");
+		byte* indices_data = GetBufferViewData(indices_obj->GetInt("bufferView"),nullptr);
+		if(indices_obj->HasInt("byteOffset")){
+			indices_data = &indices_data[indices_obj->GetInt("byteOffset")];
+		}
+		int* indices = (int*)indices_data;
+
+		JSONObject* values_obj = sparse->GetJObject("indices");
+		byte* values_data = GetBufferViewData(values_obj->GetInt("bufferView"),nullptr);
+		if(values_obj->HasInt("byteOffset")){
+			values_data = &values_data[values_obj->GetInt("byteOffset")];
+		}
+		
+		for(int i=0;i<sparse_count;i++){
+			memcpy(&element_data[attrib_size*indices[i]],&values_data[attrib_size*i],attrib_size);
+		}
+	}
+	if(accessor->HasInt("byteOffset")){
+		element_data = &element_data[accessor->GetInt("byteOffset")];
+	}
+
+	float* ret = (float*)calloc(attrib_count*elements_per_attrib,sizeof(float));
+	switch(element_type){
+		case 5126:
+			memcpy(ret,element_data,sizeof(float)*attrib_count*elements_per_attrib);
+			if(count != nullptr){*count = attrib_count*elements_per_attrib;}
+			break;
+		default:
+			logger::exception("GLTF.BuildAccessorFloatArray -> Unimplemented accessor for type %d. Tell Bebo to fix it!\n",element_type);
+			return nullptr;
+	}
+	return ret;
+}
+
 byte* GLTFScene::GetBufferViewData(int buffer_view_id,int* len){
 	JSONArray* bufferviews = gltf_data->GetArray("bufferViews");
 	JSONObject* bufferview = bufferviews->At(buffer_view_id)->ObjectValue();
@@ -327,9 +401,65 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 }
 
 void GLTFScene::GetAnimation(int animation_id,Animation* dest){
-	//TODO: start here
+	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
+	JSONArray* channels = animation->GetArray("channels");
 
+	dest->name = cstr::new_copy(animation->GetString("name")->string);
+	dest->length= 0.0f;
+	dest->channel_count = channels->count;
+	dest->channels = (AnimationChannel*)calloc(channels->count,sizeof(AnimationChannel));
+	for(int i=0; i < dest->channel_count; i++){
+		AnimationChannel* channel = &dest->channels[i];
+		JSONObject* gltf_channel =  channels->At(i)->ObjectValue();
+		JSONObject* channel_target = gltf_channel->GetJObject("target");
+		
+		int target_node_id = channel_target->GetInt("node");
+		JSONObject* target_node = gltf_data->GetArray("nodes")->At(target_node_id)->ObjectValue();
+		char* target_node_name = target_node->GetString("name")->string;
+		char* target_type = channel_target->GetString("path")->string;
 
+		channel->target.object_name=cstr::new_copy(target_node_name);
+		if(cstr::compare(target_type,"translation")){
+			channel->target.value_type=AnimationType::TRANSLATION;
+			channel->target.num_values=3;
+		}
+		else if(cstr::compare(target_type,"rotation")){
+			channel->target.value_type=AnimationType::ROTATION;
+			channel->target.num_values=4;
+		}
+		else if(cstr::compare(target_type,"scale")){
+			channel->target.value_type=AnimationType::SCALE;
+			channel->target.num_values=3;
+		}
+		else if(cstr::compare(target_type,"weight")){
+			channel->target.value_type=AnimationType::WEIGHT;
+			channel->target.num_values=1;
+		}
+
+		int sampler_id = gltf_channel->GetInt("sampler");
+		JSONObject* sampler = animation->GetArray("samplers")->At(sampler_id)->ObjectValue();
+		int sampler_time_accessor = sampler->GetInt("input");
+		int sampler_value_accessor = sampler->GetInt("output");
+
+		char* animation_type = sampler->GetString("interpolation")->string;
+		if(cstr::compare(animation_type,"LINEAR")){
+			channel->interpolate_mode = AnimationInterpolateMode::LINEAR;
+		}
+		else if(cstr::compare(animation_type,"STEP")){
+			channel->interpolate_mode = AnimationInterpolateMode::STEP;
+		}
+		else if(cstr::compare(animation_type,"CUBICSPLINE")){
+			channel->interpolate_mode = AnimationInterpolateMode::CUBICORSOMETHING;
+		}
+
+		channel->keyframe_times = BuildAccessorFloatArray(sampler_time_accessor,
+			&channel->keyframe_count);
+		channel->keyframe_values = BuildAccessorFloatArray(sampler_value_accessor,nullptr);
+		
+		if(channel->keyframe_times[channel->keyframe_count-1] > dest->length){
+			dest->length = channel->keyframe_times[channel->keyframe_count-1];
+		}
+	}
 }
 
 Model* GLTFScene::LoadAsModel(char* name){
@@ -364,6 +494,7 @@ Model* GLTFScene::LoadAsModel(char* name){
 
 	if(gltf_data->HasArray("animations") ||ret->skeleton != nullptr){
 		int anim_count = gltf_data->GetArray("animations")->count;
+		ret->skeleton->animation_count = anim_count;
 		ret->skeleton->animations = (Animation*)calloc(anim_count,sizeof(Animation));
 		for(int i=0;i<anim_count;i++){
 			GetAnimation(i,&ret->skeleton->animations[i]);

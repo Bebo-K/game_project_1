@@ -12,10 +12,13 @@ const int ANIMATION_LAYER_USER=3;
 
 
 enum AnimationType{
-    TRANSFORM=0,ROTATION=1,SCALE=2,USER=3,EVENT=4
+    TRANSLATION=0,ROTATION=1,SCALE=2,WEIGHT=3,USER=4,EVENT=5
 };
 enum AnimationInterpolateMode{
-    LINEAR=0,NONE=1,CUBICORSOMETHING=2
+    LINEAR=0,STEP=1,CUBICORSOMETHING=2
+};
+enum AnimationEndAction{
+    STOP=0,LOOP=1
 };
 
 struct AnimationTarget{//Identifying information correlating Channels to Hooks. All fields must match for a hook to be compatible with a channel. 
@@ -23,6 +26,7 @@ struct AnimationTarget{//Identifying information correlating Channels to Hooks. 
     short value_type;
     short num_values;
     bool Compare(AnimationTarget other);
+    void Destroy();
 };
 
 struct AnimationChannel{//A channel contains keyframe data for a block of one or more float values
@@ -67,7 +71,8 @@ struct ClipInfo{ //Info about the currently running animation
 namespace AnimationManager{
     void Init();
 
-    void StartClip(Animation* clip, AnimationHook* hook);
+    void StartClip(Animation* animation, AnimationHook* hook);
+    void StartClip(Animation* animation, AnimationHook* hook,AnimationEndAction end_action);
     //TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
     //TODO: event system integration
     //TODO: pause layer

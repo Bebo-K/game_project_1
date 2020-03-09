@@ -23,12 +23,23 @@ void Animation::Destroy(){
     if(channels != nullptr){free(channels);channels=nullptr;}
 }
 void AnimationHook::Destroy(){
-    if(targets != nullptr){free(targets);targets=nullptr;}
+    if(targets != nullptr){
+        for(int i=0;i<num_targets;i++){
+            targets[i].Destroy();
+        }
+        free(targets);targets=nullptr;}
     if(values != nullptr){free(values);values=nullptr;}
 }
 void AnimationChannel::Destroy(){
+    target.Destroy();
     if(keyframe_times != nullptr){free(keyframe_times);keyframe_times=nullptr;}
     if(keyframe_values != nullptr){free(keyframe_values);keyframe_values=nullptr;}
+}
+void AnimationTarget::Destroy(){
+    if(object_name!= nullptr){
+        free(object_name);
+        object_name==nullptr;
+    }
 }
 
 float* AnimationHook::GetTarget(AnimationTarget target){
@@ -51,7 +62,11 @@ void AnimationManager::SetActiveLayer(int layer){
 int AnimationManager::GetActiveLayer(){
     return active_layer;
 }
+
 void AnimationManager::StartClip(Animation* clip, AnimationHook* hook){
+    StartClip(clip,hook,AnimationEndAction::STOP);
+}
+void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, AnimationEndAction end_action){
     ClipInfo *start_info = nullptr;
     ClipInfo* existing_clip_info;
 
@@ -70,7 +85,7 @@ void AnimationManager::StartClip(Animation* clip, AnimationHook* hook){
     start_info->animation=clip;
     start_info->hook=hook;
     start_info->elapsed_time=0.0f;
-    start_info->end_action=0;
+    start_info->end_action=end_action;
     start_info->timescale=1.0f;
     start_info->layer=active_layer;
 }
@@ -102,6 +117,7 @@ ClipInfo AnimationManager::GetClipInfo(AnimationHook* hook){
             break;
         }
     }
+    return ret;
 }
 
 void LinearInterpolate(float* from, float* to, float weight, float* values, int values_count){
@@ -132,7 +148,7 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
     }
 
     next_keyframe = last_keyframe+1;
-    if(next_keyframe > channel->keyframe_count){
+    if(next_keyframe >= channel->keyframe_count){
         //TODO: end of animation event
         switch(current_clip->end_action){
             case 0: //end animation + stop
@@ -140,7 +156,9 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
                 AnimationManager::StopClip(current_clip->hook);
                 break;
             case 1: //loop animation.
-                while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];}
+                while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
+                    current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];
+                }
                 UpdateChannel(current_clip,target,channel);
                 break;
                 

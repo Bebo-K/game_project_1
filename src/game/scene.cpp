@@ -18,6 +18,7 @@ void Scene::Load(){
     GLTFScene gltf_file(modelFile);
 
     my_model= gltf_file.LoadAsModel("person");
+    my_model->skeleton->StartAnimation("Run");
 
     //my_model->skeleton->pose_transforms[13].rotation.rotate_z(90);
     //my_model->skeleton->pose_transforms[4].rotation.rotate_y(90);

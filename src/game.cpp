@@ -5,8 +5,8 @@
 #include "gfx/animation.h"
 #include "log.h"
 
-double Game::frame_interval = 100.0f;
-double Game::render_interval = 100.0f;
+double Game::frame_interval = 16.0f;
+double Game::render_interval = 16.0f;
 int Game::window_width = 720;
 int Game::window_height = 1280;
 time_point<system_clock> last_frame;
