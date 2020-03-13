@@ -1,8 +1,9 @@
 #include "animation.h"
 #include "../data_structs.h"
 #include "../log.h"
+#include "3dstructs.h"
 #include <string.h>
-
+#include "math.h"
 
 DataArray active_clips(8,sizeof(ClipInfo));
 int active_layer=0;
@@ -13,6 +14,11 @@ bool AnimationTarget::Compare(AnimationTarget other){
     return  value_type == other.value_type && 
             num_values == other.num_values &&
             cstr::compare(object_name,other.object_name);
+}
+
+AnimationOptions::AnimationOptions(){
+    timescale = 1.0f;
+    end_action = AnimationEndAction::STOP;
 }
 
 void Animation::Destroy(){
@@ -38,7 +44,7 @@ void AnimationChannel::Destroy(){
 void AnimationTarget::Destroy(){
     if(object_name!= nullptr){
         free(object_name);
-        object_name==nullptr;
+        object_name=nullptr;
     }
 }
 
@@ -64,9 +70,29 @@ int AnimationManager::GetActiveLayer(){
 }
 
 void AnimationManager::StartClip(Animation* clip, AnimationHook* hook){
-    StartClip(clip,hook,AnimationEndAction::STOP);
+        ClipInfo *start_info = nullptr;
+    ClipInfo* existing_clip_info;
+
+    for(int i=0;i<active_clips.slots;i++){
+        existing_clip_info = (ClipInfo*)active_clips.Get(i);
+        if(existing_clip_info==nullptr)continue;
+        if(existing_clip_info->hook == hook){
+            start_info = existing_clip_info;
+            break;
+        }
+    }
+    if(start_info == nullptr){
+        start_info = (ClipInfo*)active_clips.Add();
+    }
+
+    start_info->animation=clip;
+    start_info->hook=hook;
+    start_info->elapsed_time=0.0f;
+    start_info->end_action=AnimationEndAction::STOP;
+    start_info->timescale=1.0f;
+    start_info->layer=active_layer; 
 }
-void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, AnimationEndAction end_action){
+void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, AnimationOptions options){
     ClipInfo *start_info = nullptr;
     ClipInfo* existing_clip_info;
 
@@ -85,8 +111,8 @@ void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, Animation
     start_info->animation=clip;
     start_info->hook=hook;
     start_info->elapsed_time=0.0f;
-    start_info->end_action=end_action;
-    start_info->timescale=1.0f;
+    start_info->end_action=options.end_action;
+    start_info->timescale=options.timescale;
     start_info->layer=active_layer;
 }
 void AnimationManager::StopClip(AnimationHook* hook){
@@ -125,6 +151,43 @@ void LinearInterpolate(float* from, float* to, float weight, float* values, int 
         values[i] = to[i]*weight + from[i]*(1.0f-weight);
     }
 }
+
+//nlerp, consider slerp if appropriate
+void QuaternionLinearInterpolate(quaternion* from,quaternion* to, float weight,quaternion* values, int values_count){
+    for(int i=0;i<values_count;i++){ 
+        values[i].x = to[i].x*weight + from[i].x*(1.0f-weight);
+        values[i].y = to[i].y*weight + from[i].y*(1.0f-weight);
+        values[i].z = to[i].z*weight + from[i].z*(1.0f-weight);
+        values[i].w = to[i].w*weight + from[i].w*(1.0f-weight);
+        values[i].normalize();
+    }
+}
+void QuaternionSphericalInterpolate(quaternion* q1,quaternion* q2, float weight,quaternion* values, int values_count){
+    for(int i=0;i<values_count;i++){ 
+        quaternion from = q1[i];
+        quaternion to = q2[i];
+
+        float dot = to.dot(from);
+        if(dot < 0){
+            dot *= -1;
+            from = from*-1;
+        }
+        if(dot > 0.9995f){
+            QuaternionLinearInterpolate(&from,&to,weight,&values[i],1);
+            return;
+        } 
+
+        float theta_0 = acosf(dot);
+        float theta = theta_0*weight;
+        float sin_theta = sinf(theta);
+        float sin_theta_0 = sinf(theta_0);
+        float s0 = cos(theta) - dot * sin_theta / sin_theta_0;
+        float s1 = sin_theta / sin_theta_0;
+
+        values[i] = from*s0 + to*s1;
+    }
+}
+
 void Interpolate(int type, float* from, float* to, float weight, float* values, int values_count){
     switch (type)
     {
@@ -134,6 +197,20 @@ void Interpolate(int type, float* from, float* to, float weight, float* values, 
     
     default:
         LinearInterpolate(from, to, weight, values, values_count);
+        break;
+    }
+}
+
+void QInterpolate(int type, float* from, float* to, float weight, float* values, int values_count){
+    switch (type)
+    {
+    case 0:
+        QuaternionSphericalInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
+        //QuaternionLinearInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
+        break;
+    
+    default:
+        QuaternionLinearInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
         break;
     }
 }
@@ -173,14 +250,29 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
         float last_time = channel->keyframe_times[last_keyframe];
         float next_time = channel->keyframe_times[next_keyframe];
         float weight = (current_clip->elapsed_time - last_time) / (next_time-last_time);
-
-        Interpolate(channel->interpolate_mode,
+        if(weight > 1.0f){weight = 1.0f;}
+        if(weight < 0.0f){weight = 0.0f;}
+        //weight = 0;
+        //quaternion interpolation
+        if(channel->target.value_type == AnimationType::ROTATION && channel->target.num_values % 4 == 0){
+            QInterpolate(channel->interpolate_mode,
             &channel->keyframe_values[last_keyframe*channel_width],
             &channel->keyframe_values[next_keyframe*channel_width],
             weight,
             target,
             channel_width
             );
+        }
+        //Everything else
+        else{
+            Interpolate(channel->interpolate_mode,
+                &channel->keyframe_values[last_keyframe*channel_width],
+                &channel->keyframe_values[next_keyframe*channel_width],
+                weight,
+                target,
+                channel_width
+                );
+        }
     }
 }
 
@@ -196,7 +288,7 @@ void AnimationManager::Update(float seconds){
         if(current_clip==nullptr)continue;
         if(!layer_is_active[current_clip->layer])continue;
 
-        current_clip->elapsed_time += seconds;
+        current_clip->elapsed_time += seconds*current_clip->timescale;
 
         hook = current_clip->hook;
         animation = current_clip->animation;   

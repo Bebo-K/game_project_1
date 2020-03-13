@@ -31,6 +31,11 @@ struct quaternion{
     mat4 to_matrix();
     void rotate_by(quaternion q2);
     void rotate_by(float x,float y,float z);
+    void normalize();
+    float dot(quaternion q2);
+    quaternion operator + (quaternion q2);
+    quaternion operator - (quaternion q2);
+    quaternion operator * (float weight);
     //vec3 get_euler();
 };
 

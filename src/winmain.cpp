@@ -62,6 +62,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
                     DispatchMessage(&window_message);
                 }
                 Game::Poll();
+                Sleep(0);
             } while (window_message.message != WM_QUIT) ;
         }
         else{
@@ -86,7 +87,6 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             Game::Start();
             break;
         case WM_PAINT: /*Ignore for games as we're constantly redrawing anyways.*/
-            glDrawBuffer(GL_BACK);
             Game::Paint();
             SwapBuffers(device_context);
             break;
@@ -156,6 +156,7 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
     glDisable(GL_DEPTH_TEST);
 	glEnable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glDrawBuffer(GL_BACK);
 }
 
 void DestroyOpenGL(){

@@ -39,7 +39,7 @@ class Skeleton{
 
     Animation* GetAnimation(char* name);
     void StartAnimation(char* name);
-    void StartAnimation(char* name,AnimationEndAction end_action);
+    void StartAnimation(char* name,AnimationOptions options);
 
 };
 

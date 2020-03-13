@@ -68,11 +68,18 @@ struct ClipInfo{ //Info about the currently running animation
     int         layer;
 };
 
+struct AnimationOptions{
+    float timescale;
+    AnimationEndAction end_action;
+
+    AnimationOptions();
+};
+
 namespace AnimationManager{
     void Init();
 
     void StartClip(Animation* animation, AnimationHook* hook);
-    void StartClip(Animation* animation, AnimationHook* hook,AnimationEndAction end_action);
+    void StartClip(Animation* animation, AnimationHook* hook,AnimationOptions end_action);
     //TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
     //TODO: event system integration
     //TODO: pause layer

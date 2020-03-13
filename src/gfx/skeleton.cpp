@@ -132,12 +132,12 @@ Animation* Skeleton::GetAnimation(char* name){
 
 
 void Skeleton::StartAnimation(char* name){
-   StartAnimation(name,LOOP);
+   StartAnimation(name);
 }
-void Skeleton::StartAnimation(char* name,AnimationEndAction end_action){
+void Skeleton::StartAnimation(char* name,AnimationOptions options){
     for(int i=0;i<animation_count;i++){
         if(cstr::compare(name,animations[i].name)){
-            AnimationManager::StartClip(&animations[i],&pose_hook, end_action);
+            AnimationManager::StartClip(&animations[i],&pose_hook, options);
         }
     }
 }

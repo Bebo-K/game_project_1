@@ -17,8 +17,11 @@ void Scene::Load(){
     File modelFile("dat/models/placeholder_person.glb");
     GLTFScene gltf_file(modelFile);
 
+    AnimationOptions options;
+    options.timescale = 0.05f;
+    options.end_action = LOOP;
     my_model= gltf_file.LoadAsModel("person");
-    my_model->skeleton->StartAnimation("Run");
+    my_model->skeleton->StartAnimation("Run",options);
 
     //my_model->skeleton->pose_transforms[13].rotation.rotate_z(90);
     //my_model->skeleton->pose_transforms[4].rotation.rotate_y(90);

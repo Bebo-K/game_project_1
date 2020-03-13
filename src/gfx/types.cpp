@@ -99,6 +99,30 @@ void quaternion::rotate_by(float x,float y,float z){
     rotate_by(q2);
 }
 
+void quaternion::normalize(){
+    float length = sqrtf(x*x+y*y+z*z+w*w);
+    x /= length;
+    y /= length;
+    z /= length;
+    w /= length;
+}
+
+float quaternion::dot(quaternion q2){
+    return x*q2.x + y*q2.y + z*q2.z + w*q2.w;
+}
+
+quaternion quaternion::operator + (quaternion q2){
+    return {x+q2.x,y+q2.y,z+q2.z,w+q2.w};
+}
+
+quaternion quaternion::operator - (quaternion q2){
+    return {x-q2.x,y-q2.y,z-q2.z,w-q2.w};
+}
+
+quaternion quaternion::operator * (float weight){
+    return {x*weight,y*weight,z*weight,w*weight};
+}
+
 mat4 quaternion::to_matrix(){
     mat4 ret;
     ret.identity();
