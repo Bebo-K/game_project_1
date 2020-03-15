@@ -13,13 +13,16 @@ HWND window;
 HDC device_context;
 HGLRC gl_rendering_context;
 
+Performance::Alarm second;
+Performance::Counter polls_per_second;
+Performance::Counter paintevents_per_second;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam);
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
-
+    second.interval=1000;
     logger::start("log.txt");
 
     WNDCLASSEX window_class;
@@ -57,12 +60,24 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
 
             MSG window_message;
             do {
+                polls_per_second.Increment();
+                if(second.Time_Over()){
+                    logger::info("Polls: %d, Frames: %d, Paints: %d\n",
+                    polls_per_second.GetCount(),
+                    Game::updates_per_second.GetCount(),
+                    paintevents_per_second.GetCount()
+                    );
+
+                    polls_per_second.Reset();
+                    Game::updates_per_second.Reset();
+                    paintevents_per_second.Reset();
+                }
                 if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
                     TranslateMessage(&window_message);
                     DispatchMessage(&window_message);
                 }
                 Game::Poll();
-                Sleep(0);
+                Sleep(5);
             } while (window_message.message != WM_QUIT) ;
         }
         else{
@@ -79,16 +94,17 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     return 0;
 }
 
+void Game::PostRender(){
+    paintevents_per_second.Increment();
+    SwapBuffers(device_context);
+}
+
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam){
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
             logger::info("Initializing engine...\n");
             Game::Start();
-            break;
-        case WM_PAINT: /*Ignore for games as we're constantly redrawing anyways.*/
-            Game::Paint();
-            SwapBuffers(device_context);
             break;
         case WM_DESTROY:
             DestroyOpenGL();

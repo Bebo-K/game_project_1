@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include "client.h"
+#include "test/perf.h"
 using namespace std::chrono;
 
 namespace Game{
@@ -12,12 +13,14 @@ namespace Game{
     extern int window_height;
     extern bool running;
     extern Client* client;
+    extern Performance::Counter updates_per_second;
     //extern Server server;
 
     void Start();
     void Paint();
     void Update(int ms);
     void Poll();
+    void PostRender();
 }
 
 

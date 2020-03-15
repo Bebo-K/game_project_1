@@ -13,6 +13,8 @@ time_point<system_clock> last_frame;
 time_point<system_clock> last_render;
 bool Game::running = false;
 Client* Game::client;
+Performance::Counter Game::updates_per_second;
+
 
 void Game::Start(){
     client = new Client();
@@ -27,6 +29,7 @@ void Game::Start(){
 void Game::Update(int ms){
     AnimationManager::Update(ms/1000.0f);
     client->Update(ms);
+    updates_per_second.Increment();
 }
 
 void Game::Paint(){
@@ -34,6 +37,7 @@ void Game::Paint(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     client->Paint();
 }
+
 
 void Game::Poll(){
     time_point<system_clock> current_time = high_resolution_clock::now();
@@ -46,7 +50,8 @@ void Game::Poll(){
     current_time = high_resolution_clock::now();
     time_delta = current_time - last_render;
     if(time_delta.count() > render_interval){
-        //Paint();
+        Paint();
+        PostRender();
         last_render = high_resolution_clock::now();
     }
 }  
