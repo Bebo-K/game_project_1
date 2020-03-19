@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "../io/gltf.h"
 #include "../log.h"
+#include "../input.h"
 
 void Scene::Load(){
     logger::info("loading default scene...\n");
@@ -40,7 +41,9 @@ void Scene::Unload(){
     delete my_model;
 }
 void Scene::Update(int delta){
-//my_model->rotation.y += delta /10;
+    if(Controller::Jump().IsDown()){
+        my_model->rotation.y += delta /10;
+    }
 }
 void Scene::Paint(){
     renderer.Draw(); 

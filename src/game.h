@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <chrono>
+#include "input.h"
 #include "client.h"
 #include "test/perf.h"
 using namespace std::chrono;

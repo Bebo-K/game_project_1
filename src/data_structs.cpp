@@ -347,9 +347,31 @@ char* cstr::new_copy(const char* old_string){
     return str;
 }
 
+char* cstr::lowercase_copy(const char* old_string){
+    int str_len = strlen(old_string);
+    char* str = (char*)malloc(str_len+1);
+    strcpy(str,old_string);
+    str[str_len]=0;
+    
+    for(int i=0;str[i]!=0;i++){
+        if(str[i] >= 'A' && str[i] <= 'Z')str[i] += ('A'-'a');
+    }
+    return str;
+}
+
+
 bool cstr::compare(const char* str1,const char* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
     return strcmp(str1,str2)==0;
+}
+
+bool cstr::starts_with(const char* str, const char* start){
+    int i=0;
+    for(i=0;str[i] != 0 && start[i]!= 0;i++){
+        if(str[i] != start[i])return false;
+    }
+    if(str[i]==0 && start[i] != 0)return false;
+    return true;
 }
 
 char* cstr::append(const char* str1,const char* str2){
@@ -362,7 +384,7 @@ char* cstr::append(const char* str1,const char* str2){
     return str;
 }
 
-char* append(const char* str1, char seperator, const char* str2){
+char* cstr::append(const char* str1, char seperator, const char* str2){
     int str1_len = strlen(str1);
     int str2_len = strlen(str2);
     char* str = (char*)malloc(str1_len+str2_len+2);
@@ -371,4 +393,55 @@ char* append(const char* str1, char seperator, const char* str2){
     strcpy(&str[str1_len+1],str1);
     str[str1_len+str2_len+1]=0;
     return str;
+}
+
+char* cstr::utf16_to_utf8(const wchar_t* longstring){
+    if(longstring==nullptr){return nullptr;}
+    int utf_8_len=1;
+    //loop through twice, first to get length of code points
+    for(int i=0;longstring[i] != 0;i++){
+        int code = longstring[i];
+        if(code > 0xD7FF && (code > 0xFFFF || code < 0xE000)){//If 0xD800-0xDF00, it's 2 wchars wide
+            code = 0x10000 + ((0xD800-longstring[i]) << 10) + (0XDC00 -longstring[i+1]);
+            i++;
+        }
+        utf_8_len += 1;
+        if(code > 0x7F) utf_8_len += 1;
+        if(code > 0x7FF) utf_8_len += 1;
+        if(code > 0xFFFF) utf_8_len += 1;
+    }
+    //second to write string
+    char* utf8_str = (char*)calloc(utf_8_len,1);
+    int j=0;//index for utf output
+    for(int i=0;longstring[i] != 0;i++){
+        int code = longstring[i];
+        if(code > 0xD7FF && (code > 0xFFFF || code < 0xE000)){
+            code = 0x10000 + ((0xD800-longstring[i]) << 10) + (0XDC00 -longstring[i+1]);
+            i++;
+        }
+        if(code < 0x7F){
+            utf8_str[j] = (char)code;
+            j++;
+        }
+        else if(code < 0x7FF){
+            utf8_str[j] = 0xC0  + ((code>>6)|0x1F); 
+            utf8_str[j+1] = 0x80 + (code|0x3F);
+            j+=2;
+        }
+        else if(code < 0xFFFF){
+            utf8_str[j]   = 0xE0 + ((code>>12)|0xF); 
+            utf8_str[j+1] = 0x80 + ((code>>6)|0x3F); 
+            utf8_str[j+2] = 0x80 + (code|0x3F);
+            j+=3;
+        }
+        else{
+            utf8_str[j]   = 0xF0 + ((code>>18)|0x7); 
+            utf8_str[j+1] = 0x80 + ((code>>12)|0x3F);
+            utf8_str[j+2] = 0x80 + ((code>>6)|0x3F);  
+            utf8_str[j+3] = 0x80 + (code|0x3F);
+            j+=4;
+        }
+    }
+    utf8_str[j]=0;
+    return utf8_str;
 }

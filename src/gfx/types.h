@@ -21,6 +21,19 @@ struct vec3{
     void rotate_z(float theta);
 };
 
+struct vec2{
+    float x,y;
+
+    vec2();
+    vec2(vec2* copy);
+    vec2(float x,float y);
+
+    float length();
+    //float dot();
+    void normalize();
+    void rotate(float theta);
+};
+
 struct mat4;
 
 struct quaternion{

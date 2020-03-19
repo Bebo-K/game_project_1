@@ -65,6 +65,37 @@ void vec3::rotate_z(float theta){
     x = _x; y = _y; z = _z;
 }
 
+vec2::vec2(){
+    x=y=0;
+}
+
+vec2::vec2(vec2* copy){
+    x=copy->x;y=copy->y;
+}
+
+vec2::vec2(float _x,float _y){
+    x=_x;y=_y;
+}
+
+float vec2::length(){
+    return sqrtf(x*x+y*y);
+}
+
+void vec2::normalize(){
+    float len = sqrtf(x*x+y*y);
+    x /= len;
+    y /= len;
+}
+
+void vec2::rotate(float theta){
+    float angle = theta*PI_OVER_180;
+    float cos = cosf(angle);
+    float sin = sinf(angle);
+    float _x = x*cos + y*sin;
+    float _y = y*cos - x*sin;
+    x = _x; y = _y; 
+}
+
 void quaternion::clear(){
     x=y=z=0;
     w=1;

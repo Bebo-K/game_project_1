@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <windowsx.h>
 #include <wingdi.h>
 #include "gfx/gload.h"
 #include "log.h"
@@ -19,8 +20,41 @@ Performance::Counter paintevents_per_second;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
+void CaptureJoystick1(HWND window);
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam);
 
+//********************************************//
+//                 Polling Loop               //
+//********************************************//
+int LoopMain(){
+    MSG window_message;
+    do {
+        polls_per_second.Increment();
+        if(second.Time_Over()){
+            //TODO: blit this data to screen
+            //logger::info("Polls: %d, Frames: %d, Paints: %d\n",
+            //polls_per_second.GetCount(),
+            //Game::updates_per_second.GetCount(),
+            //paintevents_per_second.GetCount()
+            //);
+
+            polls_per_second.Reset();
+            Game::updates_per_second.Reset();
+            paintevents_per_second.Reset();
+        }
+        if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
+            TranslateMessage(&window_message);
+            DispatchMessage(&window_message);
+        }
+        Game::Poll();
+        Sleep(5);
+    } while (window_message.message != WM_QUIT) ;
+    return 0;
+}
+
+//********************************************//
+//                 Entry Point                //
+//********************************************//
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
     second.interval=1000;
     logger::start("log.txt");
@@ -53,32 +87,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             ShowWindow(window,show_hint);
             UpdateWindow(window);
             glClearColor(0,0,0,1.0);
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             SwapBuffers(device_context);
-
-/*Loop Entry Point*/ 
-
-            MSG window_message;
-            do {
-                polls_per_second.Increment();
-                if(second.Time_Over()){
-                    logger::info("Polls: %d, Frames: %d, Paints: %d\n",
-                    polls_per_second.GetCount(),
-                    Game::updates_per_second.GetCount(),
-                    paintevents_per_second.GetCount()
-                    );
-
-                    polls_per_second.Reset();
-                    Game::updates_per_second.Reset();
-                    paintevents_per_second.Reset();
-                }
-                if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
-                    TranslateMessage(&window_message);
-                    DispatchMessage(&window_message);
-                }
-                Game::Poll();
-                Sleep(5);
-            } while (window_message.message != WM_QUIT) ;
+            return LoopMain();
         }
         else{
             MessageBox(NULL,_T("Call to CreateWindow failed!"),window_title,MB_OK);
@@ -91,18 +102,16 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
         logger::fatal("Call to RegisterClassEx failed! Aborting!\n");
         return 1;
     }
-    return 0;
+    return 1;
 }
 
-void Game::PostRender(){
-    paintevents_per_second.Increment();
-    SwapBuffers(device_context);
-}
+
 
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam){
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
+            CaptureJoystick1(window_handle);
             logger::info("Initializing engine...\n");
             Game::Start();
             break;
@@ -111,6 +120,34 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             logger::info("Exiting.\n");
             PostQuitMessage(0);
             break;
+        case WM_KEYDOWN:
+            Input::HandleKey(wparam,true);
+        break;
+        case WM_KEYUP:
+             Input::HandleKey(wparam,false);
+        break;
+        case WM_CHAR:
+             Input::HandleCharacter(wparam);
+        break;
+        case WM_MOUSEMOVE:
+            Input::HandleCursor(GET_X_LPARAM(lparam),GET_Y_LPARAM(lparam));
+        break;
+        case WM_MOUSEWHEEL:
+        break;
+        case WM_LBUTTONDOWN:
+        break;
+        case WM_LBUTTONUP:
+        break;
+        case WM_RBUTTONDOWN:
+        break;
+        case WM_RBUTTONUP:
+        break;
+        case MM_JOY1MOVE: 
+        break; 
+        case MM_JOY1BUTTONDOWN:               // button is down 
+        break; 
+        case MM_JOY1BUTTONUP:                 // button is up 
+        break; 
         case WM_SIZE:
             RECT new_client_area;
             if(GetClientRect(window_handle,&new_client_area)){
@@ -179,5 +216,29 @@ void DestroyOpenGL(){
     gload_destroy();
     wglMakeCurrent(NULL,NULL);
     wglDeleteContext(gl_rendering_context);
+}
+
+void CaptureJoystick1(HWND window){
+    JOYINFO joyinfo; 
+    UINT wNumDevs, wDeviceID; 
+    BOOL bDev1Attached, bDev2Attached; 
+ 
+    if((wNumDevs = joyGetNumDevs()) == 0) return; 
+    bDev1Attached = joyGetPos(JOYSTICKID1,&joyinfo) != JOYERR_UNPLUGGED; 
+    bDev2Attached = wNumDevs == 2 && joyGetPos(JOYSTICKID2,&joyinfo) != 
+        JOYERR_UNPLUGGED; 
+    if(bDev1Attached || bDev2Attached)   // decide which joystick to use 
+        wDeviceID = bDev1Attached ? JOYSTICKID1 : JOYSTICKID2; 
+    else return; 
+    if(joySetCapture(window, wDeviceID, NULL, FALSE)) {return;} 
+}
+
+//********************************************//
+//                 OS Hooks                   //
+//********************************************//
+
+void Game::PostRender(){
+    paintevents_per_second.Increment();
+    SwapBuffers(device_context);
 }
 

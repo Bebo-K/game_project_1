@@ -126,11 +126,14 @@ struct AssociativeArray{
 
 
 namespace cstr{
-
     char* new_copy(const char* old_string);
+    char* lowercase_copy(const char* old_string);
     char* append(const char* str1, const char* str2);
     char* append(const char* str1, char seperator, const char* str2);
     bool compare(const char* str1, const char* str2);
+    bool starts_with(const char* str, const char* start);
+
+    char* utf16_to_utf8(const wchar_t* longstring);
     /*
     int integer_from_string(char* str,int index);
     char* write_integer_string(int a, char *str, int index);
@@ -146,6 +149,4 @@ namespace cstr{
 
 
 #endif
-
-//NEXT SECTION LEFT OUT OF INCLUDE GUARD ON PURPOSE. TEMPLATE DECLARATIONS ONLY BELOW.
 
