@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <windowsx.h>
 #include <wingdi.h>
 #include "gfx/gload.h"
 #include "log.h"
@@ -130,23 +129,27 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
              Input::HandleCharacter(wparam);
         break;
         case WM_MOUSEMOVE:
-            Input::HandleCursor(GET_X_LPARAM(lparam),GET_Y_LPARAM(lparam));
+            Input::HandleCursor((short)LOWORD(lparam),(short)HIWORD(lparam));
         break;
         case WM_MOUSEWHEEL:
+            short wheel_delta = (short)HIWORD(wparam);
         break;
         case WM_LBUTTONDOWN:
+            Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,true);
         break;
         case WM_LBUTTONUP:
+            Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,false);
         break;
         case WM_RBUTTONDOWN:
+            Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,true);
         break;
         case WM_RBUTTONUP:
+            Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,false);
         break;
-        case MM_JOY1MOVE: 
+        case WM_INPUT : 
+
         break; 
-        case MM_JOY1BUTTONDOWN:               // button is down 
-        break; 
-        case MM_JOY1BUTTONUP:                 // button is up 
+
         break; 
         case WM_SIZE:
             RECT new_client_area;
@@ -219,18 +222,14 @@ void DestroyOpenGL(){
 }
 
 void CaptureJoystick1(HWND window){
-    JOYINFO joyinfo; 
-    UINT wNumDevs, wDeviceID; 
-    BOOL bDev1Attached, bDev2Attached; 
- 
-    if((wNumDevs = joyGetNumDevs()) == 0) return; 
-    bDev1Attached = joyGetPos(JOYSTICKID1,&joyinfo) != JOYERR_UNPLUGGED; 
-    bDev2Attached = wNumDevs == 2 && joyGetPos(JOYSTICKID2,&joyinfo) != 
-        JOYERR_UNPLUGGED; 
-    if(bDev1Attached || bDev2Attached)   // decide which joystick to use 
-        wDeviceID = bDev1Attached ? JOYSTICKID1 : JOYSTICKID2; 
-    else return; 
-    if(joySetCapture(window, wDeviceID, NULL, FALSE)) {return;} 
+    RAWINPUTDEVICE rid;
+
+    rid.usUsagePage = 1;
+    rid.usUsage     = 4; // Joystick
+    rid.dwFlags     = 0;
+    rid.hwndTarget  = window;
+
+    RegisterRawInputDevices(&rid, 1, sizeof(RAWINPUTDEVICE));
 }
 
 //********************************************//
@@ -242,3 +241,91 @@ void Game::PostRender(){
     SwapBuffers(device_context);
 }
 
+void ParseRawInput(PRAWINPUT pRawInput){
+    if(pRawInput==nullptr)return;
+    if(pRawInput->header.dwType != RIM_TYPEHID)return;
+    //TODO: sort this
+            
+    CHECK( GetRawInputDeviceInfo(pRawInput->header.hDevice, 
+        RIDI_PREPARSEDDATA, NULL, &bufferSize) == 0 );
+    CHECK( pPreparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(hHeap, 0, bufferSize) );
+    CHECK( (int)GetRawInputDeviceInfo(pRawInput->header.hDevice, 
+        RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize) >= 0 );
+    CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
+    CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc
+        (hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
+
+    capsLength = Caps.NumberInputButtonCaps;
+    CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, 
+        &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+    g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+    CHECK( pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc
+        (hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps) );
+    capsLength = Caps.NumberInputValueCaps;
+    CHECK( HidP_GetValueCaps(HidP_Input, pValueCaps, 
+        &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+        usageLength = g_NumberOfButtons;
+    CHECK(
+        HidP_GetUsages(
+            HidP_Input, pButtonCaps->UsagePage, 0, usage, 
+        &usageLength, pPreparsedData,
+            (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+        ) == HIDP_STATUS_SUCCESS );
+
+    ZeroMemory(bButtonStates, sizeof(bButtonStates));
+    for(i = 0; i < usageLength; i++)
+        bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
+
+    for(i = 0; i < Caps.NumberInputValueCaps; i++)
+    {
+        CHECK(
+            HidP_GetUsageValue(
+                HidP_Input, pValueCaps[i].UsagePage, 0, 
+            pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
+                (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+            ) == HIDP_STATUS_SUCCESS );
+
+        switch(pValueCaps[i].Range.UsageMin)
+        {
+        case 0x30:    // X-axis
+            lAxisX = (LONG)value - 128;
+            break;
+
+        case 0x31:    // Y-axis
+            lAxisY = (LONG)value - 128;
+            break;
+
+        case 0x32: // Z-axis
+            lAxisZ = (LONG)value - 128;
+            break;
+
+        case 0x35: // Rotate-Z
+            lAxisRz = (LONG)value - 128;
+            break;
+
+        case 0x39:    // Hat Switch
+            lHat = value;
+            break;
+        }
+    }
+
+}
+
+void HandleRawInput(HWND window,LPARAM lparam,WPARAM wparam){
+        PRAWINPUT pRawInput;
+        UINT      bufferSize;
+        HANDLE    hHeap;
+
+        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, NULL, 
+		&bufferSize, sizeof(RAWINPUTHEADER));
+
+        hHeap     = GetProcessHeap();
+        pRawInput = (PRAWINPUT)HeapAlloc(hHeap, 0, bufferSize);
+        if(!pRawInput)return;
+
+        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, 
+		pRawInput, &bufferSize, sizeof(RAWINPUTHEADER));
+        ParseRawInput(pRawInput);
+
+        HeapFree(hHeap, 0, pRawInput);
+}

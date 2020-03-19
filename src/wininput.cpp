@@ -3,6 +3,7 @@
 #include "config.h"
 
 ///Hahaha, why yes, this IS a bad idea!
+const int VK_COUNT=0xFF;
 const char* MS_VK_NAMES [] ={
 /*0x00*/ "ERROR",
 /*0x01*/ "[?]",
@@ -262,8 +263,50 @@ const char* MS_VK_NAMES [] ={
 /*0xFF*/ "[?]"
 };
 
+int MOUSE_BUTTON_OFFSET=0x101;
+int MOUSE_BUTTON_COUNT=3;
+char* MOUSE_BUTTON_NAMES[] ={
+    "mouse_left",
+    "mouse_right",
+    "mouse_center"
+};
+
+int JOYSTICK_OFFSET=0x1A0;
+int JOYSTICK_BUTTON_COUNT=15;
+char* JOYSTICK_BUTTON_NAMES[] ={
+    "joy_a",
+    "joy_b",
+    "joy_x",
+    "joy_y",
+    "joy_l1",
+    "joy_l2",
+    "joy_r1",
+    "joy_r2",
+    "joy_start",
+    "joy_lstick",
+    "joy_rstick",
+    "joy_dpad_up",
+    "joy_dpad_down",
+    "joy_dpad_left",
+    "joy_dpad_right",
+};
+
 int Input::GetKeyID(char* key_name){
-    for(int i=0;i<0xFF;i++){
+    if(cstr::starts_with(key_name,"mouse")){
+        for(int i=0;i<MOUSE_BUTTON_COUNT;i++){
+            if(cstr::compare(key_name,MOUSE_BUTTON_NAMES[i])){
+                return MOUSE_BUTTON_OFFSET + i;
+            }
+        }
+    }
+    if(cstr::starts_with(key_name,"joy")){
+        for(int i=0;i<JOYSTICK_BUTTON_COUNT;i++){
+            if(cstr::compare(key_name,JOYSTICK_BUTTON_NAMES[i])){
+                return JOYSTICK_OFFSET + i;
+            }
+        }
+    }
+    for(int i=0;i<VK_COUNT;i++){
         if(cstr::compare(key_name,MS_VK_NAMES[i])){
             return i;
         }
@@ -271,30 +314,16 @@ int Input::GetKeyID(char* key_name){
 }
 
 const char* Input::GetKeyName(int key_id){
-    if(key_id > 0 && key_id <= 0xFF){return MS_VK_NAMES[key_id];}
-    if(key_id == Input::MOUSE_IDS::LEFT_CLICK){return "left mouse";}
-    if(key_id == Input::MOUSE_IDS::RIGHT_CLICK){return "right mouse";}
-    if(key_id == Input::MOUSE_IDS::SCROLL_CLICK){return "center mouse";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}//TODO:
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
-    if(key_id == Input::JOY_IDS::A){return "A";}
+    if(key_id >= 0 && key_id <= VK_COUNT){return MS_VK_NAMES[key_id];}
+    if(key_id >= MOUSE_BUTTON_OFFSET && 
+    key_id <= MOUSE_BUTTON_OFFSET+MOUSE_BUTTON_COUNT){
+        return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
     }
+    if(key_id >= JOYSTICK_OFFSET && 
+    key_id <= JOYSTICK_OFFSET+JOYSTICK_BUTTON_COUNT){
+        return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
+    }
+}
     
 
 

@@ -9,10 +9,10 @@ namespace Input{
         LEFT_CLICK=0x101,RIGHT_CLICK=0x102,SCROLL_CLICK=0x103
     };
     enum JOY_IDS{
-        A=0x1A0,B=0x1A1,X=0x1A2,Y=0x1A3,
-        L1,L2,R1,R2,
-        DPAD_UP,DPAD_DOWN,DPAD_LEFT,DPAD_RIGHT,
-        LEFT_STICK,RIGHT_STICK
+        A=0x1A0,B=0x1A1,X=0x1A2,Y=0x1A3,START=0x1A4,
+        L1=0x1A5,L2=0x1A6,R1=0x1A7,R2=0x1A8,
+        DPAD_UP=0x1A9,DPAD_DOWN=0x1AA,DPAD_LEFT=0x1AB,DPAD_RIGHT=0x1AC,
+        LEFT_STICK=0x1AD,RIGHT_STICK=0x1AE
     };
     int GetKeyID(char* key_name);
     const char* GetKeyName(int key_id);

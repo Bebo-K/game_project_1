@@ -43,7 +43,7 @@ void Scene::Unload(){
 void Scene::Update(int delta){
     if(Controller::Jump().IsDown()){
         my_model->rotation.y += delta /10;
-    }
+    } 
 }
 void Scene::Paint(){
     renderer.Draw(); 
