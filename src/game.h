@@ -22,6 +22,7 @@ namespace Game{
     void Update(int ms);
     void Poll();
     void PostRender();
+    void Exit();
 }
 
 

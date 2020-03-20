@@ -20,7 +20,6 @@ namespace Input{
     void Init();
     void HandleKey(int key_id, bool down);
     void HandleCursor(int pos_x,int pos_y);
-    void HandleJoystick(int stick_id,float tilt_x,float tilt_y);
     void HandleCharacter(int code_point);
 
     void Update();

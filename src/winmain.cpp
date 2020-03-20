@@ -19,7 +19,6 @@ Performance::Counter paintevents_per_second;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
-void CaptureJoystick1(HWND window);
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam);
 
 //********************************************//
@@ -28,6 +27,8 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
 int LoopMain(){
     MSG window_message;
     do {
+        Sleep(5);  
+        Game::Poll();
         polls_per_second.Increment();
         if(second.Time_Over()){
             //TODO: blit this data to screen
@@ -45,8 +46,6 @@ int LoopMain(){
             TranslateMessage(&window_message);
             DispatchMessage(&window_message);
         }
-        Game::Poll();
-        Sleep(5);
     } while (window_message.message != WM_QUIT) ;
     return 0;
 }
@@ -57,6 +56,8 @@ int LoopMain(){
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
     second.interval=1000;
     logger::start("log.txt");
+    config::Init();
+    Input::Init();
 
     WNDCLASSEX window_class;
         window_class.cbSize=sizeof(WNDCLASSEX);
@@ -104,53 +105,46 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     return 1;
 }
 
-
-
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam){
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
-            CaptureJoystick1(window_handle);
             logger::info("Initializing engine...\n");
             Game::Start();
             break;
         case WM_DESTROY:
             DestroyOpenGL();
             logger::info("Exiting.\n");
+            Game::Exit();
             PostQuitMessage(0);
             break;
         case WM_KEYDOWN:
             Input::HandleKey(wparam,true);
-        break;
+            break;
         case WM_KEYUP:
              Input::HandleKey(wparam,false);
-        break;
+            break;
         case WM_CHAR:
              Input::HandleCharacter(wparam);
-        break;
+            break;
         case WM_MOUSEMOVE:
             Input::HandleCursor((short)LOWORD(lparam),(short)HIWORD(lparam));
-        break;
+            break;
         case WM_MOUSEWHEEL:
-            short wheel_delta = (short)HIWORD(wparam);
-        break;
+            //short wheel_delta = (short)HIWORD(wparam);
+            break;
         case WM_LBUTTONDOWN:
             Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,true);
-        break;
+            break;
         case WM_LBUTTONUP:
             Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,false);
-        break;
+            break;
         case WM_RBUTTONDOWN:
             Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,true);
-        break;
+            break;
         case WM_RBUTTONUP:
             Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,false);
-        break;
-        case WM_INPUT : 
-
-        break; 
-
-        break; 
+            break; 
         case WM_SIZE:
             RECT new_client_area;
             if(GetClientRect(window_handle,&new_client_area)){
@@ -221,17 +215,6 @@ void DestroyOpenGL(){
     wglDeleteContext(gl_rendering_context);
 }
 
-void CaptureJoystick1(HWND window){
-    RAWINPUTDEVICE rid;
-
-    rid.usUsagePage = 1;
-    rid.usUsage     = 4; // Joystick
-    rid.dwFlags     = 0;
-    rid.hwndTarget  = window;
-
-    RegisterRawInputDevices(&rid, 1, sizeof(RAWINPUTDEVICE));
-}
-
 //********************************************//
 //                 OS Hooks                   //
 //********************************************//
@@ -239,93 +222,4 @@ void CaptureJoystick1(HWND window){
 void Game::PostRender(){
     paintevents_per_second.Increment();
     SwapBuffers(device_context);
-}
-
-void ParseRawInput(PRAWINPUT pRawInput){
-    if(pRawInput==nullptr)return;
-    if(pRawInput->header.dwType != RIM_TYPEHID)return;
-    //TODO: sort this
-            
-    CHECK( GetRawInputDeviceInfo(pRawInput->header.hDevice, 
-        RIDI_PREPARSEDDATA, NULL, &bufferSize) == 0 );
-    CHECK( pPreparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(hHeap, 0, bufferSize) );
-    CHECK( (int)GetRawInputDeviceInfo(pRawInput->header.hDevice, 
-        RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize) >= 0 );
-    CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
-    CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc
-        (hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
-
-    capsLength = Caps.NumberInputButtonCaps;
-    CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, 
-        &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
-    g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-    CHECK( pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc
-        (hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps) );
-    capsLength = Caps.NumberInputValueCaps;
-    CHECK( HidP_GetValueCaps(HidP_Input, pValueCaps, 
-        &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
-        usageLength = g_NumberOfButtons;
-    CHECK(
-        HidP_GetUsages(
-            HidP_Input, pButtonCaps->UsagePage, 0, usage, 
-        &usageLength, pPreparsedData,
-            (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-        ) == HIDP_STATUS_SUCCESS );
-
-    ZeroMemory(bButtonStates, sizeof(bButtonStates));
-    for(i = 0; i < usageLength; i++)
-        bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
-
-    for(i = 0; i < Caps.NumberInputValueCaps; i++)
-    {
-        CHECK(
-            HidP_GetUsageValue(
-                HidP_Input, pValueCaps[i].UsagePage, 0, 
-            pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
-                (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-            ) == HIDP_STATUS_SUCCESS );
-
-        switch(pValueCaps[i].Range.UsageMin)
-        {
-        case 0x30:    // X-axis
-            lAxisX = (LONG)value - 128;
-            break;
-
-        case 0x31:    // Y-axis
-            lAxisY = (LONG)value - 128;
-            break;
-
-        case 0x32: // Z-axis
-            lAxisZ = (LONG)value - 128;
-            break;
-
-        case 0x35: // Rotate-Z
-            lAxisRz = (LONG)value - 128;
-            break;
-
-        case 0x39:    // Hat Switch
-            lHat = value;
-            break;
-        }
-    }
-
-}
-
-void HandleRawInput(HWND window,LPARAM lparam,WPARAM wparam){
-        PRAWINPUT pRawInput;
-        UINT      bufferSize;
-        HANDLE    hHeap;
-
-        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, NULL, 
-		&bufferSize, sizeof(RAWINPUTHEADER));
-
-        hHeap     = GetProcessHeap();
-        pRawInput = (PRAWINPUT)HeapAlloc(hHeap, 0, bufferSize);
-        if(!pRawInput)return;
-
-        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, 
-		pRawInput, &bufferSize, sizeof(RAWINPUTHEADER));
-        ParseRawInput(pRawInput);
-
-        HeapFree(hHeap, 0, pRawInput);
 }

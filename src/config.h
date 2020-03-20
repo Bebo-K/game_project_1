@@ -3,16 +3,16 @@
 
 #include "data_structs.h"
 
-class config{
-    public:
+namespace config{
 
-    static int window_width;
-    static int window_height;
-    static int ui_width;
-    static int ui_height;
-    static AssociativeArray key_bindings;
+    extern int window_width;
+    extern int window_height;
+    extern int ui_width;
+    extern int ui_height;
+    extern AssociativeArray key_bindings;
 
-    static void    LoadFile(char* filename);
+    void Init();
+    void LoadFile(char* filename);
 };
 
 

@@ -52,12 +52,9 @@ void Input::Init(){
 }
 
 void Input::HandleKey(int key_id, bool down){
-    if(down){
-        logger::info("%s\n", GetKeyName(key_id));
-        for(int i=0;i<button_count;i++){
-            if(key_mappings[i] == key_id){
-                logger::info(" -> %s\n", button_names[i]);
-            }
+    for(int i=0;i<button_count;i++){
+        if(key_mappings[i] == key_id){
+            keys[i].state=down?3:2;
         }
     }
 }
@@ -71,15 +68,6 @@ void Input::HandleCursor(int pos_x,int pos_y){
 
 void Input::HandleCharacter(int code_point){
     character_code=code_point;
-}
-
-void Input::HandleJoystick(int stick_id,float tilt_x,float tilt_y){
-    if(stick_id==0){
-        //TODO
-    }
-    else if(stick_id==1){
-        //TODO
-    }
 }
 
 //Prepares input for next frame. Call after gamestate/ui update.
@@ -112,3 +100,8 @@ Controller::Button Controller::Crouch(){return keys[7];}
 Controller::Button Controller::CenterCamera(){return keys[8];}
 Controller::Button Controller::Pause(){return keys[9];}
 Controller::Button Controller::Inventory(){return keys[10];}
+
+bool Controller::Button::IsDown(){return (state&1) > 0;}
+bool Controller::Button::IsUp(){return (state&1) == 0;}
+bool Controller::Button::IsJustPressed(){return state == 3;}
+bool Controller::Button::IsJustReleased(){return state == 2;}

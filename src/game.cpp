@@ -41,6 +41,7 @@ void Game::Paint(){
 
 
 void Game::Poll(){
+    if(!running)return;
     time_point<system_clock> current_time = high_resolution_clock::now();
     duration<double, std::milli> time_delta = current_time - last_frame;
     if(time_delta.count() > frame_interval){
@@ -56,3 +57,17 @@ void Game::Poll(){
         last_render = high_resolution_clock::now();
     }
 }  
+
+void Game::Exit(){
+    running=false;
+    if(client != nullptr){
+        //client->Unload();
+        delete client;
+    }
+    //Todo:Free these
+    //ShaderManager::Init();
+    //TextureManager::Init();
+    //ModelManager::Init();
+    //AnimationManager::Init();
+    //ShaderManager::Init();
+}

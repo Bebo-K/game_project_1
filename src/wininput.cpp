@@ -22,7 +22,7 @@ const char* MS_VK_NAMES [] ={
 /*0x0E*/ "scroll",	
 /*0x0F*/ "[?]",
 /*0x10*/ "shift",
-/*0x11*/ "[?]",
+/*0x11*/ "ctrl",
 /*0x12*/ "alt",
 /*0x13*/ "pause",
 /*0x14*/ "capslock",
@@ -323,6 +323,7 @@ const char* Input::GetKeyName(int key_id){
     key_id <= JOYSTICK_OFFSET+JOYSTICK_BUTTON_COUNT){
         return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
     }
+    return nullptr;
 }
     
 
