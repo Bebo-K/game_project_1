@@ -22,7 +22,9 @@ void BitArray::Resize(int new_bit_count){
     int new_char_count = new_bit_count/8 + (new_bit_count % 8 > 0);
     unsigned char* new_data = (unsigned char*)calloc(new_char_count,1);
     
-    memcpy(new_data,data,old_char_count);
+    if(old_char_count <= new_char_count){
+        memcpy(new_data,data,old_char_count);
+    }
     bits = new_bit_count;
     free(data);
     data = new_data;
@@ -139,7 +141,9 @@ int DataArray::Count(){
 void DataArray::Resize(int new_count){
     slot_is_filled.Resize(new_count);
     byte* new_data = (byte*)calloc(new_count,slot_size);
-    memcpy(new_data,data,slots*slot_size);
+    if(slots <= new_count){
+        memcpy(new_data,data,slots*slot_size);
+    }
     slots = new_count;
     free(data);
     data = new_data;
@@ -204,7 +208,9 @@ int PointerArray::Count(){
 }
 void PointerArray::Resize(int newsize){
     byte** newdata = (byte**)calloc(newsize,sizeof(byte*));
-    for(int i=0;i<slots;i++){newdata[i] = data[i];}
+    if(slots <= newsize){
+        for(int i=0;i<slots;i++){newdata[i] = data[i];}
+    }
     free(data);
     slots=newsize;
     data=newdata;
@@ -329,8 +335,10 @@ void AssociativeArray::Resize(int new_count){
     slot_is_filled.Resize(new_count);
     byte** new_value_data = (byte**)calloc(new_count,sizeof(byte*));
     byte** new_key_data = (byte**)calloc(new_count,sizeof(u_associative_array_key));
-    memcpy(new_value_data,value_data,sizeof(byte*)*slots);
-    memcpy(new_key_data,key_data,sizeof(u_associative_array_key)*slots);
+    if(slots <= new_count){
+        memcpy(new_value_data,value_data,sizeof(byte*)*slots);
+        memcpy(new_key_data,key_data,sizeof(u_associative_array_key)*slots);   
+    }
     free(value_data);
     free(key_data);
     value_data=new_value_data;

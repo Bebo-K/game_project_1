@@ -22,6 +22,13 @@ void Renderer::Load(){
     primitives.Resize(8);
 }
 
+void Renderer::Unload(){
+    for(int i=0;i<primitives.slots;i++){
+        primitives.Remove(i);
+    }
+    primitive_count=0;
+}
+
 void Renderer::Add(Primitive* p){
     primitives.Add(p);
     primitive_count++;
