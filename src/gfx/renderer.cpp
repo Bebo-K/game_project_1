@@ -17,7 +17,6 @@ void Renderer::Load(){
 
     camera.width= config::ui_width;
     camera.height= config::ui_height;
-    camera.z = 10.0f;
 
     primitives.Resize(8);
 }

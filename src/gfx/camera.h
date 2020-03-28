@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "types.h"
+#include "../structs/3d_types.h"
 #include "shader.h"
 
 class Camera{
@@ -18,6 +18,7 @@ class Camera{
     Shader* shader;
 
     Camera();
+    void SetShader(char* shader_name);
     void SetShader(Shader* new_shader);
     vec3 ToWorldSpace(vec3 v);
     void ToCameraSpace(mat4* m);

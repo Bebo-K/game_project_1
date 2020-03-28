@@ -1,4 +1,4 @@
-#include "types.h"
+#include "3d_types.h"
 #include <math.h>
 
 
@@ -63,6 +63,15 @@ void vec3::rotate_z(float theta){
     float _y = x*sin + y*cos;
     float _z = z;
     x = _x; y = _y; z = _z;
+}
+
+vec3 vec3::operator +(vec3& v2){return{x+v2.x,y+v2.y,z+v2.z};}
+vec3 vec3::operator -(vec3& v2){return{x-v2.x,y-v2.y,z-v2.z};}
+vec3 vec3::operator *(float scl){
+    float len = length();
+    if(scl == 0 || len ==0){return {0,0,0};}
+    len = scl/len;
+    return {x*len,y*len,z*len};
 }
 
 vec2::vec2(){

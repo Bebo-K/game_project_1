@@ -3,7 +3,7 @@
 
 #include "../io/image.h"
 #include "gload.h"
-#include "../data_structs.h"
+#include "../structs/data_types.h"
 
 struct TextureRectangle{
     float x,y,w,h;

@@ -25,6 +25,7 @@ struct BitArray{
     void Set(int index);
     void Unset(int index);
     bool Toggle(int index);//returns new value;
+    void Clear();
 };
 
 
@@ -56,6 +57,7 @@ struct DataArray{
     byte* GetArray();
 
     int Count();
+    void Clear();
     void Resize(int new_count);
     void Initialize(int count,int object_size);
 };

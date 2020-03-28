@@ -1,7 +1,7 @@
 #ifndef SKELETON_H
 #define SKELETON_H
 
-#include "types.h"
+#include "../structs/3d_types.h"
 #include "animation.h"
 
 //https://www.youtube.com/watch?v=aBN_dEA4jO0
@@ -33,7 +33,7 @@ class Skeleton{
     void AllocateBoneCount(int num_bones);
     void SetBoneName(int bone_id,char* bone_name);
 
-    Skeleton* Clone();
+    void Clone(Skeleton* dest);
     void DestroySharedData();
     void CalculatePose();
 

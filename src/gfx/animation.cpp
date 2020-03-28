@@ -1,7 +1,7 @@
 #include "animation.h"
-#include "../data_structs.h"
+#include "../structs/data_types.h"
+#include "../structs/3d_types.h"
 #include "../log.h"
-#include "3dstructs.h"
 #include <string.h>
 #include "math.h"
 

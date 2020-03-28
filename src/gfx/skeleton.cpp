@@ -57,16 +57,14 @@ void Skeleton::SetBoneName(int bone_id, char* bone_name){
 }
 
 
-Skeleton* Skeleton::Clone(){
-    Skeleton* ret = new Skeleton();
-    ret->bone_count=bone_count;
-    ret->bones=bones;
-    ret->inverse_bind_mats=inverse_bind_mats;
-    ret->animations = animations;
-    ret->pose_transforms = (Transform*)calloc(bone_count,sizeof(Transform));
-    for(int i=0;i<bone_count;i++){ret->pose_transforms->Clear();}
-    ret->pose_matrices = (mat4*)calloc(bone_count,sizeof(mat4));
-    return ret;
+void Skeleton::Clone(Skeleton* dest){
+    dest->bone_count=bone_count;
+    dest->bones=bones;
+    dest->inverse_bind_mats=inverse_bind_mats;
+    dest->animations = animations;
+    dest->pose_transforms = (Transform*)calloc(bone_count,sizeof(Transform));
+    for(int i=0;i<bone_count;i++){dest->pose_transforms->Clear();}
+    dest->pose_matrices = (mat4*)calloc(bone_count,sizeof(mat4));
 }
 
 void Skeleton::DestroySharedData(){

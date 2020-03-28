@@ -2,7 +2,7 @@
 #define INPUT_H
 
 
-#include "gfx/types.h"
+#include "structs/3d_types.h"
 
 namespace Input{
     enum MOUSE_IDS{

@@ -1,6 +1,6 @@
 #include "gltf.h"
 #include "../log.h"
-#include "../data_structs.h"
+#include "../structs/data_types.h"
 
 GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
 	if(model_file.error)return;

@@ -2,7 +2,7 @@
 #include "config.h"
 #include "log.h"
 #include <stdlib.h>
-#include "data_structs.h"
+#include "structs/data_types.h"
 
 
 const int   button_count=11;

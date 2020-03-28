@@ -14,6 +14,10 @@ Model::Model(){
 }
 
 Model::~Model(){
+    if(skeleton != null){
+        delete skeleton;
+        skeleton = null;
+    }
 }
 
 void Model::DrawMesh(Camera* cam,Mesh* m){
@@ -116,18 +120,15 @@ void DestroyMeshGroup(MeshGroup* m){
     }
 }
 
-Model* Model::Clone(){
-    Model* ret = new Model;
-
-    ret->name=name;
-    ret->mesh_groups=mesh_groups;
-    ret->mesh_group_count=mesh_group_count;
+void Model::Clone(Model* dest){
+    dest->name=name;
+    dest->mesh_groups=mesh_groups;
+    dest->mesh_group_count=mesh_group_count;
     if(skeleton != null){
-        ret->skeleton=skeleton->Clone();
+        dest->skeleton=new Skeleton();
+        skeleton->Clone(dest->skeleton);
     }
-    ret->bounds = bounds;
-
-    return ret;
+    dest->bounds = bounds;
 }
 
 void Model::DestroySharedData(){//Will break all instances of a model, be careful!
@@ -166,7 +167,7 @@ void ModelManager::Add(const char* name, Model* model){
 Model* ModelManager::Get(const char* name){
     Model* ret = (Model*)cached_models.StrGet(name);
     if(ret == nullptr){ret = ErrorModel();}
-    return ret->Clone();
+    return ret;
 }
 void ModelManager::Remove(const char* name){
     Model* mdl = (Model*)cached_models.StrRemove(name);

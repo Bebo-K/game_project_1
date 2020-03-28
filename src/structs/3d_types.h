@@ -1,11 +1,12 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef _3D_TYPES_H
+#define _3D_TYPES_H
 
 #define PI 3.1415926535f
 #define PI_OVER_180 3.1415926535f/180.0f 
 #define FLOAT_IS_ZERO(x) x == 0.0f
 
 struct vec3{
+    public:
     float x,y,z;
 
     vec3();
@@ -19,6 +20,9 @@ struct vec3{
     void rotate_x(float theta);
     void rotate_y(float theta);
     void rotate_z(float theta);
+    vec3 operator +(vec3& v2);
+    vec3 operator -(vec3& v2);
+    vec3 operator *(float scl);
 };
 
 struct vec2{
@@ -96,7 +100,6 @@ struct mat3{
 };
 
 
-
 struct Transform{
     float x,y,z;
     quaternion rotation;
@@ -104,5 +107,6 @@ struct Transform{
 
     void Clear();
 };
+
 
 #endif

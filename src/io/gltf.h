@@ -14,8 +14,8 @@
 #define CTYPE_UINT 5125
 #define CTYPE_FLOAT 5126
 
-#include "../data_structs.h"
 #include "json.h"
+#include "../structs/data_types.h"
 #include "../gfx/model.h"
 
 class GLTFScene{

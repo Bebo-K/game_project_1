@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "../data_structs.h"
+#include "../structs/data_types.h"
 
 const int ANIMATION_LAYER_COUNT =4;
 

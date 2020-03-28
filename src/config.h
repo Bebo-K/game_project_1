@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "data_structs.h"
+#include "structs/data_types.h"
 
 namespace config{
 

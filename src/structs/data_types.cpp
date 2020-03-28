@@ -1,5 +1,5 @@
-#include "log.h"
-#include "data_structs.h"
+#include "../log.h"
+#include "data_Types.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,6 +71,11 @@ bool BitArray::Toggle(int index){
     data[index/8] = (data[index/8] ^ (1 << (index%8)));
     return ((data[index/8] >> (index%8)) & 1) > 0;
 }
+void BitArray::Clear(){
+    int char_count = bits/8 + ((bits % 8) > 0);
+    memset(data,0,char_count);
+}
+
 DataArray::DataArray():slot_is_filled(){
     slots=0;
     slot_size=0;
@@ -147,6 +152,10 @@ void DataArray::Resize(int new_count){
     slots = new_count;
     free(data);
     data = new_data;
+}
+void DataArray::Clear(){
+    memset(data,0,slot_size*slots);
+    slot_is_filled.Clear();
 }
 void DataArray::Initialize(int count,int object_size){
     slots=count;

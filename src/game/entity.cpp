@@ -1,43 +1,50 @@
 #include "entity.h"
-
+#include <stdlib.h>
 
 
 Entity::Entity(){
-    unique_id=-1;
-    type_id=-1;
+    instance_id =0;
+    unique_id =0;
+    type_id =0;
     name=nullptr;
     x=y=z=0;
-    scale={1,1,1};
-    rotation={0,0,0,1};
+    scale ={1,1,1};
+    rotation = {0,0,0,1};
 
-/*
+    velocity=nullptr;
     models=nullptr;
     sprites=nullptr;
-    phys=nullptr;
     colliders=nullptr;
     movement=nullptr;
     state=nullptr;
-    anims=nullptr;
-    player_stats=nullptr;
-    cam_target=nullptr;
+    animations=nullptr;
+    player_data=nullptr;
+    camera_target=nullptr;
     unit_data=nullptr;
-    npc_stats=nullptr;
-*/
+    npc_data=nullptr;
+}
+
+void Entity::SetName(char* name){
+    name = cstr::new_copy(name);
+}
+
+vec3 Entity::GetPos(int ms){
+    float seconds = ms/1000.0f;
+    return {x+(velocity.x*seconds),y+(velocity.y*seconds),z+(velocity.z*seconds)};
 }
 
 Entity::~Entity(){
-    if(name != nullptr){delete name;name=nullptr;}
-    /*
-    if(models!=nullptr){delete models;models=nullptr;}
-    if(sprites!=nullptr){delete sprites;sprites=nullptr;}
-    if(phys!=nullptr){delete phys;phys=nullptr;}
-    if(colliders!=nullptr){delete colliders;colliders=nullptr;}
-    if(movement!=nullptr){delete movement;movement=nullptr;}
-    if(state!=nullptr){delete state;state=nullptr;}
-    if(anims!=nullptr){delete anims;anims=nullptr;}
-    if(player_stats!=nullptr){delete player_stats;player_stats=nullptr;}
-    if(cam_target!=nullptr){delete cam_target;cam_target=nullptr;}
-    if(unit_data!=nullptr){delete unit_data;unit_data=nullptr;}
-    if(npc_stats!=nullptr){delete npc_stats;npc_stats=nullptr;}
-    */
+    if(name != nullptr){free(name);name=nullptr;}
+    if(models != nullptr){free(models);models=nullptr;}
+    if(sprites != nullptr){free(sprites);sprites=nullptr;}
+    if(phys_data != nullptr){free(phys_data);phys_data=nullptr;}
+    if(colliders != nullptr){free(colliders);colliders=nullptr;}
+    if(movement != nullptr){free(movement);movement=nullptr;}
+    if(state != nullptr){free(state);state=nullptr;}
+    if(animations != nullptr){free(animations);animations=nullptr;}
+    if(player_data != nullptr){free(player_data);player_data=nullptr;}
+    if(camera_target != nullptr){free(camera_target);camera_target=nullptr;}
+    if(unit_data != nullptr){free(unit_data);unit_data=nullptr;}
+    if(npc_data != nullptr){free(npc_data);npc_data=nullptr;}
 }
+

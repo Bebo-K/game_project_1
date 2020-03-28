@@ -1,7 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "3dstructs.h"
+#include "../structs/3d_types.h"
+#include "../structs/math_types.h"
 #include "primitive.h"
 #include "skeleton.h"
 
@@ -35,7 +36,7 @@ class Model: public Primitive{
     Skeleton*   skeleton;
 
     Model();
-    Model* Clone();//Same shared data among all clones.
+    void Clone(Model* dest);//Same shared data among all clones.
     void DestroySharedData();
     ~Model();
 

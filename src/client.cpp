@@ -4,6 +4,9 @@
 
 void Client::Load(){
     logger::info("Initializing client...\n");
+
+    ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
+
     scene.Load();
     ui.Load();
 }
