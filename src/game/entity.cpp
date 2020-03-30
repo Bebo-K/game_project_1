@@ -17,7 +17,7 @@ Entity::Entity(){
     colliders=nullptr;
     movement=nullptr;
     state=nullptr;
-    animations=nullptr;
+    //animations=nullptr;
     player_data=nullptr;
     camera_target=nullptr;
     unit_data=nullptr;
@@ -41,7 +41,7 @@ Entity::~Entity(){
     if(colliders != nullptr){free(colliders);colliders=nullptr;}
     if(movement != nullptr){free(movement);movement=nullptr;}
     if(state != nullptr){free(state);state=nullptr;}
-    if(animations != nullptr){free(animations);animations=nullptr;}
+    //if(animations != nullptr){free(animations);animations=nullptr;}
     if(player_data != nullptr){free(player_data);player_data=nullptr;}
     if(camera_target != nullptr){free(camera_target);camera_target=nullptr;}
     if(unit_data != nullptr){free(unit_data);unit_data=nullptr;}

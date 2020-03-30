@@ -15,11 +15,12 @@ class PhysicsData : Component{
 	
 	bool	apply_gravity = true;
 	bool	lock_rotation = false;//todo: implement ragdoll phys in a million years.
+    bool    dampen_velocity = true;
 	float	midair_velocity_damper = 0.75f;
 	float	ground_velocity_damper = 0.9999f;
 	float	y_velocity_damper = 0;
 	bool	is_midair	=	false;
-	bool out_of_bounds = false;
+	bool    out_of_bounds = false;
 
     ~PhysicsData();
 };

@@ -14,6 +14,12 @@ Primitive::Primitive(){
 
 Primitive::~Primitive(){}
 
+VBO::VBO(){
+    buffer_id=0;
+    element_type=0;
+    elements_per_vertex=0;
+}
+
 bool VBO::Valid(){
     return buffer_id > 0;
 }

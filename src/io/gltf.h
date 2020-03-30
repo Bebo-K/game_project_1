@@ -17,6 +17,7 @@
 #include "json.h"
 #include "../structs/data_types.h"
 #include "../gfx/model.h"
+#include "../gfx/collidable_model.h"
 
 class GLTFScene{
 	private:
@@ -42,6 +43,7 @@ class GLTFScene{
 	void GetAnimation(int animation_id,Animation* dest);
 	
 	Model* LoadAsModel(char* model_name);
+	CollidableModel* LoadAsLandmark();
 
 	~GLTFScene();
 };

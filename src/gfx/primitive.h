@@ -23,6 +23,7 @@ struct VBO{
     GLuint element_type;
     short  elements_per_vertex;
 
+    VBO();
     bool Valid();
     void Create(void* data,GLuint type,int per_vertex,int count);
     void Create(void* data,GLuint type,int per_vertex,int count,GLuint buffer_type);
