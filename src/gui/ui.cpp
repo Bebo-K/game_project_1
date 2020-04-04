@@ -2,6 +2,12 @@
 #include "../config.h"
 #include "../log.h"
 
+
+UI::UI() : renderer(){
+
+    
+}
+
 void UI::Load(){
     logger::info("loading ui...\n");
 

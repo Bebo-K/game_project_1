@@ -12,6 +12,8 @@ void Scene::Load(){
     renderer.camera.z = 10.0f;
     renderer.camera.y += 2.0f;
 
+    level.LoadDefault();
+
     //"dat/img/atlas_1.png"
     //my_cube = new WirePrimitive(CUBE,{.4,1.0,.4},2,1,1);
     //my_cube->rotation.y=45

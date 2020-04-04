@@ -3,7 +3,8 @@
 
 #include "primitive.h"
 
-class Skybox : Primitive{
+class Skybox : public Primitive{
+    public:
     //could encompass global lighting too?
     VBO         vertices,tex_coords,normals;
     Material    mat;

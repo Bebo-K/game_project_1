@@ -3,6 +3,7 @@
 
 #include "../gfx/renderer.h"
 #include "entity.h"
+#include "level.h"
 #include "../structs/list.h"
 
 
@@ -11,7 +12,7 @@ class Scene{
     public:
     Renderer renderer;
     List<Entity> entities;
-	//Level level;
+	Level level;
 
     void Load();//loads default scene
     void Load(int area_id);

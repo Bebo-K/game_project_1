@@ -40,6 +40,7 @@ void Renderer::Remove(Primitive* p){
 
 
 void Renderer::Draw(){
+    if(primitive_count <= 0){return;}
     camera.shader->Use();
     
     view_matrix.identity(); 

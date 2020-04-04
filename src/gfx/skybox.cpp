@@ -1,12 +1,13 @@
 #include "skybox.h"
 
+float S=10.0f;
 float skybox_vert_data[] ={
-    -1, -1,  1,   1, -1,  1,   1,  1,  1,    -1, -1,  1,   1,  1,  1,  -1,  1,  1,// Front face
-    -1, -1, -1,  -1,  1, -1,   1,  1, -1,    -1, -1, -1,   1,  1, -1,   1, -1, -1,// Back face
-    -1,  1, -1,  -1,  1,  1,   1,  1,  1,    -1,  1, -1,   1,  1,  1,   1,  1, -1,// Top face
-    -1, -1, -1,   1, -1, -1,   1, -1,  1,    -1, -1, -1,   1, -1,  1,  -1, -1,  1,// Bottom face
-     1, -1, -1,   1,  1, -1,   1,  1,  1,     1, -1, -1,   1,  1,  1,   1, -1,  1,// Right face
-    -1, -1, -1,  -1, -1,  1,  -1,  1,  1,    -1, -1, -1,  -1,  1,  1,  -1,  1, -1// Left face
+    -S, -S,  S,   S, -S,  S,   S,  S,  S,    -S, -S,  S,   S,  S,  S,  -S,  S,  S,// Front face
+    -S, -S, -S,  -S,  S, -S,   S,  S, -S,    -S, -S, -S,   S,  S, -S,   S, -S, -S,// Back face
+    -S,  S, -S,  -S,  S,  S,   S,  S,  S,    -S,  S, -S,   S,  S,  S,   S,  S, -S,// Top face
+    -S, -S, -S,   S, -S, -S,   S, -S,  S,    -S, -S, -S,   S, -S,  S,  -S, -S,  S,// Bottom face
+     S, -S, -S,   S,  S, -S,   S,  S,  S,     S, -S, -S,   S,  S,  S,   S, -S,  S,// Right face
+    -S, -S, -S,  -S, -S,  S,  -S,  S,  S,    -S, -S, -S,  -S,  S,  S,  -S,  S, -S// Left face
 };
 
 //Though it wastes a little space, skybox texture space is laid out like this
@@ -58,38 +59,26 @@ Skybox::Skybox(char* img_fn) : mat(){
 
 
 void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
+    cam->SetShader("shadeless");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
     
-    mat4 model;
-    mat3 normal;
-    mat4 identity;
-
-    identity.identity();
-
-    model.identity();
-    model.scale(scale);
-    model.rotate(rotation);
-    model.translate(x,y,z);
-    view->multiply_by(&model);
-
-    normal.set(view);
-    normal.transpose();
-    normal.invert();
+    mat4 modelview;
+        modelview.identity();
+        if(cam->rotation.x != 0){modelview.rotate_x(cam->rotation.x);}
+        if(cam->rotation.y != 0){modelview.rotate_y(cam->rotation.y);}
+        if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
     
-    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
+    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
     glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
-    glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
-    //TODO: draw code
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
+    glUniform1i(cam->shader->TEXTURE_0,0);
+    glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    
+    glDrawArrays(GL_TRIANGLES,0,vertex_count);
 
-
-
-
-    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
 }

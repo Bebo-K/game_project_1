@@ -8,10 +8,8 @@ class UI{
 
     public:
 
-
     Renderer renderer;
-    //Sprite* defaultSprite;
-
+    UI();
     void Load();
 
     //void PushMenu(Menu* newmenu);

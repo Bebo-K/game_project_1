@@ -17,7 +17,7 @@
 #include "json.h"
 #include "../structs/data_types.h"
 #include "../gfx/model.h"
-#include "../gfx/collidable_model.h"
+#include "../gfx/solid_geometry.h"
 
 class GLTFScene{
 	private:
@@ -29,6 +29,7 @@ class GLTFScene{
 	byte* GetBufferViewData(int buffer_view_id,int* len);
 	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
 	float* BuildAccessorFloatArray(int id,int* count);
+	int* BuildAccessorIntArray(int id,int* count);
 
 	public:
 	char* base_name;
@@ -37,13 +38,19 @@ class GLTFScene{
 
 
 	GLTFScene(File model_file);
-	Material   GetMaterial(int material_id);
+	
+	void LoadAnimation(int animation_id,Animation* dest);
+	void LoadAsGeometry(SolidGeometry* dest);
+	void LoadAsModel(char* model_name,Model* dest);
+
 	MeshGroup* GetMeshGroup(int group_id);
+	SolidGroup* GetSolidGroup(int group_id);
+
+	Material   GetMaterial(int material_id);
 	Skeleton*  GetSkeleton(int skeleton_id);
-	void GetAnimation(int animation_id,Animation* dest);
 	
 	Model* LoadAsModel(char* model_name);
-	CollidableModel* LoadAsLandmark();
+	SolidGeometry* LoadAsGeometry();
 
 	~GLTFScene();
 };
