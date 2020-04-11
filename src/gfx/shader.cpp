@@ -7,7 +7,6 @@ AssociativeArray cachedShaders(2);
 
 
 Shader::Shader(const char* vertexFile,const char* fragmentFile){
-
     FileBuffer vertexProgram(vertexFile);
     FileBuffer fragmentProgram(fragmentFile);
 

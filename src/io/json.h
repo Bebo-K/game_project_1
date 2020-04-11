@@ -1,6 +1,7 @@
 #ifndef JSON_H
 #define JSON_H
 
+#include "file.h"
 
 struct JSONObject;
 struct JSONArray;
@@ -95,7 +96,7 @@ struct JSONObject{
 
 class JSONParser{
 public:
-
+	JSONParser(File json_file);
 	JSONParser(char* JSON,int length);
 
 	char* data;

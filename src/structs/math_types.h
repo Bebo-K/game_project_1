@@ -19,9 +19,6 @@ struct float_range
     float ScaleTo(float f);
 };
 
-
-
-
 struct AABB{
     vec3 lo_corner;
     vec3 hi_corner;
@@ -58,6 +55,19 @@ struct AABB{
     bool ContainsCircle_XZ(vec3 position, float width);
     vec3 Center();
     void EncompassPoint(vec3 point);
+};
+
+struct plane{
+    public:
+    vec3 normal;
+    float distance;
+
+    plane(float a,float b,float c,float d);
+    plane(vec3 normal,vec3 tangent_point);
+    float DistanceTo(vec3 pos);
+    void Invert();
+    float YIntersect(float x,float z);
+
 };
 
 

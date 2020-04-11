@@ -18,12 +18,13 @@ Performance::Counter Game::updates_per_second;
 
 void Game::Start(){
     client = new Client();
-    running=true;
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
     AnimationManager::Init();
     client->Load();
+
+    running=true;
 }
 
 void Game::Update(int ms){

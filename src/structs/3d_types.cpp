@@ -73,6 +73,11 @@ vec3 vec3::operator *(float scl){
     len = scl/len;
     return {x*len,y*len,z*len};
 }
+vec3 vec3::normalized(){
+    float len = length();
+    if(len ==0){return {0,0,0};}
+    return {x/len,y/len,z/len};
+}
 
 vec2::vec2(){
     x=y=0;

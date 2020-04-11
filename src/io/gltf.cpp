@@ -323,13 +323,21 @@ Material GLTFScene::GetMaterial(int mat_id){
 	}
 	if(material->HasJObject("pbrMetallicRoughness")){
 		JSONObject* PBRMaterial = material->GetJObject("pbrMetallicRoughness");
-		JSONArray* baseColor=PBRMaterial->GetArray("baseColorFactor");	
-			ret.base_color[0] = baseColor->At(0)->FloatValue();
-			ret.base_color[1] = baseColor->At(1)->FloatValue();
-			ret.base_color[2] = baseColor->At(2)->FloatValue();
-			ret.base_color[3] = baseColor->At(3)->FloatValue();
-		ret.metallic_factor=PBRMaterial->GetFloat("metallicFactor");
-		ret.roughness_factor=PBRMaterial->GetFloat("roughnessFactor");
+		if(PBRMaterial->HasArray("baseColorFactor")){
+			JSONArray* baseColor=PBRMaterial->GetArray("baseColorFactor");	
+				ret.base_color[0] = baseColor->At(0)->FloatValue();
+				ret.base_color[1] = baseColor->At(1)->FloatValue();
+				ret.base_color[2] = baseColor->At(2)->FloatValue();
+				ret.base_color[3] = baseColor->At(3)->FloatValue();
+		}
+		if(PBRMaterial->HasJObject("baseColorTexture")){
+			JSONObject* baseColorTexture=PBRMaterial->GetJObject("baseColorTexture");
+				int texture_index = baseColorTexture->GetInt("index");
+				//TODO: TEXTURE LOADING
+				//int texture_layer = baseColorTexture->GetInt("texCoord");
+		}
+		ret.metallic_factor=(PBRMaterial->HasFloat("metallicFactor"))?PBRMaterial->GetFloat("metallicFactor") : 0;
+		ret.roughness_factor=(PBRMaterial->HasFloat("roughnessFactor"))?PBRMaterial->GetFloat("roughnessFactor") : 0;
 	}
 	return ret;
 }

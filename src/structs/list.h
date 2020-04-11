@@ -1,6 +1,7 @@
-    #ifndef LIST_H
+#ifndef LIST_H
 #define LIST_H
 
+#include  <stdlib.h>
 #include "data_types.h"
 
 template <typename T>
@@ -30,6 +31,7 @@ class List{
     }
 
     bool IsLast(int index){
+        if(index+1 >= count)return true;
         for(int i=index+1;data.slot_is_filled.Get(i)==false;i++){
             if(i >= data.slots){return true;}
         }
@@ -45,6 +47,11 @@ class List{
     T* New(){
         count++;
         return new (data.Add()) T();
+    }
+
+    void Put(T* obj){
+        count++;
+        data.Add(obj);
     }
 
     void Delete(T* obj){
@@ -81,6 +88,18 @@ class List{
         }
         data.Clear();
     }
+
+    T* Harden(){
+        T* ret = (T*)malloc(sizeof(T)*count);
+
+        int array_slot=0;
+        for(int i=Begin();!IsLast(i);i=Next(i)){
+            memcpy(&ret[array_slot],data.Get(i),sizeof(T));
+        }
+
+        return ret;
+    }
+
 };
 
 #endif

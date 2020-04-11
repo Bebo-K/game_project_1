@@ -2,7 +2,11 @@
 #include "log.h"
 #include <stdio.h>
 
-Client::Client(): scene(),ui(){}
+Client::Client() : scene(), ui(){
+
+
+
+}
 
 void Client::Load(){
     logger::info("Initializing client...\n");

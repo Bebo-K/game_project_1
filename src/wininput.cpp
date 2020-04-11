@@ -311,6 +311,7 @@ int Input::GetKeyID(char* key_name){
             return i;
         }
     }
+    return -1;
 }
 
 const char* Input::GetKeyName(int key_id){

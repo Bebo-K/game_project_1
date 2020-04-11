@@ -1,5 +1,5 @@
 #include "math_types.h"
-
+#include <math.h>
 
 float_range float_range::Union(float_range r2){
     return float_range( (min < r2.min)?min:r2.min , (max > r2.max)?max:r2.max );
@@ -107,4 +107,35 @@ void AABB::EncompassPoint(vec3 point){
         if(point.z > North()){SetNorth(point.z);}
         if(point.z < South()){SetSouth(point.z);}
     }
+}
+
+
+
+
+plane::plane(float a, float b, float c, float d){
+    normal = {a,b,c};
+    normal = normal.normalized();//just to double-check
+    distance = d;
+}
+plane::plane(vec3 normal_vec, vec3 tangent_point){
+    normal = normal_vec.normalized();
+    distance = -(normal.x*tangent_point.x + normal.y*tangent_point.y + normal.z*tangent_point.z);
+}
+	
+float plane::DistanceTo(vec3 pos){
+    return normal.x*pos.x + normal.y*pos.y + normal.z*pos.z + distance;
+}
+
+void plane::Invert() {
+    distance *= -1;
+    normal.x *= -1;
+    normal.y *= -1;
+    normal.z *= -1;
+}
+
+float plane::YIntersect(float X, float Z){
+    if(normal.y*normal.y == 0){
+        return NAN;
+    }
+    return (normal.x*X + normal.z*Z + distance)/-normal.y;
 }

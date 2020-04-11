@@ -23,6 +23,7 @@ struct vec3{
     vec3 operator +(vec3& v2);
     vec3 operator -(vec3& v2);
     vec3 operator *(float scl);
+    vec3 normalized();
 };
 
 struct vec2{

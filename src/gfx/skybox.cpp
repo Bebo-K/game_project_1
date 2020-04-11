@@ -1,4 +1,5 @@
 #include "skybox.h"
+#include "../log.h"
 
 float S=10.0f;
 float skybox_vert_data[] ={
@@ -43,6 +44,10 @@ void BuildSkyboxPrimitive(){
     skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,36);
     skybox_texcoords.Create(skybox_texcoord_data,GL_FLOAT,3,36);
     skybox_normals.Create(skybox_normal_data,GL_FLOAT,3,36);
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("bad bad bad");
+    }
 }
 
 Skybox::Skybox(char* img_fn) : mat(){
@@ -55,6 +60,12 @@ Skybox::Skybox(char* img_fn) : mat(){
     normals=skybox_normals;
     vertex_count = 36;
     mat.texture = TextureManager::Get(img_fn);
+
+
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("bad bad bad");
+    }
 }
 
 
@@ -76,6 +87,9 @@ void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
     glUniform1i(cam->shader->TEXTURE_0,0);
     glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+
+    vertices.Bind(0);
+    tex_coords.Bind(1);
     
     glDrawArrays(GL_TRIANGLES,0,vertex_count);
 

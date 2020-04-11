@@ -357,6 +357,7 @@ void AssociativeArray::Resize(int new_count){
 
 
 char* cstr::new_copy(const char* old_string){
+    if(old_string==nullptr)return nullptr;
     int str_len = strlen(old_string);
     char* str = (char*)malloc(str_len+1);
     strcpy(str,old_string);

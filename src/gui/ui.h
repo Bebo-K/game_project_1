@@ -5,11 +5,10 @@
 #include "../gfx/renderer.h"
 
 class UI{
-
     public:
 
-    Renderer renderer;
     UI();
+    Renderer renderer;
     void Load();
 
     //void PushMenu(Menu* newmenu);

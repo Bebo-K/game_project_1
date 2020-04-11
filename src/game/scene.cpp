@@ -13,7 +13,12 @@ void Scene::Load(){
     renderer.camera.y += 2.0f;
 
     level.LoadDefault();
+    level.AddToRenderer(&renderer);
 
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("bad bad bad");
+    }
     //"dat/img/atlas_1.png"
     //my_cube = new WirePrimitive(CUBE,{.4,1.0,.4},2,1,1);
     //my_cube->rotation.y=45
