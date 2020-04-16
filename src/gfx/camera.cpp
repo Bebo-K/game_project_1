@@ -18,6 +18,10 @@ Camera::Camera(){
 
 void Camera::SetShader(char* shader_name){
     shader = ShaderManager::GetShader(shader_name);
+    if(shader != nullptr){shader->Use();}
+    else{
+        logger::exception("Draw binding to invalid shader %s\n",shader_name);
+    }
 }
 
 void Camera::SetShader(Shader* new_shader){

@@ -1,30 +1,26 @@
 #include "skybox.h"
 #include "../log.h"
 
-float S=10.0f;
 float skybox_vert_data[] ={
-    -S, -S,  S,   S, -S,  S,   S,  S,  S,    -S, -S,  S,   S,  S,  S,  -S,  S,  S,// Front face
-    -S, -S, -S,  -S,  S, -S,   S,  S, -S,    -S, -S, -S,   S,  S, -S,   S, -S, -S,// Back face
-    -S,  S, -S,  -S,  S,  S,   S,  S,  S,    -S,  S, -S,   S,  S,  S,   S,  S, -S,// Top face
-    -S, -S, -S,   S, -S, -S,   S, -S,  S,    -S, -S, -S,   S, -S,  S,  -S, -S,  S,// Bottom face
-     S, -S, -S,   S,  S, -S,   S,  S,  S,     S, -S, -S,   S,  S,  S,   S, -S,  S,// Right face
-    -S, -S, -S,  -S, -S,  S,  -S,  S,  S,    -S, -S, -S,  -S,  S,  S,  -S,  S, -S// Left face
+    -1, 1, 1,  1, 1, 1,  1,-1, 1,   -1, 1, 1, -1,-1, 1,  1,-1, 1, // Front face
+     1, 1,-1, -1, 1,-1, -1,-1,-1,    1, 1,-1,  1,-1,-1, -1,-1,-1, // Back face	 
+    -1, 1, 1,  1, 1, 1,  1, 1,-1,   -1, 1, 1, -1, 1,-1,  1, 1,-1, // Top face 
+    -1,-1, 1,  1,-1, 1,  1,-1,-1,   -1,-1, 1, -1,-1,-1,  1,-1,-1, // Bottom face
+     1, 1, 1,  1, 1,-1,  1,-1,-1,    1, 1, 1,  1,-1, 1,  1,-1,-1, // Right Face
+    -1, 1,-1, -1, 1, 1, -1,-1, 1,   -1, 1,-1, -1,-1,-1, -1,-1, 1  // Left face
 };
 
 //Though it wastes a little space, skybox texture space is laid out like this
 // (Front) (Right) (Back  ) (Left) -> As one continuous strip
 // (     ) (Top  ) (Bottom) (    )
 //since it 2x4, textures can stay power of 2.
-float a=0.25;
-float b=0.5f;
-float c=0.75f;
 float skybox_texcoord_data[] = {
-    0,1, a,1, a,b,  0,1, a,b, 0,b, //Front
-    c,1, c,b, b,b,  c,1, b,b, b,1, //Back
-    a,0, a,b, b,b,  a,0, b,b, b,0, //Top
-    b,b, c,b, c,0,  b,b, c,0, b,0, //Bottom
-    b,1, b,b, a,b,  b,1, a,b, a,1, //Right
-    c,1, 1,1, 1,b,  c,1, 1,b, c,b //Left
+    0.00,0.0,  0.25,0.0,  0.25,0.5,    0.00,0.0,  0.00,0.5,  0.25,0.5,//Front
+    0.50,0.0,  0.75,0.0,  0.75,0.5,    0.50,0.0,  0.50,0.5,  0.75,0.5,//Back
+    0.25,0.5,  0.50,0.5,  0.50,1.0,    0.25,0.5,  0.25,1.0,  0.50,1.0,//Top
+    0.50,0.5,  0.75,0.5,  0.75,1.0,    0.50,0.5,  0.50,1.0,  0.75,1.0,//Bottom
+    0.25,0.0,  0.50,0.0,  0.50,0.5,    0.25,0.0,  0.25,0.5,  0.50,0.5, //Right
+    0.75,0.0,  1.00,0.0,  1.00,0.5,    0.75,0.0,  0.75,0.5,  1.00,0.5 //Left
 };
 
 float skybox_normal_data[] = {
@@ -42,7 +38,7 @@ VBO skybox_normals;
 
 void BuildSkyboxPrimitive(){
     skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,36);
-    skybox_texcoords.Create(skybox_texcoord_data,GL_FLOAT,3,36);
+    skybox_texcoords.Create(skybox_texcoord_data,GL_FLOAT,2  ,36);
     skybox_normals.Create(skybox_normal_data,GL_FLOAT,3,36);
     int err = glGetError();
     if(err != 0){
@@ -51,7 +47,8 @@ void BuildSkyboxPrimitive(){
 }
 
 Skybox::Skybox(char* img_fn) : mat(){
-    this->layer=-128;
+    layer=-128;
+    scale={10,10,10};
     if(!skybox_vertices.Valid()){
         BuildSkyboxPrimitive();
     }
@@ -60,31 +57,28 @@ Skybox::Skybox(char* img_fn) : mat(){
     normals=skybox_normals;
     vertex_count = 36;
     mat.texture = TextureManager::Get(img_fn);
-
-
-    int err = glGetError();
-    if(err != 0){
-        logger::warn("bad bad bad");
-    }
 }
-
 
 void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
     cam->SetShader("shadeless");
+
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    
+
     mat4 modelview;
         modelview.identity();
-        if(cam->rotation.x != 0){modelview.rotate_x(cam->rotation.x);}
-        if(cam->rotation.y != 0){modelview.rotate_y(cam->rotation.y);}
-        if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
-    
+        //if(cam->rotation.x != 0){modelview.rotate_x(cam->rotation.x);}
+        //if(cam->rotation.y != 0){modelview.rotate_y(cam->rotation.y);}
+        //if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
+        modelview.scale(scale);
+        //modelview.translate({1,0,-2.5});
+
     glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
     glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
+
     glUniform1i(cam->shader->TEXTURE_0,0);
     glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
