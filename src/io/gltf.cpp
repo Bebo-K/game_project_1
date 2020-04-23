@@ -1,6 +1,7 @@
 #include "gltf.h"
 #include "../log.h"
 #include "../structs/data_types.h"
+#include "../structs/list.h"
 
 GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
 	if(model_file.error)return;
@@ -11,10 +12,12 @@ GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
 }
 
 GLTFScene::~GLTFScene(){
+	if(filename != null){free((void*)filename);filename=null;}
 	delete gltf_data;
 }
 
 void GLTFScene::LoadAsGLB(File glb_file){
+	filename = File::GetPathOf(glb_file.path);
 	uint32 magic_number;
 	uint32 version;
 	uint32 file_length;
@@ -51,6 +54,7 @@ void GLTFScene::LoadAsGLB(File glb_file){
 }
 
 void GLTFScene::LoadAsGLTF(File gltf_file){
+	filename = File::GetPathOf(gltf_file.path);
 	byte* gltf_json = (byte*)malloc(gltf_file.length);
 	gltf_file.read(gltf_json,gltf_file.length);
 
@@ -311,6 +315,37 @@ byte* GLTFScene::GetBufferViewData(int buffer_view_id,int* len){
 	return &buffer[offset];
 }
 
+Texture GLTFScene::GetTexture(int tex_id){
+	Texture ret = TextureManager::DefaultTexture();
+
+	if(!gltf_data->HasArray("textures")){return ret;}
+	JSONArray* textures = gltf_data->GetArray("textures");
+	if(tex_id < 0 || tex_id > textures->count){return ret;}
+	JSONObject* tex = textures->At(tex_id)->ObjectValue();
+	int image_id = tex->GetInt("source");
+	//TODO: get texture sampling info from tex->GetInt("sampler");
+
+	if(!gltf_data->HasArray("images")){return ret;}
+	JSONArray* images = gltf_data->GetArray("images");
+	if(image_id < 0 || image_id > images->count){return ret;}
+	JSONObject* image = images->At(image_id)->ObjectValue();
+
+	if(image->HasString("uri")){
+		char* texture_filename = cstr::append(filename,image->GetString("uri")->string);
+		ret = TextureManager::Get(texture_filename);
+	}
+	else if(image->HasInt("bufferView")){
+		if(image->HasString("mimeType")){
+			if(!cstr::compare("image/png",image->GetString("mimeType")->string)){
+				logger::exception("Texture image type not supported: %s model will not load correctly!\n",image->GetString("mimeType")->string);
+			}
+		}
+		Image newImage(GetBufferViewData(image->GetInt("bufferView"),null));
+		ret = TextureManager::MapToAtlas(&newImage);
+	}
+	return ret;
+}
+
 Material GLTFScene::GetMaterial(int mat_id){
 	Material ret;
 	if(!gltf_data->HasArray("materials")){return ret;}
@@ -333,6 +368,7 @@ Material GLTFScene::GetMaterial(int mat_id){
 		if(PBRMaterial->HasJObject("baseColorTexture")){
 			JSONObject* baseColorTexture=PBRMaterial->GetJObject("baseColorTexture");
 				int texture_index = baseColorTexture->GetInt("index");
+				ret.texture = GetTexture(texture_index);
 				//TODO: TEXTURE LOADING
 				//int texture_layer = baseColorTexture->GetInt("texCoord");
 		}
@@ -341,11 +377,6 @@ Material GLTFScene::GetMaterial(int mat_id){
 	}
 	return ret;
 }
-
-
-/////////////////////////////////
-// Model Specific              //
-/////////////////////////////////
 
 char* GLTFScene::FindMeshGroupName(int group_id){
 	JSONArray* nodes = gltf_data->GetArray("nodes");
@@ -399,12 +430,24 @@ MeshGroup* GLTFScene::GetMeshGroup(int group_id){
 		prim->vertex=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
 		if(attribs->HasInt("NORMAL")){
 			prim->normal=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
+		else{
+			prim->normal.CreateEmpty(GL_FLOAT,3,prim->vertex_count,GL_ARRAY_BUFFER);
+		}
 		if(attribs->HasInt("TEXCOORD_0")){
 			prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
+		else{
+			prim->texcoord_0.CreateEmpty(GL_FLOAT,2,prim->vertex_count,GL_ARRAY_BUFFER);
+		}
 		if(attribs->HasInt("JOINTS_0")){
 			prim->bone_0_index=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
+		else{
+			prim->bone_0_index.CreateEmpty(GL_SHORT,4,prim->vertex_count,GL_ARRAY_BUFFER);
+		}
 		if(attribs->HasInt("WEIGHTS_0")){
 			prim->bone_0_weight=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
+		else{
+			prim->bone_0_weight.CreateEmpty(GL_FLOAT,1,prim->vertex_count,GL_ARRAY_BUFFER);
+		}
 		//if(attribs->HasInt("TEXCOORD_1")){
 		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
 		
@@ -561,154 +604,51 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 	}
 }
 
-void GLTFScene::LoadAsModel(char* name,Model* dest){
-	base_name=name;
-	dest->name = cstr::new_copy(name);
-	dest->mesh_group_count=0;
+void GLTFScene::GetModel(Model* model,char* name){
+	if(name != nullptr){model->name = cstr::new_copy(name);}
+	model->mesh_group_count=0;
 
 	PointerArray model_meshes(1);
-	int skeleton_id =-1;
 
 	JSONArray* nodes_array = gltf_data->GetArray("nodes");
 	JSONObject* node =nullptr;
 	for(int i=0;i<nodes_array->count;i++){
 		node = nodes_array->At(i)->ObjectValue();
 		if(node->HasInt("mesh")){
+			if(model->name  == nullptr && node->HasString("name")){model->name = cstr::new_copy(node->GetString("name")->string);}
 			if(node->HasInt("skin")){
 				int mesh_skeleton_id = node->GetInt("skin");
-				if(skeleton_id < 0){
-					skeleton_id = mesh_skeleton_id;
-					dest->skeleton=GetSkeleton(skeleton_id);
-				}
-				else if(skeleton_id != mesh_skeleton_id){
-					logger::warn("Skipping mesh group %d using a different skeleton(id %d)\n",i,skeleton_id);
-					continue;
-				}
+				model->skeleton=GetSkeleton(mesh_skeleton_id);
 			}
-			dest->mesh_group_count++;
+			model->mesh_group_count++;
 			model_meshes.Add((byte*)GetMeshGroup(node->GetInt("mesh")));
 		}
 	}
-
-	if(gltf_data->HasArray("animations") ||dest->skeleton != nullptr){
-		int anim_count = gltf_data->GetArray("animations")->count;
-		dest->skeleton->animation_count = anim_count;
-		dest->skeleton->animations = (Animation*)calloc(anim_count,sizeof(Animation));
-		for(int i=0;i<anim_count;i++){
-			LoadAnimation(i,&dest->skeleton->animations[i]);
-		}
-	}
-
-	dest->mesh_groups = (MeshGroup*)calloc(dest->mesh_group_count,sizeof(MeshGroup));
-	for(int i=0;i<dest->mesh_group_count;i++){
+	model->mesh_groups = (MeshGroup*)calloc(model->mesh_group_count,sizeof(MeshGroup));
+	for(int i=0;i<model->mesh_group_count;i++){
 		MeshGroup* group =(MeshGroup*)model_meshes.Get(i);
-		memcpy(&dest->mesh_groups[i],group,sizeof(MeshGroup));
-		dest->bounds.Union(group->bounds);
+		memcpy(&model->mesh_groups[i],group,sizeof(MeshGroup));
+		model->bounds.Union(group->bounds);
 		model_meshes.Remove(i);
 		free(group);
 	}
-}
-
-
-/////////////////////////////////
-// SolidGeometry Specific      //
-/////////////////////////////////
-
-
-SolidGroup* GLTFScene::GetSolidGroup(int group_id){
-	if(!gltf_data->HasArray("meshes")){return nullptr;}
-	JSONArray* meshes = gltf_data->GetArray("meshes");
-	if(group_id < 0 || group_id >= meshes->count){return nullptr;}
-
-	SolidGroup* ret = (SolidGroup*)calloc(1,sizeof(SolidGroup));
-
-	JSONObject* mesh = meshes->At(group_id)->ObjectValue();
-	JSONArray* primitives = mesh->GetArray("primitives");
-
-	ret->name = FindMeshGroupName(group_id);
-	if(ret->name== null){ret->name = cstr::new_copy(mesh->GetString("name")->string);}
-	ret->mesh_count=primitives->count;
-	ret->meshes = (SolidMesh*)calloc(primitives->count,sizeof(SolidMesh));
-
-	for(int i=0;i<primitives->count;i++){
-		SolidMesh* prim = &ret->meshes[i];
-		JSONObject* primitive = primitives->At(i)->ObjectValue();
-		JSONObject* attribs = primitive->GetJObject("attributes");
-
-		int pos_attrib_id=attribs->GetInt("POSITION");
-		JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
-		prim->vertex_count = pos_accessor->GetInt("count");
-
-		JSONArray* max_array = pos_accessor->GetArray("max");
-		JSONArray* min_array = pos_accessor->GetArray("min");
-		AABB prim_bounds;
-			prim_bounds.hi_corner.x= max_array->At(0)->FloatValue();
-			prim_bounds.hi_corner.y= max_array->At(1)->FloatValue();
-			prim_bounds.hi_corner.z= max_array->At(2)->FloatValue();
-			prim_bounds.lo_corner.x= min_array->At(0)->FloatValue();
-			prim_bounds.lo_corner.y= min_array->At(1)->FloatValue();
-			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
-		ret->bounds.Union(prim_bounds);
-
-		prim->vertex=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
-		int vert_count=0;
-		float* unorg_vertices=BuildAccessorFloatArray(pos_attrib_id,&vert_count);
-
-
-		if(attribs->HasInt("NORMAL")){
-			prim->normal=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
-		if(attribs->HasInt("TEXCOORD_0")){
-			prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
-		//if(attribs->HasInt("TEXCOORD_1")){
-		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
-		
-		prim->mat = GetMaterial(primitive->GetInt("material"));
-		if(primitive->HasInt("indices")){
-			int index_accessor_id=primitive->GetInt("indices"); 
-			prim->index = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
-			prim->vertex_count = GetAccessor(index_accessor_id)->GetInt("count");
-			int vcount=0;
-			int* indices = BuildAccessorIntArray(index_accessor_id,&vcount);
-			if(vcount != prim->vertex_count){
-				logger::exception("found indices not equal count in file! Geometry will not load correctly.\n");
-			}
-			prim->vertices = (float*)calloc(prim->vertex_count,sizeof(float));
-			for(int i=0;i< prim->vertex_count;i++){
-				prim->vertices[i*3]= unorg_vertices[indices[i]*3];
-				prim->vertices[i*3 +1]= unorg_vertices[indices[i]*3 +1];
-				prim->vertices[i*3 +2]= unorg_vertices[indices[i]*3 +2];
-			}
-			free(unorg_vertices);
-		}
-		else{
-			prim->vertices=unorg_vertices;
+	if(gltf_data->HasArray("animations") ||model->skeleton != nullptr){
+		int anim_count = gltf_data->GetArray("animations")->count;
+		model->skeleton->animation_count = anim_count;
+		model->skeleton->animations = (Animation*)calloc(anim_count,sizeof(Animation));
+		for(int i=0;i<anim_count;i++){
+			LoadAnimation(i,&model->skeleton->animations[i]);
 		}
 	}
+}
+
+Model* GLTFScene::Load(char* name){
+	Model* ret = new Model();
+	GetModel(ret,name);
 	return ret;
 }
 
-void GLTFScene::LoadAsGeometry(SolidGeometry* dest){
-	dest->group_count=0;
-
-	PointerArray solid_meshes(1);
-
-	JSONArray* nodes_array = gltf_data->GetArray("nodes");
-	JSONObject* node =nullptr;
-	for(int i=0;i<nodes_array->count;i++){
-		node = nodes_array->At(i)->ObjectValue();
-		if(node->HasInt("mesh")){
-			dest->group_count++;
-			solid_meshes.Add((byte*)GetSolidGroup(node->GetInt("mesh")));
-		}
-	}
-
-	dest->groups = (SolidGroup*)calloc(dest->group_count,sizeof(SolidGroup));
-	for(int i=0;i<dest->group_count;i++){
-		SolidGroup* group =(SolidGroup*)solid_meshes.Get(i);
-		memcpy((void*)&dest->groups[i],(void*)group,sizeof(SolidGroup));
-		dest->bounds.Union(group->bounds);
-		solid_meshes.Remove(i);
-		free(group);
-	}
+void GLTFScene::LoadIn(Model* dest,char* name){
+	Model* ret = new (dest) Model();
+	GetModel(ret,name);
 }
-

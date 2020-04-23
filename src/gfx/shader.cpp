@@ -110,7 +110,7 @@ Shader::~Shader(){
 void Shader::Use(){
     glUseProgram(program);
     int err = glGetError();
-    if(err != 0){logger::warn("Shader.Use-> GL error: %d \n",err);}
+     if(err != 0){logger::warn("Shader.Use-> GL error: %d \n",err);}
 }
 
 void ShaderManager::Init(){

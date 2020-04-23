@@ -33,8 +33,8 @@ void Model::DrawMesh(Camera* cam,Mesh* m){
     m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
     m->normal.Bind(cam->shader->ATTRIB_NORMAL);
     m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
-    //m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX,0,0);
 
+    //m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);
     glBindBuffer(GL_ARRAY_BUFFER,m->bone_0_index.buffer_id);
     glVertexAttribIPointer(cam->shader->ATTRIB_BONE_INDEX,4,GL_SHORT,0,0);
 

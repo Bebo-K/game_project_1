@@ -48,7 +48,7 @@ void BuildSkyboxPrimitive(){
 
 Skybox::Skybox(char* img_fn) : mat(){
     layer=-128;
-    scale={10,10,10};
+    scale={80,80,80};
     if(!skybox_vertices.Valid()){
         BuildSkyboxPrimitive();
     }

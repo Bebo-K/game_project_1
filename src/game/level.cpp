@@ -12,7 +12,7 @@ void Level::AddToRenderer(Renderer* r){
     if(skybox != nullptr){r->Add(skybox);}
     if(models != nullptr){
         for(int i=0;i<model_count;i++){
-           // r->Add(&models[i]);
+            r->Add(&models[i]);
         }
     }
 }
@@ -39,7 +39,7 @@ void Level::LoadFromJSON(JSONObject* json){
         JSONArray* model_array = json->GetArray("models");
 
         model_count = model_array->count;
-        models = (Model*)calloc(model_count,sizeof(Model));
+        models = new Model[model_count]();//(Model*)calloc(model_count,sizeof(Model));
         
         for(int i=0;i<model_array->count;i++){
             JSONObject* current_model = model_array->At(i)->ObjectValue();
@@ -50,7 +50,7 @@ void Level::LoadFromJSON(JSONObject* json){
                 continue;
             }
             GLTFScene model_loader = GLTFScene(model_file);
-            model_loader.LoadAsModel(nullptr,&models[i]);
+            model_loader.LoadIn(&models[i],null);
             
             if(current_model->HasArray("collision_meshes")){
                 JSONArray* collision_mesh_array = current_model->GetArray("collision_meshes");
@@ -94,6 +94,7 @@ void Level::LoadFromJSON(JSONObject* json){
         }
     }
 
+
 }
 
 void Level::Unload(){
@@ -110,7 +111,8 @@ void Level::Unload(){
             models[i].DestroySharedData();
             models[i].~Model();
         }
-        free(models);
+        delete[] models;
+        //free(models);
     models=nullptr;
     }
 }

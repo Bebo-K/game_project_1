@@ -21,6 +21,10 @@
 
 class GLTFScene{
 	private:
+	JSONObject* gltf_data;
+	PointerArray binary_buffers;
+	const char*	filename;
+
 	void LoadAsGLTF(File gltf_file);
 	void LoadAsGLB(File glb_file);
 
@@ -30,27 +34,21 @@ class GLTFScene{
 	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
 	float* BuildAccessorFloatArray(int id,int* count);
 	int* BuildAccessorIntArray(int id,int* count);
+	void LoadAnimation(int animation_id,Animation* dest);
+	void LoadAsGeometry(SolidGeometry* dest);
+	
+	Texture		GetTexture(int texture_id);
+	MeshGroup*	GetMeshGroup(int group_id);
+	Material  	GetMaterial(int material_id);
+	Skeleton* 	GetSkeleton(int skeleton_id);
+	void 		GetModel(Model* model,char* name);
 
 	public:
-	char* base_name;
-	JSONObject* gltf_data;
-	PointerArray binary_buffers;
-
 
 	GLTFScene(File model_file);
 	
-	void LoadAnimation(int animation_id,Animation* dest);
-	void LoadAsGeometry(SolidGeometry* dest);
-	void LoadAsModel(char* model_name,Model* dest);
-
-	MeshGroup* GetMeshGroup(int group_id);
-	SolidGroup* GetSolidGroup(int group_id);
-
-	Material   GetMaterial(int material_id);
-	Skeleton*  GetSkeleton(int skeleton_id);
-	
-	Model* LoadAsModel(char* model_name);
-	SolidGeometry* LoadAsGeometry();
+	Model* Load(char* model_name);
+	void LoadIn(Model* dest,char* model_name);
 
 	~GLTFScene();
 };

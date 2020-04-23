@@ -1,6 +1,7 @@
 
 #include "file.h"
 #include "../log.h"
+#include <string.h>
 
 File::File(){
 	file_handle=nullptr;
@@ -24,6 +25,22 @@ File::File(const char* filename){
 		fseek(file_handle, 0, SEEK_SET);
 	}
 }
+
+
+char* File::GetPathOf(const char* filename){
+	if(filename==nullptr)return nullptr;
+	int last_seperator=0;
+	int end = strlen(filename);
+	for(int i=0;i<end;i++){
+		if(filename[i]=='/'||
+		filename[i]=='\\'
+		){last_seperator=i;}
+	}
+	char* ret = (char*)calloc(last_seperator+1,sizeof(char));//sets trailing 0
+	memcpy(ret,filename,last_seperator);
+	return ret;
+}
+
 void File::read(void* dest, int bytes){
 	if(error){
 		logger::warn("File::read -> File is closed or in an error state.");

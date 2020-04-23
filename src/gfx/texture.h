@@ -27,6 +27,7 @@ namespace TextureManager{
     const int ATLAS_SIZE = 1024;
     void Init();
     Texture Add(const char* texname,Image* textureImage);
+    Texture MapToAtlas(Image* textureImage);
     Texture Get(const char* texname);
     void Remove(const char* texname);//how?
     Texture DefaultTexture();

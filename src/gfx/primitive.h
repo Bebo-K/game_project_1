@@ -27,6 +27,7 @@ struct VBO{
     bool Valid();
     void Create(void* data,GLuint type,int per_vertex,int count);
     void Create(void* data,GLuint type,int per_vertex,int count,GLuint buffer_type);
+    void CreateEmpty(GLuint type,int per_vertex,int count,GLuint buffer_type);
     void Bind(int attrib_slot);
     void Bind(int attrib_slot, int stride, int start);
     void Destroy();

@@ -58,6 +58,26 @@ void VBO::Create(void* data,GLuint type,int per_vertex,int vertex_count,GLuint b
     glBufferData(GL_ARRAY_BUFFER,element_size*elements_per_vertex*vertex_count, data,GL_STATIC_DRAW);
 }
 
+void VBO::CreateEmpty(GLuint type,int per_vertex,int vertex_count,GLuint buffer_type){
+    elements_per_vertex = per_vertex;
+    element_type = type;
+    int element_size;
+	switch(type){
+		case 5120:element_size=1;break;
+		case 5121:element_size=1;break;
+		case 5122:element_size=2;break;
+		case 5123:element_size=2;break;
+		case 5126:element_size=4;break;
+		case 5125:element_size=4;break;
+		default:element_size=4;break;
+	}
+    byte* empty_data = (byte*)calloc(vertex_count,element_size*elements_per_vertex);
+    glGenBuffers(1,&buffer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+    glBufferData(GL_ARRAY_BUFFER,element_size*elements_per_vertex*vertex_count, empty_data,GL_STATIC_DRAW);
+    free(empty_data);
+}
+
 void VBO::Bind(int attrib_slot){
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
     glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,0,0);

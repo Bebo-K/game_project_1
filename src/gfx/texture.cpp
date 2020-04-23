@@ -90,11 +90,11 @@ Texture TextureManager::DefaultTexture(){
     return Texture();
 }
 
-Texture TextureManager::Add(const char* texname,Image* texture_image){
+Texture TextureManager::MapToAtlas(Image* texture_image){
     if(texture_image == null || texture_image->image_data==null){
-        logger::warn("Image for texture is empty/null: %s ",texname);
         return DefaultTexture();
     }
+
     Texture tex;
     tex.width_px = texture_image->width;
     tex.height_px = texture_image->height;
@@ -147,10 +147,21 @@ Texture TextureManager::Add(const char* texname,Image* texture_image){
         
         SubmitImage(atlas);	
     }
-    Texture* cached_tex = new Texture();
-        memcpy(cached_tex,&tex,sizeof(Texture));
-    cached_textures.Add((byte*)texname,(byte*)cached_tex);
     return tex;
+}
+
+
+Texture TextureManager::Add(const char* texname,Image* texture_image){
+    if(texture_image == null || texture_image->image_data==null){
+        logger::warn("Image for texture is empty/null: %s ",texname);
+    }
+    Texture texture_to_cache = MapToAtlas(texture_image);
+    if(cached_textures.StrGet(texname)==null){
+        Texture* cached_tex = (Texture*)malloc(sizeof(Texture));
+        memcpy(cached_tex,&texture_to_cache,sizeof(Texture));
+        cached_textures.Add((byte*)texname,(byte*)cached_tex);
+    }
+    return texture_to_cache;
 }
 
 Texture TextureManager::Get(const char* texname){
@@ -166,6 +177,4 @@ void TextureManager::Remove(const char* texname){
     Texture* tex = (Texture*)cached_textures.StrRemove(texname);
     if(tex != null)delete tex;
 }
-
-
 
