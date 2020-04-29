@@ -24,18 +24,16 @@ class List{
 
     int Next(int index){
         int i;
-        for(i=index+1;data.slot_is_filled.Get(i)==false;i++){
-            if(i >= data.slots){return -1;}
+        if(index+1 >= data.slots)return -1;
+        for(i=index+1;i< data.slots ; i++){
+            if(data.slot_is_filled.Get(i))return i;
         }
-        return i;
+        return -1;
     }
 
-    bool IsLast(int index){
-        if(index+1 >= count)return true;
-        for(int i=index+1;data.slot_is_filled.Get(i)==false;i++){
-            if(i >= data.slots){return true;}
-        }
-        return true;
+    bool Has(int index){
+        if(index >= count || index < 0)return false;
+        return data.slot_is_filled.Get(index);
     }
 
     int Count(){return count;}
@@ -93,7 +91,7 @@ class List{
         T* ret = (T*)malloc(sizeof(T)*count);
 
         int array_slot=0;
-        for(int i=Begin();!IsLast(i);i=Next(i)){
+        for(int i=Begin();Has(i);i=Next(i)){
             memcpy(&ret[array_slot],data.Get(i),sizeof(T));
         }
 

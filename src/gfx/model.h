@@ -3,7 +3,7 @@
 
 #include "../structs/3d_types.h"
 #include "../structs/math_types.h"
-#include "primitive.h"
+#include "drawable.h"
 #include "skeleton.h"
 
 struct Mesh{
@@ -25,7 +25,7 @@ struct MeshGroup{
     AABB  bounds;
 };
 
-class Model: public Primitive{
+class Model: public Drawable{
     public:
 	static const int MAX_BONES = 32;
     

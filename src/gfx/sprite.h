@@ -1,10 +1,10 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include "primitive.h"
+#include "drawable.h"
 
 //Sprite: A primitive consisting of an image on a plane.
-class Sprite : public Primitive {
+class Sprite : public Drawable {
     private:
     void Load(char* spritesheet,int frame_w,int frame_h,int max_frames,int max_strips,float x_center,float y_center);
     public:

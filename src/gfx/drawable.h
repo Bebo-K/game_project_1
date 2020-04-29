@@ -5,7 +5,7 @@
 #include "material.h"
 #include "camera.h"
 
-class Primitive{
+class Drawable{
     public:
     float x,y,z;
     vec3  rotation;
@@ -13,9 +13,9 @@ class Primitive{
     char layer;
     bool hidden;
 
-    Primitive();
+    Drawable();
     virtual void Draw(Camera* cam,mat4* view, mat4* projection);
-    virtual ~Primitive();
+    virtual ~Drawable();
 };
 
 struct VBO{
@@ -35,7 +35,7 @@ struct VBO{
 
 enum EPrimitiveShape{CUBE=0,SPHERE,CONE};
 
-class ShapePrimitive : public Primitive{
+class ShapePrimitive : public Drawable{
     public:
     VBO         vertices,tex_coords,normals;
     Material    mat;
@@ -48,7 +48,7 @@ class ShapePrimitive : public Primitive{
     void Draw(Camera* cam,mat4* view, mat4* projection);
 };
 
-class WirePrimitive : public Primitive{
+class WirePrimitive : public Drawable{
     public:
     
     VBO         vertices,tex_coords,normals;

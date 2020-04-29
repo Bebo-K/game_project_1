@@ -1,9 +1,9 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
 
-#include "primitive.h"
+#include "drawable.h"
 
-class Skybox : public Primitive{
+class Skybox : public Drawable{
     public:
     //could encompass global lighting too?
     VBO         vertices,tex_coords,normals;

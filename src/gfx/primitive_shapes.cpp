@@ -1,4 +1,4 @@
-#include "primitive.h"
+#include "drawable.h"
 #include "../log.h"
 
 const float lo = 0.0f;

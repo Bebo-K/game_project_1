@@ -9,6 +9,7 @@
 #include "../../gfx/model.h"
 #include "../../gfx/sprite.h"
 #include "../../gfx/animation.h"
+#include "../../gfx/drawable.h"
 
 
 class CameraTarget : Component{
@@ -24,18 +25,19 @@ class CameraTarget : Component{
     ~CameraTarget();
 };
 
-class ModelSet : List<Model> , Component{
+class ModelSet : public List<Model> ,public Component,public Drawable{
 	public:
 	
 	Model* Add(char* name);
-
+	void Draw(Camera* cam,mat4* view, mat4* projection);
 	~ModelSet();
 };
 
-class SpriteSet : List<Sprite> , Component{
+class SpriteSet : List<Sprite> , Component, Drawable{
 	public:
 
 	//Sprite* Add(char* name);
+	void Draw(Camera* cam,mat4* view, mat4* projection);
 
 	~SpriteSet();
 };

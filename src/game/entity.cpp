@@ -3,9 +3,8 @@
 
 
 Entity::Entity(){
-    instance_id =0;
-    unique_id =0;
-    type_id =0;
+    eid =0;
+    type =0;
     name=nullptr;
     x=y=z=0;
     scale ={1,1,1};

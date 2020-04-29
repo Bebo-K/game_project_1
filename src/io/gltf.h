@@ -17,7 +17,6 @@
 #include "json.h"
 #include "../structs/data_types.h"
 #include "../gfx/model.h"
-#include "../gfx/solid_geometry.h"
 
 class GLTFScene{
 	private:
@@ -35,7 +34,6 @@ class GLTFScene{
 	float* BuildAccessorFloatArray(int id,int* count);
 	int* BuildAccessorIntArray(int id,int* count);
 	void LoadAnimation(int animation_id,Animation* dest);
-	void LoadAsGeometry(SolidGeometry* dest);
 	
 	Texture		GetTexture(int texture_id);
 	MeshGroup*	GetMeshGroup(int group_id);

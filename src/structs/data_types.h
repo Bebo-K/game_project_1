@@ -84,6 +84,7 @@ struct PointerArray{
 
     int Count();
     void Resize(int new_count);
+    void Clear();
 };
 
 //Associative Array: Dynamic Array with an integer/pointer key association. As close to a map as it gets.

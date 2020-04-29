@@ -6,6 +6,9 @@
 class Component{
     public:
     virtual ~Component();
+    byte* Serialize(int* size);
+    void  Deserialize(byte* data,int size);
+
 };
 
 

@@ -22,7 +22,7 @@ void Game::Start(){
     TextureManager::Init();
     ModelManager::Init();
     AnimationManager::Init();
-    client->Load();
+    client->Start();
 
     running=true;
 }

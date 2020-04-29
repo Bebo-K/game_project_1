@@ -9,9 +9,8 @@
 
 
 struct Entity{
-    int     instance_id;
-    int     unique_id;
-    int     type_id;
+    int     eid;
+    int     type;
     char*   name;
     float   x,y,z;
     vec3    velocity;

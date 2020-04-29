@@ -10,7 +10,25 @@
 #include "../gfx/skybox.h"
 
 
-class Level{
+class Entrance{
+    public:
+    char*       name;
+    Transform   position;
+    int         style;
+    vec3        target_pos;
+};
+
+class Exit{
+    public:
+    char*       name;
+    char*       destination;
+    char*       to_entrance;
+    CollisionMesh* trigger;
+    int         style;
+    vec3        target_pos;
+};
+
+class Level : public Drawable{
     public: 
 	Skybox*		    skybox;
     //Heightmap     terrain;
@@ -19,12 +37,12 @@ class Level{
 
     int             geomtery_count; 
     CollisionMesh*  geometry;
-    //TaggedArea*   tags;?
+    AssociativeArray tagged_locations;
 
     Level();
     
-    void AddToRenderer(Renderer* r);
-    void RemoveFromRenderer(Renderer* r);
+    Transform* GetLocationByTag(char* name);
+	void Draw(Camera* cam,mat4* view, mat4* projection);
 
     void LoadDefault();
     void LoadFromJSON(JSONObject* level_data);

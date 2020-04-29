@@ -18,6 +18,21 @@ Model* ModelSet::Add(char* name){
     ModelManager::Get(name)->Clone(ret);
     return ret;
 }
+
+void ModelSet::Draw(Camera* cam,mat4* view, mat4* projection){
+    view->scale(scale);
+    view->rotate(rotation);
+    view->translate(x,y,z);
+    for(int i=Begin();Has(i);i=Next(i)){
+        (*this)[i]->Draw(cam,view,projection);
+    }
+}
+
 ModelSet::~ModelSet(){Clear();}
 
+
+
+void SpriteSet::Draw(Camera* cam,mat4* view, mat4* projection){
+
+}
 SpriteSet::~SpriteSet(){Clear();}

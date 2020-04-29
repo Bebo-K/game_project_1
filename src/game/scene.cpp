@@ -1,53 +1,42 @@
 #include "scene.h"
-#include "../io/gltf.h"
 #include "../log.h"
-#include "../input.h"
 
 void Scene::Load(){
     logger::info("loading default scene...\n");
-    renderer.Load();
-    renderer.camera.SetShader("basic_lighting");
-    
-    renderer.camera.ortho=false;
-    renderer.camera.z = 10.0f;
-    renderer.camera.y += 2.0f;
-
     level.LoadDefault();
-    level.AddToRenderer(&renderer);
-
-    //"dat/img/atlas_1.png"
-    //my_cube = new WirePrimitive(CUBE,{.4,1.0,.4},2,1,1);
-    //my_cube->rotation.y=45
-    //renderer.Add(my_cube);
-    
-    
-    //File modelFile("dat/models/placeholder_person.glb");
-    //GLTFScene gltf_file(modelFile);
-    //AnimationOptions options;
-    //options.timescale = 0.05f;
-    //options.end_action = LOOP;
-    //my_model= gltf_file.LoadAsModel("person");
-    //my_model->skeleton->StartAnimation("Run",options);
-    //renderer.Add(my_model);
+    loaded = true;
 }
+
 void Scene::Load(int area_id){
     logger::info("loading scene for area id %d...\n",area_id);
-    renderer.Load();
-
+    loaded = true;
 }
+
 void Scene::Unload(){
     logger::info("unloading scene...\n");
-
-    renderer.Unload();
-}
-void Scene::Update(int delta){
-	//PlayerActionManager::Update(this,ms);
-    //NPCMovementManager::Update(this,ms);
-	//MovementController::Update(this,ms);
-	//Physics::Update(this,ms);
-	//CameraManager::Update(this,ms);
+    loaded = false;
 }
 
-void Scene::Paint(){
-    renderer.Draw(); 
+Entity* Scene::AddEntity(int eid){
+    Entity* entity = entities.New();
+    entity->eid=eid;
+    return entity;
+}
+
+Entity* Scene::GetEntity(int eid){
+    for(int i=entities.Begin();entities.Has(i);i=entities.Next(i)){
+        if(entities[i]->eid == eid){
+            return entities[i];
+        }
+    }
+    return null;
+}
+
+void Scene::RemoveEntity(int eid){
+    for(int i=entities.Begin();entities.Has(i);i=entities.Next(i)){
+        if(entities[i]->eid == eid){
+            entities.Delete(i);
+            break;
+        }
+    }
 }

@@ -170,11 +170,16 @@ PointerArray::PointerArray(){
     data=null;
 }
 PointerArray::PointerArray(int size){
-    slots=size;
-    data= (byte**)calloc(slots,sizeof(byte*));
+    slots=size;data=null;
+    if(size > 0){
+        data= (byte**)calloc(slots,sizeof(byte*));
+    }
 }
 PointerArray::~PointerArray(){
-    free(data); 
+    if(data != nullptr){
+        free(data); 
+        data=nullptr;
+    }
 }
 int PointerArray::Add(void* object){
     int slot_to_add=-1;
@@ -216,6 +221,10 @@ int PointerArray::Count(){
     return count;
 }
 void PointerArray::Resize(int newsize){
+    if(newsize == 0){
+        Clear();
+        return;
+    }
     byte** newdata = (byte**)calloc(newsize,sizeof(byte*));
     if(slots <= newsize){
         for(int i=0;i<slots;i++){newdata[i] = data[i];}
@@ -224,7 +233,13 @@ void PointerArray::Resize(int newsize){
     slots=newsize;
     data=newdata;
 }
-
+void PointerArray::Clear(){
+    if(data != nullptr){
+        free(data); 
+        data=nullptr;
+    }
+    slots=0;
+}
 
 AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size){
     slots=initial_size;

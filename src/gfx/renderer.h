@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include "../structs/3d_types.h"
-#include "primitive.h"
+#include "drawable.h"
 
 class Renderer{
 private:
@@ -15,13 +15,13 @@ public:
 
     Renderer();
     void Load();
-    void Add(Primitive* p);
-    void Remove(Primitive* p);
+    void Add(Drawable* p);
+    void Remove(Drawable* p);
     void Unload();
 
 
     void Draw();
-    Primitive** SortPrimitives();
+    Drawable** SortPrimitives();
 };
 
 

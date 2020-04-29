@@ -2,26 +2,16 @@
 #include "../io/gltf.h"
 #include "../log.h"
 
-Level::Level(){
+Level::Level() :tagged_locations(1){
     skybox = nullptr;
     geometry = nullptr;
-
+    layer = -100;
 }
 
-void Level::AddToRenderer(Renderer* r){
-    if(skybox != nullptr){r->Add(skybox);}
-    if(models != nullptr){
-        for(int i=0;i<model_count;i++){
-            r->Add(&models[i]);
-        }
-    }
-}
-void Level::RemoveFromRenderer(Renderer* r){
-    if(skybox != nullptr){r->Remove(skybox);}
-    if(models != nullptr){
-        for(int i=0;i<model_count;i++){
-            r->Remove(&models[i]);
-        }
+void Level::Draw(Camera* cam,mat4* view, mat4* projection){
+    if(skybox != null){skybox->Draw(cam,view,projection);}
+    for(int i=0;i<model_count;i++){
+        models[i].Draw(cam,view,projection);
     }
 }
 

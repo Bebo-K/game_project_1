@@ -1,10 +1,10 @@
-#include "primitive.h"
+#include "drawable.h"
 #include "../log.h"
 
 
-void Primitive::Draw(Camera* cam,mat4* modelview, mat4* projection){}
+void Drawable::Draw(Camera* cam,mat4* modelview, mat4* projection){}
 
-Primitive::Primitive(){ 
+Drawable::Drawable(){ 
     x=0;y=0;z=0;
     scale={1,1,1};
     rotation={0,0,0};
@@ -12,7 +12,7 @@ Primitive::Primitive(){
     layer=1;
 }
 
-Primitive::~Primitive(){}
+Drawable::~Drawable(){}
 
 VBO::VBO(){
     buffer_id=0;
