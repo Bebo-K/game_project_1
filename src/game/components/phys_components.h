@@ -1,7 +1,7 @@
 #ifndef PHYS_COMPONENTS_H
 #define PHYS_COMPONENTS_H
 
-#include "../component.h"
+#include "component.h"
 #include "../../structs/list.h"
 #include "../../structs/3d_types.h"
 #include "../../phys/collider.h"

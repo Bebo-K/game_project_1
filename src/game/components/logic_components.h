@@ -1,7 +1,7 @@
 #ifndef LOGIC_COMPONENTS_H
 #define LOGIC_COMPONENTS_H
 
-#include "../component.h"
+#include "component.h"
 
 
 

@@ -41,6 +41,18 @@ char* File::GetPathOf(const char* filename){
 	return ret;
 }
 
+
+bool File::Exists(const char* filename){
+	if(filename==nullptr)return false;
+    FILE *file;
+    if (file = fopen(filename, "r")){
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
+
 void File::read(void* dest, int bytes){
 	if(error){
 		logger::warn("File::read -> File is closed or in an error state.");

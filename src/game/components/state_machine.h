@@ -1,7 +1,7 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
-#include "../component.h"
+#include "component.h"
 
 class StateMask{
     public:

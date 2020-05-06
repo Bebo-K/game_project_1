@@ -1,5 +1,5 @@
 #include "client.h"
-#include "log.h"
+#include "../log.h"
 #include <stdio.h>
 
 Client::Client() : scene(), scene_renderer(), ui(){}
@@ -19,6 +19,17 @@ void Client::Start(){
     scene_renderer.camera.y = 2.0f;
 
     LoadScene(0);
+    if(scene.level.entrance_count > 0){
+        SpawnPlayer(scene.level.entrances[0]);
+    }
+    else{
+        Entrance default_spawn;
+            default_spawn.name="default";
+            default_spawn.position={0,0,0};
+            default_spawn.style=0;
+            default_spawn.target_pos={0,0,0};
+        SpawnPlayer(default_spawn);
+    }
 }
 
 
@@ -36,6 +47,15 @@ void Client::RemoveEntity(int eid){
     Entity *e = scene.GetEntity(eid);
     if(e->models != null){scene_renderer.Remove(e->models);}
     scene.RemoveEntity(eid);
+}
+
+void Client::SpawnPlayer(Entrance eid){
+    my_player = scene.AddEntity(0);
+    my_player->models = new ModelSet();
+    //Model Registry add Player model
+    //    my_player->models->Add("dat/models/placeholder_person.glb");
+    //if(e->models != null){scene_renderer.Add(e->models);}    
+
 }
 
 

@@ -20,6 +20,7 @@ class File{
 	void peek(void* dest,int bytes);
 	void close();
 	static char* GetPathOf(const char* filename);
+	static bool Exists(const char* filename);
 };
 
 class FileBuffer{

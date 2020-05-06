@@ -1,7 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include "component.h"
+#include "components/component.h"
 #include "components/gfx_components.h"
 #include "components/phys_components.h"
 #include "components/logic_components.h"

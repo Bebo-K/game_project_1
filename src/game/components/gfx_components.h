@@ -1,7 +1,7 @@
 #ifndef GFX_COMPONENTS_H
 #define GFX_COMPONENTS_H
 
-#include "../component.h"
+#include "component.h"
 #include "../../structs/list.h"
 #include "../../structs/math_types.h"
 #include "../../structs/3d_types.h"

@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include "input.h"
-#include "client.h"
+#include "client/client.h"
 #include "test/perf.h"
 using namespace std::chrono;
 

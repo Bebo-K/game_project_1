@@ -1,6 +1,7 @@
 #include "model.h"
 #include <string.h>
 #include "../log.h"
+#include "../io/gltf.h"
 
 AssociativeArray cached_models(8);
 Model empty_model;

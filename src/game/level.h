@@ -37,11 +37,15 @@ class Level : public Drawable{
 
     int             geomtery_count; 
     CollisionMesh*  geometry;
-    AssociativeArray tagged_locations;
+    int             entrance_count;
+    Entrance*       entrances;
+    int             exit_count;
+    Exit*           exits;
 
     Level();
-    
-    Transform* GetLocationByTag(char* name);
+    Entrance GetEntranceByName(char* name);
+    Exit GetExitByName(char* name);
+
 	void Draw(Camera* cam,mat4* view, mat4* projection);
 
     void LoadDefault();
