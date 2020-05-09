@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "model_registry.h"
 #include "../structs/3d_types.h"
 #include "../structs/math_types.h"
 #include "drawable.h"
@@ -17,7 +18,6 @@ struct Mesh{
 	int		 vertex_count;// must be a multiple of 3 ('cause triangles)
 };
 
-
 struct MeshGroup{
     char* name;
     int mesh_count;
@@ -25,7 +25,7 @@ struct MeshGroup{
     AABB  bounds;
 };
 
-class Model: public Drawable{
+class ModelData{
     public:
 	static const int MAX_BONES = 32;
     
@@ -34,23 +34,27 @@ class Model: public Drawable{
 	MeshGroup*  mesh_groups;//Pointer shared across clones.
     AABB        bounds;
     Skeleton*   skeleton;
+    int         users;
 
-    Model();
-    void Clone(Model* dest);//Same shared data among all clones.
-    void DestroySharedData();
-    ~Model();
-
-    void Draw(Camera* cam,mat4* view, mat4* projection);
-    void DrawMesh(Camera* cam,Mesh* mesh);
+    ModelData();
+    ~ModelData();
+    void DrawMesh(Camera* cam,int group_index,int mesh_index);
 };
 
-namespace ModelManager{
-    void Init();
+class Model: public Drawable{
+    public:
+    ModelData* data;
+    Pose* pose;
 
-    void Add(const char* name, Model* model);
-    Model* Get(const char* name);
-    void Remove(const char* name);
-    Model* ErrorModel();
+    Model(ModelData* dat);
+    ~Model();
+    void Draw(Camera* cam,mat4* view, mat4* projection);
+
+    
+    static void Register(ModelID type,const char* filename);
+    static Model* Instantiate(ModelID type);
+    static Model* ErrorModel();
+    //void Destroy();
 };
 
 #endif

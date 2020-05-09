@@ -30,9 +30,7 @@ void Animation::Destroy(){
 }
 void AnimationHook::Destroy(){
     if(targets != nullptr){
-        for(int i=0;i<num_targets;i++){
-            targets[i].Destroy();
-        }
+        for(int i=0;i<num_targets;i++){targets[i].Destroy();}
         free(targets);targets=nullptr;}
     if(values != nullptr){free(values);values=nullptr;}
 }
@@ -42,10 +40,12 @@ void AnimationChannel::Destroy(){
     if(keyframe_values != nullptr){free(keyframe_values);keyframe_values=nullptr;}
 }
 void AnimationTarget::Destroy(){
+    /* This would result in a lot of extra copies of bone names being needed
     if(object_name!= nullptr){
         free(object_name);
         object_name=nullptr;
     }
+    */
 }
 
 float* AnimationHook::GetTarget(AnimationTarget target){

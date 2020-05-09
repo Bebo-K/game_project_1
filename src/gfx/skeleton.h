@@ -11,8 +11,6 @@
 struct Bone{
     char* name;
     int parent_index;
-    int child_count;
-    int* child_indices;
     mat4 bind_transform;
 };
 
@@ -21,26 +19,37 @@ class Skeleton{
     int         bone_count;
 	Bone*       bones;//Pointer shared across clones
 	mat4*       inverse_bind_mats;//Pointer shared across clones
-    Transform*  pose_transforms;
-	mat4*       pose_matrices;//matrix form of bones transform.
     int         animation_count;
     Animation*  animations;//Pointer shared across clones
-    AnimationHook pose_hook;
+    //Transform*  pose_transforms;
+	//mat4*       pose_matrices;//matrix form of bones transform.
      
-    Skeleton();
+    Skeleton(int num_bones);
     ~Skeleton();
 
-    void AllocateBoneCount(int num_bones);
     void SetBoneName(int bone_id,char* bone_name);
 
-    void Clone(Skeleton* dest);
-    void DestroySharedData();
-    void CalculatePose();
+    //void Clone(Skeleton* dest);
+    //void DestroySharedData();
+    //void CalculatePose();
 
     Animation* GetAnimation(char* name);
+};
+
+class Pose{
+    public:
+    int             bone_count;
+    Transform*      transforms;
+    mat4*           matrices;
+    Skeleton*       skeleton;
+    AnimationHook   anim_hook;
+
+    Pose(Skeleton* target);
+    ~Pose();
     void StartAnimation(char* name);
     void StartAnimation(char* name,AnimationOptions options);
-
+    //Stop Animation?
+    void Calculate();//sets matrices;
 };
 
 

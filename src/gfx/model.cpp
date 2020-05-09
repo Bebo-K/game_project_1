@@ -3,25 +3,33 @@
 #include "../log.h"
 #include "../io/gltf.h"
 
-AssociativeArray cached_models(8);
-Model empty_model;
 
-
-Model::Model(){
+ModelData::ModelData(){
     name=null;
     mesh_group_count=0;
 	mesh_groups=null;
 	skeleton=null;
 }
 
-Model::~Model(){
+ModelData::~ModelData(){
     if(skeleton != null){
         delete skeleton;
         skeleton = null;
     }
+    if(name != null){free(name);name=null;}
+    if(mesh_groups != null){
+        for(int i=0;i<mesh_group_count;i++){DestroyMeshGroup(&mesh_groups[i]);}
+        mesh_group_count=0;
+        mesh_groups=null;
+    }
+    if(skeleton != null){
+        delete(skeleton);
+        skeleton=null;
+    };
 }
 
-void Model::DrawMesh(Camera* cam,Mesh* m){
+void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
+    Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
     glUniform1i(cam->shader->TEXTURE_0,0);
@@ -74,10 +82,10 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.transpose();
     normal.invert();
     
-    if(skeleton != null){
-        skeleton->CalculatePose();   
-        for(int i=0;i< skeleton->bone_count;i++){
-            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&skeleton->pose_matrices[i]);
+    if(pose != null){
+        pose->Calculate(); 
+        for(int i=0;i< pose->bone_count;i++){
+            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
         } 
     }
 
@@ -85,14 +93,14 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
     glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
-    for(int i=0;i<mesh_group_count;i++){
-        for(int j=0;j<mesh_groups[i].mesh_count;j++){
-            DrawMesh(cam,&mesh_groups[i].meshes[j]);
+    for(int i=0;i<data->mesh_group_count;i++){
+        for(int j=0;j<data->mesh_groups[i].mesh_count;j++){
+            data->DrawMesh(cam,i,j);
         }
     }
 
-    if(skeleton != null){
-        for(int i=0;i< skeleton->bone_count;i++){ 
+    if(pose != null){
+        for(int i=0;i< pose->bone_count;i++){ 
             glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
         }
     }
@@ -102,7 +110,6 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
 }
-
 
 void DestroyMesh(Mesh* m){
     //TODO: texture, model smart pointers?
@@ -133,23 +140,19 @@ void Model::Clone(Model* dest){
 }
 
 void Model::DestroySharedData(){//Will break all instances of a model, be careful!
-    free(name);
-    if(mesh_groups != null){
-        for(int i=0;i<mesh_group_count;i++){DestroyMeshGroup(&mesh_groups[i]);}
-        mesh_group_count=0;
-        mesh_groups=null;
-    }
-    if(skeleton != null){
-        skeleton->DestroySharedData();
-        delete(skeleton);
-        skeleton=null;
-    };
+
 }
 
-void ModelManager::Init(){ 
+#include "model_registry.h"
+#include "../io/gltf.h"
+
+AssociativeArray cached_model_data(1);
+ModelData empty_model;
+
+void InitModelCache(){
+    cached_model_data.Resize(8);
     ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
 
-    empty_model.x=empty_model.y=empty_model.z=0;
     empty_model.name="ErrorModel";
     empty_model.mesh_groups=(MeshGroup*)calloc(1,sizeof(MeshGroup));
     empty_model.mesh_group_count=1;
@@ -162,19 +165,29 @@ void ModelManager::Init(){
     empty_model.mesh_groups[0].meshes[0].normal = error_cube.normals;
 }
 
-void ModelManager::Add(const char* name, Model* model){
-    cached_models.Add((byte*)name,(byte*)model);
+void Model::Register(ModelID id, const char* filename){
+    if(File::Exists(filename)){
+        File model_file(filename);
+        GLTFScene model_scene(model_file);
+        //cached_models.Add((int)id,model_scene.Load);
+    }
 }
-Model* ModelManager::Get(const char* name){
-    Model* ret = (Model*)cached_models.StrGet(name);
-    if(ret == nullptr){ret = ErrorModel();}
-    return ret;
+
+Model* Model::Instantiate(ModelID id){
+    if(cached_model_data.IndexOf((int)id) >= 0){
+        return new Model((ModelData*)cached_model_data.Get(id));
+    }
+    return new Model(&empty_model);
 }
-void ModelManager::Remove(const char* name){
-    Model* mdl = (Model*)cached_models.StrRemove(name);
-    mdl->DestroySharedData();
-    delete mdl;
-}
-Model* ModelManager::ErrorModel(){
+
+Model* ModelCache::Free(ModelID id){
+    if(cached_models.IndexOf((int)id) >= 0){
+        return cached_models.Get(id);
+    }
     return &empty_model;
 }
+
+Model* ModelCache::Error(){
+    return &empty_model;
+}
+
