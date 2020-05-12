@@ -1,10 +1,32 @@
 #include "level_collision.h"
 #include "../log.h"
 
-CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface coll_surface){
+CollisionMesh::CollisionMesh(){
+    name=null;
+    vertex_count=0;
+    vertices=null;
+}
+
+CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface* coll_surface){
+    SetSurface(coll_surface);
+    SetVertices(group);
+}
+
+CollisionMesh::~CollisionMesh(){
+    if(name != null){free(name);name=null;}
+    if(vertices != null){free(vertices);vertices=null;}
+}
+
+void CollisionMesh::SetSurface(CollisionSurface* coll_surface){
+    surface.type = coll_surface->type;
+    surface.material = coll_surface->material;
+    surface.metadata = coll_surface->metadata;
+    surface.metadata_len = coll_surface->metadata_len;
+}
+
+void CollisionMesh::SetVertices(MeshGroup* group){
     name = cstr::new_copy(group->name);
     bounds=group->bounds;
-    surface = coll_surface;
 
     vertex_count=0;
     for(int i=0;i<group->mesh_count;i++){
@@ -15,7 +37,7 @@ CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface coll_surface){
 
     int current_vert_count=0;
     for(int i=0;i<group->mesh_count;i++){
-            Mesh* current_mesh = &group->meshes[i];
+        Mesh* current_mesh = &group->meshes[i];
         float* mesh_verts = (float*)calloc(current_mesh->vertex_count,sizeof(float)*3);
 
         if(vertex_count += group->meshes[i].index.Valid()){
@@ -69,7 +91,7 @@ CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface coll_surface){
         memcpy(vertices,mesh_verts,current_mesh->vertex_count*sizeof(float)*3);
         current_vert_count+=group->meshes[i].vertex_count;
         free(mesh_verts);
-    }
+    } 
 }
 
 HeightMap::HeightMap(){

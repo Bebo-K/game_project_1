@@ -44,8 +44,8 @@ char* File::GetPathOf(const char* filename){
 
 bool File::Exists(const char* filename){
 	if(filename==nullptr)return false;
-    FILE *file;
-    if (file = fopen(filename, "r")){
+    FILE *file = fopen(filename, "r");
+    if (file){
         fclose(file);
         return true;
     }

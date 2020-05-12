@@ -36,17 +36,17 @@ class GLTFScene{
 	void LoadAnimation(int animation_id,Animation* dest);
 	
 	Texture		GetTexture(int texture_id);
-	MeshGroup*	GetMeshGroup(int group_id);
 	Material  	GetMaterial(int material_id);
 	Skeleton* 	GetSkeleton(int skeleton_id);
-	void 		GetModel(Model* model,char* name);
+	void		GetMeshGroup(MeshGroup* group, int group_id);
+	void 		GetModel(ModelData* model);
 
 	public:
 
 	GLTFScene(File model_file);
 	
-	Model* Load(char* model_name);
-	void LoadIn(Model* dest,char* model_name);
+	ModelData* Load();
+	void LoadIn(ModelData* dest);
 
 	~GLTFScene();
 };

@@ -18,25 +18,20 @@ void Scene::Unload(){
 }
 
 Entity* Scene::AddEntity(int eid){
-    Entity* entity = entities.New();
+    Entity* entity = entities.Add();
     entity->eid=eid;
     return entity;
 }
 
 Entity* Scene::GetEntity(int eid){
-    for(int i=entities.Begin();entities.Has(i);i=entities.Next(i)){
-        if(entities[i]->eid == eid){
-            return entities[i];
-        }
+    for(Entity* e:entities){
+        if(e->eid== eid){return e;}
     }
     return null;
 }
 
 void Scene::RemoveEntity(int eid){
-    for(int i=entities.Begin();entities.Has(i);i=entities.Next(i)){
-        if(entities[i]->eid == eid){
-            entities.Delete(i);
-            break;
-        }
+    for(Entity* e:entities){
+        if(e->eid== eid){entities.Delete(e);return;}
     }
 }

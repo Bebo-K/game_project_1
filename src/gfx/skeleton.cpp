@@ -22,9 +22,12 @@ Skeleton::~Skeleton(){
     if(bones != nullptr){
         for(int i=0;i<bone_count;i++){free(bones[i].name);}
         free(bones);
-        bones = nullptr
+        bones = nullptr;
     }
     if(inverse_bind_mats != nullptr){free(inverse_bind_mats);inverse_bind_mats=null;}
+    if(animations != nullptr){
+        delete[] animations;
+    }
 }
 
 void Skeleton::SetBoneName(int bone_id, char* bone_name){
@@ -40,23 +43,11 @@ Animation* Skeleton::GetAnimation(char* name){
     return null;
 }
 
-Pose::Pose(Skeleton* target){
-    if(target == null){
-        bone_count=0;
-        transforms=null;
-        matrices=null;
-        skeleton=null;
-        return;
-    }
-
+Pose::Pose(Skeleton* target):anim_hook(target->bone_count*3){
     skeleton=target;
     bone_count=target->bone_count;
     transforms= (Transform*)calloc(bone_count,sizeof(Transform));
     matrices =  (mat4*)calloc(bone_count,sizeof(mat4));
-
-    anim_hook.num_targets = bone_count*3;
-    anim_hook.targets = (AnimationTarget*)calloc(bone_count*3,sizeof(AnimationHook));
-    anim_hook.values = (float**)calloc(bone_count*3,sizeof(float*));
 
     for(int i=0;i<bone_count;i++){
         transforms[i].Clear();
@@ -80,10 +71,9 @@ Pose::Pose(Skeleton* target){
 }
 
 Pose::~Pose(){
-    if(skeleton != null){skeleton= null;/*it could be shared don't delete it!*/}
+    if(skeleton != null){skeleton= null;}
     if(transforms != null){free(transforms);transforms=null;}
     if(matrices != null){free(matrices);matrices=null;}
-    anim_hook.Destroy();
 }
 
 void Pose::Calculate(){
@@ -113,16 +103,14 @@ void Pose::Calculate(){
 }
 
 void Pose::StartAnimation(char* name){
-   StartAnimation(name);
+    Animation* target_anim = skeleton->GetAnimation(name);
+    if(target_anim != null){
+        AnimationManager::StartClip(target_anim,&anim_hook);
+    }
 }
 void Pose::StartAnimation(char* name,AnimationOptions options){
     Animation* target_anim = skeleton->GetAnimation(name);
     if(target_anim != null){
-        AnimationManager::StartClip(&animations[i],&pose_hook, options)
-    }
-    for(int i=0;i<animation_count;i++){
-        if(cstr::compare(name,animations[i].name)){
-            AnimationManager::StartClip(&animations[i],&pose_hook, options);
-        }
+        AnimationManager::StartClip(target_anim,&anim_hook, options);
     }
 }

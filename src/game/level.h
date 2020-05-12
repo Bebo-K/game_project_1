@@ -33,9 +33,9 @@ class Level : public Drawable{
 	Skybox*		    skybox;
     //Heightmap     terrain;
     int             model_count;
-    Model*          models;
+    ModelData*      models;
 
-    int             geomtery_count; 
+    int             geometry_count; 
     CollisionMesh*  geometry;
     int             entrance_count;
     Entrance*       entrances;

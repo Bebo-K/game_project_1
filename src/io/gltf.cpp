@@ -391,24 +391,22 @@ char* GLTFScene::FindMeshGroupName(int group_id){
 	return null;
 }
 
-MeshGroup* GLTFScene::GetMeshGroup(int group_id){
-	if(!gltf_data->HasArray("meshes")){return nullptr;}
+void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
+	if(!gltf_data->HasArray("meshes")){return;}
 	JSONArray* meshes = gltf_data->GetArray("meshes");
-	if(group_id < 0 || group_id >= meshes->count){return nullptr;}
-
-	MeshGroup* ret = (MeshGroup*)calloc(1,sizeof(MeshGroup));
+	if(group_id < 0 || group_id >= meshes->count){return;}
 
 	JSONObject* mesh = meshes->At(group_id)->ObjectValue();
 	JSONArray* primitives = mesh->GetArray("primitives");
 
 
-	ret->name = FindMeshGroupName(group_id);
-	if(ret->name== null){ret->name = cstr::new_copy(mesh->GetString("name")->string);}
-	ret->mesh_count=primitives->count;
-	ret->meshes = (Mesh*)calloc(primitives->count,sizeof(Mesh));
+	group->name = FindMeshGroupName(group_id);
+	if(group->name== null){group->name = cstr::new_copy(mesh->GetString("name")->string);}
+	group->mesh_count=primitives->count;
+	group->meshes = new Mesh[primitives->count];
 
 	for(int i=0;i<primitives->count;i++){
-		Mesh* prim = &ret->meshes[i];
+		Mesh* prim = &group->meshes[i];
 		JSONObject* primitive = primitives->At(i)->ObjectValue();
 		JSONObject* attribs = primitive->GetJObject("attributes");
 
@@ -425,7 +423,7 @@ MeshGroup* GLTFScene::GetMeshGroup(int group_id){
 			prim_bounds.lo_corner.x= min_array->At(0)->FloatValue();
 			prim_bounds.lo_corner.y= min_array->At(1)->FloatValue();
 			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
-		ret->bounds.Union(prim_bounds);
+		group->bounds.Union(prim_bounds);
 
 		prim->vertex=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
 		if(attribs->HasInt("NORMAL")){
@@ -458,7 +456,6 @@ MeshGroup* GLTFScene::GetMeshGroup(int group_id){
 			prim->vertex_count = GetAccessor(index_accessor_id)->GetInt("count");
 		}
 	}
-	return ret;
 }
 
 Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
@@ -467,14 +464,11 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	if(skeleton_id < 0 || skeleton_id >= skins->count){return nullptr;}
 
 	JSONArray* nodes_array = gltf_data->GetArray("nodes");
-
-	Skeleton* ret = (Skeleton*)calloc(1,sizeof(Skeleton));
-
 	JSONObject* skin = skins->At(skeleton_id)->ObjectValue();
 	JSONArray* joint_nodes = skin->GetArray("joints");
 
 	//char* skeleton_name = skin->GetString("name")->string;
-	ret->AllocateBoneCount(joint_nodes->count);
+	Skeleton* ret = new Skeleton(joint_nodes->count);
 
 	int ibm_data_buffer_id = GetAccessor(skin->GetInt("inverseBindMatrices"))->GetInt("bufferView");
 	int read =0;
@@ -522,8 +516,6 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 		}
 		if(bone_node->HasArray("children")){
 			child_array=bone_node->GetArray("children");
-			ret->bones[i].child_count=child_array->count;
-			ret->bones[i].child_indices = (int*)calloc(child_array->count,sizeof(int*));
 			for(int j=0;j < child_array->count;j++){
 				int child_node_index = child_array->At(j)->IntValue();
 				int child_bone_index= -1;
@@ -532,7 +524,6 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 						child_bone_index=k;
 					}
 				}
-				ret->bones[i].child_indices[j] = child_bone_index;
 				ret->bones[child_bone_index].parent_index = i;
 			}
 		}
@@ -546,10 +537,10 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
 	JSONArray* channels = animation->GetArray("channels");
 
-	dest->name = cstr::new_copy(animation->GetString("name")->string);
+	dest->SetName(animation->GetString("name")->string);
+	dest->SetChannelCount(channels->count);
 	dest->length= 0.0f;
-	dest->channel_count = channels->count;
-	dest->channels = (AnimationChannel*)calloc(channels->count,sizeof(AnimationChannel));
+
 	for(int i=0; i < dest->channel_count; i++){
 		AnimationChannel* channel = &dest->channels[i];
 		JSONObject* gltf_channel =  channels->At(i)->ObjectValue();
@@ -560,7 +551,7 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 		char* target_node_name = target_node->GetString("name")->string;
 		char* target_type = channel_target->GetString("path")->string;
 
-		channel->target.object_name=cstr::new_copy(target_node_name);
+		channel->target.object_name=cstr::new_copy(target_node_name);//TODO: Hello! I am a memory leak!
 		if(cstr::compare(target_type,"translation")){
 			channel->target.value_type=AnimationType::TRANSLATION;
 			channel->target.num_values=3;
@@ -604,51 +595,48 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 	}
 }
 
-void GLTFScene::GetModel(Model* model,char* name){
-	if(name != nullptr){model->name = cstr::new_copy(name);}
+void GLTFScene::GetModel(ModelData* model){
 	model->mesh_group_count=0;
 
-	PointerArray model_meshes(1);
-
 	JSONArray* nodes_array = gltf_data->GetArray("nodes");
+	int* mesh_ids = new int[nodes_array->count];//can't have more meshes than nodes.
+
 	JSONObject* node =nullptr;
 	for(int i=0;i<nodes_array->count;i++){
 		node = nodes_array->At(i)->ObjectValue();
 		if(node->HasInt("mesh")){
-			if(model->name  == nullptr && node->HasString("name")){model->name = cstr::new_copy(node->GetString("name")->string);}
 			if(node->HasInt("skin")){
 				int mesh_skeleton_id = node->GetInt("skin");
 				model->skeleton=GetSkeleton(mesh_skeleton_id);
 			}
+			mesh_ids[model->mesh_group_count] = node->GetInt("mesh");
 			model->mesh_group_count++;
-			model_meshes.Add((byte*)GetMeshGroup(node->GetInt("mesh")));
 		}
 	}
-	model->mesh_groups = (MeshGroup*)calloc(model->mesh_group_count,sizeof(MeshGroup));
+	model->mesh_groups = new MeshGroup[model->mesh_group_count];
 	for(int i=0;i<model->mesh_group_count;i++){
-		MeshGroup* group =(MeshGroup*)model_meshes.Get(i);
-		memcpy(&model->mesh_groups[i],group,sizeof(MeshGroup));
-		model->bounds.Union(group->bounds);
-		model_meshes.Remove(i);
-		free(group);
+		GetMeshGroup(&model->mesh_groups[i],mesh_ids[i]);
+		model->bounds.Union(model->mesh_groups[i].bounds);
 	}
 	if(gltf_data->HasArray("animations") ||model->skeleton != nullptr){
 		int anim_count = gltf_data->GetArray("animations")->count;
 		model->skeleton->animation_count = anim_count;
-		model->skeleton->animations = (Animation*)calloc(anim_count,sizeof(Animation));
+		model->skeleton->animations = new Animation[anim_count]();
 		for(int i=0;i<anim_count;i++){
 			LoadAnimation(i,&model->skeleton->animations[i]);
 		}
 	}
+
+	free(mesh_ids);
 }
 
-Model* GLTFScene::Load(char* name){
-	Model* ret = new Model();
-	GetModel(ret,name);
+ModelData* GLTFScene::Load(){
+	ModelData* ret = new ModelData();
+	GetModel(ret);
 	return ret;
 }
 
-void GLTFScene::LoadIn(Model* dest,char* name){
-	Model* ret = new (dest) Model();
-	GetModel(ret,name);
+void GLTFScene::LoadIn(ModelData* dest){
+	ModelData* ret = new(dest)ModelData();
+	GetModel(ret);
 }

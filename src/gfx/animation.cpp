@@ -16,36 +16,58 @@ bool AnimationTarget::Compare(AnimationTarget other){
             cstr::compare(object_name,other.object_name);
 }
 
+
 AnimationOptions::AnimationOptions(){
     timescale = 1.0f;
     end_action = AnimationEndAction::STOP;
 }
 
-void Animation::Destroy(){
-    if(name != nullptr){free(name);name=nullptr;}
-    for(int i=0;i<channel_count;i++){
-        channels[i].Destroy();
-    }
-    if(channels != nullptr){free(channels);channels=nullptr;}
+
+AnimationChannel::AnimationChannel(){
+    target.object_name=null;
+    target.num_values=0;
+    target.value_type=0;
+
+    keyframe_count=0;
+    keyframe_times=null;
+    keyframe_values=null;
+
+    interpolate_mode=LINEAR;
 }
-void AnimationHook::Destroy(){
-    if(targets != nullptr){
-        for(int i=0;i<num_targets;i++){targets[i].Destroy();}
-        free(targets);targets=nullptr;}
-    if(values != nullptr){free(values);values=nullptr;}
+
+AnimationChannel::AnimationChannel(AnimationTarget anim_target,int keyframes){
+    target=anim_target;
+    keyframe_count = keyframes;
+    interpolate_mode=LINEAR;
+    keyframe_times = (float*)calloc(keyframes,sizeof(float));
+    keyframe_values = (float*)calloc(keyframes,sizeof(float));
 }
-void AnimationChannel::Destroy(){
-    target.Destroy();
-    if(keyframe_times != nullptr){free(keyframe_times);keyframe_times=nullptr;}
-    if(keyframe_values != nullptr){free(keyframe_values);keyframe_values=nullptr;}
+
+AnimationChannel::~AnimationChannel(){
+    if(keyframe_values != null){free(keyframe_values);keyframe_values=null;}
+    if(keyframe_times != null){free(keyframe_times);keyframe_times=null;}
 }
-void AnimationTarget::Destroy(){
-    /* This would result in a lot of extra copies of bone names being needed
-    if(object_name!= nullptr){
-        free(object_name);
-        object_name=nullptr;
-    }
-    */
+
+void   AnimationChannel::SetTarget(AnimationTarget anim_target){
+    target=anim_target;
+}
+
+void   AnimationChannel::SetKeyframeCount(int keyframes){
+    keyframe_count = keyframes;
+    keyframe_times = (float*)calloc(keyframes,sizeof(float));
+    keyframe_values = (float*)calloc(keyframes,sizeof(float));
+}
+
+
+AnimationHook::AnimationHook(int target_count){
+    num_targets=target_count;
+    targets=new AnimationTarget[target_count];
+    values = (float**)calloc(target_count,sizeof(float*));
+}
+
+AnimationHook::~AnimationHook(){
+    delete targets;targets=null;
+    free(values);values=null;
 }
 
 float* AnimationHook::GetTarget(AnimationTarget target){
@@ -56,6 +78,39 @@ float* AnimationHook::GetTarget(AnimationTarget target){
     }
     return null;
 } 
+
+Animation::Animation(){
+    name=null;
+    channels=null;
+    channel_count=0;
+}
+
+Animation::Animation(char* anim_name,int num_channels){
+    if(anim_name==null){name=null;}
+    else{name = cstr::new_copy(anim_name);}
+    channel_count = num_channels;
+    channels = new AnimationChannel[num_channels]();
+}
+
+Animation::~Animation(){
+    if(name != null){free(name);name=null;}
+    delete[] channels;
+    channels=null;
+}
+
+void Animation::SetName(char* anim_name){
+    if(anim_name==null){name=null;}
+    else{name = cstr::new_copy(anim_name);}
+}
+void Animation::SetChannelCount(int num_channels){
+    channel_count = num_channels;
+    channels = new AnimationChannel[num_channels]();
+}
+
+//------------------------------------------------//
+//            Animation manager code              //
+//------------------------------------------------//
+
 
 void AnimationManager::Init(){
     for(int i=0;i< ANIMATION_LAYER_COUNT;i++){
@@ -301,3 +356,33 @@ void AnimationManager::Update(float seconds){
         }
     }
 }
+
+
+/*
+void Animation::Destroy(){
+    if(name != nullptr){free(name);name=nullptr;}
+    for(int i=0;i<channel_count;i++){
+        channels[i].Destroy();
+    }
+    if(channels != nullptr){free(channels);channels=nullptr;}
+}
+void AnimationHook::Destroy(){
+    if(targets != nullptr){
+        for(int i=0;i<num_targets;i++){targets[i].Destroy();}
+        free(targets);targets=nullptr;}
+    if(values != nullptr){free(values);values=nullptr;}
+}
+void AnimationChannel::Destroy(){
+    target.Destroy();
+    if(keyframe_times != nullptr){free(keyframe_times);keyframe_times=nullptr;}
+    if(keyframe_values != nullptr){free(keyframe_values);keyframe_values=nullptr;}
+}
+void AnimationTarget::Destroy(){
+     This would result in a lot of extra copies of bone names being needed
+    if(object_name!= nullptr){
+        free(object_name);
+        object_name=nullptr;
+    }
+    
+}
+*/

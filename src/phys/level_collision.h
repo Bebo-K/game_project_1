@@ -9,15 +9,29 @@
 #include "collider.h"
 
 //Level Collision data
-enum LevelCollisionCase{WALL=0,FLOOR=1,CEILING=2/*,SLIDE=3*/};
-enum SurfaceType{SOLID, NOCLIP, TRIGGER, WATER, DAMAGE, DEATH};
-enum SurfaceMaterial{NONE,STONE};
+namespace LevelCollisionCase{
+    const int WALL=0;
+    const int FLOOR=1;
+    const int CEILING=2;
+};
+namespace SurfaceType{
+    const int SOLID=0;
+    const int NOCLIP=1;
+    const int TRIGGER=2;
+    const int WATER=3;
+    const int DAMAGE=4;
+    const int DEATH=5;
+};
+namespace SurfaceMaterial{
+    const int NONE=0;
+    const int STONE=1;
+};
 
 struct CollisionSurface{
-    SurfaceType     type;
-    SurfaceMaterial material;
-    byte*           metadata;
-    int             metadata_len;
+    int     type;
+    int     material;
+    byte*   metadata;
+    int     metadata_len;
 };
 
 struct CollisionData {
@@ -25,7 +39,7 @@ struct CollisionData {
     vec3                normal;
     vec3                velocity_cancel;//Direction to stop moving in
     vec3                shunt;//Any movement we need to make to un-clip
-    LevelCollisionCase  collision_case;
+    int                 collision_case;
     float               floor_distance;//TODO what is this?
     CollisionData*      next;
 };
@@ -38,7 +52,12 @@ class CollisionMesh{
 	int		            vertex_count;// must be a multiple of 3 ('cause triangles)
     float*              vertices;
 
-    CollisionMesh(MeshGroup* mesh,CollisionSurface surface);
+    CollisionMesh();
+    CollisionMesh(MeshGroup* mesh,CollisionSurface* surface);
+    ~CollisionMesh();
+
+    void SetVertices(MeshGroup* mesh);
+    void SetSurface(CollisionSurface* surface);
     CollisionData* HandleCollision(Entity e,float delta);
 };
 

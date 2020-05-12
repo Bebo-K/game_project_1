@@ -76,18 +76,18 @@ void BitArray::Clear(){
     memset(data,0,char_count);
 }
 
-DataArray::DataArray():slot_is_filled(){
+DataArray::DataArray():occupancy(){
     slots=0;
     slot_size=0;
     data=null;
 }
-DataArray::DataArray(int object_size):slot_is_filled(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
+DataArray::DataArray(int object_size):occupancy(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
 }
 
-DataArray::DataArray(int count,int object_size):slot_is_filled(count){
+DataArray::DataArray(int count,int object_size):occupancy(count){
     slots=count;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
@@ -99,7 +99,7 @@ DataArray::~DataArray(){
 void* DataArray::Add(){
     int added_slot = -1;
     for(int i=0;i < slots; i++){
-        if(!slot_is_filled.Get(i)){
+        if(!occupancy.Get(i)){
             added_slot =i;
             break;
         }
@@ -108,13 +108,13 @@ void* DataArray::Add(){
         added_slot = slots;
         Resize(slots*2);
     }
-    slot_is_filled.Set(added_slot);
+    occupancy.Set(added_slot);
     return (char*)data+(added_slot*slot_size);
 }
 int DataArray::Add(void* object){
     int added_slot = -1;
     for(int i=0;i < slots; i++){
-        if(!slot_is_filled.Get(i)){
+        if(!occupancy.Get(i)){
             added_slot =i;
             break;
         }
@@ -123,28 +123,28 @@ int DataArray::Add(void* object){
         added_slot = slots;
         Resize(slots*2);
     }
-    slot_is_filled.Set(added_slot);
+    occupancy.Set(added_slot);
     memcpy((char*)data+(added_slot*slot_size),object,slot_size);
     return added_slot;
 }
 void DataArray::Remove(int index){
     if(index < 0 || index >= slots){logger::exception("DataArray::Remove -> Index %d is out of range.",index);}
-    slot_is_filled.Unset(index);
+    occupancy.Unset(index);
     memset ((char*)data+(index*slot_size),0,slot_size);
 }
 void* DataArray::Get(int index){
     if(index < 0 || index >= slots){logger::exception("DataArray::Get -> Index %d is out of range.",index);}
-    if(!slot_is_filled.Get(index)){return null;}
+    if(!occupancy.Get(index)){return null;}
     return (char*)data+(index*slot_size);
 }
 byte* DataArray::GetArray(){
     return data;
 }
 int DataArray::Count(){
-    return slot_is_filled.CountBitsSet();
+    return occupancy.CountBitsSet();
 }
 void DataArray::Resize(int new_count){
-    slot_is_filled.Resize(new_count);
+    occupancy.Resize(new_count);
     byte* new_data = (byte*)calloc(new_count,slot_size);
     if(slots <= new_count){
         memcpy(new_data,data,slots*slot_size);
@@ -155,13 +155,13 @@ void DataArray::Resize(int new_count){
 }
 void DataArray::Clear(){
     memset(data,0,slot_size*slots);
-    slot_is_filled.Clear();
+    occupancy.Clear();
 }
 void DataArray::Initialize(int count,int object_size){
     slots=count;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
-    slot_is_filled.Initialize(count);
+    occupancy.Initialize(count);
 }
 
 

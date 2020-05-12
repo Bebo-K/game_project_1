@@ -29,7 +29,6 @@ struct BitArray{
 };
 
 
-
 //A dynamic object array.
 //Memory is allocated for objects inside the array, if a new object is added with no available slots, the array's size will be doubled.
 //Because objects can have any data, a separate, additional bit array is kept for vacancy info of data slots.
@@ -41,7 +40,7 @@ struct BitArray{
 struct DataArray{
     int slots;
     int slot_size;
-    BitArray slot_is_filled;
+    BitArray occupancy;
     byte* data;
 
     DataArray();
@@ -87,7 +86,7 @@ struct PointerArray{
     void Clear();
 };
 
-//Associative Array: Dynamic Array with an integer/pointer key association. As close to a map as it gets.
+//Associative Array: PointerArray with an integer/pointer key association. As close to a map as it gets.
 // Uses both the PointerArray system and DataArray vacancy bit array system, so 0/null values are valid
 //Memory allocation for keys(if any) and values are not done by this array, only pointers are stored.
 //Add() will overwrite+return the first empty slot, or double the array size if there are none.
@@ -97,6 +96,9 @@ struct PointerArray{
 
 //BIG CAVEAT to this is that the array is only safe for as many spaces as min(sizeof(int),sizeof(byte*)).
 //On most systems both are 4, but...
+
+//ANOTHER BIG CAVEAT - Don't mix types of keys.
+// It won't complain if you add a char* key and an int key, but good luck remembering which ones you can dereference.
 
 union u_associative_array_key{
     int intvalue;

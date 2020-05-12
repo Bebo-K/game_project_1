@@ -22,20 +22,34 @@ enum AnimationEndAction{
 };
 
 struct AnimationTarget{//Identifying information correlating Channels to Hooks. All fields must match for a hook to be compatible with a channel. 
-    char* object_name;
+    char* object_name;//Not freed. Should always point to an existing cstr
     short value_type;
     short num_values;
     bool Compare(AnimationTarget other);
-    void Destroy();
 };
 
 struct AnimationChannel{//A channel contains keyframe data for a block of one or more float values
     AnimationTarget target;
-    int interpolate_mode;
+    AnimationInterpolateMode interpolate_mode;
     int    keyframe_count;
     float* keyframe_times;
     float* keyframe_values;
-    void Destroy();
+    AnimationChannel();
+    AnimationChannel(AnimationTarget anim_target,int keyframes);
+    void   SetTarget(AnimationTarget anim_target);
+    void   SetKeyframeCount(int keyframes);
+    ~AnimationChannel();
+};
+
+struct AnimationHook{//Contains information to hook float values to animation channels.
+    int num_targets;
+    AnimationTarget* targets;
+    float** values;
+
+    AnimationHook(int target_count);
+    ~AnimationHook();
+
+    float* GetTarget(AnimationTarget target);
 };
 
 class Animation{
@@ -45,19 +59,14 @@ class Animation{
     float length;
     int channel_count;
     AnimationChannel* channels;
-    void Destroy();
+
+    Animation();
+    Animation(char* anim_name,int num_channels);
+    ~Animation();
+
+    void SetName(char* anim_name);
+    void SetChannelCount(int num_channels);
 };
-
-struct AnimationHook{//Contains information to hook float values to animation channels.
-    int num_targets;
-    AnimationTarget* targets;
-    float** values;
-
-    float* GetTarget(AnimationTarget target);
-
-    void Destroy();
-};
-
 
 struct ClipInfo{ //Info about the currently running animation
     Animation*  animation;

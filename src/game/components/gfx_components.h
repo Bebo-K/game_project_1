@@ -28,7 +28,7 @@ class CameraTarget : Component{
 class ModelSet : public List<Model> ,public Component,public Drawable{
 	public:
 	
-	Model* Add(char* name);
+	Model* Add(ModelID model_id);
 	void Draw(Camera* cam,mat4* view, mat4* projection);
 	~ModelSet();
 };

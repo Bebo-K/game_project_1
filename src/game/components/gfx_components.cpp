@@ -13,9 +13,11 @@ CameraTarget::CameraTarget(Camera* c,vec3 cam_offset,float_range zoom_scale,floa
 
 CameraTarget::~CameraTarget(){}
 
-Model* ModelSet::Add(char* name){
-    Model* ret = New();
-    ModelManager::Get(name)->Clone(ret);
+
+Model* ModelSet::Add(ModelID model_id){
+    Model* ret = new Model(model_id);
+    data.Add(ret);
+    count++;
     return ret;
 }
 
@@ -23,8 +25,8 @@ void ModelSet::Draw(Camera* cam,mat4* view, mat4* projection){
     view->scale(scale);
     view->rotate(rotation);
     view->translate(x,y,z);
-    for(int i=Begin();Has(i);i=Next(i)){
-        (*this)[i]->Draw(cam,view,projection);
+    for(Model* m: (*this)){
+        m->Draw(cam,view,projection);
     }
 }
 

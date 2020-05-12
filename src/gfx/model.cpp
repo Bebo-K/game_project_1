@@ -2,10 +2,43 @@
 #include <string.h>
 #include "../log.h"
 #include "../io/gltf.h"
+#include "../structs/list.h"
 
+List<ModelCacheEntry> model_registry;
+ModelData empty_model;
+
+Mesh::Mesh(){
+    vertex_count=0;
+};
+
+Mesh::~Mesh(){
+    vertex.Destroy();
+    index.Destroy();
+    texcoord_0.Destroy();
+    normal.Destroy();
+    bone_0_index.Destroy();
+    bone_0_weight.Destroy();
+};
+
+MeshGroup::MeshGroup(){
+    meshes=null;
+    mesh_count=0;
+    name=null;
+}
+
+MeshGroup::~MeshGroup(){
+    if(name != null){
+        free(name);
+        name=null;
+    }
+    if(meshes != null){
+        delete[] meshes;
+        meshes = null;
+        mesh_count=0;
+    }
+}
 
 ModelData::ModelData(){
-    name=null;
     mesh_group_count=0;
 	mesh_groups=null;
 	skeleton=null;
@@ -16,19 +49,16 @@ ModelData::~ModelData(){
         delete skeleton;
         skeleton = null;
     }
-    if(name != null){free(name);name=null;}
     if(mesh_groups != null){
-        for(int i=0;i<mesh_group_count;i++){DestroyMeshGroup(&mesh_groups[i]);}
-        mesh_group_count=0;
+        delete[] mesh_groups;
         mesh_groups=null;
+        mesh_group_count=0;
     }
-    if(skeleton != null){
-        delete(skeleton);
-        skeleton=null;
-    };
 }
 
 void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
+    if(group_index < 0 || group_index > mesh_group_count){return;}
+    if(mesh_index < 0 || mesh_index > mesh_groups[group_index].mesh_count){return;}
     Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
@@ -57,6 +87,37 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     int err = glGetError();
     if(err != 0){
         logger::warn("Model.Mesh.glDrawXXX-> GL error: %d \n",err);
+    }
+}
+
+Model::Model(ModelID type){
+    type_id = type;
+    data = ModelManager::Use(type);
+    if(data->skeleton != null){
+        pose = new Pose(data->skeleton);
+    }
+    else{
+        pose = null;
+    }
+}
+
+Model::Model(ModelData* dat){//Does not use cache. 
+    type_id= ModelType::NONE;
+    data = dat;
+    if(data->skeleton != null){
+        pose = new Pose(data->skeleton);
+    }
+    else{
+        pose = null;
+    }
+}
+
+Model::~Model(){
+    ModelManager::Return(type_id);
+    data = null;
+    if(pose != null){
+        delete pose;
+        pose = null;
     }
 }
 
@@ -111,52 +172,14 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
 }
 
-void DestroyMesh(Mesh* m){
-    //TODO: texture, model smart pointers?
-    m->vertex.Destroy();
-    m->normal.Destroy();
-    m->texcoord_0.Destroy();
-    m->bone_0_index.Destroy();
-    m->bone_0_weight.Destroy();
-    m->index.Destroy();
-}
-
-void DestroyMeshGroup(MeshGroup* m){
-    if(m->name != nullptr){free(m->name);}
-    for(int i=0;i<m->mesh_count;i++){
-        DestroyMesh(&m->meshes[i]);
-    }
-}
-
-void Model::Clone(Model* dest){
-    dest->name=name;
-    dest->mesh_groups=mesh_groups;
-    dest->mesh_group_count=mesh_group_count;
-    if(skeleton != null){
-        dest->skeleton=new Skeleton();
-        skeleton->Clone(dest->skeleton);
-    }
-    dest->bounds = bounds;
-}
-
-void Model::DestroySharedData(){//Will break all instances of a model, be careful!
-
-}
-
-#include "model_registry.h"
-#include "../io/gltf.h"
-
-AssociativeArray cached_model_data(1);
-ModelData empty_model;
-
-void InitModelCache(){
-    cached_model_data.Resize(8);
+void ModelManager::Init(){
     ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
 
-    empty_model.name="ErrorModel";
-    empty_model.mesh_groups=(MeshGroup*)calloc(1,sizeof(MeshGroup));
+    empty_model.skeleton= null;
+    empty_model.bounds = {{-0.5f,-0.5f,-0.5f},{0.5f,0.5f,0.5f}};
+    empty_model.mesh_groups=new MeshGroup[1]();
     empty_model.mesh_group_count=1;
-    empty_model.mesh_groups[0].meshes = (Mesh*)calloc(1,sizeof(Mesh));
+    empty_model.mesh_groups[0].meshes = new Mesh[1]();
     empty_model.mesh_groups[0].name = "ErrorModel.MeshGroup";
     empty_model.mesh_groups[0].meshes[0].vertex_count = error_cube.vertex_count;
     empty_model.mesh_groups[0].meshes[0].mat = error_cube.mat;
@@ -165,29 +188,71 @@ void InitModelCache(){
     empty_model.mesh_groups[0].meshes[0].normal = error_cube.normals;
 }
 
-void Model::Register(ModelID id, const char* filename){
-    if(File::Exists(filename)){
-        File model_file(filename);
-        GLTFScene model_scene(model_file);
-        //cached_models.Add((int)id,model_scene.Load);
+ModelData* ModelManager::Use(ModelID id){
+    if(id == ModelType::NONE){return ErrorModel();}
+    for(ModelCacheEntry* cache:model_registry){
+        if(cache->id == id){
+            if(cache->data==null){
+                if(File::Exists(cache->filename)){
+                    File model_file(cache->filename);
+                    GLTFScene scene(model_file);
+                    cache->data = scene.Load();
+                    model_file.close();
+                    return cache->data;
+                }
+                else{
+                    return ErrorModel();
+                }
+            }
+            else{
+                cache->users++;
+                return cache->data;
+            }
+        }
+    }
+    return ErrorModel();
+}
+
+void ModelManager::Return(ModelID id){
+    if(id == ModelType::NONE){return;}
+    for(ModelCacheEntry* cache:model_registry){
+        if(cache->id == id){
+            cache->users--;
+        }
     }
 }
 
-Model* Model::Instantiate(ModelID id){
-    if(cached_model_data.IndexOf((int)id) >= 0){
-        return new Model((ModelData*)cached_model_data.Get(id));
+void ModelManager::Clean(){//deletes all model data not in use.
+    for(ModelCacheEntry* cache:model_registry){
+        if(cache->users <= 0){
+            cache->users =0;
+            delete cache->data;
+            cache->data = null;
+        }
     }
-    return new Model(&empty_model);
 }
 
-Model* ModelCache::Free(ModelID id){
-    if(cached_models.IndexOf((int)id) >= 0){
-        return cached_models.Get(id);
+void ModelManager::Register(ModelID id, const char* filename){
+    ModelCacheEntry* cache = model_registry.Add();
+    cache->data=null;
+    cache->filename=filename;
+    cache->users=0;
+    cache->id=id;
+}
+
+void ModelManager::Unregister(ModelID id){
+    for(ModelCacheEntry* cache:model_registry){
+        if(cache->id== id){
+            if(cache->users != 0){
+                logger::warn("Warning, deregistering model of type %d even though it's in use!\n",id);
+            }
+            delete cache->data;
+            model_registry.Delete(cache);
+            return;
+        }
     }
+}
+
+ModelData* ModelManager::ErrorModel(){
     return &empty_model;
 }
-
-Model* ModelCache::Error(){
-    return &empty_model;
-}
-

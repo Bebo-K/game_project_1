@@ -7,10 +7,11 @@ Entity::Entity(){
     type =0;
     name=nullptr;
     x=y=z=0;
+    velocity={0,0,0};
     scale ={1,1,1};
     rotation = {0,0,0,1};
 
-    velocity=nullptr;
+    
     models=nullptr;
     sprites=nullptr;
     colliders=nullptr;
@@ -34,16 +35,16 @@ vec3 Entity::GetPos(int ms){
 
 Entity::~Entity(){
     if(name != nullptr){free(name);name=nullptr;}
-    if(models != nullptr){free(models);models=nullptr;}
-    if(sprites != nullptr){free(sprites);sprites=nullptr;}
-    if(phys_data != nullptr){free(phys_data);phys_data=nullptr;}
-    if(colliders != nullptr){free(colliders);colliders=nullptr;}
-    if(movement != nullptr){free(movement);movement=nullptr;}
-    if(state != nullptr){free(state);state=nullptr;}
-    //if(animations != nullptr){free(animations);animations=nullptr;}
-    if(player_data != nullptr){free(player_data);player_data=nullptr;}
-    if(camera_target != nullptr){free(camera_target);camera_target=nullptr;}
-    if(unit_data != nullptr){free(unit_data);unit_data=nullptr;}
-    if(npc_data != nullptr){free(npc_data);npc_data=nullptr;}
+    if(models != nullptr){delete models;models=nullptr;}
+    if(sprites != nullptr){delete sprites;sprites=nullptr;}
+    if(phys_data != nullptr){delete phys_data;phys_data=nullptr;}
+    if(colliders != nullptr){delete colliders;colliders=nullptr;}
+    if(movement != nullptr){delete movement;movement=nullptr;}
+    if(state != nullptr){delete state;state=nullptr;}
+    //if(animations != nullptr){delete animations;animations=nullptr;}
+    if(player_data != nullptr){delete player_data;player_data=nullptr;}
+    if(camera_target != nullptr){delete camera_target;camera_target=nullptr;}
+    if(unit_data != nullptr){delete unit_data;unit_data=nullptr;}
+    if(npc_data != nullptr){delete  npc_data;npc_data=nullptr;}
 }
 
