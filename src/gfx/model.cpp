@@ -102,7 +102,7 @@ Model::Model(ModelID type){
 }
 
 Model::Model(ModelData* dat){//Does not use cache. 
-    type_id= ModelType::NONE;
+    type_id= NONE;
     data = dat;
     if(data->skeleton != null){
         pose = new Pose(data->skeleton);
@@ -189,7 +189,7 @@ void ModelManager::Init(){
 }
 
 ModelData* ModelManager::Use(ModelID id){
-    if(id == ModelType::NONE){return ErrorModel();}
+    if(id == NONE){return ErrorModel();}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             if(cache->data==null){
@@ -214,7 +214,7 @@ ModelData* ModelManager::Use(ModelID id){
 }
 
 void ModelManager::Return(ModelID id){
-    if(id == ModelType::NONE){return;}
+    if(id == NONE){return;}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             cache->users--;

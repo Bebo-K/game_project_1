@@ -121,8 +121,8 @@ class List{
     }
 
     ListIterator<T> end(){
-        int end;
-        for(int i=count-1;i <= data.slots; i++){
+        int end=0;
+        for(int i=count-1;i < data.slots; i++){
             if(data.occupancy.Get(i)){end=i;}
         }
         return {this,end};

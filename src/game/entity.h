@@ -22,7 +22,7 @@ struct Entity{
     SpriteSet*      sprites;
     PhysicsData*    phys_data;
     ColliderSet*    colliders;
-    Movement*       movement;
+    MovementData*   movement;
     StateMachine*   state;
     PlayerData*     player_data;
     CameraTarget*   camera_target;

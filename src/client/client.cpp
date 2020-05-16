@@ -1,6 +1,14 @@
 #include "client.h"
 #include "../log.h"
 #include <stdio.h>
+#include "../game/systems/camera_manager.h"
+#include "../game/systems/entity_collision.h"
+#include "../game/systems/movement.h"
+#include "../game/systems/npc_controller.h"
+#include "../game/systems/physics.h"
+#include "../game/systems/player_input.h"
+#include "../game/systems/transition_manager.h"
+
 
 Client::Client() : scene(), scene_renderer(), ui(){}
 
@@ -9,6 +17,7 @@ void Client::Start(){
 
     ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
     ShaderManager::AddShader("shadeless","dat/gfx/shadeless.vrt","dat/gfx/shadeless.frg");
+    ModelManager::Register(PLAYER_PLACEHOLDER,"dat/models/placeholder_person.glb");
 
     ui.Load();
     scene_renderer.Load();
@@ -35,7 +44,7 @@ void Client::Start(){
 
 void Client::LoadScene(int scene_id){
     scene.Load();
-    scene_renderer.Add(&scene.level);
+    //scene_renderer.Add(&scene.level);
 }
 
 void Client::AddEntity(int eid){
@@ -51,26 +60,38 @@ void Client::RemoveEntity(int eid){
 
 void Client::SpawnPlayer(Entrance eid){
     my_player = scene.AddEntity(0);
+    my_player->type = 1;
+    my_player->name= cstr::new_copy("Chowzang");
     my_player->models = new ModelSet();
-    //Model Registry add Player model
-    //    my_player->models->Add("dat/models/placeholder_person.glb");
-    //if(e->models != null){scene_renderer.Add(e->models);}    
+        my_player->models->Add(PLAYER_PLACEHOLDER);
+    my_player->phys_data = new PhysicsData();
+    my_player->colliders = new ColliderSet();
+        //my_player->colliders->Add();
+    my_player->movement = new MovementData();
+    my_player->state = new StateMachine();
+    my_player->player_data = new PlayerData();
+    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,0,-5},{0,1},{0,0});
+    my_player->unit_data = new UnitData();
 
+
+    if(my_player->models != null){scene_renderer.Add(my_player->models);}  
 }
 
 
 void Client::Paint(){
+    CameraManager::Update(&scene,0);//?
     scene_renderer.Draw();
     ui.Paint();
 }
 
 void Client::Update(int ms){
-	//PlayerActionManager::Update(this,delta);
-    //NPCMovementManager::Update(this,ms);
-	//MovementController::Update(this,delta);
-	//Physics::Update(this,delta);
-	//CameraManager::Update(this,delta);
-
+    PlayerInput::Update(&scene,ms);
+    NPCController::Update(&scene,ms);
+    Movement::Update(&scene,ms);
+    EntityCollision::Update(&scene,ms);
+    Physics::Update(&scene,ms);
+    TransitionManager::Update(&scene,ms);
     //Network::RunSync(this,delta);
+
     ui.Update(ms,&scene);
 }

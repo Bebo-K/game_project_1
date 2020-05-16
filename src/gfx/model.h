@@ -7,10 +7,9 @@
 #include "drawable.h"
 #include "skeleton.h"
 
-typedef int ModelID;
-namespace ModelType{
-    const int NONE=0;
-    const int PLAYER_PLACEHOLDER=1;
+enum ModelID{
+    NONE=0,
+    PLAYER_PLACEHOLDER=1
 };
 
 struct Mesh{

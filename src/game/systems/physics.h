@@ -4,11 +4,12 @@
 #include "../scene.h"
 
 
-namespace PhysicsSystem{
+namespace Physics{
 
-    void Update(Entity* e, Scene* scene, int ms);
+    void Update(Scene* scene, int ms);
 
 };
+
 
 
 #endif

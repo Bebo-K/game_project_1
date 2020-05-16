@@ -5,5 +5,5 @@ PhysicsData::~PhysicsData(){}
 
 ColliderSet::~ColliderSet(){}
 
-Movement::Movement(){}
-Movement::~Movement(){}
+MovementData::MovementData(){}
+MovementData::~MovementData(){}

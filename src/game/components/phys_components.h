@@ -31,7 +31,7 @@ class ColliderSet : List<Collider> , Component{
     ~ColliderSet();
 };
 
-class Movement : Component {
+class MovementData : Component {
 	public:
 
     float	base_speed;
@@ -46,8 +46,8 @@ class Movement : Component {
     bool	is_jumping;
     bool	jump_goal;
 
-    Movement();
-    ~Movement();
+    MovementData();
+    ~MovementData();
 };
 
 

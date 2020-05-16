@@ -1,4 +1,4 @@
-#include "physics_system.h"
+#include "physics.h"
 
 void ApplyGravity(Entity* e, int ms){
 
@@ -11,9 +11,11 @@ void ApplyMidairVelocityDampening(Entity* e, int ms){
 
 }
 
-void PhysicsSystem::Update(Entity* e,Scene* scene, int ms){
+void Physics::Update(Scene* scene, int ms){
+    for(Entity* e:scene->entities){
+    if(e->phys_data== nullptr)continue;
     PhysicsData* phys = e->phys_data;
-    if(phys== nullptr)return;
+  
     if(phys->apply_gravity){
         ApplyGravity(e,ms);
     }
@@ -28,4 +30,10 @@ void PhysicsSystem::Update(Entity* e,Scene* scene, int ms){
             ApplySlidingVelocityDampening(e,ms);
         }
     }
+
+
+
+    }
+
+
 }
