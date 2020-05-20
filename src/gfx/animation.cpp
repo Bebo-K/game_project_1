@@ -63,6 +63,7 @@ AnimationHook::AnimationHook(int target_count){
     num_targets=target_count;
     targets=new AnimationTarget[target_count];
     values = (float**)calloc(target_count,sizeof(float*));
+    animating=false;
 }
 
 AnimationHook::~AnimationHook(){
@@ -146,6 +147,7 @@ void AnimationManager::StartClip(Animation* clip, AnimationHook* hook){
     start_info->end_action=AnimationEndAction::STOP;
     start_info->timescale=1.0f;
     start_info->layer=active_layer; 
+    hook->animating=true;
 }
 void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, AnimationOptions options){
     ClipInfo *start_info = nullptr;
@@ -177,6 +179,7 @@ void AnimationManager::StopClip(AnimationHook* hook){
         if(existing_clip_info==nullptr)continue;
         if(existing_clip_info->hook == hook){
             active_clips.Remove(i);
+            hook->animating=false;
             break;
         }
     }

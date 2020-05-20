@@ -11,17 +11,17 @@
 #include "../../gfx/animation.h"
 #include "../../gfx/drawable.h"
 
+struct Entity;
 
 class CameraTarget : Component{
 	public:
 	float			zoom;
-    Camera* 		camera;
 	vec3			offset;
     quaternion      rotation;
 	float_range		zoom_range;
 	float_range		zoom_pitch;
 
-	CameraTarget(Camera* c,vec3 cam_offset,float_range zoom_scale,float_range tilt);
+	CameraTarget(Entity* parent,vec3 cam_offset,float_range zoom_scale,float_range tilt);
     ~CameraTarget();
 };
 
@@ -30,6 +30,7 @@ class ModelSet : public List<Model> ,public Component,public Drawable{
 	
 	Model* Add(ModelID model_id);
 	void Draw(Camera* cam,mat4* view, mat4* projection);
+	void StartAnimation(char* animation_name);
 	~ModelSet();
 };
 

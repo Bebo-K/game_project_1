@@ -59,6 +59,7 @@ ModelData::~ModelData(){
 void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     if(group_index < 0 || group_index > mesh_group_count){return;}
     if(mesh_index < 0 || mesh_index > mesh_groups[group_index].mesh_count){return;}
+    
     Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
@@ -86,7 +87,7 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     } 
     int err = glGetError();
     if(err != 0){
-        logger::warn("Model.Mesh.glDrawXXX-> GL error: %d \n",err);
+        logger::warn("ModelData.DrawMesh() -> GL Error: %d \n",err);
     }
 }
 
@@ -122,6 +123,7 @@ Model::~Model(){
 }
 
 void Model::Draw(Camera* cam,mat4* view, mat4* projection){
+    cam->SetShader("basic_lighting");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
@@ -170,6 +172,7 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
+
 }
 
 void ModelManager::Init(){

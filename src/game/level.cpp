@@ -19,11 +19,12 @@ Level::Level(){
 void Level::Draw(Camera* cam,mat4* view, mat4* projection){
     if(skybox != null){skybox->Draw(cam,view,projection);}
 
+    cam->SetShader("basic_lighting");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
-    
+
     mat3 normal;
     normal.set(view);
     normal.transpose();
@@ -40,7 +41,7 @@ void Level::Draw(Camera* cam,mat4* view, mat4* projection){
             }
         }
     }
-
+    
     glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
     glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);

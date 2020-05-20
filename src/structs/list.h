@@ -105,27 +105,30 @@ class List{
 
     ListIterator<T> begin(){
         int i;
+        if(count==0){return bad_index();}
         for(i=0;data.occupancy.Get(i)==false;i++){
             if(i >= data.slots){return bad_index();}
         }
         return {this,i};
     }
 
-    ListIterator<T> next(int index){
+    int next(int index){
         int i=index+1;
+        if(i >= data.slots){return -1;}
         while(data.occupancy.Get(i)==false){
             i++;
-            if(i >= data.slots){return bad_index();}
+            if(i >= data.slots){return -1;}
         }
-        return {this,i};
+        return i;
     }
 
     ListIterator<T> end(){
-        int end=0;
-        for(int i=count-1;i < data.slots; i++){
-            if(data.occupancy.Get(i)){end=i;}
-        }
-        return {this,end};
+        return bad_index();
+        //int end=0;
+        //for(int i=count-1;i < data.slots; i++){
+       //     if(data.occupancy.Get(i)){end=i;}
+        //}
+        //return {this,end};
     }
 
 };
@@ -135,12 +138,16 @@ class List{
 
 template <typename T>
 T* ListIterator<T>::operator*(){
+    if(index < 0){
+        return null;
+    }
     return (*parent)[index];
 }
 
 template <typename T>
 ListIterator<T> ListIterator<T>::operator++(){
-    return parent->next(index);
+    index = parent->next(index);
+    return (*this);
 }
 
 template <typename T>

@@ -13,6 +13,7 @@ struct Entity{
     int     type;
     char*   name;
     float   x,y,z;
+    float   turn;//euler y rotation.
     vec3    velocity;
     vec3    scale;
     quaternion rotation;

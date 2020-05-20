@@ -43,6 +43,8 @@ class Pose{
     mat4*           matrices;
     Skeleton*       skeleton;
     AnimationHook   anim_hook;
+    bool            animating;
+
 
     Pose(Skeleton* target);
     ~Pose();

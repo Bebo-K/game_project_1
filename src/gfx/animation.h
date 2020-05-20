@@ -45,6 +45,7 @@ struct AnimationHook{//Contains information to hook float values to animation ch
     int num_targets;
     AnimationTarget* targets;
     float** values;
+    bool    animating;
 
     AnimationHook(int target_count);
     ~AnimationHook();

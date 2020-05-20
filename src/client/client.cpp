@@ -17,6 +17,7 @@ void Client::Start(){
 
     ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
     ShaderManager::AddShader("shadeless","dat/gfx/shadeless.vrt","dat/gfx/shadeless.frg");
+    ModelManager::Init();
     ModelManager::Register(PLAYER_PLACEHOLDER,"dat/models/placeholder_person.glb");
 
     ui.Load();
@@ -26,6 +27,7 @@ void Client::Start(){
     scene_renderer.camera.ortho=false;
     scene_renderer.camera.z = 10.0f;
     scene_renderer.camera.y = 2.0f;
+    CameraManager::Attach(&scene_renderer);
 
     LoadScene(0);
     if(scene.level.entrance_count > 0){
@@ -44,7 +46,7 @@ void Client::Start(){
 
 void Client::LoadScene(int scene_id){
     scene.Load();
-    //scene_renderer.Add(&scene.level);
+    scene_renderer.Add(&scene.level);
 }
 
 void Client::AddEntity(int eid){
@@ -70,8 +72,9 @@ void Client::SpawnPlayer(Entrance eid){
     my_player->movement = new MovementData();
     my_player->state = new StateMachine();
     my_player->player_data = new PlayerData();
-    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,0,-5},{0,1},{0,0});
+    my_player->camera_target = new CameraTarget(my_player,{0,0,-5},{0,1},{0,0});
     my_player->unit_data = new UnitData();
+    PlayerInput::Track(my_player);
 
 
     if(my_player->models != null){scene_renderer.Add(my_player->models);}  
@@ -79,18 +82,18 @@ void Client::SpawnPlayer(Entrance eid){
 
 
 void Client::Paint(){
-    CameraManager::Update(&scene,0);//?
+    //CameraManager::Update(&scene,0);//?
     scene_renderer.Draw();
     ui.Paint();
 }
 
 void Client::Update(int ms){
     PlayerInput::Update(&scene,ms);
-    NPCController::Update(&scene,ms);
-    Movement::Update(&scene,ms);
-    EntityCollision::Update(&scene,ms);
-    Physics::Update(&scene,ms);
-    TransitionManager::Update(&scene,ms);
+    //NPCController::Update(&scene,ms);
+    //Movement::Update(&scene,ms);
+    //EntityCollision::Update(&scene,ms);
+    //Physics::Update(&scene,ms);
+    //TransitionManager::Update(&scene,ms);
     //Network::RunSync(this,delta);
 
     ui.Update(ms,&scene);

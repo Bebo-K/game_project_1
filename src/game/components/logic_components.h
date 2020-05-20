@@ -8,7 +8,7 @@
 class PlayerData : Component{
     public:
 
-
+    
     ~PlayerData();
 };
 class NPCData : Component{

@@ -97,8 +97,10 @@ void Pose::Calculate(){
 
         matrices[bone_index].set(&bone_matrix);
     }
-    for(int i=0; i < bone_count;i++){
-        matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
+    if(anim_hook.animating){
+        for(int i=0; i < bone_count;i++){
+            matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
+        }
     }
 }
 
