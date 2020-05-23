@@ -27,8 +27,7 @@ void Client::Start(){
     scene_renderer.camera.ortho=false;
     scene_renderer.camera.z = 10.0f;
     scene_renderer.camera.y = 2.0f;
-    CameraManager::Attach(&scene_renderer);
-
+    
     LoadScene(0);
     if(scene.level.entrance_count > 0){
         SpawnPlayer(scene.level.entrances[0]);
@@ -64,20 +63,21 @@ void Client::SpawnPlayer(Entrance eid){
     my_player = scene.AddEntity(0);
     my_player->type = 1;
     my_player->name= cstr::new_copy("Chowzang");
+    my_player->state = new State();
+        my_player->state->Set(IDLE);
     my_player->models = new ModelSet();
         my_player->models->Add(PLAYER_PLACEHOLDER);
     my_player->phys_data = new PhysicsData();
     my_player->colliders = new ColliderSet();
         //my_player->colliders->Add();
     my_player->movement = new MovementData();
-    my_player->state = new StateMachine();
     my_player->player_data = new PlayerData();
-    my_player->camera_target = new CameraTarget(my_player,{0,0,-5},{0,1},{0,0});
+    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,0,-5},{0,1},{0,0});
     my_player->unit_data = new UnitData();
     PlayerInput::Track(my_player);
 
 
-    if(my_player->models != null){scene_renderer.Add(my_player->models);}  
+    //if(my_player->models != null){scene_renderer.Add(my_player->models);}  
 }
 
 

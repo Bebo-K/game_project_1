@@ -50,6 +50,8 @@ class Pose{
     ~Pose();
     void StartAnimation(char* name);
     void StartAnimation(char* name,AnimationOptions options);
+    void SetAnimation(char* name);
+    void SetAnimation(char* name,AnimationOptions options);
     //Stop Animation?
     void Calculate();//sets matrices;
 };

@@ -28,6 +28,7 @@ void Entity::SetName(char* name){
     name = cstr::new_copy(name);
 }
 
+
 vec3 Entity::GetPos(int ms){
     float seconds = ms/1000.0f;
     return {x+(velocity.x*seconds),y+(velocity.y*seconds),z+(velocity.z*seconds)};

@@ -1,0 +1,7 @@
+5/23/20: 
+Was working on animation hookups for entity states/movements. I figured I'd get running animations + camera movement working, then move on to physics.
+
+What I was stuck on was: 
+
+-Does an animationcontroller set a model to it's expected animation every frame, or poll for change and set it once?
+-To have dynamic speed on walk/run/other anims, animatonTargets may need access to the current animation + settings being used by the animator for them. Might take a restructure of the animation system.

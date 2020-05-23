@@ -5,7 +5,7 @@
 #include "components/gfx_components.h"
 #include "components/phys_components.h"
 #include "components/logic_components.h"
-#include "components/state_machine.h"
+#include "components/state.h"
 
 
 struct Entity{
@@ -19,12 +19,12 @@ struct Entity{
     quaternion rotation;
 
     //components
+    State*          state;
     ModelSet*       models;
     SpriteSet*      sprites;
     PhysicsData*    phys_data;
     ColliderSet*    colliders;
     MovementData*   movement;
-    StateMachine*   state;
     PlayerData*     player_data;
     CameraTarget*   camera_target;
     UnitData*       unit_data;

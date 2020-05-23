@@ -116,3 +116,23 @@ void Pose::StartAnimation(char* name,AnimationOptions options){
         AnimationManager::StartClip(target_anim,&anim_hook, options);
     }
 }
+
+
+void Pose::SetAnimation(char* name){
+    Animation* target_anim = skeleton->GetAnimation(name);
+    if(target_anim != null){
+        ClipInfo clip = AnimationManager::GetClipInfo(&anim_hook);
+        if(clip.animation != target_anim){
+            AnimationManager::StartClip(target_anim,&anim_hook);
+        }
+    }
+}
+void Pose::SetAnimation(char* name,AnimationOptions options){
+    Animation* target_anim = skeleton->GetAnimation(name);
+    if(target_anim != null){
+        ClipInfo clip = AnimationManager::GetClipInfo(&anim_hook);
+        if(clip.animation != target_anim){
+            AnimationManager::StartClip(target_anim,&anim_hook,options);
+        }
+    }
+}

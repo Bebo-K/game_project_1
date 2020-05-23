@@ -34,6 +34,7 @@ struct vec2{
     vec2(float x,float y);
 
     float length();
+    float length_sqr();
     //float dot();
     void normalize();
     void rotate(float theta);

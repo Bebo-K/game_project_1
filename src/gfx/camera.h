@@ -8,6 +8,7 @@ class Camera{
     public:
     
     float x,y,z;
+    float turn,pitch,yaw;
     vec3  rotation;
     
     bool ortho;

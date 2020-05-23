@@ -95,6 +95,10 @@ float vec2::length(){
     return sqrtf(x*x+y*y);
 }
 
+float vec2::length_sqr(){
+    return x*x+y*y;
+}
+
 void vec2::normalize(){
     float len = sqrtf(x*x+y*y);
     x /= len;

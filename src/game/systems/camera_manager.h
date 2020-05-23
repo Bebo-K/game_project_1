@@ -7,10 +7,6 @@
 namespace CameraManager{
 
     void Update(Scene* scene, int ms);
-    void Attach(Renderer* renderer);
-    void Track(Entity* e);
-    void Untrack(CameraTarget* t);
-
 };
 
 

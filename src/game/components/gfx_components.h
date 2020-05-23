@@ -15,13 +15,14 @@ struct Entity;
 
 class CameraTarget : Component{
 	public:
+	Camera*			camera;
 	float			zoom;
 	vec3			offset;
     quaternion      rotation;
 	float_range		zoom_range;
 	float_range		zoom_pitch;
 
-	CameraTarget(Entity* parent,vec3 cam_offset,float_range zoom_scale,float_range tilt);
+	CameraTarget(Camera* cam,vec3 cam_offset,float_range zoom_scale,float_range tilt);
     ~CameraTarget();
 };
 
@@ -30,7 +31,6 @@ class ModelSet : public List<Model> ,public Component,public Drawable{
 	
 	Model* Add(ModelID model_id);
 	void Draw(Camera* cam,mat4* view, mat4* projection);
-	void StartAnimation(char* animation_name);
 	~ModelSet();
 };
 
