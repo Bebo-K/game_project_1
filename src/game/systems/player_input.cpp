@@ -11,13 +11,13 @@ void PlayerInput::Update(Scene* scene, int ms){
         float move_amount = move_input.length_sqr();
         move_input.rotate(-cam->turn);
         if(move_amount > 0.25f){
-            tracked_entity->movement->move_goal =  {move_input.x,0,move_input.y};
+            tracked_entity->movement->move_goal =  {move_input.x,0,-move_input.y};
             tracked_entity->movement->is_moving=true;
             tracked_entity->state->Set(RUNNING);
 
         }
         else if(move_amount > 0.001f){
-            tracked_entity->movement->move_goal =  {move_input.x,0,move_input.y};
+            tracked_entity->movement->move_goal =  {move_input.x,0,-move_input.y};
             tracked_entity->movement->is_moving=true;
             tracked_entity->state->Set(WALKING);
 

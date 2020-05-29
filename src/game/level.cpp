@@ -17,7 +17,7 @@ Level::Level(){
 }
 
 void Level::Draw(Camera* cam,mat4* view, mat4* projection){
-    if(skybox != null){skybox->Draw(cam,view,projection);}
+    //if(skybox != null){skybox->Draw(cam,view,projection);}
 
     cam->SetShader("basic_lighting");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
@@ -75,6 +75,7 @@ void Level::LoadFromJSON(JSONObject* json){
             }
             GLTFScene model_loader = GLTFScene(model_file);
             model_loader.LoadIn(&models[i]);
+            model_file.close();
             
             if(current_model->HasArray("collision_meshes")){
                 JSONArray* collision_mesh_array = current_model->GetArray("collision_meshes");

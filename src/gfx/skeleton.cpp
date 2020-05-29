@@ -97,7 +97,7 @@ void Pose::Calculate(){
 
         matrices[bone_index].set(&bone_matrix);
     }
-    if(anim_hook.animating){
+    if(anim_hook.active_clip != null){
         for(int i=0; i < bone_count;i++){
             matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
         }
@@ -106,33 +106,11 @@ void Pose::Calculate(){
 
 void Pose::StartAnimation(char* name){
     Animation* target_anim = skeleton->GetAnimation(name);
-    if(target_anim != null){
-        AnimationManager::StartClip(target_anim,&anim_hook);
-    }
+    AnimationManager::StartClip(target_anim,&anim_hook);
 }
 void Pose::StartAnimation(char* name,AnimationOptions options){
     Animation* target_anim = skeleton->GetAnimation(name);
-    if(target_anim != null){
-        AnimationManager::StartClip(target_anim,&anim_hook, options);
-    }
+    AnimationManager::StartClip(target_anim,&anim_hook, options);
 }
 
 
-void Pose::SetAnimation(char* name){
-    Animation* target_anim = skeleton->GetAnimation(name);
-    if(target_anim != null){
-        ClipInfo clip = AnimationManager::GetClipInfo(&anim_hook);
-        if(clip.animation != target_anim){
-            AnimationManager::StartClip(target_anim,&anim_hook);
-        }
-    }
-}
-void Pose::SetAnimation(char* name,AnimationOptions options){
-    Animation* target_anim = skeleton->GetAnimation(name);
-    if(target_anim != null){
-        ClipInfo clip = AnimationManager::GetClipInfo(&anim_hook);
-        if(clip.animation != target_anim){
-            AnimationManager::StartClip(target_anim,&anim_hook,options);
-        }
-    }
-}

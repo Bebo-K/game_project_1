@@ -21,6 +21,7 @@ class Client{
     void SpawnPlayer(Entrance entrance);
 
     void Paint();
+    void UpdatePosition(int ms);
     void Update(int ms);
 
 };

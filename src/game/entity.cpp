@@ -9,19 +9,20 @@ Entity::Entity(){
     x=y=z=0;
     velocity={0,0,0};
     scale ={1,1,1};
-    rotation = {0,0,0,1};
+    rotation = {0,0,0};
 
     
-    models=nullptr;
-    sprites=nullptr;
-    colliders=nullptr;
-    movement=nullptr;
-    state=nullptr;
-    //animations=nullptr;
-    player_data=nullptr;
-    camera_target=nullptr;
-    unit_data=nullptr;
-    npc_data=nullptr;
+    models=null;
+    sprites=null;
+    phys_data=null;
+    colliders=null;
+    movement=null;
+    player_data=null;
+    camera_target=null;
+    state=null;
+    anim_state=null;
+    unit_data=null;
+    npc_data=null;
 }
 
 void Entity::SetName(char* name){

@@ -1,7 +1,5 @@
-5/23/20: 
-Was working on animation hookups for entity states/movements. I figured I'd get running animations + camera movement working, then move on to physics.
-
-What I was stuck on was: 
-
--Does an animationcontroller set a model to it's expected animation every frame, or poll for change and set it once?
--To have dynamic speed on walk/run/other anims, animatonTargets may need access to the current animation + settings being used by the animator for them. Might take a restructure of the animation system.
+5/29/20:
+trying to solve a couple things:
+    - Level is not appearing textured properly
+    - reusing the level *as* the playermodel makes nothing render
+    - starting animations when the player moves

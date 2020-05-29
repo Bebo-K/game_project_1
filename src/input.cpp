@@ -55,6 +55,26 @@ void Input::HandleKey(int key_id, bool down){
     for(int i=0;i<button_count;i++){
         if(key_mappings[i] == key_id){
             keys[i].state=down?3:2;
+            if(i==0/*up*/){
+                if(down){move_axis.y = 1.0f;}
+                if(!down && move_axis.y > 0.0f){move_axis.y=0.0f;}
+            }
+            if(i==1/*down*/){
+                if(down){move_axis.y = -1.0f;}
+                if(!down && move_axis.y < 0.0f){move_axis.y=0.0f;}
+            }
+            if(i==2/*left*/){
+                if(down){move_axis.x = -1.0f;}
+                if(!down && move_axis.x < 0.0f){move_axis.x=0.0f;}
+            }
+            if(i==3/*right*/){
+                if(down){move_axis.x = 1.0f;}
+                if(!down && move_axis.x > 0.0f){move_axis.x=0.0f;}
+            }
+            if(move_axis.length_sqr() > 0){
+                move_axis.normalize();
+            }
+            
         }
     }
 }

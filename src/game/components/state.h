@@ -35,6 +35,10 @@ class State : Component {
 	bool Is(CombatLayerStateID query);
 	void Set(CombatLayerStateID newstate);
 
+	bool operator==(State* s2);
+	bool operator!=(State* s2);
+	void operator=(State* s2);
+
 };
 
 

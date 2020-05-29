@@ -5,7 +5,7 @@
 #include <string.h>
 #include "math.h"
 
-DataArray active_clips(8,sizeof(ClipInfo));
+PointerArray managed_clips(8);
 int active_layer=0;
 bool layer_is_active[ANIMATION_LAYER_COUNT];
 
@@ -16,6 +16,9 @@ bool AnimationTarget::Compare(AnimationTarget other){
             cstr::compare(object_name,other.object_name);
 }
 
+ClipInfo::~ClipInfo(){
+    managed_clips.Remove(this);
+}
 
 AnimationOptions::AnimationOptions(){
     timescale = 1.0f;
@@ -63,11 +66,12 @@ AnimationHook::AnimationHook(int target_count){
     num_targets=target_count;
     targets=new AnimationTarget[target_count];
     values = (float**)calloc(target_count,sizeof(float*));
-    animating=false;
+    active_clip = null;
 }
 
 AnimationHook::~AnimationHook(){
     delete targets;targets=null;
+    if(active_clip != null){delete active_clip; active_clip=null;}
     free(values);values=null;
 }
 
@@ -125,83 +129,47 @@ int AnimationManager::GetActiveLayer(){
     return active_layer;
 }
 
-void AnimationManager::StartClip(Animation* clip, AnimationHook* hook){
-        ClipInfo *start_info = nullptr;
-    ClipInfo* existing_clip_info;
-
-    for(int i=0;i<active_clips.slots;i++){
-        existing_clip_info = (ClipInfo*)active_clips.Get(i);
-        if(existing_clip_info==nullptr)continue;
-        if(existing_clip_info->hook == hook){
-            start_info = existing_clip_info;
-            break;
-        }
+void AnimationManager::StartClip(Animation* anim, AnimationHook* hook){
+    if(hook == null)return;
+    if(hook->active_clip != null){
+        delete hook->active_clip;
+        hook->active_clip = null;
     }
-    if(start_info == nullptr){
-        start_info = (ClipInfo*)active_clips.Add();
-    }
+    if(anim == null)return;//just stop active clip if no animation is supplied.
+    ClipInfo* clip = new ClipInfo();
+    
+    clip->animation=anim;
+    clip->hook=hook;
+    clip->elapsed_time=0.0f;
+    clip->end_action=AnimationEndAction::STOP;
+    clip->timescale=1.0f;
+    clip->layer=active_layer; 
 
-    start_info->animation=clip;
-    start_info->hook=hook;
-    start_info->elapsed_time=0.0f;
-    start_info->end_action=AnimationEndAction::STOP;
-    start_info->timescale=1.0f;
-    start_info->layer=active_layer; 
-    hook->animating=true;
+    hook->active_clip = clip;
+    managed_clips.Add(clip);
 }
-void AnimationManager::StartClip(Animation* clip, AnimationHook* hook, AnimationOptions options){
-    ClipInfo *start_info = nullptr;
-    ClipInfo* existing_clip_info;
-
-    for(int i=0;i<active_clips.slots;i++){
-        existing_clip_info = (ClipInfo*)active_clips.Get(i);
-        if(existing_clip_info==nullptr)continue;
-        if(existing_clip_info->hook == hook){
-            start_info = existing_clip_info;
-            break;
-        }
+void AnimationManager::StartClip(Animation* anim, AnimationHook* hook, AnimationOptions options){
+    if(hook == null)return;
+    if(hook->active_clip != null){
+        delete hook->active_clip;
+        hook->active_clip = null;
     }
-    if(start_info == nullptr){
-        start_info = (ClipInfo*)active_clips.Add();
-    }
+    if(anim == null)return;//just stop active clip if no animation is supplied.
+    ClipInfo* clip = new ClipInfo();
+    
+    clip->animation=anim;
+    clip->hook=hook;
+    clip->elapsed_time=0.0f;
+    clip->end_action=options.end_action;
+    clip->timescale=options.timescale;
+    clip->layer=active_layer; 
 
-    start_info->animation=clip;
-    start_info->hook=hook;
-    start_info->elapsed_time=0.0f;
-    start_info->end_action=options.end_action;
-    start_info->timescale=options.timescale;
-    start_info->layer=active_layer;
+    hook->active_clip = clip;
+    managed_clips.Add(clip);
 }
+
 void AnimationManager::StopClip(AnimationHook* hook){
-    ClipInfo* existing_clip_info;
-    for(int i=0;i<active_clips.slots;i++){
-        existing_clip_info = (ClipInfo*)active_clips.Get(i);
-        if(existing_clip_info==nullptr)continue;
-        if(existing_clip_info->hook == hook){
-            active_clips.Remove(i);
-            hook->animating=false;
-            break;
-        }
-    }
-}
-ClipInfo AnimationManager::GetClipInfo(AnimationHook* hook){
-    ClipInfo ret;
-    ret.animation=nullptr;
-    ret.hook=nullptr;
-    ret.layer=-1;
-    ret.end_action=-1;
-    ret.timescale=0.0f;
-    ret.elapsed_time=0.0f;
-    ClipInfo* existing_clip_info;
-    for(int i=0;i<active_clips.slots;i++){
-        existing_clip_info = (ClipInfo*)active_clips.Get(i);
-        if(existing_clip_info==nullptr)continue;
-        if(existing_clip_info->hook == hook){
-            memcpy(&ret,existing_clip_info,sizeof(ClipInfo));
-            break;
-        }
-    }
-    return ret;
+    if(hook->active_clip != null){delete hook->active_clip;hook->active_clip=null;}
 }
 
 void LinearInterpolate(float* from, float* to, float weight, float* values, int values_count){
@@ -341,8 +309,8 @@ void AnimationManager::Update(float seconds){
     AnimationChannel *channel;
     float* value;
 
-    for(int i=0;i<active_clips.slots;i++){
-        current_clip = (ClipInfo*)active_clips.Get(i);
+    for(int i=0;i<managed_clips.slots;i++){
+        current_clip = (ClipInfo*)managed_clips.Get(i);
         if(current_clip==nullptr)continue;
         if(!layer_is_active[current_clip->layer])continue;
 

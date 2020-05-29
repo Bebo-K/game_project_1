@@ -175,6 +175,10 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
 
 }
 
+void Model::StartAnimation(char* anim_name){
+    if(pose != null){pose->StartAnimation(anim_name);}
+}
+
 void ModelManager::Init(){
     ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
 

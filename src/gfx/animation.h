@@ -41,11 +41,12 @@ struct AnimationChannel{//A channel contains keyframe data for a block of one or
     ~AnimationChannel();
 };
 
-struct AnimationHook{//Contains information to hook float values to animation channels.
-    int num_targets;
-    AnimationTarget* targets;
-    float** values;
-    bool    animating;
+struct ClipInfo;
+struct AnimationHook{//Contains information to hook float values to animation channels, and the state of those values.
+    int                 num_targets;
+    AnimationTarget*    targets;
+    float**             values;
+    ClipInfo*           active_clip;
 
     AnimationHook(int target_count);
     ~AnimationHook();
@@ -76,6 +77,8 @@ struct ClipInfo{ //Info about the currently running animation
     float       timescale;
     int         end_action;
     int         layer;
+
+    ~ClipInfo();
 };
 
 struct AnimationOptions{

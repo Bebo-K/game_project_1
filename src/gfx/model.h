@@ -60,6 +60,7 @@ class Model: public Drawable{
     Model(ModelData* dat);
     ~Model();
     void Draw(Camera* cam,mat4* view, mat4* projection);
+    void StartAnimation(char* anim_name);
 
 };
 
