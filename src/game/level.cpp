@@ -17,7 +17,7 @@ Level::Level(){
 }
 
 void Level::Draw(Camera* cam,mat4* view, mat4* projection){
-    //if(skybox != null){skybox->Draw(cam,view,projection);}
+    if(skybox != null){skybox->Draw(cam,view,projection);}
 
     cam->SetShader("basic_lighting");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);

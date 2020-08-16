@@ -46,10 +46,10 @@ class List{
     int Count(){return count;}
 
     int IndexOf(T* obj){
-        long ptr = (long)obj;
-        long base = (long)data.data;
-        long offset = ptr-base;
-        return offset/sizeof(T);
+        for(int i=0; i<count;i++){
+            if(obj == data.Get(i))return i ;
+        }
+        return -1;
     }
 
     //Override for T

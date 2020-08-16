@@ -31,7 +31,7 @@ void Game::Update(int ms){
     AnimationManager::Update(ms/1000.0f);
     client->Update(ms);
     updates_per_second.Increment();
-    Input::Update();
+    //Input::Update();
 }
 
 void Game::Paint(){

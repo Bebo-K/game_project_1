@@ -1,5 +1,2 @@
-5/29/20:
-trying to solve a couple things:
-    - Level is not appearing textured properly
-    - reusing the level *as* the playermodel makes nothing render
-    - starting animations when the player moves
+8/16/20
+    -complex models cause delayed segfault

@@ -9,7 +9,7 @@
 
 enum ModelID{
     NONE=0,
-    PLAYER_PLACEHOLDER=1
+    PLAYER=1
 };
 
 struct Mesh{
@@ -61,6 +61,7 @@ class Model: public Drawable{
     ~Model();
     void Draw(Camera* cam,mat4* view, mat4* projection);
     void StartAnimation(char* anim_name);
+    void StartAnimation(char* anim_name,AnimationOptions options);
 
 };
 

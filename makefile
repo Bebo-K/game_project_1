@@ -1,7 +1,8 @@
 #Windows build of Game
 #VPATH is separated with semicolon instead of colon
+#rd is used instead of rm
 
-CFLAGS =  -g -Wall -std=c++14 -Wfatal-errors -Wno-write-strings
+CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
 LIBS = -mwindows -lglew32 -lopengl32  -lz
 
@@ -27,7 +28,7 @@ SRC := $(MAIN_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(GFX_SRC) $(GAME_SRC) 
 OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
 
 
-#foobar.exe: $(IO_SRC) foobar.cpp
+#foobar.exe: $(IO_SRC) foobar.cpp 
 #	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
 game.exe: $(OBJS)

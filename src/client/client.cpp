@@ -19,9 +19,7 @@ void Client::Start(){
     ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
     ShaderManager::AddShader("shadeless","dat/gfx/shadeless.vrt","dat/gfx/shadeless.frg");
     ModelManager::Init();
-    //ModelManager::Register(PLAYER_PLACEHOLDER,"dat/models/placeholder_person.glb");
-    ModelManager::Register(PLAYER_PLACEHOLDER,"dat/levels/plane.glb");
-    //TODO: Why does this not render anything?
+    ModelManager::Register(PLAYER,"dat/models/gargoyle.glb");
 
     ui.Load();
     scene_renderer.Load();
@@ -70,7 +68,7 @@ void Client::SpawnPlayer(Entrance eid){
         my_player->state->Set(IDLE);
     my_player->anim_state = new AnimationState(GROUND_UNIT);
     my_player->models = new ModelSet();
-        my_player->models->Add(PLAYER_PLACEHOLDER);
+        my_player->models->Add(PLAYER);
     my_player->phys_data = new PhysicsData();
     my_player->colliders = new ColliderSet();
         //my_player->colliders->Add();

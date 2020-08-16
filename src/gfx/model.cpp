@@ -71,8 +71,13 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat.base_color);
     
     m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
+    if(m->normal.Valid()){
     m->normal.Bind(cam->shader->ATTRIB_NORMAL);
-    m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
+    }
+    if(m->texcoord_0.Valid()){
+        m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
+    }
+    
 
     //m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);
     glBindBuffer(GL_ARRAY_BUFFER,m->bone_0_index.buffer_id);
@@ -177,6 +182,10 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
 
 void Model::StartAnimation(char* anim_name){
     if(pose != null){pose->StartAnimation(anim_name);}
+}
+
+void Model::StartAnimation(char* anim_name, AnimationOptions options){
+    if(pose != null){pose->StartAnimation(anim_name,options);}
 }
 
 void ModelManager::Init(){

@@ -5,7 +5,7 @@
 Entity* tracked_entity= null;
 
 void PlayerInput::Update(Scene* scene, int ms){
-    if(tracked_entity != null && tracked_entity->movement != null){
+    if(tracked_entity != null && tracked_entity->movement != null && tracked_entity->camera_target !=null){
         Camera* cam = tracked_entity->camera_target->camera;
         vec2 move_input = Controller::MoveAxis();
         float move_amount = move_input.length_sqr();
