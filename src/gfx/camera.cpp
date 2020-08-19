@@ -29,9 +29,10 @@ void Camera::SetShader(Shader* new_shader){
 }
 
 void Camera::ToCameraSpace(mat4* m){
+    
+    if(rotation.z != 0){m->rotate_z(rotation.z);}
     if(rotation.x != 0){m->rotate_x(rotation.x);}
     if(rotation.y != 0){m->rotate_y(rotation.y);}
-    if(rotation.z != 0){m->rotate_z(rotation.z);}
     m->translate(-x,-y,-z);
 }
 vec3 Camera::ToWorldSpace(vec3 v){

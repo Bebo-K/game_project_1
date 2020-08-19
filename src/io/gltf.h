@@ -33,7 +33,7 @@ class GLTFScene{
 	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
 	float* BuildAccessorFloatArray(int id,int* count);
 	int* BuildAccessorIntArray(int id,int* count);
-	void LoadAnimation(int animation_id,Animation* dest);
+	void LoadAnimation(int animation_id,Skeleton* target);
 	
 	Texture		GetTexture(int texture_id);
 	Material  	GetMaterial(int material_id);

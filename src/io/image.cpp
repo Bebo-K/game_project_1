@@ -78,6 +78,7 @@ Image::Image(File image_file){
             logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",image_file.path);
         }
         free(filedata);
+		image_file.close();
     }else{
         logger::warn("Image::Image -> Failed to read file %s\n",image_file.path);
 		width=0;

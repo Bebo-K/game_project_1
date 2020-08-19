@@ -78,10 +78,33 @@ void VBO::CreateEmpty(GLuint type,int per_vertex,int vertex_count,GLuint buffer_
     free(empty_data);
 }
 
+
+void VBO::CreateEmptyWeights(GLuint type,int per_vertex,int vertex_count,GLuint buffer_type){
+    elements_per_vertex = per_vertex;
+    element_type = type;
+    int element_size=4;
+    float* weight_data = (float*)calloc(vertex_count,element_size*elements_per_vertex);
+    for(int i=0;i<vertex_count*elements_per_vertex;i++){
+        if( (i%4) ==2){weight_data[i]=1.0f;}
+        else{weight_data[i]=0.0f;}
+    }
+    glGenBuffers(1,&buffer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+    glBufferData(GL_ARRAY_BUFFER,element_size*elements_per_vertex*vertex_count, weight_data,GL_STATIC_DRAW);
+    //free(weight_data);
+}
+
+
 void VBO::Bind(int attrib_slot){
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
-    glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,0,0);
+    if(element_type <= GL_UNSIGNED_INT){
+        glVertexAttribIPointer(attrib_slot,elements_per_vertex,element_type,0,0);
+    }
+    else{
+        glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,0,0);
+    }
 }
+
 void VBO::Bind(int attrib_slot, int stride, int start){
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
     glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,(void*)start);

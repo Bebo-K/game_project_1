@@ -5,12 +5,16 @@
 #include "structs/data_types.h"
 
 
-const int   button_count=11;
+const int   button_count=15;
 char*       button_names[button_count] = {
     "up",
     "down",
     "left",
     "right",
+    "camera_up",
+    "camera_down",
+    "camera_left",
+    "camera_right",
     "confirm",
     "cancel",
     "jump",
@@ -51,30 +55,44 @@ void Input::Init(){
     }
 }
 
+void HandleAxisButton(int updated_key_id, bool down,int target_key_id,float* axis){
+    if(updated_key_id==target_key_id){
+        if(down){*axis = 1.0f;}
+        if(!down && *axis > 0.0f){*axis=0.0f;}
+    }
+}
+
+void HandleAxisKeys(int key_id, bool down,vec2& axis,int start){
+    switch(key_id-start){
+        case 0:/*up*/
+            if(down){axis.y = 1.0f;}
+            if(!down && axis.y > 0.0f){axis.y=0.0f;}
+        break;
+        case 1:/*down*/
+            if(down){axis.y = -1.0f;}
+            if(!down && axis.y < 0.0f){axis.y=0.0f;}
+        break;
+        case 2:/*left*/
+            if(down){axis.x = -1.0f;}
+            if(!down && axis.x < 0.0f){axis.x=0.0f;}
+        break;
+        case 3:/*right*/
+            if(down){axis.x = 1.0f;}
+            if(!down && axis.x > 0.0f){axis.x=0.0f;}
+        break;
+        default:break;
+    }
+    if(axis.length_sqr() > 0){
+        axis.normalize();
+    }
+}
+
 void Input::HandleKey(int key_id, bool down){
     for(int i=0;i<button_count;i++){
         if(key_mappings[i] == key_id){
             keys[i].state=down?3:2;
-            if(i==0/*up*/){
-                if(down){move_axis.y = 1.0f;}
-                if(!down && move_axis.y > 0.0f){move_axis.y=0.0f;}
-            }
-            if(i==1/*down*/){
-                if(down){move_axis.y = -1.0f;}
-                if(!down && move_axis.y < 0.0f){move_axis.y=0.0f;}
-            }
-            if(i==2/*left*/){
-                if(down){move_axis.x = -1.0f;}
-                if(!down && move_axis.x < 0.0f){move_axis.x=0.0f;}
-            }
-            if(i==3/*right*/){
-                if(down){move_axis.x = 1.0f;}
-                if(!down && move_axis.x > 0.0f){move_axis.x=0.0f;}
-            }
-            if(move_axis.length_sqr() > 0){
-                move_axis.normalize();
-            }
-            
+            HandleAxisKeys(i,down,move_axis,0);
+            HandleAxisKeys(i,down,cam_axis,4);
         }
     }
 }
@@ -113,13 +131,13 @@ void Input::Update(){
 bool Controller::AnyButtonDown(){return any_pressed;}
 vec2 Controller::MoveAxis(){return move_axis;}
 vec2 Controller::CameraAxis(){return cam_axis;}
-Controller::Button Controller::Confirm(){return keys[4];}
-Controller::Button Controller::Cancel(){return keys[5];}
-Controller::Button Controller::Jump(){return keys[6];}
-Controller::Button Controller::Crouch(){return keys[7];}
-Controller::Button Controller::CenterCamera(){return keys[8];}
-Controller::Button Controller::Pause(){return keys[9];}
-Controller::Button Controller::Inventory(){return keys[10];}
+Controller::Button Controller::Confirm(){return keys[8];}
+Controller::Button Controller::Cancel(){return keys[9];}
+Controller::Button Controller::Jump(){return keys[10];}
+Controller::Button Controller::Crouch(){return keys[11];}
+Controller::Button Controller::CenterCamera(){return keys[12];}
+Controller::Button Controller::Pause(){return keys[13];}
+Controller::Button Controller::Inventory(){return keys[14];}
 
 bool Controller::Button::IsDown(){return (state&1) > 0;}
 bool Controller::Button::IsUp(){return (state&1) == 0;}

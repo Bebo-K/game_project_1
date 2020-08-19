@@ -14,6 +14,7 @@ Level::Level(){
     entrances=null;
     exit_count=0;
     exits=null;
+    layer = -128;
 }
 
 void Level::Draw(Camera* cam,mat4* view, mat4* projection){

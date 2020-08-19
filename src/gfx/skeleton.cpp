@@ -102,6 +102,11 @@ void Pose::Calculate(){
             matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
         }
     }
+    else{
+        for(int i=0; i < bone_count;i++){
+            matrices[i].identity();
+        }
+    }
 }
 
 void Pose::StartAnimation(char* name){

@@ -4,8 +4,8 @@
 void CameraManager::Update(Scene* scene, int ms){
     for(Entity* e : scene->entities){
         if(e->camera_target != null){
-
             Camera* cam = e->camera_target->camera;
+            cam->turn = cam->rotation.y;
             vec3 rotated_offset = e->camera_target->offset;
             rotated_offset.rotate_y(cam->turn);
 

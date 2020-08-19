@@ -24,9 +24,9 @@ Model* ModelSet::Add(ModelID model_id){
 }
 
 void ModelSet::Draw(Camera* cam,mat4* view, mat4* projection){
-    view->scale(scale);
-    view->rotate(rotation);
     view->translate(x,y,z);
+    view->rotate(rotation);
+    view->scale(scale);
     for(Model* m: (*this)){
         m->Draw(cam,view,projection);
     }

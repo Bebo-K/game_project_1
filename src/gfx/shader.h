@@ -8,16 +8,14 @@ class Shader{
     public:
 
     static const int MAX_INFO_LOG_LENGTH = 1024;
-	static const int MAX_BONES = 32;
+	static const int MAX_BONES = 64;
 
 	//attribute IDs
 	static const GLuint ATTRIB_VERTEX = 0;
 	static const GLuint ATTRIB_TEXCOORD = 1;
 	static const GLuint ATTRIB_NORMAL = 2;
 	static const GLuint ATTRIB_BONE_INDEX=3;
-	//static const GLuint ATTRIB_BONE_0_WEIGHT=4;
-	//static const GLuint ATTRIB_BONE_1_INDEX=5;
-	//static const GLuint ATTRIB_BONE_1_WEIGHT=6;
+	static const GLuint ATTRIB_BONE_WEIGHT=4;
 	
     //Shader program ID
 	GLuint vertex,fragment;

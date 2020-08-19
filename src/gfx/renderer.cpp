@@ -66,7 +66,7 @@ void Renderer::Draw(){
 
 boolean PrimitiveIsCloser(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera_axis){
     if(p1->layer < p2->layer)return true;
-    if(p2->layer > p1->layer)return false;
+    if(p1->layer > p2->layer)return false;
     float p1_zdist = camera_axis.dot({p1->x-camera_pos.x, p1->y-camera_pos.y, p1->z-camera_pos.z});
     float p2_zdist = camera_axis.dot({p2->x-camera_pos.x, p2->y-camera_pos.y, p2->z-camera_pos.z});
 

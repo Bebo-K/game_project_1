@@ -18,6 +18,8 @@ void Client::Start(){
 
     ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
     ShaderManager::AddShader("shadeless","dat/gfx/shadeless.vrt","dat/gfx/shadeless.frg");
+    ShaderManager::AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
+    ShaderManager::AddShader("flat_skybox","dat/gfx/flat_skybox.vrt","dat/gfx/flat_skybox.frg");
     ModelManager::Init();
     ModelManager::Register(PLAYER,"dat/models/gargoyle.glb");
 
@@ -74,7 +76,7 @@ void Client::SpawnPlayer(Entrance eid){
         //my_player->colliders->Add();
     my_player->movement = new MovementData();
     my_player->player_data = new PlayerData();
-    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,2,10},{0,1},{0,0});
+    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,4,12},{0,1},{20,40});
     my_player->unit_data = new UnitData();
     PlayerInput::Track(my_player);
 
@@ -83,7 +85,7 @@ void Client::SpawnPlayer(Entrance eid){
 
 
 void Client::Paint(){
-    CameraManager::Update(&scene,0);//?
+    CameraManager::Update(&scene,0);
     scene_renderer.Draw();
     ui.Paint();
 }

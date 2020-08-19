@@ -71,18 +71,12 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat.base_color);
     
     m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
-    if(m->normal.Valid()){
-    m->normal.Bind(cam->shader->ATTRIB_NORMAL);
-    }
-    if(m->texcoord_0.Valid()){
-        m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);
-    }
+    if(m->normal.Valid()){m->normal.Bind(cam->shader->ATTRIB_NORMAL);}
+    if(m->texcoord_0.Valid()){m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);}
+    if(m->bone_0_index.Valid()){m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);}
+    if(m->bone_0_weight.Valid()){m->bone_0_weight.Bind(cam->shader->ATTRIB_BONE_WEIGHT);}
+
     
-
-    //m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);
-    glBindBuffer(GL_ARRAY_BUFFER,m->bone_0_index.buffer_id);
-    glVertexAttribIPointer(cam->shader->ATTRIB_BONE_INDEX,4,GL_SHORT,0,0);
-
     if(m->index.Valid()){
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
         glDrawElements(GL_TRIANGLES,m->vertex_count,m->index.element_type,nullptr);
@@ -90,7 +84,8 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     else{
         glDrawArrays(GL_TRIANGLES,0,m->vertex_count);
     } 
-    int err = glGetError();
+    
+    int err = glGetError(); 
     if(err != 0){
         logger::warn("ModelData.DrawMesh() -> GL Error: %d \n",err);
     }
@@ -133,17 +128,19 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
+    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_WEIGHT);
     
     mat4 model;
     mat3 normal;
     mat4 identity;
+    int bones=(pose->bone_count < Shader::MAX_BONES)?pose->bone_count:Shader::MAX_BONES;
 
     identity.identity();
 
     model.identity();
-    model.scale(scale);
-    model.rotate(rotation);
     model.translate(x,y,z);
+    model.rotate(rotation);
+    model.scale(scale);
     view->multiply_by(&model);
 
     normal.set(view);
@@ -152,8 +149,9 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     
     if(pose != null){
         pose->Calculate(); 
-        for(int i=0;i< pose->bone_count;i++){
-            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
+        
+        for(int i=0;i< bones;i++){
+            glUniformMatrix4x3fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
         } 
     }
 
@@ -168,16 +166,17 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     }
 
     if(pose != null){
-        for(int i=0;i< pose->bone_count;i++){ 
-            glUniformMatrix4fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
+        for(int i=0;i< bones;i++){ 
+            glUniformMatrix4x3fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
         }
     }
 
+
+    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_WEIGHT);
     glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
     glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
     glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-
 }
 
 void Model::StartAnimation(char* anim_name){

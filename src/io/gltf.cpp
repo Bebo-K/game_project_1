@@ -175,7 +175,7 @@ float* GLTFScene::BuildAccessorFloatArray(int id,int* count){
 	byte* new_data = null;
 	if(accessor->HasInt("bufferView")){
 		int element_buffer = accessor->GetInt("bufferView");
-		element_data=GetBufferViewData(element_buffer,nullptr) ;
+		element_data=GetBufferViewData(element_buffer,nullptr);
 	}
 	if(accessor->HasJObject("sparse")){
 		JSONObject* sparse = accessor->GetJObject("sparse");
@@ -444,7 +444,7 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		if(attribs->HasInt("WEIGHTS_0")){
 			prim->bone_0_weight=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
 		else{
-			prim->bone_0_weight.CreateEmpty(GL_FLOAT,1,prim->vertex_count,GL_ARRAY_BUFFER);
+			prim->bone_0_weight.CreateEmptyWeights(GL_FLOAT,4,prim->vertex_count,GL_ARRAY_BUFFER);
 		}
 		//if(attribs->HasInt("TEXCOORD_1")){
 		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
@@ -467,7 +467,6 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	JSONObject* skin = skins->At(skeleton_id)->ObjectValue();
 	JSONArray* joint_nodes = skin->GetArray("joints");
 
-	//char* skeleton_name = skin->GetString("name")->string;
 	Skeleton* ret = new Skeleton(joint_nodes->count);
 
 	int ibm_data_buffer_id = GetAccessor(skin->GetInt("inverseBindMatrices"))->GetInt("bufferView");
@@ -533,9 +532,11 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	return ret;
 }
 
-void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
+void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
 	JSONArray* channels = animation->GetArray("channels");
+
+	Animation* dest = &target->animations[animation_id];
 
 	dest->SetName(animation->GetString("name")->string);
 	dest->SetChannelCount(channels->count);
@@ -551,7 +552,19 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 		char* target_node_name = target_node->GetString("name")->string;
 		char* target_type = channel_target->GetString("path")->string;
 
-		channel->target.object_name=cstr::new_copy(target_node_name);//TODO: Hello! I am a memory leak!
+		channel->target.object_name=null;
+		for(int b=0;b<target->bone_count;b++){
+			if(cstr::compare(target_node_name,target->bones[b].name)){
+				channel->target.object_name=target->bones[b].name;
+				break;
+			}
+		}
+		if(channel->target.object_name==null){
+			continue;
+			//TODO: Non bone channels
+			//channel->target.object_name=cstr::new_copy(target_node_name);
+		}
+
 		if(cstr::compare(target_type,"translation")){
 			channel->target.value_type=AnimationType::TRANSLATION;
 			channel->target.num_values=3;
@@ -568,6 +581,9 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 			channel->target.value_type=AnimationType::WEIGHT;
 			channel->target.num_values=1;
 		}
+		else{
+			continue;
+		}
 
 		int sampler_id = gltf_channel->GetInt("sampler");
 		JSONObject* sampler = animation->GetArray("samplers")->At(sampler_id)->ObjectValue();
@@ -583,6 +599,8 @@ void GLTFScene::LoadAnimation(int animation_id,Animation* dest){
 		}
 		else if(cstr::compare(animation_type,"CUBICSPLINE")){
 			channel->interpolate_mode = AnimationInterpolateMode::CUBICORSOMETHING;
+		}else{
+			continue;
 		}
 
 		channel->keyframe_times = BuildAccessorFloatArray(sampler_time_accessor,
@@ -618,12 +636,12 @@ void GLTFScene::GetModel(ModelData* model){
 		GetMeshGroup(&model->mesh_groups[i],mesh_ids[i]);
 		model->bounds.Union(model->mesh_groups[i].bounds);
 	}
-	if(gltf_data->HasArray("animations") ||model->skeleton != nullptr){
+	if(gltf_data->HasArray("animations") && model->skeleton != nullptr){
 		int anim_count = gltf_data->GetArray("animations")->count;
 		model->skeleton->animation_count = anim_count;
 		model->skeleton->animations = new Animation[anim_count]();
 		for(int i=0;i<anim_count;i++){
-			LoadAnimation(i,&model->skeleton->animations[i]);
+			LoadAnimation(i,model->skeleton);
 		}
 	}
 

@@ -40,9 +40,7 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
         glBindAttribLocation(program,ATTRIB_TEXCOORD,"a_tex_coord");
         glBindAttribLocation(program,ATTRIB_NORMAL,"a_normal");
         glBindAttribLocation(program,ATTRIB_BONE_INDEX,"a_bone_index");
-        //glBindAttribLocation(program,ATTRIB_BONE_0_WEIGHT,"a_bone_0_weight");
-        //glBindAttribLocation(program,ATTRIB_BONE_1_INDEX,"a_bone_1_index");
-        //glBindAttribLocation(program,ATTRIB_BONE_1_WEIGHT,"a_bone_1_index");
+        glBindAttribLocation(program,ATTRIB_BONE_WEIGHT,"a_bone_weight");
 
         glLinkProgram(program);
         glGetProgramiv(program,GL_LINK_STATUS,&linkStatus);

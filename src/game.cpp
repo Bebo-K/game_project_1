@@ -31,7 +31,7 @@ void Game::Update(int ms){
     AnimationManager::Update(ms/1000.0f);
     client->Update(ms);
     updates_per_second.Increment();
-    //Input::Update();
+    Input::Update();
 }
 
 void Game::Paint(){
@@ -46,7 +46,7 @@ void Game::Poll(){
     time_point<system_clock> current_time = high_resolution_clock::now();
     duration<double, std::milli> time_delta = current_time - last_frame;
     if(time_delta.count() > frame_interval){
-        int elapsed_ms = (time_delta.count() > frame_interval)?frame_interval:time_delta.count();
+        int elapsed_ms = (time_delta.count() > 1000)?1000:time_delta.count();
         Update(elapsed_ms);
         last_frame = high_resolution_clock::now();
     }
