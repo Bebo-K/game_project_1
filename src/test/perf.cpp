@@ -1,26 +1,31 @@
 #include "perf.h"
+#include "../os.h"
 
+//TODO: blit this data to screen in some way
+
+Performance::Counter Performance::frames;
+Performance::Counter Performance::draws;
+int Performance::polls_last_second;
+int Performance::draws_last_second;
+int Performance::updates_last_second;
 
 Performance::Timer::Timer(){
     for(int i=0;i<TRACKING_WINDOW;i++){averages[i]=-1;}
-
 }
+
 void Performance::Timer::Start(){
-    started = std::chrono::high_resolution_clock::now();
+    started = time_nano();
 }
-long Performance::Timer::Stop(){
-    std::chrono::time_point<std::chrono::system_clock> current_time = std::chrono::high_resolution_clock::now();
-    std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >( current_time - started );
-    
-    long ms_count = ms.count();
 
-    for(int i=10;i>TRACKING_WINDOW+1;i++){
-        averages[i] = averages[i-1];
-    }
-    averages[0] = ms_count;
-    return ms_count;
+nanosec Performance::Timer::Stop(){
+    nanosec system_time = time_nano();
+    nanosec ns = system_time - started;
+    for(int i=10;i>TRACKING_WINDOW+1;i++){averages[i] = averages[i-1];}
+    averages[0] = ns;
+    return ns;
 }
-long Performance::Timer::GetAverage(){
+
+nanosec Performance::Timer::GetAverage(){
     long res = 0;
     for(int i=0;i<TRACKING_WINDOW;i++){
         if(averages[i] >= 0){
@@ -34,6 +39,7 @@ long Performance::Timer::GetAverage(){
 Performance::Counter::Counter(){
     for(int i=0;i<TRACKING_WINDOW;i++){averages[i]=-1;}
 }
+
 void Performance::Counter::Increment(){count++;}
 void Performance::Counter::Reset(){
     for(int i=10;i>TRACKING_WINDOW+1;i++){
@@ -42,27 +48,26 @@ void Performance::Counter::Reset(){
     averages[0] = count;
     count =0;
 }
-long Performance::Counter::GetAverage(){
+float Performance::Counter::GetAverage(){
     long res = 0;
     for(int i=0;i<TRACKING_WINDOW;i++){
         if(averages[i] >= 0){
             res += averages[i];
         }
     }
-    res /= TRACKING_WINDOW;
+    res /= (float)TRACKING_WINDOW;
     return res;
 }
-long Performance::Counter::GetCount(){return count;}
+int Performance::Counter::GetCount(){return count;}
 
 
 Performance::Alarm::Alarm(){
-    started = std::chrono::high_resolution_clock::now();
+    started = time_ms();
 }
 bool Performance::Alarm::Time_Over(){
-    std::chrono::time_point<std::chrono::system_clock> current_time = std::chrono::high_resolution_clock::now();
-    std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >( current_time - started );
-    if(ms.count() > interval){
-        started = std::chrono::high_resolution_clock::now();
+    millisec ms = time_ms() - started;
+    if(ms > interval){
+        started = time_ms();
         return true;
     }
     return false;

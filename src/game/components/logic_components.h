@@ -13,7 +13,7 @@ class PlayerData : Component{
 };
 class NPCData : Component{
     public:
-
+    int patience=483;
 
     ~NPCData();
 };

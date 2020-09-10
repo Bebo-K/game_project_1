@@ -1,34 +1,84 @@
 #include "physics.h"
+#include "../../game.h"
+#include "level_collision.h"
+#include <math.h>
 
-void ApplyGravity(Entity* e, int ms){
+float GRAVITY_TERMINAL= -64.0f;
+float GRAVITY_ACCEL = -20.0f;
+float frame_delta = 1.0/60.0f;
 
+void ApplyGravity(Entity* e, float delta){
+    if(e->velocity.y > GRAVITY_TERMINAL){
+        e->velocity.y += delta*GRAVITY_ACCEL;
+    }
 }
 
-void ApplySlidingVelocityDampening(Entity* e, int ms){
-
+void ApplyVelocityDampening(Entity* e, float delta){
+    if(e->phys_data->is_midair){
+        float damper_amount = (float) pow(1-e->phys_data->midair_velocity_damper,delta);
+		e->velocity.x *= damper_amount;
+		e->velocity.z *= damper_amount;
+    }
+    else {
+		float damper_amount = (float) pow(1-e->phys_data->ground_velocity_damper,delta);
+		e->velocity.x *= damper_amount;
+		e->velocity.z *= damper_amount;
+    }
 }
-void ApplyMidairVelocityDampening(Entity* e, int ms){
 
+void SetStateFromPhysics(Entity* e){
+    if(e->phys_data->is_midair){
+        if(e->movement != null && e->movement->is_jumping){
+            e->state->Set(JUMPING);
+            if(e->velocity.y < 0){
+                e->movement->is_jumping=false;
+            }
+        }
+        else{
+            e->state->Set(FALLING);
+        }
+    }
+    else{
+        float current_speed_2 = e->velocity.xz().length_sqr();
+        
+        if(e->movement != null){
+            e->movement->can_jump=true;
+        }
+        if(current_speed_2 > 0){
+            e->state->Set(RUNNING);
+            //if(e->movement != null){
+            //    float walk_speed = e->movement->base_speed*0.25;
+            //    if(current_speed_2 < walk_speed*walk_speed){
+            //         e->state->Set(WALKING);
+            //    }
+            //}
+        }
+        else{
+            e->state->Set(IDLE);
+        }
+    }
 }
 
-void Physics::Update(Scene* scene, int ms){
+void Physics::FrameUpdate(Scene* scene,float delta){
     for(Entity* e:scene->entities){
-        if(e->phys_data== nullptr){continue;};
+        //No-phys entitiy movement 
+        if(e->phys_data == nullptr){
+            e->x += e->velocity.x *delta;
+            e->y += e->velocity.y *delta;
+            e->z += e->velocity.z *delta;
+        continue;
+        };
+
         PhysicsData* phys = e->phys_data;
-    
-        if(phys->apply_gravity){
-            ApplyGravity(e,ms);
+        if(phys->apply_gravity)ApplyGravity(e,delta);
+        if(phys->world_collision_enabled)LevelCollision::FrameUpdate(e,scene,delta);
+        else{
+            e->x += e->velocity.x *delta;
+            e->y += e->velocity.y *delta;
+            e->z += e->velocity.z *delta;
         }
-        if(phys->world_collision_enabled) {
-            //LevelCollision.Update(state, e, delta);
-        }
-        if(phys->dampen_velocity){
-            if(phys->is_midair){
-                ApplyMidairVelocityDampening(e,ms);
-            }
-            else {
-                ApplySlidingVelocityDampening(e,ms);
-            }
-        }
+        //if(phys->dampen_velocity)ApplyVelocityDampening(e,delta);
+        //TODO:Entity collision
+        if(e->state != null)SetStateFromPhysics(e);
     }
 }

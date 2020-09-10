@@ -15,15 +15,20 @@ struct vec3{
 
     void set(float x,float y,float z);
     float dot(struct vec3 b);
+    vec3 cross(struct vec3 b);
     float length();
     float length_sqr();
+    float dist(struct vec3 b);
+    float dist_sqr(struct vec3 b);
     void rotate_x(float theta);
     void rotate_y(float theta);
     void rotate_z(float theta);
-    vec3 operator +(vec3& v2);
-    vec3 operator -(vec3& v2);
+    vec3 operator +(vec3 v2);
+    vec3 operator -(vec3 v2);
     vec3 operator *(float scl);
+    vec3 of_length(float newlen);
     vec3 normalized();
+    vec3 xz();
 };
 
 struct vec2{

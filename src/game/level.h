@@ -1,8 +1,7 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-
-#include "../phys/level_collision.h"
+#include "../phys/level_colliders.h"
 #include "../io/json.h"
 #include "../structs/data_types.h"
 #include "../structs/3d_types.h"

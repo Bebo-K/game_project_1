@@ -2,8 +2,8 @@
 
 
 
-bool Collider::Intersects(vec3 p,Collider c2,vec3 p2){
-    //Note: does not do a swept sphere check, so cases with high velocity may be missed.
+bool CapsuleCollider::Intersects(vec3 p,CapsuleCollider c2,vec3 p2){
+    //TODO: does not do a swept sphere check, so cases with high velocity may be missed.
     float height_scale_factor = height*c2.height;
     
     vec3 collider1_global = p + offset;

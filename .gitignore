@@ -1,5 +1,9 @@
 bin/*
-dat/*
+dat/img/*
+dat/levels/*
+dat/models/*
+dat/textures/*
+dat/ui/*
 obj/*
 .vscode/*
 *.dll

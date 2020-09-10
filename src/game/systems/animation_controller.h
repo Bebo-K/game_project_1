@@ -7,8 +7,8 @@
 
 namespace AnimationController{
 
-    void Update(Scene* scene, int ms);
-    void HandleGroundUnit(Scene* scene, Entity* e, int ms);
+    void Update(Scene* scene, float delta);
+    void HandleGroundUnit(Scene* scene, Entity* e);
 
 
 

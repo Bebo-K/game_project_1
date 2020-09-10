@@ -27,12 +27,32 @@ float vec3::dot(vec3 b){
     return x*b.x + y*b.y + z*b.z;
 }
 
+vec3 vec3::cross(vec3 b){
+    float vx= y*b.z - z*b.y;
+    float vy= z*b.x - x*b.z;
+    float vz= x*b.y - y*b.x;
+    return {vx,vy,vz};
+}
+
 float vec3::length(){
     return sqrtf(x*x+y*y+z*z);
 }
 
 float vec3::length_sqr(){
     return x*x+y*y+z*z;
+}
+
+float vec3::dist(struct vec3 b){
+    float dx = b.x - x;
+    float dy = b.y - y;
+    float dz = b.z - z;
+    return sqrtf(dx*dx + dy*dy +dz*dz);
+}
+float vec3::dist_sqr(struct vec3 b){
+    float dx = b.x - x;
+    float dy = b.y - y;
+    float dz = b.z - z;
+    return dx*dx + dy*dy +dz*dz;	
 }
 
 void vec3::rotate_x(float theta){
@@ -65,18 +85,23 @@ void vec3::rotate_z(float theta){
     x = _x; y = _y; z = _z;
 }
 
-vec3 vec3::operator +(vec3& v2){return{x+v2.x,y+v2.y,z+v2.z};}
-vec3 vec3::operator -(vec3& v2){return{x-v2.x,y-v2.y,z-v2.z};}
-vec3 vec3::operator *(float scl){
+vec3 vec3::operator +(vec3 v2){return{x+v2.x,y+v2.y,z+v2.z};}
+vec3 vec3::operator -(vec3 v2){return{x-v2.x,y-v2.y,z-v2.z};}
+vec3 vec3::operator *(float scl){return {x*scl,y*scl,z*scl};}
+vec3 vec3::of_length(float newlen){
     float len = length();
-    if(scl == 0 || len ==0){return {0,0,0};}
-    len = scl/len;
+    if(newlen == 0 || len ==0){return {0,0,0};}
+    len = newlen/len;
     return {x*len,y*len,z*len};
 }
 vec3 vec3::normalized(){
     float len = length();
     if(len ==0){return {0,0,0};}
     return {x/len,y/len,z/len};
+}
+
+vec3 vec3::xz(){
+    return {x,0,z};
 }
 
 vec2::vec2(){

@@ -1,20 +1,24 @@
 #include "game.h"
+#include "os.h"
 #include "gfx/texture.h"
 #include "gfx/shader.h"
 #include "gfx/model.h"
 #include "gfx/animation.h"
 #include "log.h"
+#include <math.h>
 
-double Game::frame_interval = 16.0f;
-double Game::render_interval = 16.0f;
-int Game::window_width = 720;
-int Game::window_height = 1280;
-time_point<system_clock> last_frame;
-time_point<system_clock> last_render;
 bool Game::running = false;
 Client* Game::client;
-Performance::Counter Game::updates_per_second;
+//Server* Game::server;
 
+int Game::framerate = 60;
+int Game::drawrate = 60;
+
+long last_frame;
+long last_render;
+
+float Game::FrameInterval(){return 1.0f/framerate;}
+float Game::DrawInterval(){return 1.0f/drawrate;}
 
 void Game::Start(){
     client = new Client();
@@ -23,14 +27,14 @@ void Game::Start(){
     ModelManager::Init();
     AnimationManager::Init();
     client->Start();
-
+    last_frame = time_ms();
     running=true;
 }
 
-void Game::Update(int ms){
-    AnimationManager::Update(ms/1000.0f);
-    client->Update(ms);
-    updates_per_second.Increment();
+void Game::Update(int frames){
+    client->Update(frames);
+    //server->Update(frames);
+    Performance::frames.Increment();
     Input::Update();
 }
 
@@ -38,24 +42,28 @@ void Game::Paint(){
     glClearColor(0.1,0.1,0.1,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     client->Paint();
+    Performance::draws.Increment();
 }
-
 
 void Game::Poll(){
     if(!running)return;
-    time_point<system_clock> current_time = high_resolution_clock::now();
-    duration<double, std::milli> time_delta = current_time - last_frame;
-    if(time_delta.count() > frame_interval){
-        int elapsed_ms = (time_delta.count() > 1000)?1000:time_delta.count();
-        Update(elapsed_ms);
-        last_frame = high_resolution_clock::now();
+    int frame_interval_ms = 1000/framerate;
+    int draw_interval_ms = 1000/drawrate;
+
+    long poll_time = time_ms();
+    long delta_ms = poll_time - last_frame;
+
+    if(delta_ms >= frame_interval_ms){
+        int elapsed_frames = (int)(delta_ms/frame_interval_ms);
+        Update(elapsed_frames);
+        last_frame = poll_time - (delta_ms%frame_interval_ms);
     }
-    current_time = high_resolution_clock::now();
-    time_delta = current_time - last_render;
-    if(time_delta.count() > render_interval){
+
+    delta_ms = poll_time - last_render;
+    if(delta_ms >= draw_interval_ms){
         Paint();
         PostRender();
-        last_render = high_resolution_clock::now();
+        last_render = poll_time - (delta_ms%draw_interval_ms);
     }
 }  
 

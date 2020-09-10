@@ -1,45 +1,54 @@
 #ifndef _PERFORMANCE_H
 #define _PERFORMANCE_H
 
-#include <chrono>
 
 
-
+typedef unsigned long long nanosec;
+typedef unsigned long millisec;
 namespace Performance
 {
-    const int TRACKING_WINDOW = 10;
-    class Timer{
+    
+    const int TRACKING_WINDOW = 10;//In seconds
+    class Timer{//Timer with near-nanosecond precision
         public:
-        long averages[TRACKING_WINDOW];
-        std::chrono::time_point<std::chrono::system_clock> started;
+        nanosec averages[TRACKING_WINDOW];
+        nanosec started;
         Timer();
         void Start();
-        long Stop();
-        long GetAverage();
+        nanosec Stop();
+        nanosec GetAverage();
     };
-    class Counter{
-        public:
-        long averages[TRACKING_WINDOW];
-        long count;
-        Counter();
-        void Increment();
-        void Reset();
-        long GetAverage();
-        long GetCount();
-    };
-    class Alarm{
+    class Alarm{//Alarm with ms precision
         private:
-            std::chrono::time_point<std::chrono::system_clock> started;
-            long long last_trigger;
+            millisec started;
+            millisec last_trigger;
         public: 
-        long interval;
+        millisec interval;
 
         Alarm();
         void Reset();
         bool Time_Over();
     };
-} // namespace performance
+    class Counter{//Counter with running averages.
+        public:
+        int averages[TRACKING_WINDOW];
+        int count;
+        Counter();
+        void Increment();
+        void Reset();
+        float GetAverage();
+        int GetCount();
+    };
 
+
+
+    //TODO: blit this data to screen in some way
+    extern Performance::Counter frames;
+    extern Performance::Counter draws;
+    extern int polls_last_second;
+    extern int draws_last_second;
+    extern int updates_last_second;
+} 
 
 
 

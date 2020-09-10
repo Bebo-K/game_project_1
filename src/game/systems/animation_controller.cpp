@@ -1,18 +1,18 @@
 #include "animation_controller.h"
 
-void AnimationController::Update(Scene* scene, int ms){
+void AnimationController::Update(Scene* scene, float delta){
     for(Entity* e: scene->entities){
         if(e->anim_state != null && e->state != null){
             switch(e->anim_state->type_id){
                 case NO_CONTROLLER:break;
-                case GROUND_UNIT:HandleGroundUnit(scene,e,ms);break;
+                case GROUND_UNIT:HandleGroundUnit(scene,e);break;
                 default:break;
             }
         }
     }
 }
 
-void AnimationController::HandleGroundUnit(Scene* scene, Entity* e, int ms){
+void AnimationController::HandleGroundUnit(Scene* scene, Entity* e){
     if(e->anim_state->state != e->state){
         char* new_anim = null;
         AnimationOptions anim_options;

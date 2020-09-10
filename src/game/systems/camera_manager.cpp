@@ -1,7 +1,7 @@
 #include "camera_manager.h"
 
 
-void CameraManager::Update(Scene* scene, int ms){
+void CameraManager::Update(Scene* scene, float delta){
     for(Entity* e : scene->entities){
         if(e->camera_target != null){
             Camera* cam = e->camera_target->camera;

@@ -2,7 +2,7 @@
 
 
 
-void EntityCollision::Update(Scene* scene, int ms){
+void EntityCollision::Update(Scene* scene, float delta){
     for(Entity* e:scene->entities){
         if(e->colliders == null)continue;
         for(int i=scene->entities.IndexOf(e)+1;i < scene->entities.end().index; i=scene->entities.next(i)){

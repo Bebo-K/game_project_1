@@ -6,7 +6,7 @@
 
 namespace CameraManager{
 
-    void Update(Scene* scene, int ms);
+    void Update(Scene* scene, float delta);
 };
 
 

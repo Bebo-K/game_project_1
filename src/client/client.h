@@ -13,6 +13,8 @@ class Client{
     Renderer    scene_renderer;
     UI          ui;
 
+    const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
+
     Client();
     void Start();
     void LoadScene(int scene_id);
@@ -21,8 +23,8 @@ class Client{
     void SpawnPlayer(Entrance entrance);
 
     void Paint();
-    void UpdatePosition(int ms);
-    void Update(int ms);
+    void Update(int frames);
+    void UpdatePositions();
 
 };
 

@@ -27,7 +27,7 @@ void UI::Paint(){
     renderer.Draw();
 }
 
-void UI::Update(int delta, Scene* scene){
+void UI::Update(Scene* scene, int frames){
 
 
 }

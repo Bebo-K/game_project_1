@@ -62,8 +62,10 @@ struct plane{
     vec3 normal;
     float distance;
 
+    plane();
     plane(float a,float b,float c,float d);
-    plane(vec3 normal,vec3 tangent_point);
+    //plane(vec3 tangent_point,vec3 normal);
+    void SetFromPointNormal(vec3 tangent_point,vec3 normal);
     float DistanceTo(vec3 pos);
     void Invert();
     float YIntersect(float x,float z);

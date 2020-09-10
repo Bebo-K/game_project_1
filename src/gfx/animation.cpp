@@ -16,11 +16,22 @@ bool AnimationTarget::Compare(AnimationTarget other){
             cstr::compare(object_name,other.object_name);
 }
 
+
+ClipInfo::ClipInfo(){
+    animation = null;
+    hook = null;
+    elapsed_time=0;
+    timescale=0;
+    end_action=0;
+    next_anim = null;
+    layer=0;
+}
 ClipInfo::~ClipInfo(){
     managed_clips.Remove(this);
 }
 
 AnimationOptions::AnimationOptions(){
+    next_anim=null;
     timescale = 1.0f;
     end_action = AnimationEndAction::STOP;
 }
@@ -144,6 +155,7 @@ void AnimationManager::StartClip(Animation* anim, AnimationHook* hook){
     clip->end_action=AnimationEndAction::STOP;
     clip->timescale=1.0f;
     clip->layer=active_layer; 
+    clip->next_anim=null;
 
     hook->active_clip = clip;
     managed_clips.Add(clip);
@@ -163,6 +175,7 @@ void AnimationManager::StartClip(Animation* anim, AnimationHook* hook, Animation
     clip->end_action=options.end_action;
     clip->timescale=options.timescale;
     clip->layer=active_layer; 
+    clip->next_anim = options.next_anim;
 
     hook->active_clip = clip;
     managed_clips.Add(clip);
@@ -254,15 +267,28 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
     if(next_keyframe >= channel->keyframe_count){
         //TODO: end of animation event
         switch(current_clip->end_action){
-            case 0: //end animation + stop
+            case AnimationEndAction::END: //end animation and stop
+                memcpy(target,&channel->keyframe_values[last_keyframe*channel_width],sizeof(float)*channel_width);//set target to last keyframe position exactly
+                current_clip->hook->active=false;
+                AnimationManager::StopClip(current_clip->hook);
+                break;
+            case AnimationEndAction::STOP: //end animation, pause on last frame.
                 memcpy(target,&channel->keyframe_values[last_keyframe*channel_width],sizeof(float)*channel_width);//set target to last keyframe position exactly
                 AnimationManager::StopClip(current_clip->hook);
                 break;
-            case 1: //loop animation.
+            case AnimationEndAction::LOOP: //loop animation.
                 while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
                     current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];
                 }
                 UpdateChannel(current_clip,target,channel);
+                break;
+            case AnimationEndAction::GOTO: //switch to another animation and loop.
+                while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
+                    current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];
+                }
+                current_clip->end_action= AnimationEndAction::LOOP;
+                if(current_clip->next_anim != null){current_clip->animation = current_clip->next_anim;}
+                current_clip->next_anim = null;
                 break;
                 
 
@@ -317,13 +343,20 @@ void AnimationManager::Update(float seconds){
         current_clip->elapsed_time += seconds*current_clip->timescale;
 
         hook = current_clip->hook;
+        if(hook == null)continue;
+        hook->active=true;
+        
         animation = current_clip->animation;   
 
         for(int j=0;j<animation->channel_count;j++){
             channel = &animation->channels[j];
             value = hook->GetTarget(channel->target);
-            if(hook == null)continue;
             UpdateChannel(current_clip,value,channel);
+            if(hook->active_clip==null)break;
+            if(animation != current_clip->animation){
+                animation = current_clip->animation;  
+                j=0;
+            }
         }
     }
 }

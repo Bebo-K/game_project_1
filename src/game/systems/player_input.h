@@ -6,7 +6,7 @@
 
 namespace PlayerInput{
 
-    void Update(Scene* scene, int ms);
+    void Update(Scene* scene, float delta);
     void Track(Entity* e);
     void Untrack(Entity* e);
 };

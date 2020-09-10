@@ -17,7 +17,7 @@ class UI{
     void Unload();
 
     void Paint();
-    void Update(int delta, Scene* scene);
+    void Update(Scene* scene, int frames);
 
 };
 

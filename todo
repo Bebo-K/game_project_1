@@ -1,2 +1,2 @@
-8/16/20
-    -complex models cause delayed segfault
+9/10/20:
+        Collision Blocked out. Work on transitions(and maybe asset pipeline), then time to start some UI work.

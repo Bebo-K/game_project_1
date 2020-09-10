@@ -18,7 +18,7 @@ enum AnimationInterpolateMode{
     LINEAR=0,STEP=1,CUBICORSOMETHING=2
 };
 enum AnimationEndAction{
-    STOP=0,LOOP=1
+    END=0,STOP=1,LOOP=2,GOTO=3
 };
 
 struct AnimationTarget{//Identifying information correlating Channels to Hooks. All fields must match for a hook to be compatible with a channel. 
@@ -47,6 +47,7 @@ struct AnimationHook{//Contains information to hook float values to animation ch
     AnimationTarget*    targets;
     float**             values;
     ClipInfo*           active_clip;
+    bool                active;
 
     AnimationHook(int target_count);
     ~AnimationHook();
@@ -76,14 +77,17 @@ struct ClipInfo{ //Info about the currently running animation
     float       elapsed_time;
     float       timescale;
     int         end_action;
+    Animation*  next_anim;
     int         layer;
 
+    ClipInfo();
     ~ClipInfo();
 };
 
 struct AnimationOptions{
     float timescale;
     AnimationEndAction end_action;
+    Animation* next_anim;
 
     AnimationOptions();
 };

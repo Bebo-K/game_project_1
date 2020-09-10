@@ -1,0 +1,22 @@
+#version 150
+precision mediump float;
+
+uniform mat4 projection_matrix;
+uniform mat4 modelview_matrix;
+uniform mat3 normal_matrix;
+
+in vec3 a_vertex;
+in vec2 a_tex_coord;
+in vec3 a_normal;
+
+out vec2 tex_coord;
+out float facing;
+
+void main(void)
+{
+  vec4 world_pos = modelview_matrix * vec4(a_vertex, 1.0);
+  gl_Position = projection_matrix * world_pos;
+  tex_coord = a_tex_coord;
+  vec3 normal = normalize(normal_matrix*a_normal);
+  facing = 0.3 + dot(normal,vec3(0,0,1))*0.5;
+}

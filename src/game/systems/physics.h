@@ -6,7 +6,9 @@
 
 namespace Physics{
 
-    void Update(Scene* scene, int ms);
+	extern float GRAVITY_TERMINAL;
+	extern float GRAVITY_ACCEL;
+	void FrameUpdate(Scene* scene,float frame_interval);
 
 };
 

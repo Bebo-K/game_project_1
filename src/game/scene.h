@@ -10,8 +10,12 @@
 class Scene{
     public:
     bool loaded;
+    long long global_timer;//Frame count since the scene has been loaded.
+
     List<Entity> entities;
 	Level level;
+
+    Scene();
 
     void Load();//loads default scene
     void Load(int area_id);

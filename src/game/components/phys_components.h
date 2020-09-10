@@ -4,13 +4,12 @@
 #include "component.h"
 #include "../../structs/list.h"
 #include "../../structs/3d_types.h"
+#include "../../phys/collision_types.h"
 #include "../../phys/collider.h"
 
 class PhysicsData : Component{
     public:
-
-	float	world_collision_width = 1.0f;
-	float	world_collision_height = 1.0f;
+    Ellipse_t world_hitsphere;
 	bool	world_collision_enabled = true;
 	
 	bool	apply_gravity = true;
@@ -22,12 +21,14 @@ class PhysicsData : Component{
 	bool	is_midair	=	false;
 	bool    out_of_bounds = false;
 
+    PhysicsData();
     ~PhysicsData();
 };
 
-class ColliderSet : List<Collider> , Component{
+class ColliderSet : List<CapsuleCollider> , Component{
     public:
-
+    float bounds_xz;
+    float bounds_y;
     ~ColliderSet();
 };
 
@@ -36,12 +37,14 @@ class MovementData : Component {
 
     float	base_speed;
     float	jump_speed;
+    float   turn_speed;
     float	multiplier;
     float	ramp_up;
 
     bool	can_move;
     bool	is_moving;
     vec3	move_goal;
+    bool    jump_enabled;
     bool	can_jump;
     bool	is_jumping;
     bool	jump_goal;

@@ -109,13 +109,25 @@ void AABB::EncompassPoint(vec3 point){
     }
 }
 
+plane::plane(){
+    normal = {0,1,0};
+    distance = 0;
+}
+
 plane::plane(float a, float b, float c, float d){
     normal = {a,b,c};
     normal = normal.normalized();//just to double-check
     distance = d;
 }
 
-plane::plane(vec3 normal_vec, vec3 tangent_point){
+/*
+plane::plane(vec3 tangent_point,vec3 normal_vec){
+    normal = normal_vec.normalized();
+    distance = -(normal.x*tangent_point.x + normal.y*tangent_point.y + normal.z*tangent_point.z);
+}
+*/
+
+void plane::SetFromPointNormal(vec3 tangent_point,vec3 normal_vec){
     normal = normal_vec.normalized();
     distance = -(normal.x*tangent_point.x + normal.y*tangent_point.y + normal.z*tangent_point.z);
 }

@@ -1,25 +1,77 @@
 #include <windows.h>
 #include <wingdi.h>
+#include "os.h"
 #include "gfx/gload.h"
 #include "log.h"
 #include "config.h"
 #include <tchar.h>
 #include "game.h"
 
-const TCHAR window_title[] = _T("3D MAZE");
-const TCHAR window_classname[] = _T("3D MAZE");
+const TCHAR window_title[] = _T("Game");
+const TCHAR window_classname[] = _T("Game");
+
+int Window::width = 1280;
+int Window::height= 720;
+
+Performance::Alarm second;
+Performance::Counter polls_per_sec;
 
 HWND window;
 HDC device_context;
 HGLRC gl_rendering_context;
 
-Performance::Alarm second;
-Performance::Counter polls_per_second;
-Performance::Counter paintevents_per_second;
-
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam);
+
+
+//********************************************//
+//              OS Timer (Windows)            //
+//********************************************//
+unsigned long long start_time=0;
+
+unsigned long long sys_time(){
+    FILETIME systime;
+    GetSystemTimeAsFileTime(&systime);//1 represents 100 ns, 10000000 represents 1s
+    unsigned long long time = systime.dwHighDateTime;
+    time = (time << 32) | systime.dwLowDateTime;
+    return time;
+}
+SYSTEMTIME sys_date(){//Minute program is in. (time % (seconds*60))
+    FILETIME filetime;
+    SYSTEMTIME systime;
+    GetSystemTimeAsFileTime(&filetime);
+    FileTimeToSystemTime(&filetime,&systime);
+    return systime;
+}
+
+//Engine timer hooks
+long time_ms(){//ms elapsed since program start.  
+    return (sys_time()-start_time)/10000;//100 ns = 0.0001ms
+}
+long long time_nano(){//ns elapsed since program start.  
+    return (sys_time()-start_time)*100;
+}
+
+
+int ms_per_second;
+void GetTimerData(){
+    polls_per_sec.Increment();
+    if(second.Time_Over()){
+        int new_ms = time_ms();
+        float delta_ms =new_ms-ms_per_second;
+        Performance::polls_last_second = polls_per_sec.GetCount();
+        Performance::updates_last_second = Performance::frames.GetCount();
+        Performance::draws_last_second = Performance::draws.GetCount();
+
+        polls_per_sec.Reset();
+        Performance::frames.Reset();
+        Performance::draws.Reset();
+
+        logger::info("Polls:%d   Draws:%d   Frames:%d   ms:%d\n",Performance::polls_last_second,Performance::draws_last_second,Performance::updates_last_second,delta_ms);
+        ms_per_second=new_ms;
+    }
+}
 
 //********************************************//
 //                 Polling Loop               //
@@ -27,21 +79,9 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
 int LoopMain(){
     MSG window_message;
     do {
-        Sleep(5);  
+        Sleep(4);  
         Game::Poll();
-        polls_per_second.Increment();
-        if(second.Time_Over()){
-            //TODO: blit this data to screen
-            //logger::info("Polls: %d, Frames: %d, Paints: %d\n",
-            //polls_per_second.GetCount(),
-            //Game::updates_per_second.GetCount(),
-            //paintevents_per_second.GetCount()
-            //);
-
-            polls_per_second.Reset();
-            Game::updates_per_second.Reset();
-            paintevents_per_second.Reset();
-        }
+        GetTimerData();
         if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
             TranslateMessage(&window_message);
             DispatchMessage(&window_message);
@@ -54,8 +94,14 @@ int LoopMain(){
 //                 Entry Point                //
 //********************************************//
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
+    start_time = sys_time();
+    ms_per_second = time_ms();
     second.interval=1000;
+
     logger::start("log.txt");
+    logger::info("I think it's...\n");
+    SYSTEMTIME sysdate = sys_date();
+    logger::info("Month:%d   Day:%d   Year:%d   at %d:%2d \n",sysdate.wMonth,sysdate.wDay,sysdate.wYear,sysdate.wHour,sysdate.wMinute);
     config::Init();
     Input::Init();
 
@@ -148,9 +194,9 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
         case WM_SIZE:
             RECT new_client_area;
             if(GetClientRect(window_handle,&new_client_area)){
-                Game::window_width = new_client_area.right;
-                Game::window_height = new_client_area.bottom;
-                glViewport(0, 0,Game::window_width,Game::window_height);
+                Window::width = new_client_area.right;
+                Window::height = new_client_area.bottom;
+                glViewport(0, 0,Window::width, Window::height);
             }
             break;
         default:
@@ -220,6 +266,5 @@ void DestroyOpenGL(){
 //********************************************//
 
 void Game::PostRender(){
-    paintevents_per_second.Increment();
     SwapBuffers(device_context);
 }

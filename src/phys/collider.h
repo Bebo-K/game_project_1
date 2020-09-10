@@ -4,18 +4,18 @@
 #include "../structs/3d_types.h"
 
 
-class Collider{
+class CapsuleCollider{
 	public:
 
     vec3	offset;
 	float	height;
 	float	radius;
 	
-	 Collider(float h, float r);
+	CapsuleCollider(float h, float r);
 	
-	 Collider(float x,float y,float z,float h,float r);
+	CapsuleCollider(float x,float y,float z,float h,float r);
 	
-    bool Intersects(vec3 p,Collider c2,vec3 p2);
+    bool Intersects(vec3 p,CapsuleCollider c2,vec3 p2);
 
 };
 

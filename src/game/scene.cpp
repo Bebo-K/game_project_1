@@ -1,6 +1,11 @@
 #include "scene.h"
 #include "../log.h"
 
+Scene::Scene(){
+    loaded=false;
+    global_timer=0;
+}
+
 void Scene::Load(){
     logger::info("loading default scene...\n");
     level.LoadDefault();

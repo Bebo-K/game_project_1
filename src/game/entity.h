@@ -17,7 +17,7 @@ struct Entity{
     float   turn;//euler y rotation.
     vec3    velocity;
     vec3    scale;
-    vec3   rotation;
+    vec3    rotation;
 
     //components
     ModelSet*       models;

@@ -1,0 +1,45 @@
+#version 150
+precision mediump float;
+
+uniform mat4 projection_matrix;
+uniform mat4 modelview_matrix;
+uniform mat3 normal_matrix;
+uniform vec4 texture_location;
+uniform mat4x3 pose_matrices[64];
+
+in vec3 a_vertex;
+in vec2 a_tex_coord;
+in vec3 a_normal;
+in ivec4 a_bone_index;
+in vec4 a_bone_weight;
+
+out vec2 tex_coord;
+out vec3 normal;
+out vec4 world_pos;
+
+void main(void)
+{
+  vec4 pose_pos = vec4(a_vertex,1);
+  vec3 local_pos = a_vertex.xyz;
+  vec3 local_norm = a_normal;
+  if(a_bone_weight.x > 0.001){
+	local_pos =  (pose_matrices[a_bone_index.x]*pose_pos) * a_bone_weight.x;
+	local_pos += (pose_matrices[a_bone_index.y]*pose_pos) * a_bone_weight.y;
+	
+	local_norm =  mat3(pose_matrices[a_bone_index.x])*a_normal *a_bone_weight.x;
+	local_norm += mat3(pose_matrices[a_bone_index.y])*a_normal * a_bone_weight.y;
+	
+	if(a_bone_weight.z > 0.001){
+	  local_pos += (pose_matrices[a_bone_index.z]*pose_pos) * a_bone_weight.z;
+	  local_norm += mat3(pose_matrices[a_bone_index.z]) *a_normal * a_bone_weight.z;
+	}
+	if(a_bone_weight.w > 0.001){
+	  local_pos += (pose_matrices[a_bone_index.w]*pose_pos) * a_bone_weight.w;
+	  local_norm += mat3(pose_matrices[a_bone_index.w]) *a_normal * a_bone_weight.w;
+	}
+  }
+  world_pos = modelview_matrix * vec4(local_pos,1);
+  tex_coord = a_tex_coord;
+  normal = normalize(normal_matrix*local_norm);
+  gl_Position = projection_matrix * world_pos;
+}

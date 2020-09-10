@@ -20,7 +20,7 @@ Level::Level(){
 void Level::Draw(Camera* cam,mat4* view, mat4* projection){
     if(skybox != null){skybox->Draw(cam,view,projection);}
 
-    cam->SetShader("basic_lighting");
+    cam->SetShader("scene_debug");
     glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);

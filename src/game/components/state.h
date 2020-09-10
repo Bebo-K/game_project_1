@@ -23,12 +23,13 @@ enum CombatLayerStateID{
 };
 
 class State : Component {
-
-	MovementLayerStateID move_state;
-	CombatLayerStateID combat_state;
-	
+	MovementLayerStateID 	move_state;
+	CombatLayerStateID		combat_state;
 
 	public:
+	bool 					state_changed=true;
+
+	State();
 
 	bool Is(MovementLayerStateID query);
 	void Set(MovementLayerStateID newstate);
