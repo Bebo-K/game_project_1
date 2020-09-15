@@ -5,7 +5,7 @@ float skybox_vert_data[] ={-1, 1, 0,  1, 1, 0,  1,-1, 0,   -1, 1, 0, -1,-1, 0,  
 
 VBO skybox_vertices;
 void BuildSkyboxPrimitive(){
-    skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,36);
+    skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,6);
     int err = glGetError();
     if(err != 0){
         logger::warn("Error building skybox primitive");
@@ -17,7 +17,6 @@ Skybox::Skybox(char* img_fn) : mat(){
     scale={1,1,1};
     if(!skybox_vertices.Valid()){BuildSkyboxPrimitive();}
     vertices=skybox_vertices;
-    vertex_count = 6;
     mat.texture = TextureManager::Get(img_fn);
 }
 
@@ -46,7 +45,7 @@ void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
 
     vertices.Bind(0);
     
-    glDrawArrays(GL_TRIANGLES,0,vertex_count);
+    glDrawArrays(GL_TRIANGLES,0,6);
 
     glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
     

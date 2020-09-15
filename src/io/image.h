@@ -30,7 +30,7 @@ class Image{
 };
 
 namespace AlgorithmicImage{
-    Image* Gradient();
+    Image* Gradient(int size);
 
 
 }

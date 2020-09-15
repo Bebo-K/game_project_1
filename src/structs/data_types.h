@@ -8,6 +8,7 @@
 typedef unsigned int uint32;
 typedef unsigned char byte;
 
+//A dynamic array of bits. Used by other maps to keep track of data slot occupancy.
 struct BitArray{
     int bits;
     byte* data;
@@ -99,7 +100,7 @@ struct PointerArray{
 
 //ANOTHER BIG CAVEAT - Don't mix types of keys.
 // It won't complain if you add a char* key and an int key, but good luck remembering which ones you can dereference.
-
+/*
 union u_associative_array_key{
     int intvalue;
     byte* ptrvalue;
@@ -128,7 +129,42 @@ struct AssociativeArray{
     int Count();
     void Resize(int new_count);
 };
+*/
 
+struct IDMap{
+    int*        keys;
+    byte**      values;
+    int         slots;
+    BitArray    slot_is_filled;
+
+    IDMap();
+    IDMap(int initial_size);
+    ~IDMap();
+    
+    bool Add(int id,byte* value);
+    byte* Remove(int id);
+    bool  Has(int id);
+    byte* Get(int id);
+    void  Clear();
+};
+
+struct StringMap{
+    char**  keys;
+    byte**  values;
+    int         slots;
+
+    StringMap();
+    StringMap(int initial_size);
+    ~StringMap();
+
+    bool Add(char* name,byte* value);
+    byte* Remove(char* name);
+    byte* Get(char* name);
+    bool  Has(char* name);
+    void  Clear();
+
+
+};
 
 namespace cstr{
     char* new_copy(const char* old_string);

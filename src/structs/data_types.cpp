@@ -241,6 +241,159 @@ void PointerArray::Clear(){
     slots=0;
 }
 
+IDMap::IDMap():slot_is_filled(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
+    slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
+    keys = (int*)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(int));
+    values = (byte**)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(byte*));
+}
+IDMap::IDMap(int initial_size):slot_is_filled(initial_size){
+    slots=initial_size;
+    keys = (int*)calloc(initial_size,sizeof(int));
+    values = (byte**)calloc(initial_size,sizeof(byte*));
+}
+IDMap::~IDMap(){
+    free(keys);keys=null;
+    free(values);values=null;
+}
+bool IDMap::Add(int id,byte* data){
+    if(Has(id))return false;
+
+    for(int i=0;i< slots;i++){
+        if(slot_is_filled.Get(i)==false){
+            slot_is_filled.Set(i);
+            keys[i] = id;
+            values[i] = data;
+            return true;
+        }
+    }
+    
+    int* double_keys = (int*)calloc(slots*2,sizeof(int));
+    byte** double_values = (byte**)calloc(slots*2,sizeof(byte*));
+        memcpy(double_keys,keys,sizeof(int)*slots);
+        memcpy(double_values,values,sizeof(byte*)*slots);
+        free(keys);keys=double_keys;
+        free(values);values=double_values;
+        slot_is_filled.Resize(slots*2);
+    
+    slot_is_filled.Set(slots);
+    keys[slots] = id;
+    values[slots] = data;
+    slots *= 2;
+    return true;
+}
+
+byte* IDMap::Remove(int id){
+    for(int i=0;i< slots;i++){
+        if(!slot_is_filled.Get(i))continue;
+        if(id == keys[i]){
+            slot_is_filled.Unset(i);
+            return values[i];
+        }
+    }
+    return null;
+}
+
+byte* IDMap::Get(int id){
+    for(int i=0;i< slots;i++){
+        if(!slot_is_filled.Get(i))continue;
+        if(id == keys[i]){return values[i];}
+    }
+    return null;
+}
+
+bool IDMap::Has(int id){
+    for(int i=0;i< slots;i++){
+        if(!slot_is_filled.Get(i))continue;
+        if(id == keys[i]){return true;}
+    }
+    return false;
+}
+
+void IDMap::Clear(){
+    for(int i=0;i<slots;i++){
+        keys[i] = 0;
+        values[i] = null;
+    }
+    slot_is_filled.Clear();
+}
+
+StringMap::StringMap(){
+    slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
+    keys = (char**)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(char*));
+    values = (byte**)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(byte*));
+}
+StringMap::StringMap(int initial_size){
+    slots=initial_size;
+    keys = (char**)calloc(initial_size,sizeof(char*));
+    values = (byte**)calloc(initial_size,sizeof(byte*));
+}
+StringMap::~StringMap(){
+     for(int i=0;i< slots;i++){
+        if(keys[i]==null)continue;
+        free(keys[i]);keys[i]=null;
+    }
+    free(keys);keys=null;
+    free(values);values=null;
+}
+bool StringMap::Add(char* id,byte* data){
+    if(Has(id))return false;
+
+    for(int i=0;i< slots;i++){
+        if(keys[i]==null){
+            keys[i] = cstr::new_copy(id);
+            values[i] = data;
+            return true;
+        }
+    }
+    
+    char** double_keys = (char**)calloc(slots*2,sizeof(char*));
+    byte** double_values = (byte**)calloc(slots*2,sizeof(byte*));
+        memcpy(double_keys,keys,sizeof(char*)*slots);
+        memcpy(double_values,values,sizeof(byte*)*slots);
+        free(keys);keys=double_keys;
+        free(values);values=double_values;
+    
+    keys[slots] = cstr::new_copy(id);
+    values[slots] = data;
+    slots *= 2;
+    return true;
+}
+
+byte* StringMap::Remove(char* id){
+    for(int i=0;i< slots;i++){
+        if(keys[i]==null)continue;
+        if(cstr::compare(id,keys[i])){
+            free(keys[i]);keys[i]=null;
+            return values[i];
+        }
+    }
+    return null;
+}
+
+byte* StringMap::Get(char* id){
+    for(int i=0;i< slots;i++){
+        if(keys[i]==null)continue;
+        if(cstr::compare(id,keys[i])){return values[i];}
+    }
+    return null;
+}
+
+bool StringMap::Has(char* id){
+    for(int i=0;i< slots;i++){
+        if(keys[i]==null)continue;
+        if(cstr::compare(id,keys[i])){return true;}
+    }
+    return false;
+}
+
+void StringMap::Clear(){
+    for(int i=0;i<slots;i++){
+        keys[i] = null;
+        values[i] = null;
+    }
+}
+
+/*
 AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size){
     slots=initial_size;
     key_data= (u_associative_array_key*)calloc(slots,sizeof(u_associative_array_key));
@@ -328,6 +481,8 @@ int   AssociativeArray::IndexOf(u_associative_array_key key){
     }
     return -1;
 }
+
+
 byte* AssociativeArray::StrGet(const char* index){
     for(int i=0; i<slots;i++){
         if(slot_is_filled.Get(i)==true){
@@ -369,7 +524,7 @@ void AssociativeArray::Resize(int new_count){
     key_data=(u_associative_array_key*)new_key_data;
     slots=new_count;
 }
-
+*/
 
 char* cstr::new_copy(const char* old_string){
     if(old_string==nullptr)return nullptr;
@@ -391,7 +546,6 @@ char* cstr::lowercase_copy(const char* old_string){
     }
     return str;
 }
-
 
 bool cstr::compare(const char* str1,const char* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
@@ -444,7 +598,7 @@ char* cstr::utf16_to_utf8(const wchar_t* longstring){
         if(code > 0xFFFF) utf_8_len += 1;
     }
     //second to write string
-    char* utf8_str = (char*)calloc(utf_8_len,1);
+    char* utf8_str = (char*)calloc(utf_8_len,sizeof(char));
     int j=0;//index for utf output
     for(int i=0;longstring[i] != 0;i++){
         int code = longstring[i];

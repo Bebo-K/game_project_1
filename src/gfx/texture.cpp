@@ -1,8 +1,8 @@
 #include "texture.h"
 #include "../log.h"
 
-AssociativeArray texture_atlases(2);
-AssociativeArray cached_textures(8);
+IDMap texture_atlases(2);
+StringMap cached_textures(8);
 GLuint current_atlas_id =-1;
 GLuint empty_texture_id = -1;
 int atlas_x=0,atlas_y=0,atlas_h=0;
@@ -151,21 +151,21 @@ Texture TextureManager::MapToAtlas(Image* texture_image){
 }
 
 
-Texture TextureManager::Add(const char* texname,Image* texture_image){
+Texture TextureManager::Add(char* texname,Image* texture_image){
     if(texture_image == null || texture_image->image_data==null){
         logger::warn("Image for texture is empty/null: %s ",texname);
     }
     Texture texture_to_cache = MapToAtlas(texture_image);
-    if(cached_textures.StrGet(texname)==null){
+    if(cached_textures.Get(texname)==null){
         Texture* cached_tex = (Texture*)malloc(sizeof(Texture));
         memcpy(cached_tex,&texture_to_cache,sizeof(Texture));
-        cached_textures.Add((byte*)texname,(byte*)cached_tex);
+        cached_textures.Add(texname,(byte*)cached_tex);
     }
     return texture_to_cache;
 }
 
-Texture TextureManager::Get(const char* texname){
-    Texture* cache_pointer = (Texture*)cached_textures.StrGet(texname);
+Texture TextureManager::Get(char* texname){
+    Texture* cache_pointer = (Texture*)cached_textures.Get(texname);
     if(cache_pointer != null) {
         return *cache_pointer;			
     }
@@ -173,8 +173,8 @@ Texture TextureManager::Get(const char* texname){
     return Add(texname,texture_image);
 }
 
-void TextureManager::Remove(const char* texname){
-    Texture* tex = (Texture*)cached_textures.StrRemove(texname);
+void TextureManager::Remove(char* texname){
+    Texture* tex = (Texture*)cached_textures.Remove(texname);
     if(tex != null)delete tex;
 }
 

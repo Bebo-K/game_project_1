@@ -44,6 +44,7 @@ class ShapePrimitive : public Drawable{
     float       color[4];
 	
     ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d);
+    ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d);
     ~ShapePrimitive();
  
     void Draw(Camera* cam,mat4* view, mat4* projection);

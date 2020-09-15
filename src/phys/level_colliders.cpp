@@ -82,11 +82,9 @@ void CollisionMesh::SetVertices(MeshGroup* group){
 
             for(int j=0;j< current_mesh->vertex_count;j++){
                 int index = GetIndex(indices,j,index_sizeof);
-                logger::info("(J:%d) Index: %d\n",j,index);
                 mesh_verts[j*3] =   non_indexed_verts[index*3];
                 mesh_verts[j*3+1] = non_indexed_verts[index*3+1];
                 mesh_verts[j*3+2] = non_indexed_verts[index*3+2];
-                logger::info("      {%f, %f, %f }\n",mesh_verts[j*3],mesh_verts[j*3+1],mesh_verts[j*3+2]);
             }
             
             free(indices);

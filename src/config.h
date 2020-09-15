@@ -9,7 +9,7 @@ namespace config{
     extern int window_height;
     extern int ui_width;
     extern int ui_height;
-    extern AssociativeArray key_bindings;
+    extern StringMap key_bindings;
 
     void Init();
     void LoadFile(char* filename);

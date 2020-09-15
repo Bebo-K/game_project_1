@@ -325,21 +325,24 @@ bool Image::Blit(Image* dest,int x,int y){
 }
 
 
-Image* AlgorithmicImage::Gradient(){
-	Image* ret = new Image(255,255);
+Image* AlgorithmicImage::Gradient(int size){
+	Image* ret = new Image(size,size);
 	byte* image_data = ret->image_data;
 
-	for(int i=0;i<255;i++){
-		for(int j=0;j<255;j++){
-			image_data[4*(i*255+j)] = i;
-			image_data[4*(i*255+j)+1] = 0;
-			image_data[4*(i*255+j)+2] = j;
-			image_data[4*(i*255+j)+3] = 255;
-			if((i%4==0)){
-				image_data[4*(i*255+j)] = 255;
-				image_data[4*(i*255+j)+1] = 255;
-				image_data[4*(i*255+j)+2] = 255;
-			}
+
+	for(int i=0;i<size;i++){
+		for(int j=0;j<size;j++){
+			int ivalue = (int)((float)255.0f*i/size);
+			int jvalue = (int)((float)255.0f*j/size);
+			image_data[4*(i*size+j)] = ivalue;
+			image_data[4*(i*size+j)+1] = 0;
+			image_data[4*(i*size+j)+2] = jvalue;
+			image_data[4*(i*size+j)+3] = 255;
+			//if(ivalue%8==0){
+			//	image_data[4*(i*size+j)] = 255;
+			//	image_data[4*(i*size+j)+1] = 255;
+			//	image_data[4*(i*size+j)+2] = 255;
+			//}
 		}
 	}
 	return ret;

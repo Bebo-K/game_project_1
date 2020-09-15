@@ -28,22 +28,23 @@ class Shader{
     GLuint TEXTURE_0;
 	GLuint IMAGE_SIZE;
 	GLuint TEXTURE_LOCATION;
+	GLuint COLOR;
 	GLuint AMBIENT;
 	GLuint DIFFUSE;
 	GLuint SPECULAR;
 	GLuint EMISSIVE;
 	//public int SHININESS;
 
-    Shader(const char* vertexFile,const char* fragmentFile);
+    Shader(char* vertexFile,char* fragmentFile);
 	~Shader();
 	void Use();
 };
 
 namespace ShaderManager{
 	void Init();
-    void AddShader(const char* name,const char* vertexFile,const char* fragmentFile);
-    Shader* GetShader(const char* name);
-    void RemoveShader(const char* name);
+    void AddShader(char* name,char* vertexFile,char* fragmentFile);
+    Shader* GetShader(char* name);
+    void RemoveShader(char* name);
     Shader* DefaultShader();
 
 };

@@ -45,7 +45,7 @@ vec2        cam_axis;
 void Input::Init(){
     char* keyname;
     for(int i=0;i< button_count;i++){
-        keyname = (char*)config::key_bindings.StrGet(button_names[i]);
+        keyname = (char*)config::key_bindings.Get(button_names[i]);
         if(keyname != null){
             int key_id = GetKeyID(keyname);
             if(key_id >= 0){

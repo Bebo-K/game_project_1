@@ -3,10 +3,10 @@
 #include "../structs/data_types.h"
 
 Shader* defaultShader=nullptr;
-AssociativeArray cachedShaders(2);
+StringMap cachedShaders(2);
 
 
-Shader::Shader(const char* vertexFile,const char* fragmentFile){
+Shader::Shader(char* vertexFile,char* fragmentFile){
     FileBuffer vertexProgram(vertexFile);
     FileBuffer fragmentProgram(fragmentFile);
 
@@ -50,6 +50,7 @@ Shader::Shader(const char* vertexFile,const char* fragmentFile){
             PROJECTION_MATRIX 	= glGetUniformLocation(program,"projection_matrix");
             NORMAL_MATRIX    	= glGetUniformLocation(program,"normal_matrix");
             TEXTURE_0 			= glGetUniformLocation(program,"texture0");
+            COLOR				= glGetUniformLocation(program,"color");
             AMBIENT				= glGetUniformLocation(program,"ambient");
             DIFFUSE				= glGetUniformLocation(program,"diffuse");
             SPECULAR			= glGetUniformLocation(program,"specular");
@@ -113,24 +114,24 @@ void Shader::Use(){
 
 void ShaderManager::Init(){
     defaultShader = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
-    cachedShaders.Add((byte*)"default",(byte*)&defaultShader);
+    cachedShaders.Add("default",(byte*)&defaultShader);
 }
 
-void ShaderManager::AddShader(const char* name,const char* vertexFile,const char* fragmentFile){
-    if(cachedShaders.StrGet(name)!=null)return;
+void ShaderManager::AddShader(char* name,char* vertexFile,char* fragmentFile){
+    if(cachedShaders.Get(name)!=null)return;
     Shader* newshader = new Shader(vertexFile,fragmentFile);
-    cachedShaders.Add((byte*)name,(byte*)newshader);
+    cachedShaders.Add(name,(byte*)newshader);
 }
 
-Shader* ShaderManager::GetShader(const char* name){
-    Shader* ret = (Shader*)cachedShaders.StrGet(name);
+Shader* ShaderManager::GetShader(char* name){
+    Shader* ret = (Shader*)cachedShaders.Get(name);
     if(ret == null){
         ret = DefaultShader();
     }
     return ret;
 }
-void ShaderManager::RemoveShader(const char* name){
-    Shader* ret = (Shader*)cachedShaders.StrRemove(name);
+void ShaderManager::RemoveShader(char* name){
+    Shader* ret = (Shader*)cachedShaders.Remove(name);
     if(ret != null){
         delete ret;
     }   

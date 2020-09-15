@@ -4,7 +4,7 @@
 
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS = -mwindows -lglew32 -lopengl32  -lz
+LIBS = -mwindows -lglew32 -lopengl32  -lz -lfreetype.dll
 
 SRC_PATHS := src;src/io;src/gfx;src/game;src/game/components;src/game/systems;src/client;src/server;src/gui;src/test;src/phys;src/structs;
 VPATH = $(SRC_PATHS)

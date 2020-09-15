@@ -7,6 +7,8 @@
 
 class Server{
 
+    public:
+
     int     max_players;
     int     scene_count;
     Scene*  active_scenes;
@@ -19,6 +21,7 @@ class Server{
     void RemoveEntity(int uuid);
     
     void Update(int ms);
+
 
 };
 

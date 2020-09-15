@@ -7,7 +7,7 @@
 //Handles collision against level triangles.
 namespace TriangleHandler{
 
-	const float FLOOR_SHUNT_HEIGHT_RATIO = 0.25f;
+	const float FLOOR_SHUNT_HEIGHT_RATIO = 0.1f;
     //FLOOR_SHUNT_HEIGHT_RATIO is the ratio of an entity's hight that is "knee high", allowing them to climb small ledges without jumping
 	const float EDGE_RAD_SHRINK = 0.8f;
     //EDGE_RAD_SHRINK is how much we shrink our collision bubble, horizontally, when looking for edge collisions. It prevents some odd edge case collisions.

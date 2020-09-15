@@ -49,12 +49,13 @@ CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity
             ret->floor_distance = vertical_shunt;
             ret->flags = LevelCollisionFlag::FLOOR;
             ret->next=null;
+            //if we're close to, on, or under the floor, and not going up, it's safe to mark us as grounded.
+            if(e->velocity.y <= 0){e->phys_data->is_midair=false;}
             //If we're underneath by less than our max up-shunt height, move us up and out and set us grounded
             if(vertical_shunt >= 0 && vertical_shunt <= max_up_shunt){
                 ret->flags |= LevelCollisionFlag::CANCEL_VELOCITY;
                 ret->velocity_cancel = {0,1,0};
                 ret->shunt.y = vertical_shunt;
-                e->phys_data->is_midair=false;
             }
             //If we're already grounded and floating over the floor by less than our max shunt height, move us down to ground.
             else if(!e->phys_data->is_midair && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
@@ -78,14 +79,14 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
     
     float bottom_cutoff = step_position.y;
     float top_cutoff = step_position.y+hitsphere.height;
+
     //Keeps grounded entitites from colliding with "knee high" walls before floor
-    
-    if(!e->phys_data->is_midair){
-        bottom_cutoff += hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
-    }
-    else{
-        top_cutoff -= hitsphere.height*0.25;
-    }
+    //if(!e->phys_data->is_midair){
+    bottom_cutoff += hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
+    //}
+    //if(e->phys_data->is_midair){
+    //    top_cutoff -= hitsphere.height*0.25;
+    //}
     
 
     float_range vertical_cutoff_range(bottom_cutoff,top_cutoff);

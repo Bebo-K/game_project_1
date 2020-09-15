@@ -1,2 +1,7 @@
 9/10/20:
-        Collision Blocked out. Work on transitions(and maybe asset pipeline), then time to start some UI work.
+        Work *first* on text display. Make that very accessable. Get a debug log onscreen. It'll pay dividends later on.
+        Next, work on slightly more fancy UI elements: Menus, buttons, slots and things to fill them.
+        Next, start on networking. Get to a point where two characters can run around.
+        Then, work on transitions. At this point the server will need built up to be able to manage multiple scenes at a time.
+        Add some static NPCs to test the robustness of server-managed scenes.
+        Next, some text interaction with those NPCs, just to put it all together. 

@@ -3,17 +3,15 @@ precision mediump float;
 
 uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
-uniform vec4 texture_location;
 
 in vec3 a_vertex;
 in vec2 a_tex_coord;
 
 out vec2 tex_coord;
-out vec4 world_pos;
 
 void main(void)
 {
-  vec4 local_pos = modelview_matrix * vec4(a_vertex, 1.0);
-  world_pos = projection_matrix * world_pos;
+  vec4 world_pos = modelview_matrix * vec4(a_vertex, 1.0);
+  gl_Position = projection_matrix * world_pos;
   tex_coord = a_tex_coord;
 }
