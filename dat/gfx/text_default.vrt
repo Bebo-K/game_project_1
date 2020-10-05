@@ -1,0 +1,20 @@
+#version 150
+precision mediump float;
+
+uniform vec2 image_pos;
+uniform vec2 image_size;
+uniform vec2 window_size;
+
+in vec3 a_vertex;
+in vec2 a_tex_coord;
+
+out vec2 tex_coord;
+
+void main(void)
+{
+  vec2 screen_pos = (image_pos/window_size) + (a_vertex.xy*image_size /window_size);
+  screen_pos *= 2.0;
+  screen_pos -= vec2(1.0,1.0);
+  gl_Position = vec4(screen_pos.x,screen_pos.y,0,1.0);
+  tex_coord = a_tex_coord;
+}

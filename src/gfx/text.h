@@ -12,7 +12,6 @@ typedef unsigned int* text_string;
 
 namespace TextString{
     text_string from_cstr(char* str);
-
 }
 
 
@@ -32,8 +31,8 @@ class SimpleText: public Drawable{
 
     SimpleText(char* str);
     SimpleText(text_string str);
-    SimpleText(text_string str,int font_size);
-    void SetString(text_string str, int font_size);
+    SimpleText(text_string str,FontID font);
+    void SetString(text_string str,FontID font);
     ~SimpleText();
 
     void Update(int frames);

@@ -5,14 +5,12 @@
 long time_ms();
 long long time_nano();
 
+
 namespace Window{
     extern int width;
     extern int height;
-
-
+    extern int DPI;
 };
-
-
 
 
 #endif

@@ -1,5 +1,9 @@
+#define WINVER 0x0601
+#define _WIN32_WINNT 0x0601
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <wingdi.h>
+//#include <wingdi.h>
+#include <winuser.h>
 #include "os.h"
 #include "gfx/gload.h"
 #include "log.h"
@@ -12,6 +16,7 @@ const TCHAR window_classname[] = _T("Game");
 
 int Window::width = 1280;
 int Window::height= 720;
+int Window::DPI=USER_DEFAULT_SCREEN_DPI;
 
 Performance::Alarm second;
 Performance::Counter polls_per_sec;
@@ -198,7 +203,23 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
                 Window::height = new_client_area.bottom;
                 glViewport(0, 0,Window::width, Window::height);
             }
+            
             break;
+            
+        case WM_DPICHANGED:{
+            Window::DPI = HIWORD(wparam);
+            //UpdateDpiDependentFontsAndResources();
+
+            RECT* const prcNewWindow = (RECT*)lparam;
+            SetWindowPos(window_handle,
+                NULL,
+                prcNewWindow ->left,
+                prcNewWindow ->top,
+                prcNewWindow->right - prcNewWindow->left,
+                prcNewWindow->bottom - prcNewWindow->top,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        break;
+        }
         default:
             return DefWindowProc(window_handle,msg,wparam,lparam);
             break;

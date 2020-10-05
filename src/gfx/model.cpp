@@ -195,7 +195,7 @@ void ModelManager::Init(){
     empty_model.mesh_groups=new MeshGroup[1]();
     empty_model.mesh_group_count=1;
     empty_model.mesh_groups[0].meshes = new Mesh[1]();
-    empty_model.mesh_groups[0].name = "ErrorModel.MeshGroup";
+    empty_model.mesh_groups[0].name = cstr::new_copy("ErrorModel.MeshGroup");
     empty_model.mesh_groups[0].meshes[0].vertex_count = error_cube.vertex_count;
     empty_model.mesh_groups[0].meshes[0].mat = error_cube.mat;
     empty_model.mesh_groups[0].meshes[0].vertex = error_cube.vertices;

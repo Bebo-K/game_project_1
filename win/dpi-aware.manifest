@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+   <assemblyIdentity type="win32" name="Game" version="1.0.0.0" />
+   <description>It's a game.</description>
+   <asmv3:application xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+      <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+         <dpiAware>true/pm</dpiAware>
+		   <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitor</dpiAwareness> 
+		   <!-- adding v1 as fallback would result in v2 not being applied to dialogs on capable systems -->
+      </asmv3:windowsSettings>
+   </asmv3:application>
+</assembly>

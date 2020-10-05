@@ -26,7 +26,9 @@ class Shader{
 	GLuint NORMAL_MATRIX;
 	GLuint POSE_MATRICES;
     GLuint TEXTURE_0;
+	GLuint IMAGE_POS;
 	GLuint IMAGE_SIZE;
+	GLuint WINDOW_SIZE;
 	GLuint TEXTURE_LOCATION;
 	GLuint COLOR;
 	GLuint AMBIENT;

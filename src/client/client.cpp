@@ -27,8 +27,10 @@ void Client::Start(){
     ShaderManager::AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
     ShaderManager::AddShader("flat_skybox","dat/gfx/flat_skybox.vrt","dat/gfx/flat_skybox.frg");
     FontManager::Init();
+        //FontID DebugFont = FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",8);
+        FontID DebugFont = FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",12);
     ModelManager::Init();
-    ModelManager::Register(PLAYER,"dat/models/gargoyle.glb");
+        ModelManager::Register(PLAYER,"dat/models/gargoyle.glb");
 
     ui.Load();
     scene_renderer.Load();
@@ -38,7 +40,7 @@ void Client::Start(){
     scene_renderer.camera.z = 10.0f;
     scene_renderer.camera.y = 2.0f;
 
-    SimpleText* textbox = new SimpleText("Now is the time");
+    SimpleText* textbox = new SimpleText(TextString::from_cstr("The quick brown fox!"),DebugFont);
     textbox->x = 100;
     textbox->y = 100;
 

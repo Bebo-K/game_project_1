@@ -8,6 +8,8 @@
 typedef unsigned int uint32;
 typedef unsigned char byte;
 
+void* i_to_p(int ptr);
+
 //A dynamic array of bits. Used by other maps to keep track of data slot occupancy.
 struct BitArray{
     int bits;

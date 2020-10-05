@@ -14,9 +14,11 @@ void logger::start(const char* filename){
 void logger::info(const char* text,...){
   va_list args;
   va_start (args,text);
-  vprintf (text, args);
+  vprintf(text, args);
   vfprintf(logfile,text,args);
+  fflush(logfile);
   va_end (args);
+  fflush(stdout);
 }
 
 void logger::warn(const char* text,...){
@@ -24,7 +26,6 @@ void logger::warn(const char* text,...){
   va_start (args,text);
   vprintf (text, args);
   vfprintf(logfile,text,args);
-  vfprintf(stderr,text,args);
   fflush(stderr);
   fflush(logfile);
   //Raise warning flag

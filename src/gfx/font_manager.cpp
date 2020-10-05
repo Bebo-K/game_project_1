@@ -1,27 +1,28 @@
 #include "font_manager.h"
 #include "../log.h"
 #include "drawable.h"
+#include "../os.h"
+#include "freetype/ftcolor.h"
 
 FT_Library   ft_library;
-int          default_font_id,current_font_id;
+FontID       default_font_id,current_font_id;
 PointerArray cached_fonts(1);
-
 
 void FontManager::Init(){
     int err = FT_Init_FreeType(&ft_library);
     if(err != 0){
         logger::warn("Error during Freetype2 library initialization, code: %d \n",err);
     }
-
+    current_font_id=-1;
     default_font_id = LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",18);
 }
 
-int FontManager::LoadFontFace(char* font_name,int font_size){
+FontID FontManager::LoadFontFace(char* font_name,int font_size){
     FontCache* cache_entry = new FontCache(font_name,font_size);
     return cached_fonts.Add(cache_entry);
 }
 
-void FontManager::SetActiveFont(int font_id){current_font_id = font_id;}
+void FontManager::SetActiveFont(FontID font){current_font_id = font;}
 
 FontManager::FontCache* FontManager::GetActiveFont(){
     FontCache* cache_entry = (FontCache*)cached_fonts.Get(current_font_id);
@@ -59,8 +60,8 @@ FontManager::FontCache::FontCache(char* font_filename,int font_size):glyph_dynam
             fontface,       /* handle to face object           */
             0,              /* char_width in 1/64th of points  */
             font_size*64,   /* char_height in 1/64th of points */
-            DEVICE_RES_X,   /* horizontal device resolution    */
-            DEVICE_RES_Y ); /* vertical device resolution      */
+            Window::DPI,   /* horizontal device resolution    */
+            Window::DPI ); /* vertical device resolution      */
     if(err != 0){
         logger::warn("Error building Freetype2 font: Unable to set font size. Code:%d\n",err);
     }
@@ -75,9 +76,9 @@ FontManager::FontCache::FontCache(char* font_filename,int font_size):glyph_dynam
 
 TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]){
     TextureRectangle pos;
-    int atlas_x = atlas_next[0];
-    int atlas_y = atlas_next[1];
-    int atlas_h = atlas_next[2];
+    unsigned int atlas_x = (unsigned int)atlas_next[0];
+    unsigned int atlas_y = (unsigned int)atlas_next[1];
+    unsigned int atlas_h = (unsigned int)atlas_next[2];
     if(atlas_x + glyph.width <= FontManager::ATLAS_SIZE 
     && atlas_y + glyph.rows <= FontManager::ATLAS_SIZE){//Fits widthwise our row
         atlas_h = (glyph.rows > atlas_h)?glyph.rows:atlas_h;
@@ -87,13 +88,18 @@ TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]
         atlas_y += atlas_h;
         atlas_h = glyph.rows;
     }	
-    
-    for(int i=0;i<glyph.rows;i++){
-        for(int j=0; j<glyph.width;j++){
-            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4] = glyph.buffer[(glyph.width*i + j)];
-            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+1] = glyph.buffer[(glyph.width*i + j)];
-            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+2] = glyph.buffer[(glyph.width*i + j)];
-            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+3] = glyph.buffer[(glyph.width*i + j)];
+    unsigned char alpha;
+    for(unsigned int i=0;i<glyph.rows;i++){
+        for(unsigned int j=0; j<glyph.width;j++){
+            alpha=glyph.buffer[glyph.width*i + j];
+            if(alpha > 16){//edge softening. Do I want this?
+                if(j==0 || glyph.buffer[glyph.width*i + j -1] < 16){alpha /= 2;}
+                else if(j==glyph.width-1 || glyph.buffer[glyph.width*i + j +1] < 16){alpha /= 2;}
+            }
+            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4] = 255;//glyph.buffer[(glyph.width*i + j)];
+            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+1] = 255;//glyph.buffer[(glyph.width*i + j)];
+            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+2] = 255;//glyph.buffer[(glyph.width*i + j)];
+            atlas->image_data[(atlas->width*(atlas_y+i) + (atlas_x+j))*4+3] = alpha;
         }
     }
     
@@ -111,7 +117,7 @@ TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]
     return pos;
 }
 
-void SumitAtlas(Image* atlas,int guint){
+void SubmitAtlas(Image* atlas,int guint){
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,guint);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
@@ -129,17 +135,17 @@ void FontManager::FontCache::BuildAtlas(){
 
     for(int i=0;i < precached_codepoints_range;i++){
         int codepoint = precached_codepoints_range_lo+i;
-        int err = FT_Load_Char(fontface,codepoint,FT_LOAD_DEFAULT);
+        int glyph = FT_Get_Char_Index(fontface,codepoint);
+        int err = FT_Load_Glyph(fontface,glyph,FT_LOAD_COLOR);
         if(err != 0){logger::warn("Unable to load glyph. Code:%d\n",err);}        
         err = FT_Render_Glyph(fontface->glyph,FT_RENDER_MODE_NORMAL);
         if(err != 0){logger::warn("Unable to render glyph. Code:%d\n",err);}
-
         glyph_static_textures[i].atlas_id=atlas_gl_id;
         glyph_static_textures[i].height_px= fontface->glyph->bitmap.rows;
         glyph_static_textures[i].width_px= fontface->glyph->bitmap.width;
         glyph_static_textures[i].tex_coords = BlitGlyphToAtlas(glyph_atlas,fontface->glyph->bitmap,atlas_next_glyph);
     }
-    SumitAtlas(glyph_atlas,atlas_gl_id);
+    SubmitAtlas(glyph_atlas,atlas_gl_id);
 }
 
 Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
@@ -154,7 +160,7 @@ Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
     glyph_tex->height_px= fontface->glyph->bitmap.rows;
     glyph_tex->width_px= fontface->glyph->bitmap.width;
     glyph_tex->tex_coords = BlitGlyphToAtlas(glyph_atlas,fontface->glyph->bitmap,atlas_next_glyph);
-    SumitAtlas(glyph_atlas,atlas_gl_id);
+    SubmitAtlas(glyph_atlas,atlas_gl_id);
     
     glyph_dynamic_textures.Add(codepoint,(byte*)glyph_tex);
     return *glyph_tex;

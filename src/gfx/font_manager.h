@@ -5,13 +5,16 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+
+typedef int FontID;
+
 namespace FontManager{
     const static char precached_codepoints_range_lo = 32;
     const static char precached_codepoints_range_hi = 126;
     const static char precached_codepoints_range = 126-32;
     const int ATLAS_SIZE = 1024;
-    const int DEVICE_RES_X = 300;
-    const int DEVICE_RES_Y = 300;
+    const int DEVICE_RES_X = 96;
+    const int DEVICE_RES_Y = 96;
     const int DEFAULT_FONT_SIZE= 12;
 
     class FontCache{
@@ -30,13 +33,12 @@ namespace FontManager{
         void BuildAtlas();
         Texture AddDynamicGlyph(int codepoint);
         void ClearDynamicGlyphs();//Only method of glyph cleanup.
-
     };
 
 
     void Init();
-    int LoadFontFace(char* font_filename,int font_size);
-    void SetActiveFont(int font_id);
+    FontID LoadFontFace(char* font_filename,int font_size);
+    void SetActiveFont(FontID font_id);
     FontCache* GetActiveFont();
     Texture GetGlyph(int code_point);
     //TODO: Text texture atlas cleanup

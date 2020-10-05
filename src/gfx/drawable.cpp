@@ -107,7 +107,7 @@ void VBO::Bind(int attrib_slot){
 
 void VBO::Bind(int attrib_slot, int stride, int start){
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
-    glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,(void*)start);
+    glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,i_to_p(start));
 }
 
 void VBO::Destroy(){

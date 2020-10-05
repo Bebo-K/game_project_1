@@ -5,6 +5,12 @@
 
 const int DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE = 4;
 
+void* i_to_p(int ptr){
+    byte* ret = null;
+    ret += ptr;
+    return ret;
+}
+
 BitArray::BitArray(){
     bits = 0;
     data = null;

@@ -55,7 +55,9 @@ Shader::Shader(char* vertexFile,char* fragmentFile){
             DIFFUSE				= glGetUniformLocation(program,"diffuse");
             SPECULAR			= glGetUniformLocation(program,"specular");
             TEXTURE_LOCATION 	= glGetUniformLocation(program,"texture_location");
+            IMAGE_POS           = glGetUniformLocation(program,"image_pos");
             IMAGE_SIZE 			= glGetUniformLocation(program,"image_size");
+            WINDOW_SIZE 		= glGetUniformLocation(program,"window_size");
             POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices");
 
             int err = glGetError();

@@ -2,9 +2,13 @@
 #VPATH is separated with semicolon instead of colon
 #rd is used instead of rm
 
+RESOURCE_ARCH = pe-x86-64
+#RESOURCE_ARCH = pe-i386
+
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS = -mwindows -lglew32 -lopengl32  -lz -lfreetype.dll
+LIBS =  -lgdi32 -lglew32 -lopengl32  -lz -lfreetype.dll
+
 
 SRC_PATHS := src;src/io;src/gfx;src/game;src/game/components;src/game/systems;src/client;src/server;src/gui;src/test;src/phys;src/structs;
 VPATH = $(SRC_PATHS)
@@ -27,18 +31,20 @@ SRC := $(MAIN_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(GFX_SRC) $(GAME_SRC) 
 
 OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
 
-
 #foobar.exe: $(IO_SRC) foobar.cpp 
 #	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
-game.exe: $(OBJS)
+game.exe: $(OBJS) win/resource.o
 	g++ $(CFLAGS) -o $@ $^ $(LIBS)
-
 
 obj/%.o: %.cpp
 	g++ $(CFLAGS) -c -o $@ $<
+
+win/resource.o: win/dpi-aware.manifest win/icon.ico win/resource.rc
+	windres win/resource.rc --target=$(RESOURCE_ARCH) $@
 
 .PHONY: clean
 clean:
 	rd /s "./bin/game.exe"
 	rd /s "./obj/*"
+	rd /s "./win/resource.o"
