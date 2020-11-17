@@ -212,7 +212,6 @@ int PointerArray::Remove(void* object){
             return i;
         }
     }
-    logger::warn("PointerArray::Remove -> Object not found in array.");
     return -1;
 }
 void* PointerArray::Get(int index){
@@ -399,6 +398,25 @@ void StringMap::Clear(){
     }
 }
 
+int StringMap::Count(){
+    int count = 0;
+    for(int i=0;i<slots;i++){if(keys[i] != null)count++;}
+    return count;
+}
+
+byte** StringMap::begin(){
+    return &values[0];
+}
+
+byte** StringMap::end(){
+    int end=0;
+    for(int i=0;i< slots; i++){
+        if(keys[i]!=null){end=i;}
+    }
+    return &values[end+1];
+}
+
+
 /*
 AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size){
     slots=initial_size;
@@ -567,6 +585,12 @@ bool cstr::starts_with(const char* str, const char* start){
     return true;
 }
 
+int cstr::len(char* str){
+    int i;
+    for(i=0;str[i]!=0;i++);
+    return i;
+}
+
 char* cstr::append(const char* str1,const char* str2){
     int str1_len = strlen(str1);
     int str2_len = strlen(str2);
@@ -637,4 +661,41 @@ char* cstr::utf16_to_utf8(const wchar_t* longstring){
     }
     utf8_str[j]=0;
     return utf8_str;
+}
+
+
+text_char* TextString::from_cstr(char* str){
+    if(str==null)return null;
+    int i;
+    for(i=0;str[i]!=0;i++);
+    text_char* ret = new text_char[i+1];
+    for(i=0;str[i]!=0;i++){ret[i] = (int)str[i];}
+    ret[i]=0;
+    return ret;
+}
+
+int TextString::length(text_char* str){
+    if(str == nullptr)return -1;
+    int ret;
+    for(ret=0;str[ret]!= 0;ret++);
+    return ret;
+}
+
+int TextString::write(char* str,text_char* dest){
+    int ret;
+    for(ret=0;str[ret] != 0;ret++){
+        dest[ret] = (text_char)str[ret];
+    }
+    dest[ret]=0;
+    return ret;
+}
+
+text_char* TextString::concat(text_char* a_part,text_char* b_part){
+    text_char* result= (text_char*)calloc(length(a_part)+length(b_part)+1,sizeof(text_char));
+    int i;
+    for(i=0;a_part[i]!=0;i++){result[i]=a_part[i];}
+    int a_len=i;
+    for(i=0;b_part[i]!=0;i++){result[a_len+i]=b_part[i];}
+    result[a_len+i]=0;
+    return result;
 }

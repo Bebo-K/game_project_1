@@ -64,7 +64,6 @@ void GetTimerData(){
     polls_per_sec.Increment();
     if(second.Time_Over()){
         int new_ms = time_ms();
-        float delta_ms =new_ms-ms_per_second;
         Performance::polls_last_second = polls_per_sec.GetCount();
         Performance::updates_last_second = Performance::frames.GetCount();
         Performance::draws_last_second = Performance::draws.GetCount();
@@ -72,8 +71,6 @@ void GetTimerData(){
         polls_per_sec.Reset();
         Performance::frames.Reset();
         Performance::draws.Reset();
-
-        logger::info("Polls:%d   Draws:%d   Frames:%d   ms:%d\n",Performance::polls_last_second,Performance::draws_last_second,Performance::updates_last_second,delta_ms);
         ms_per_second=new_ms;
     }
 }
@@ -102,11 +99,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     start_time = sys_time();
     ms_per_second = time_ms();
     second.interval=1000;
-
     logger::start("log.txt");
-    logger::info("I think it's...\n");
-    SYSTEMTIME sysdate = sys_date();
-    logger::info("Month:%d   Day:%d   Year:%d   at %d:%2d \n",sysdate.wMonth,sysdate.wDay,sysdate.wYear,sysdate.wHour,sysdate.wMinute);
     config::Init();
     Input::Init();
 
@@ -185,16 +178,16 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             //short wheel_delta = (short)HIWORD(wparam);
             break;
         case WM_LBUTTONDOWN:
-            Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,true);
+            Input::HandleKey(0x101,true);
             break;
         case WM_LBUTTONUP:
-            Input::HandleKey(Input::MOUSE_IDS::LEFT_CLICK,false);
+            Input::HandleKey(0x101,false);
             break;
         case WM_RBUTTONDOWN:
-            Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,true);
+            Input::HandleKey(0x102,true);
             break;
         case WM_RBUTTONUP:
-            Input::HandleKey(Input::MOUSE_IDS::RIGHT_CLICK,false);
+            Input::HandleKey(0x102,false);
             break; 
         case WM_SIZE:
             RECT new_client_area;
@@ -202,6 +195,9 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
                 Window::width = new_client_area.right;
                 Window::height = new_client_area.bottom;
                 glViewport(0, 0,Window::width, Window::height);
+            }
+            if(Game::client != null){
+                Game::client->ui.OnResize(Window::width, Window::height);
             }
             
             break;

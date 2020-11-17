@@ -1,18 +1,9 @@
-#ifndef TEXT_H
-#define TEXT_H
+#ifndef UI_TEXT_H
+#define UI_TEXT_H
 
 #include "../structs/3d_types.h"
 #include "../structs/math_types.h"
-#include "drawable.h"
 #include "font_manager.h"
-
-
-
-typedef unsigned int* text_string;
-
-namespace TextString{
-    text_string from_cstr(char* str);
-}
 
 
 struct Glyph{
@@ -23,20 +14,24 @@ struct Glyph{
     //vec2  offset;
 };
 
-class SimpleText: public Drawable{
+class UIText{
     public:
-    text_string string;
+    int x,y;
+    text_char* string;
     int    glyph_count;
     Glyph* glyphs;
 
-    SimpleText(char* str);
-    SimpleText(text_string str);
-    SimpleText(text_string str,FontID font);
-    void SetString(text_string str,FontID font);
-    ~SimpleText();
+    
+    UIText();
+    UIText(char* str);
+    UIText(text_char* str);
+    UIText(text_char* str,FontID font);
+    void SetString(char* str);
+    void SetString(text_char* str,FontID font);
+    ~UIText();
 
     void Update(int frames);
-    void Draw(Camera* cam,mat4* view, mat4* projection);
+    void Draw();
 };
 /*
 class TextBoxText: public Drawable{

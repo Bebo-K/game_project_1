@@ -265,7 +265,7 @@ const char* MS_VK_NAMES [] ={
 
 int MOUSE_BUTTON_OFFSET=0x101;
 int MOUSE_BUTTON_COUNT=3;
-char* MOUSE_BUTTON_NAMES[] ={
+const char* MOUSE_BUTTON_NAMES[] ={
     "mouse_left",
     "mouse_right",
     "mouse_center"
@@ -273,7 +273,7 @@ char* MOUSE_BUTTON_NAMES[] ={
 
 int JOYSTICK_OFFSET=0x1A0;
 int JOYSTICK_BUTTON_COUNT=15;
-char* JOYSTICK_BUTTON_NAMES[] ={
+const char* JOYSTICK_BUTTON_NAMES[] ={
     "joy_a",
     "joy_b",
     "joy_x",

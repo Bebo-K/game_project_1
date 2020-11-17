@@ -7,6 +7,7 @@
 
 typedef unsigned int uint32;
 typedef unsigned char byte;
+typedef unsigned int text_char;
 
 void* i_to_p(int ptr);
 
@@ -150,22 +151,26 @@ struct IDMap{
     void  Clear();
 };
 
-struct StringMap{
-    char**  keys;
-    byte**  values;
-    int         slots;
+class StringMap{
+    private:
+        char**  keys;
+        byte**  values;
+        int     slots;
 
-    StringMap();
-    StringMap(int initial_size);
-    ~StringMap();
+    public:
+        StringMap();
+        StringMap(int initial_size);
+        ~StringMap();
 
-    bool Add(char* name,byte* value);
-    byte* Remove(char* name);
-    byte* Get(char* name);
-    bool  Has(char* name);
-    void  Clear();
+        bool Add(char* name,byte* value);
+        byte* Remove(char* name);
+        byte* Get(char* name);
+        bool  Has(char* name);
+        void  Clear();
 
-
+        byte** begin();
+        byte** end();
+        int    Count();
 };
 
 namespace cstr{
@@ -175,6 +180,7 @@ namespace cstr{
     char* append(const char* str1, char seperator, const char* str2);
     bool compare(const char* str1, const char* str2);
     bool starts_with(const char* str, const char* start);
+    int len(char* str);
 
     char* utf16_to_utf8(const wchar_t* longstring);
     /*
@@ -188,6 +194,14 @@ namespace cstr{
     char* write_bool_string(int a, char *str, int index);
     */
 };
+
+namespace TextString{
+    text_char* from_cstr(char* str);
+    int length(text_char* str);
+    int write(char* str,text_char* dest);
+    text_char* concat(text_char* a_part,text_char* b_part);
+};
+
 
 
 

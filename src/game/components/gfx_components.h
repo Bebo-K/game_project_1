@@ -7,7 +7,7 @@
 #include "../../structs/3d_types.h"
 #include "../../gfx/camera.h"
 #include "../../gfx/model.h"
-#include "../../gfx/sprite.h"
+#include "../../gfx/ui_sprite.h"
 #include "../../gfx/animation.h"
 #include "../../gfx/drawable.h"
 

@@ -11,13 +11,23 @@ float camera_turn_speed=200;
 void PlayerInput::Update(Scene* scene, float delta){
     if(tracked_entity != null && tracked_entity->movement != null && tracked_entity->camera_target !=null){
         Camera* cam = tracked_entity->camera_target->camera;
-        vec2 move_input = Controller::MoveAxis();
-        vec2 camera_input = Controller::CameraAxis();
+        Input::Axis move_axis = Input::Axis_1();
+        Input::Axis camera_axis = Input::Axis_2();
+
+        vec2 move_input = {move_axis.x/255.0f,move_axis.y/255.0f};
+        if(move_input.length_sqr() > 1){
+            move_input.normalize();
+        }
+        vec2 camera_input = {camera_axis.x/255.0f,camera_axis.y/255.0f};
+        if(move_input.length_sqr() > 1){
+            camera_input.normalize();
+        }
+
         if(camera_input.length_sqr() > 0){
             cam->rotation.x += camera_input.y*(camera_turn_speed*delta);
             cam->rotation.y += camera_input.x*(camera_turn_speed*delta);
         }
-        if(Controller::Crouch().IsDown()){
+        if(Input::Button_R2().IsDown()){
             move_input.x *= crouch_slow;
             move_input.y *= crouch_slow;
         }
@@ -63,7 +73,7 @@ void PlayerInput::Update(Scene* scene, float delta){
             tracked_entity->movement->is_moving=false;
         }
         
-        if(Controller::Jump().IsJustPressed()){
+        if(Input::Button_L1().IsJustPressed()){
             tracked_entity->movement->jump_goal=true;
         }
         else{

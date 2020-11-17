@@ -1,6 +1,7 @@
-#include "text.h"
+#include "ui_text.h"
 #include "../log.h"
 #include "../os.h"
+#include "drawable.h"
 
 //Renders on one big triangle instead of 2 in a quad, to prevent diagonal seams.
 float glyph_vert_data[] =       {0,2,0,  0,0,0,  2,0,0};//   0,0,0,  0,1,0,  1,1,0};
@@ -8,18 +9,8 @@ float glyph_texcoord_data[] =   {0,-1,    0,1,    2,1};//   0,1,  0,0,  1,0};
 VBO glyph_vertices;
 VBO glyph_texcoords;
 
-const float TEXT_SCALE = 0.5f;
+//const float TEXT_SCALE = 0.5f;
 
-
-text_string TextString::from_cstr(char* str){
-    if(str==null)return null;
-    int i;
-    for(i=0;str[i]!=0;i++);
-    text_string ret = (text_string)new int[i+1];
-    ret[i]=0;
-    for(i=0;str[i]!=0;i++){ret[i] = (int)str[i];}
-    return ret;
-}
 
 void BuildGlyphPrimitive(){
     glyph_vertices.Create(glyph_vert_data,GL_FLOAT,3,9);
@@ -30,34 +21,45 @@ void BuildGlyphPrimitive(){
     }
 }
 
-SimpleText::SimpleText(char* str){
-    layer=32;
-    scale={1,1,1};
+UIText::UIText(){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
+    glyphs=nullptr;
+    string=nullptr;
+    glyph_count=0;
+    x=y=0;
+}
+UIText::UIText(char* str){
+    if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
+    glyphs=nullptr;
+    x=y=0;
     SetString(TextString::from_cstr(str),-1);
 }
-SimpleText::SimpleText(text_string str){
-    layer=32;
-    scale={1,1,1};
+UIText::UIText(text_char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
+    glyphs=nullptr;
+    x=y=0;
     SetString(str,-1);
 }
-SimpleText::SimpleText(text_string str,FontID font_id){
-    layer=32;
-    scale={1,1,1};
+UIText::UIText(text_char* str,FontID font_id){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
+    glyphs=nullptr;
+    x=y=0;
     SetString(str,font_id);
 }
 
-void SimpleText::SetString(text_string str,FontID font_id){
+void UIText::SetString(char* str){
+    SetString(TextString::from_cstr(str),-1);
+}
+void UIText::SetString(text_char* str,FontID font_id){
     if(str ==null)return;
-    if(font_id >= 0){FontManager::SetActiveFont(font_id);}
     string=str;
+    if(font_id >= 0){FontManager::SetActiveFont(font_id);}
     FT_Face fontface = FontManager::GetActiveFont()->fontface;
 
     int strlen=0;
     for(int i=0;str[i] != 0;i++){strlen++;}
     glyph_count = strlen;
+    if(glyphs != nullptr){free(glyphs);glyphs=nullptr;}
     glyphs = (Glyph*)calloc(glyph_count,sizeof(Glyph));
 
     int pen_x=0,pen_y=0;
@@ -76,37 +78,36 @@ void SimpleText::SetString(text_string str,FontID font_id){
     }
 }
 
-SimpleText::~SimpleText(){
+UIText::~UIText(){
     free(glyphs);
 }
 
-void SimpleText::Update(int frames){}
-void SimpleText::Draw(Camera* cam,mat4* view, mat4* projection){
-    cam->SetShader("text_default");
+void UIText::Update(int frames){}
+void UIText::Draw(){
+    Shader* text_shader = ShaderManager::GetShader("text_default");
+    text_shader->Use();
     glDisable(GL_DEPTH_TEST);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(text_shader->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(text_shader->ATTRIB_TEXCOORD);
     glyph_vertices.Bind(0);
     glyph_texcoords.Bind(1);
 
     glActiveTexture(GL_TEXTURE0);
     for(int i=0;i<glyph_count;i++){
-        glUniform2f(cam->shader->IMAGE_POS,x+glyphs[i].x,y+glyphs[i].y);
-        glUniform2f(cam->shader->IMAGE_SIZE,(float)glyphs[i].glyph_texture.width_px,(float)glyphs[i].glyph_texture.height_px);
-        glUniform2f(cam->shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
-        //glUniform4fv(cam->shader->COLOR,1,(GLfloat*)glyphs[i].color);
+        glUniform2f(text_shader->IMAGE_POS,x+glyphs[i].x,y+glyphs[i].y);
+        glUniform2f(text_shader->IMAGE_SIZE,(float)glyphs[i].glyph_texture.width_px,(float)glyphs[i].glyph_texture.height_px);
+        glUniform2f(text_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
+        //glUniform4fv(text_shader->COLOR,1,(GLfloat*)glyphs[i].color);
         glBindTexture(GL_TEXTURE_2D,glyphs[i].glyph_texture.atlas_id);
 
-        glUniform1i(cam->shader->TEXTURE_0,0);
-        glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&glyphs[i].glyph_texture.tex_coords);
+        glUniform1i(text_shader->TEXTURE_0,0);
+        glUniform4fv(text_shader->TEXTURE_LOCATION,1,(GLfloat*)&glyphs[i].glyph_texture.tex_coords);
 
         glDrawArrays(GL_TRIANGLES,0,3);
     }
-;
 
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
+    glDisableVertexAttribArray(text_shader->ATTRIB_VERTEX);
+    glDisableVertexAttribArray(text_shader->ATTRIB_TEXCOORD);
     
     glEnable(GL_DEPTH_TEST);
-
 }

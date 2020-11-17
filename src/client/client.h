@@ -16,6 +16,7 @@ class Client{
     const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 
     Client();
+    ~Client();
     void Start();
     void LoadScene(int scene_id);
     void AddEntity(int eid);
@@ -25,6 +26,7 @@ class Client{
     void Paint();
     void Update(int frames);
     void UpdatePositions();
+    void HandleFrameInput();
 
 };
 

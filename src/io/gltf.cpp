@@ -448,8 +448,16 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		}
 		//if(attribs->HasInt("TEXCOORD_1")){
 		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
-		
-		prim->mat = GetMaterial(primitive->GetInt("material"));
+		if(primitive->HasInt("material")){
+			prim->mat = GetMaterial(primitive->GetInt("material"));
+		}
+		else{
+			prim->mat.base_color[0]=prim->mat.base_color[1]=prim->mat.base_color[2]=prim->mat.base_color[3]=1.0f;
+			prim->mat.texture=TextureManager::DefaultTexture();
+			prim->mat.metallic_factor=0;
+			prim->mat.roughness_factor=0;
+			prim->mat.cull_backface=false;
+		}
 		if(primitive->HasInt("indices")){
 			int index_accessor_id=primitive->GetInt("indices"); 
 			prim->index = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);

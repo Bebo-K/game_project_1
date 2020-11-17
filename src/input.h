@@ -1,34 +1,41 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include "structs/data_types.h"
 
-#include "structs/3d_types.h"
-
-namespace Input{
-    enum MOUSE_IDS{
-        LEFT_CLICK=0x101,RIGHT_CLICK=0x102,SCROLL_CLICK=0x103
-    };
-    enum JOY_IDS{
-        A=0x1A0,B=0x1A1,X=0x1A2,Y=0x1A3,START=0x1A4,
-        L1=0x1A5,L2=0x1A6,R1=0x1A7,R2=0x1A8,
-        DPAD_UP=0x1A9,DPAD_DOWN=0x1AA,DPAD_LEFT=0x1AB,DPAD_RIGHT=0x1AC,
-        LEFT_STICK=0x1AD,RIGHT_STICK=0x1AE
-    };
-    int GetKeyID(char* key_name);
-    const char* GetKeyName(int key_id);
-
-    void Init();
-    void HandleKey(int key_id, bool down);
-    void HandleCursor(int pos_x,int pos_y);
-    void HandleCharacter(int code_point);
-
-    void Update();
+enum InputEvent{//Don't rename these to game specific events until gameplay is finalized.
+    AnyButton,
+    Axis_1,
+    Axis_2,
+    Button_A,
+    Button_B,
+    Button_C,
+    Button_D,
+    Button_Up,  
+    Button_Down,
+    Button_Left,
+    Button_Right,
+    Button_L1,
+    Button_L2,
+    Button_R1,
+    Button_R2,
+    Button_Pause,
+    Button_Menu,
+    Text,
+    Cursor_Move,
+    Cursor_Select,
+    Scroll
 };
 
-namespace Controller{
+namespace Input{
+
+    struct Axis{
+        short x,y;
+        short dx,dy;
+    };
 
     struct Button{
-        char state;
+        byte state;
         
         bool IsDown();
         bool IsUp();
@@ -36,18 +43,40 @@ namespace Controller{
         bool IsJustReleased();
     };
 
-    bool   AnyButtonDown();
-    vec2   MoveAxis();
-    vec2   CameraAxis();
-    Button Confirm();
-    Button Cancel();
-    Button Jump();
-    Button Crouch();
-    Button CenterCamera();
-    Button Pause();
-    Button Inventory();
-    //vec2 Cursor();
-    //char* TextInput();
-}
+    void Init();
+    void PostUpdate();
+
+    int GetKeyID(char* key_name);
+    const char* GetKeyName(int key_id);
+
+    bool StateChanged(InputEvent event_type);
+
+    Button AnyButton();
+    Axis Axis_1();
+    Axis Axis_2();
+    Button Button_A();
+    Button Button_B();
+    Button Button_C();
+    Button Button_D();
+    Button Button_Up(); 
+    Button Button_Down();
+    Button Button_Left();
+    Button Button_Right();
+    Button Button_L1();
+    Button Button_L2();
+    Button Button_R1();
+    Button Button_R2();
+    Button Button_Pause();
+    Button Button_Menu();
+    text_char* TextInput();
+    Axis Cursor();
+    Axis Scroll();
+    Button Cursor_Select();
+
+    void HandleKey(int key_id, bool down);
+    void HandleCursor(int pos_x,int pos_y);
+    void HandleCharacter(int code_point);
+
+};
 
 #endif

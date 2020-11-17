@@ -203,6 +203,15 @@ void ModelManager::Init(){
     empty_model.mesh_groups[0].meshes[0].normal = error_cube.normals;
 }
 
+
+void ModelManager::Free(){
+    for(ModelCacheEntry* entry:model_registry){
+        if(entry->data){delete entry->data;entry->data=null;}
+        //if(entry->filename){free(entry->filename);entry->filename=null;}
+    }
+    model_registry.Clear();
+}
+
 ModelData* ModelManager::Use(ModelID id){
     if(id == NONE){return ErrorModel();}
     for(ModelCacheEntry* cache:model_registry){

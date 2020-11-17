@@ -26,6 +26,7 @@ class Texture{
 namespace TextureManager{
     const int ATLAS_SIZE = 1024;
     void Init();
+    void Free();
     Texture Add(char* texname,Image* textureImage);
     Texture MapToAtlas(Image* textureImage);
     Texture Get(char* texname);

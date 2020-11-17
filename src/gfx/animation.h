@@ -94,6 +94,7 @@ struct AnimationOptions{
 
 namespace AnimationManager{
     void Init();
+    void Free();
 
     void StartClip(Animation* animation, AnimationHook* hook);
     void StartClip(Animation* animation, AnimationHook* hook,AnimationOptions end_action);

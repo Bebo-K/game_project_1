@@ -85,6 +85,23 @@ void TextureManager::Init(){
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,1,1,0,GL_RGBA,GL_UNSIGNED_BYTE,empty_image);
 }
+
+void TextureManager::Free(){
+    Image* pImage;
+    Texture* pTexture;
+    for(byte* b : cached_textures){
+        pTexture=(Texture*)b;
+        if(pTexture!= null){delete pTexture;}
+    }
+    cached_textures.Clear();
+    for(int i=0;i<texture_atlases.slots;i++){
+        if(!texture_atlases.slot_is_filled.Get(i))continue;
+        pImage=(Image*)texture_atlases.values[i];
+        if(pImage!= null){delete pImage;}
+        glDeleteTextures(1,(GLuint*)&texture_atlases.keys[i]);
+    }
+    texture_atlases.Clear();
+}
     
 Texture TextureManager::DefaultTexture(){
     return Texture();

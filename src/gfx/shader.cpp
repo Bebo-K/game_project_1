@@ -116,13 +116,21 @@ void Shader::Use(){
 
 void ShaderManager::Init(){
     defaultShader = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
-    cachedShaders.Add("default",(byte*)&defaultShader);
+    cachedShaders.Add("default",(byte*)defaultShader);
+}
+void ShaderManager::Free(){
+    Shader* pShader;
+    for(byte* b:cachedShaders){
+        pShader= (Shader*)b;
+        if(pShader!= null)delete pShader;
+    }
+    cachedShaders.Clear();
 }
 
 void ShaderManager::AddShader(char* name,char* vertexFile,char* fragmentFile){
     if(cachedShaders.Get(name)!=null)return;
     Shader* newshader = new Shader(vertexFile,fragmentFile);
-    cachedShaders.Add(name,(byte*)newshader);
+    cachedShaders.Add(cstr::new_copy(name),(byte*)newshader);
 }
 
 Shader* ShaderManager::GetShader(char* name){

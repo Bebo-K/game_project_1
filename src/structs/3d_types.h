@@ -5,6 +5,13 @@
 #define PI_OVER_180 3.1415926535f/180.0f 
 #define FLOAT_IS_ZERO(x) x == 0.0f
 
+struct vec4{
+    float x,y,z,w;
+
+    vec4();
+    vec4(float vx,float vy,float vz,float vw);
+};
+
 struct vec3{
     public:
     float x,y,z;

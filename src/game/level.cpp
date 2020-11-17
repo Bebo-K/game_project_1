@@ -52,7 +52,14 @@ void Level::Draw(Camera* cam,mat4* view, mat4* projection){
 void Level::LoadDefault(){
     JSONParser parser(File("dat/levels/default.lvl"));
     LoadFromJSON(parser.Parse());
-
+    if(entrance_count <= 0){
+        entrance_count=1;
+        entrances = new Entrance();
+        entrances[0].name="default";
+        entrances[0].position={0,0,0};
+        entrances[0].style=0;
+        entrances[0].target_pos={0,0,0};
+    }
 }
 
 void Level::LoadFromJSON(JSONObject* json){

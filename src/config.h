@@ -10,6 +10,8 @@ namespace config{
     extern int ui_width;
     extern int ui_height;
     extern StringMap key_bindings;
+    extern char show_console;
+    extern char show_fps_counter;
 
     void Init();
     void LoadFile(char* filename);

@@ -133,6 +133,10 @@ void AnimationManager::Init(){
         layer_is_active[i] = true;
     }
 }
+void AnimationManager::Free(){
+    managed_clips.Clear();
+}
+
 void AnimationManager::SetActiveLayer(int layer){
     if(layer > 0 && layer < ANIMATION_LAYER_COUNT){active_layer=layer;}
 }

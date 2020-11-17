@@ -75,6 +75,7 @@ struct ModelCacheEntry{
 
 namespace ModelManager{
     void Init();
+    void Free();
     void Register(ModelID id,const char* filename);
     ModelData* Use(ModelID type);
     void Return(ModelID type);

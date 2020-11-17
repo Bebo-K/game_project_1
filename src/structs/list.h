@@ -91,6 +91,7 @@ class List{
             }
         }
         data.Clear();
+        count=0;
     }
 
     T* Harden(){

@@ -16,6 +16,7 @@ class Scene{
 	Level level;
 
     Scene();
+    ~Scene();
 
     void Load();//loads default scene
     void Load(int area_id);

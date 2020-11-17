@@ -1,10 +1,12 @@
 #include "scene.h"
 #include "../log.h"
 
-Scene::Scene(){
+Scene::Scene() :entities(){
     loaded=false;
     global_timer=0;
 }
+
+Scene::~Scene(){}
 
 void Scene::Load(){
     logger::info("loading default scene...\n");

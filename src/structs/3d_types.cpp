@@ -2,8 +2,18 @@
 #include <math.h>
 
 
+vec4::vec4(){
+    x=y=z=w=0;
+}
+vec4::vec4(float _x,float _y,float _z,float _w){
+    x=_x;
+    y=_y;
+    z=_z;
+    w=_w;
+}
+
 vec3::vec3(){
-    x=y=z=0.0;
+    x=y=z=0;
 }
 
 vec3::vec3(float _x,float _y,float _z){

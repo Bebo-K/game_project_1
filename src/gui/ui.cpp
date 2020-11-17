@@ -3,42 +3,60 @@
 #include "../config.h"
 #include "../log.h"
 #include <math.h>
+#include "../test/perf.h"
 
-UI::UI() : renderer(){}
+#include "widgets/text_widget.h"
+#include "widgets/dev_console.h"
+
+UI::UI(){}
+
+DeveloperConsole* game_console;
 
 void UI::Load(){
     logger::info("loading ui...\n");
-
-    renderer.Load();
-    ShaderManager::AddShader("ui_default","dat/gfx/ui_default.vrt","dat/gfx/ui_default.frg");
-    ShaderManager::AddShader("text_default","dat/gfx/text_default.vrt","dat/gfx/text_default.frg");
-    
-    renderer.camera.ortho=true;
-    renderer.camera.pitch=0;
-    renderer.camera.yaw=0;
-    renderer.camera.turn=0;
-
-    //defaultSprite = new Sprite("dat/img/atlas_1.png",1024,1024,1,1,0,0);
-    //defaultSprite->y += 100;
-    //renderer.Add(defaultSprite);
+    game_console = new DeveloperConsole();
+    debug_layer.active=true;
+    debug_layer.AddWidget(game_console,"console");
+    DeveloperConsole::Write("hello world!");
 }
 
 void UI::Paint(){
-    renderer.camera.width =Window::width;//config::ui_width;
-    renderer.camera.height=Window::height;//config::ui_height;
-    
-    renderer.camera.x=0;//config::window_width/2;//config::ui_width;
-    renderer.camera.y= config::window_height/2;//config::ui_height;
-    renderer.Draw();
+    interface_layer.Paint();
+    menu_layer.Paint();
+    pause_layer.Paint();
+    debug_layer.Paint();
 }
 
 void UI::Update(Scene* scene, int frames){
-
-
+    interface_layer.Update(frames);
+    menu_layer.Update(frames);
+    pause_layer.Update(frames);
+    debug_layer.Update(frames);
 }
 
 void UI::Unload(){
     logger::info("unloading ui...\n");
+    delete game_console;
+}
 
-    //renderer.Remove(defaultSprite);
+bool  UI::OnInput(InputEvent event_type){
+    bool handled = false;
+    handled = debug_layer.OnInput(event_type);
+    if(!handled){handled = interface_layer.OnInput(event_type);}
+    if(!handled){handled = pause_layer.OnInput(event_type);}
+    if(!handled){handled = menu_layer.OnInput(event_type);}
+    return handled;
+}
+void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
+    bool handled = false;
+    handled = debug_layer.OnSignal(signal_id,metadata_len,metadata);
+    if(!handled){handled = interface_layer.OnSignal(signal_id,metadata_len,metadata);}
+    if(!handled){handled = pause_layer.OnSignal(signal_id,metadata_len,metadata);}
+    if(!handled){handled = menu_layer.OnSignal(signal_id,metadata_len,metadata);}
+}
+void UI::OnResize(int screen_w,int screen_h){
+    debug_layer.Resize(screen_w, screen_h);
+    interface_layer.Resize(screen_w, screen_h);
+    pause_layer.Resize(screen_w, screen_h);
+    menu_layer.Resize(screen_w, screen_h);
 }

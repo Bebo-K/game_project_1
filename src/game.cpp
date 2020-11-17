@@ -22,10 +22,6 @@ float Game::DrawInterval(){return 1.0f/drawrate;}
 
 void Game::Start(){
     client = new Client();
-    ShaderManager::Init();
-    TextureManager::Init();
-    ModelManager::Init();
-    AnimationManager::Init();
     client->Start();
     last_frame = time_ms();
     running=true;
@@ -35,7 +31,6 @@ void Game::Update(int frames){
     client->Update(frames);
     //server->Update(frames);
     Performance::frames.Increment();
-    Input::Update();
 }
 
 void Game::Paint(){
@@ -73,10 +68,4 @@ void Game::Exit(){
         //client->Unload();
         delete client;
     }
-    //Todo:Free these
-    //ShaderManager::Init();
-    //TextureManager::Init();
-    //ModelManager::Init();
-    //AnimationManager::Init();
-    //ShaderManager::Init();
 }
