@@ -31,6 +31,7 @@ DeveloperConsole::~DeveloperConsole(){
 }
 
 void DeveloperConsole::Paint(){
+    //if(!active)return;
     background_rect.Draw();
     entry_rect.Draw();
     for(int i=0; i < SHOWN_LINE_COUNT;i++){

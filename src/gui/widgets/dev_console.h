@@ -20,6 +20,7 @@ class DeveloperConsole:public Widget{
     text_char entry_buffer[MAX_LINE_LENGTH];
     
     public:
+    bool active = true;
     int font_size =12;
     int line_wrap = 80;
     UIText shown_lines[SHOWN_LINE_COUNT];
