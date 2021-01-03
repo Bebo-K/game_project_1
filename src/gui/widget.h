@@ -10,7 +10,7 @@ class Widget{
 
     virtual void Paint(){}
     virtual void OnUpdate(int frames){}
-    virtual bool OnInput(InputEvent event_type){return false;}
+    virtual bool OnInput(InputCode event_type){return false;}
     inline void Resize(){layout.Resize();OnResize();}
     virtual void OnResize(){}
     virtual bool OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}

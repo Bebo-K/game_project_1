@@ -30,8 +30,8 @@ void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
 
         turn_matrix.identity();
         pitch_matrix.identity();
-        if(cam->rotation.x != 0){pitch_matrix.rotate_x(cam->rotation.x);}
-        if(cam->rotation.y != 0){turn_matrix.rotate_y(cam->rotation.y);}
+        if(cam->pitch != 0){pitch_matrix.rotate_x(cam->pitch);}
+        if(cam->turn != 0){turn_matrix.rotate_y(cam->turn);}
         //if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
 
     glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&turn_matrix);

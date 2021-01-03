@@ -46,7 +46,7 @@ void Client::Start(){
         int debug_font =FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",12);
         FontManager::SetActiveFont(debug_font);
     ModelManager::Init();
-        ModelManager::Register(PLAYER,"dat/models/human.glb");
+        ModelManager::Register(PLAYER,"dat/models/human_small.glb");
 
     scene_renderer.Load();
     scene_renderer.camera.ortho=false;
@@ -91,9 +91,8 @@ void Client::SpawnPlayer(Entrance eid){
         //my_player->colliders->Add();
     my_player->movement = new MovementData();
         my_player->movement->base_speed=10;
-        my_player->movement->jump_enabled=true;
     my_player->player_data = new PlayerData();
-    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,4,12},{0,1},{20,40});
+    my_player->camera_target = new CameraTarget(&scene_renderer.camera,{0,8,12},{0,1},{-30,-31});
     my_player->unit_data = new UnitData();
     PlayerInput::Track(my_player);
 
@@ -136,16 +135,17 @@ void Client::Update(int frames){
         StateManager::Update(&scene,frame_interval);
         UpdatePositions();
         ui.Update(&scene,frames);
+        
+        PlayerInput::UpdateCamera(&scene,frame_interval);
     }
     //Network::RunSync(scene);
 }
 
 void Client::HandleFrameInput(){
-    float frame_interval = Game::FrameInterval();
-    if(Input::StateChanged(InputEvent::Text)){
-        ui.OnInput(InputEvent::Text);
+    bool handled = false;
+    for(InputCode input = Input::NextInput();input != InputEvent::None;input = Input::NextInput()){
+        handled = ui.OnInput(input);
+        if(!handled){PlayerInput::HandleInput(input);}
     }
-    PlayerInput::Update(&scene,frame_interval);
-
     Input::PostUpdate();
 }

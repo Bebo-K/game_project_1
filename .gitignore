@@ -3,6 +3,7 @@ dat/img/*
 dat/levels/*
 dat/models/*
 dat/textures/*
+dat/*
 dat/ui/*
 obj/*
 .vscode/*

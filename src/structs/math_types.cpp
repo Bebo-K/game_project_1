@@ -1,4 +1,5 @@
 #include "math_types.h"
+#include "../log.h"
 #include <math.h>
 
 float_range float_range::Union(float_range r2){
@@ -11,6 +12,10 @@ float_range::float_range(){
 float_range::float_range(float a,float b){
     min = (a < b)? a:b;
     max = (a < b)? b:a;
+    if(a==b){
+        logger::exception("Invalid float range: [ %f , %f ] - Range cannot be empty.\n",a,b);
+        a=0.0f;b=1.0f;
+    }
 }
 float float_range::Clamp(float f){
     return (f<min)?min:((f>max)?max:f);
@@ -30,9 +35,10 @@ bool float_range::Overlaps(float_range range){
     return false;
 }
 bool float_range::Contains(float f){return(f >= min && f <= max);}
-float float_range::ScaleTo(float f){return (f-min)/(max-min);}
-
-
+float float_range::ScaleTo(float f1, float_range r1){//scales float f1 from range r1 to this range.
+    float f0 = (f1-r1.min)/(r1.max-r1.min);
+    return f0*(max-min) + min;
+}
 
 
 void AABB::Union(AABB box2){

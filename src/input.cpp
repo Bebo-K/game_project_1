@@ -12,7 +12,8 @@ bool Input::Button::IsUp(){return (state&1) == 0;}
 bool Input::Button::IsJustPressed(){return state == 3;}
 bool Input::Button::IsJustReleased(){return state == 2;}
 
-const int button_count = 15;
+const int button_count = 16;
+const int button_input_start=3;
 const char* button_names[button_count] = {
     "button_a",
     "button_b",
@@ -28,7 +29,8 @@ const char* button_names[button_count] = {
     "button_r2",       
     "button_pause",
     "button_menu",
-    "button_cursor"
+    "button_cursor",
+    "button_toggle_console"
 };
 
 const int axis_mapping_count = 16;
@@ -54,41 +56,26 @@ const char* axis_mapping_names[axis_mapping_count] = {
 int         key_mappings[button_count];
 int         axis_mappings[axis_mapping_count];
 
-Input::Button any_button;               bool any_button_changed;
-Input::Axis axis_1;                     bool axis_1_changed;
-Input::Axis axis_2;                     bool axis_2_changed;
-Input::Axis cursor;                     bool cursor_changed;
-Input::Axis scroll;                     bool scroll_changed;
-Input::Button buttons[button_count];    bool button_changed[button_count];
-text_char*  input_text=null;            bool input_text_changed;
+
+long                                    state_changed;
+Input::Button any_button;               
+Input::Axis axis_1;                     
+Input::Axis axis_2;                     
+Input::Axis cursor;                     
+Input::Axis scroll;                     
+Input::Button buttons[button_count];    
+text_char*  input_text=null;            
 text_char   character_code[2]  = {0,0};
 
-bool Input::StateChanged(InputEvent event_type){
-    switch (event_type){
-    case InputEvent::AnyButton:return any_button_changed;break;
-    case InputEvent::Axis_1:return axis_1_changed;break;
-    case InputEvent::Axis_2:return axis_2_changed;break;
-    case InputEvent::Button_A: return button_changed[0];break;
-    case InputEvent::Button_B:return button_changed[1];break;
-    case InputEvent::Button_C:return button_changed[2];break;
-    case InputEvent::Button_D:return button_changed[3];break;
-    case InputEvent::Button_Up: return button_changed[4];break;
-    case InputEvent::Button_Down:return button_changed[5];break;
-    case InputEvent::Button_Left:return button_changed[6];break;
-    case InputEvent::Button_Right:return button_changed[7];break;
-    case InputEvent::Button_L1: return button_changed[8];break;
-    case InputEvent::Button_L2:return button_changed[9];break;
-    case InputEvent::Button_R1:return button_changed[10];break;
-    case InputEvent::Button_R2:return button_changed[11];break;
-    case InputEvent::Button_Pause:return button_changed[12];break;
-    case InputEvent::Button_Menu:return button_changed[13];break;
-    case InputEvent::Text:return input_text_changed;break;
-    case InputEvent::Cursor_Move:return cursor_changed;break;
-    case InputEvent::Cursor_Select:return button_changed[14];break;
-    case InputEvent::Scroll:return scroll_changed;break;
-    
-    default:return false;
+InputCode Input::NextInput(){
+    long input_flag = 1;
+    for(int i=0; i<32;i++){
+        if((state_changed & input_flag) > 0){
+            state_changed ^= input_flag;
+            return input_flag;}
+        input_flag = input_flag << 1;
     }
+    return 0;
 }
 
 Input::Button Input::AnyButton(){return any_button;}
@@ -108,22 +95,21 @@ Input::Button Input::Button_R1(){return buttons[10];}
 Input::Button Input::Button_R2(){return buttons[11];}
 Input::Button Input::Button_Pause(){return buttons[12];}
 Input::Button Input::Button_Menu(){return buttons[13];}
+Input::Button Input::Cursor_Select(){return buttons[14];}
+Input::Button Input::Button_ToggleConsole(){return buttons[15];}
 text_char* Input::TextInput(){return input_text;}
 Input::Axis Input::Cursor(){return cursor;}
 Input::Axis Input::Scroll(){return scroll;}
-Input::Button Input::Cursor_Select(){return buttons[14];}
 
 void Input::Init(){
-
-    any_button.state=0;             any_button_changed=false;
-    memset(&axis_1,0,sizeof(Axis)); axis_1_changed = false;
-    memset(&axis_2,0,sizeof(Axis)); axis_2_changed = false;
-    memset(&cursor,0,sizeof(Axis)); cursor_changed = false;
-    memset(&scroll,0,sizeof(Axis)); scroll_changed = false;
+    state_changed=0;
+    any_button.state=0;
+    memset(&axis_1,0,sizeof(Axis));
+    memset(&axis_2,0,sizeof(Axis));
+    memset(&cursor,0,sizeof(Axis));
+    memset(&scroll,0,sizeof(Axis));
     memset(&buttons,0,sizeof(Button)*button_count);
-        for(int i=0;i<button_count;i++){button_changed[i]=false;}
-    input_text=null;                input_text_changed=false;
-
+    input_text=null;
     for(int i=0;i<button_count;i++){key_mappings[i]=-1;}
     for(int i=0;i<axis_mapping_count;i++){axis_mappings[i]=-1;}
 
@@ -179,20 +165,20 @@ bool HandleAxisKeys(int axis_id, bool down,Input::Axis& axis,int start){
 }
 
 void Input::HandleKey(int key_id, bool down){
-    any_button_changed=true;
+    state_changed |= InputEvent::AnyButton;
     any_button.state=down?3:2;
     for(int i=0;i<button_count;i++){
         if(key_mappings[i] == key_id){
-            button_changed[i]=true;
+            state_changed |= (1 << (i+button_input_start));
             buttons[i].state=down?3:2;
         }
     }
     for(int i=0;i<axis_mapping_count;i++){
         if(axis_mappings[i] == key_id){
-            if(HandleAxisKeys(i,down,axis_1,0)){axis_1_changed=true;}
-            if(HandleAxisKeys(i,down,axis_2,4)){axis_2_changed=true;}
-            if(HandleAxisKeys(i,down,cursor,8)){cursor_changed=true;}
-            if(HandleAxisKeys(i,down,scroll,12)){scroll_changed=true;}
+            if(HandleAxisKeys(i,down,axis_1,0)){state_changed |= InputEvent::Axis_1;}
+            if(HandleAxisKeys(i,down,axis_2,4)){state_changed |= InputEvent::Axis_2;}
+            if(HandleAxisKeys(i,down,cursor,8)){state_changed |= InputEvent::Cursor_Move;}
+            if(HandleAxisKeys(i,down,scroll,12)){state_changed |= InputEvent::Cursor_Scroll;}
         }
     }    
 }
@@ -202,36 +188,40 @@ void Input::HandleCursor(int pos_x,int pos_y){
     cursor.dy = pos_y - cursor.y;
     cursor.x = pos_x;
     cursor.y = pos_y;
-    cursor_changed=true;
+    state_changed |= InputEvent::Cursor_Move;
 }
 
 void Input::HandleCharacter(int code_point){
     character_code[0]=code_point;
     input_text = character_code;
-    input_text_changed=true;
+    state_changed |= InputEvent::Text;
 }
 
-//Prepares input for next frame. Call after gamestate/ui update.
-void Input::PostUpdate(){
-    any_button_changed=false;
-    if(any_button.state == 3){any_button.state=1;}
-    if(any_button.state == 2){any_button.state=0;}
-
-    axis_1.dx=0;axis_1.dy=0;axis_1_changed=false;
-    axis_2.dx=0;axis_2.dy=0;axis_2_changed=false;
-    cursor.dx=0;cursor.dy=0;cursor_changed=false;
-    scroll.dx=0;scroll.dy=0;scroll_changed=false;
-
-    input_text_changed=false;
+void Input::ClearInputText(){
+    state_changed ^= InputEvent::Text;//clear text event;
     character_code[0]=0;
     if(input_text != nullptr){
         if(input_text != character_code){free(input_text);}
         input_text = nullptr;
     }
+}
+
+//Prepares input for next frame. Call after gamestate/ui update.
+void Input::PostUpdate(){
+    if(any_button.state == 3){any_button.state=1;}
+    if(any_button.state == 2){any_button.state=0;}
+
+    axis_1.dx=0;axis_1.dy=0;
+    axis_2.dx=0;axis_2.dy=0;
+    cursor.dx=0;cursor.dy=0;
+    scroll.dx=0;scroll.dy=0;
+
+    ClearInputText();
+
+    state_changed=0;
 
     for(int i=0;i< button_count;i++){
-        button_changed[i]=false;
-        if(buttons[i].state == 3){buttons[i].state=1;button_changed[i]=true;}
-        if(buttons[i].state == 2){buttons[i].state=0;button_changed[i]=true;}
+        if(buttons[i].state == 3){buttons[i].state=1;}
+        if(buttons[i].state == 2){buttons[i].state=0;}
     }
 }

@@ -3,8 +3,8 @@
 #include "level_collision.h"
 #include <math.h>
 
-float GRAVITY_TERMINAL= -64.0f;
-float GRAVITY_ACCEL = -20.0f;
+float GRAVITY_TERMINAL= -128.0f;
+float GRAVITY_ACCEL = -64.0f;
 float frame_delta = 1.0/60.0f;
 
 void ApplyGravity(Entity* e, float delta){

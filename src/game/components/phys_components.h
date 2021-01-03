@@ -34,6 +34,10 @@ class ColliderSet : List<CapsuleCollider> , Component{
 
 class MovementData : Component {
 	public:
+    bool    lock_move;
+    bool    lock_jump;
+    bool    lock_action;
+    bool    lock_camera;
 
     float	base_speed;
     float	jump_speed;
@@ -44,10 +48,19 @@ class MovementData : Component {
     bool	can_move;
     bool	is_moving;
     vec3	move_goal;
-    bool    jump_enabled;
+
     bool	can_jump;
     bool	is_jumping;
     bool	jump_goal;
+
+    bool    can_action;
+    bool    is_action;
+    bool    action_goal;
+
+    bool    can_camera;
+    bool    cam_moving;
+    float   cam_rot_goal;
+    float   cam_zoom_goal;
 
     MovementData();
     ~MovementData();

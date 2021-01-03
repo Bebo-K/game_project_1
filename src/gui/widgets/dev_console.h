@@ -20,7 +20,8 @@ class DeveloperConsole:public Widget{
     text_char entry_buffer[MAX_LINE_LENGTH];
     
     public:
-    bool active = true;
+    bool active = false;
+    int  start_timer;//hack to get the character that spawned the console from being immediately printed.
     int font_size =12;
     int line_wrap = 80;
     UIText shown_lines[SHOWN_LINE_COUNT];
@@ -33,7 +34,7 @@ class DeveloperConsole:public Widget{
 
     void Paint();
     void OnUpdate(int frames);
-    bool OnInput(InputEvent event_type);
+    bool OnInput(InputCode event_type);
     void OnResize();
     bool OnSignal(int signal_id,int metadata_len, byte* metadata);
     

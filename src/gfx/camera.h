@@ -5,11 +5,12 @@
 #include "shader.h"
 
 class Camera{
+    private:
+    vec3  rotation;
     public:
     
     float x,y,z;
     float turn,pitch,yaw;
-    vec3  rotation;
     
     bool ortho;
     float width,height;
@@ -21,7 +22,7 @@ class Camera{
     Camera();
     void SetShader(char* shader_name);
     void SetShader(Shader* new_shader);
-    vec3 ToWorldSpace(vec3 v);
+    vec3 FromCameraSpace(vec3 v);
     void ToCameraSpace(mat4* m);
 };
 

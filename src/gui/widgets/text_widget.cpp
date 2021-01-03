@@ -15,5 +15,5 @@ void TextWidget::OnResize(){
     text.y = layout.Y;
 }
 void TextWidget::OnUpdate(int frames){}
-bool TextWidget::OnInput(InputEvent event_type){return false;}
+bool TextWidget::OnInput(InputCode event_type){return false;}
 bool TextWidget::OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}

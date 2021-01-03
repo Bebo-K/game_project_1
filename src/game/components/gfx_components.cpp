@@ -10,7 +10,7 @@ CameraTarget::CameraTarget(Camera* cam,vec3 cam_offset,float_range zoom_scale,fl
     zoom_range = zoom_scale;
     zoom_pitch = tilt;
     zoom = zoom_range.Average();
-    rotation.rotate_by(zoom_pitch.ScaleTo(zoom),0,0);
+    rotation.rotate_by(zoom_pitch.ScaleTo(zoom,zoom_range),0,0);
 }
 
 CameraTarget::~CameraTarget(){}

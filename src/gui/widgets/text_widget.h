@@ -13,7 +13,7 @@ class TextWidget:public Widget{
 
     void Paint();
     void OnUpdate(int frames);
-    bool OnInput(InputEvent event_type);
+    bool OnInput(InputCode event_type);
     void OnResize();
     bool OnSignal(int signal_id,int metadata_len, byte* metadata);
 

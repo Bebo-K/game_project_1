@@ -9,7 +9,7 @@ FontID DeveloperConsole::console_font = -1;
 
 DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),entry_rect(256,18){
     DeveloperConsole::instance = this;
-    
+    start_timer=999;
     layout.H=200;
     layout.W=512;
     layout.offset.vertical_mode = VLayoutMode::V_TOP;
@@ -31,7 +31,7 @@ DeveloperConsole::~DeveloperConsole(){
 }
 
 void DeveloperConsole::Paint(){
-    //if(!active)return;
+    if(!active)return;
     background_rect.Draw();
     entry_rect.Draw();
     for(int i=0; i < SHOWN_LINE_COUNT;i++){
@@ -81,11 +81,22 @@ void DeveloperConsole::UpdateShownLines(){
     }
 }
 
-void DeveloperConsole::OnUpdate(int frames){}
+void DeveloperConsole::OnUpdate(int frames){
+    if(!active){start_timer=999;}
+    else if(start_timer > 0){start_timer--;}
 
-bool DeveloperConsole::OnInput(InputEvent event_type){
-    //if(selected){
-    if(event_type == InputEvent::Text){
+}
+
+bool DeveloperConsole::OnInput(InputCode event_type){
+    if(event_type == InputEvent::Button_ToggleConsole){
+        if(Input::Button_ToggleConsole().IsJustPressed()){
+            active = !active;
+            start_timer=3;
+            return true;
+        }
+    }
+    if(!active)return false;
+    if(event_type == InputEvent::Text && start_timer == 0){
         int cursor;
         text_char* input = Input::TextInput();
         for(cursor=0;entry_buffer[cursor]!=0;cursor++);
@@ -114,7 +125,7 @@ bool DeveloperConsole::OnInput(InputEvent event_type){
         entry_line.SetString(entry_buffer,console_font);
         return true;
     }
-    //return true;}
-    return false;
+    ///catch all other inputs while console is open.
+    return true;
 }
 bool DeveloperConsole::OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}

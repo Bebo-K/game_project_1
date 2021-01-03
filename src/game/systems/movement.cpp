@@ -20,8 +20,9 @@ void Movement::Update(Scene* scene, float delta){
             //TODO: Ramp-up
             e->velocity.x = move->move_goal.x*move->base_speed;
             e->velocity.z = move->move_goal.z*move->base_speed;
+            move->is_moving = (move->move_goal.length_sqr() > 0);
 
-            if(move->jump_enabled && move->can_jump && move->jump_goal){
+            if(move->can_jump && move->jump_goal){
                 move->can_jump=false;
                 move->is_jumping=true;
                 e->velocity.y = move->jump_speed;

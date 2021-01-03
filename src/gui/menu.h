@@ -25,8 +25,8 @@ class Menu{
         virtual void OnUpdate(int frames){};
     void Paint();
         virtual void OnPaint(){}
-    bool HandleInput(InputEvent event_type);
-        virtual bool OnInput(InputEvent event_type){return false;}
+    bool HandleInput(InputCode event_type);
+        virtual bool OnInput(InputCode event_type){return false;}
     void HandleResize();
         virtual void OnResize(){}
     bool HandleSignal(int signal_id,int metadata_len, byte* metadata);

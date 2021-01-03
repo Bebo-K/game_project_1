@@ -26,7 +26,7 @@ Widget* Menu::RemoveWidget(char* name){return (Widget*)widgets.Remove(name);}
 void Menu::Update(int frames){}
 void Menu::Paint(){}
 
-bool Menu::HandleInput(InputEvent event_type){return false;}
+bool Menu::HandleInput(InputCode event_type){return false;}
 void Menu::HandleResize(){}
 bool Menu::HandleSignal(int signal_id,int metadata_len, byte* metadata){return false;}
        

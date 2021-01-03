@@ -16,7 +16,7 @@ struct float_range
     bool Overlaps(float_range r2);
     float_range Clamp(float_range r2);
     float_range Union(float_range r2);
-    float ScaleTo(float f);
+    float ScaleTo(float f1, float_range r1);
 };
 
 struct AABB{
