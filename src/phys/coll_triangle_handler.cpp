@@ -94,7 +94,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
     //Find the clostest point on the triangle plane to our position.
     vec3 plane_intersect = triangle.ClosestPointToPlane(center);
     vec3 intersect_offset = plane_intersect-center;
-    vec3 intersect_horizontal_offset = intersect_offset.xz();
+    vec3 intersect_horizontal_offset = intersect_offset.horizontal();
     //First check if we're even near the plane. In both plane + edge cases it should be within our cylinder's radius+height.
      if(intersect_horizontal_offset.length_sqr() < hitsphere.radius*hitsphere.radius &&  vertical_cutoff_range.Contains(plane_intersect.y)){
          //Next, check if the plane point lies in the triangle
@@ -103,7 +103,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
                 ret = LevelCollision::GrabCollisionSlot();
                 if(ret == null)return null;
                 ret->surface=surface;
-                ret->velocity_cancel = triangle.face.normal.xz();
+                ret->velocity_cancel = triangle.face.normal.horizontal();
                 ret->shunt = ret->velocity_cancel * (hitsphere.radius-horizontal_offset);
                 ret->normal = triangle.face.normal;
                 ret->flags = LevelCollisionFlag::WALL | LevelCollisionFlag::CANCEL_VELOCITY;
@@ -114,7 +114,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
             vec3 edge_point = triangle.ClosestEdgePoint(center);
             if(vertical_cutoff_range.Contains(edge_point.y)){//All edges are on the plane, so no need to recheck if the point is in our radius.
                 vec3 edge_offset = center - edge_point;
-                vec3 edge_horizontal_offset = edge_offset.xz();
+                vec3 edge_horizontal_offset = edge_offset.horizontal();
                 vec3 edge_normal = edge_horizontal_offset.normalized();
                 float edge_normal_cos = edge_normal.dot(triangle.face.normal);
                 
@@ -134,7 +134,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
                     ret = LevelCollision::GrabCollisionSlot();
                     if(ret == null)return null;
                     ret->surface=surface;
-                    ret->velocity_cancel = edge_normal.xz();
+                    ret->velocity_cancel = edge_normal.horizontal();
                     ret->shunt = ret->velocity_cancel * shunt_amount;
                     ret->normal = triangle.face.normal;
                     ret->flags = LevelCollisionFlag::WALL| LevelCollisionFlag::CANCEL_VELOCITY;

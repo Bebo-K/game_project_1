@@ -178,8 +178,9 @@ namespace cstr{
     char* lowercase_copy(const char* old_string);
     char* append(const char* str1, const char* str2);
     char* append(const char* str1, char seperator, const char* str2);
-    bool compare(const char* str1, const char* str2);
+    bool compare(const char* str1, const char* subst);
     bool starts_with(const char* str, const char* start);
+    bool contains(const char* str, const char* substr);
     int len(char* str);
 
     char* utf16_to_utf8(const wchar_t* longstring);

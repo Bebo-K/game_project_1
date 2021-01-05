@@ -7,7 +7,7 @@ RESOURCE_ARCH = pe-x86-64
 
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS =  -lgdi32 -lglew32 -lopengl32  -lz -lfreetype.dll
+LIBS =  -lgdi32 -lglew32 -lopengl32  -lz -lfreetype.dll -lxinput
 
 
 SRC_PATHS := src;src/io;src/gfx;src/game;src/game/components;src/game/systems;src/client;src/server;src/gui;src/gui/menus;src/gui/widgets;src/test;src/phys;src/structs;

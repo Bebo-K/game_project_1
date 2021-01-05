@@ -11,6 +11,7 @@ in vec3 a_normal;
 
 out vec2 tex_coord;
 out float facing;
+out float distance;
 
 void main(void)
 {
@@ -19,4 +20,5 @@ void main(void)
   tex_coord = a_tex_coord;
   vec3 normal = normalize(normal_matrix*a_normal);
   facing = 0.3 + dot(normal,vec3(0,0,1))*0.5;
+  distance = world_pos.z;
 }

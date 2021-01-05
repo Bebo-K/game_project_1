@@ -271,24 +271,31 @@ const char* MOUSE_BUTTON_NAMES[] ={
     "mouse_center"
 };
 
-int JOYSTICK_OFFSET=0x1A0;
-int JOYSTICK_BUTTON_COUNT=15;
-const char* JOYSTICK_BUTTON_NAMES[] ={
-    "joy_a",
-    "joy_b",
-    "joy_x",
-    "joy_y",
-    "joy_l1",
-    "joy_l2",
-    "joy_r1",
-    "joy_r2",
-    "joy_start",
-    "joy_lstick",
-    "joy_rstick",
-    "joy_dpad_up",
-    "joy_dpad_down",
-    "joy_dpad_left",
-    "joy_dpad_right",
+
+//XINPUT gamepad
+int GAMEPAD_OFFSET=0x1A0;
+int GAMEPAD_INPUT_COUNT=18;
+const char* GAMEPAD_BUTTON_NAMES[] ={
+    "gamepad_lstick",
+    "gamepad_rstick",
+    "gamepad_ltrigger",
+    "gamepad_rtrigger",
+    "gamepad_d_up",
+    "gamepad_d_down",
+    "gamepad_d_left",
+    "gamepad_d_right",
+    "gamepad_start",
+    "gamepad_back",
+    "gamepad_lstick_in",
+    "gamepad_rstick_in",
+    "gamepad_lshoulder",
+    "gamepad_rshoulder",
+    "gamepad_reserved",
+    "gamepad_reserved2",
+    "gamepad_a",
+    "gamepad_b",
+    "gamepad_x",
+    "gamepad_y"
 };
 
 int Input::GetKeyID(char* key_name){
@@ -299,10 +306,10 @@ int Input::GetKeyID(char* key_name){
             }
         }
     }
-    if(cstr::starts_with(key_name,"joy")){
-        for(int i=0;i<JOYSTICK_BUTTON_COUNT;i++){
-            if(cstr::compare(key_name,JOYSTICK_BUTTON_NAMES[i])){
-                return JOYSTICK_OFFSET + i;
+    if(cstr::starts_with(key_name,"gamepad")){
+        for(int i=0;i<GAMEPAD_INPUT_COUNT;i++){
+            if(cstr::compare(key_name,GAMEPAD_BUTTON_NAMES[i])){
+                return GAMEPAD_OFFSET + i;
             }
         }
     }
@@ -320,9 +327,9 @@ const char* Input::GetKeyName(int key_id){
     key_id <= MOUSE_BUTTON_OFFSET+MOUSE_BUTTON_COUNT){
         return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
     }
-    if(key_id >= JOYSTICK_OFFSET && 
-    key_id <= JOYSTICK_OFFSET+JOYSTICK_BUTTON_COUNT){
-        return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
+    if(key_id >= GAMEPAD_OFFSET && 
+        key_id <= GAMEPAD_OFFSET+GAMEPAD_INPUT_COUNT){
+        return GAMEPAD_BUTTON_NAMES[key_id-GAMEPAD_OFFSET];
     }
     return nullptr;
 }

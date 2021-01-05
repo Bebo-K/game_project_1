@@ -3,17 +3,26 @@
 
 #include "structs/data_types.h"
 
+
+
+struct StringPair{
+    char* key;
+    char* value;
+};
+
 namespace config{
 
     extern int window_width;
     extern int window_height;
     extern int ui_width;
     extern int ui_height;
-    extern StringMap key_bindings;
+    extern int key_binding_count;
+    extern StringPair* key_bindings;
     extern char show_console;
     extern char show_fps_counter;
 
     void Init();
+    void Destroy();
     void LoadFile(char* filename);
 };
 

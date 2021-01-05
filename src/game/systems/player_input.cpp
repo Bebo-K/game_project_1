@@ -13,38 +13,15 @@ float camera_turn_sqr_speed = 0.222;
 bool PlayerInput::HandleMovementInput(){
     if(tracked_entity->movement->lock_move){return false;}
     if(!tracked_entity->movement->can_move){return true;}
-    
-    vec2 move_input = {Input::Axis_1().x/255.0f,Input::Axis_1().y/255.0f};
+    Input::Axis move_axis = Input::Axis_1();
+    //vec2 move_axis = {(float)Input::Axis_1().x,(float)Input::Axis_1().y};
+    vec2 move_input = {move_axis.x/128.0f,move_axis.y/128.0f};
     if(move_input.length_sqr() > 1){move_input.normalize();}
 
     Camera* cam = tracked_entity->camera_target->camera;
     float move_amount = move_input.length_sqr();
     if(move_amount > 0){
         move_input.rotate(-cam->turn);
-
-        float move_angle = 180.0f*atan2f(move_input.x,move_input.y)/PI +180.0f;
-        // Turn speed implementation: Requires delta time parameter
-        //float current_angle = tracked_entity->rotation.y;
-        //float turn = tracked_entity->movement->turn_speed * delta;
-
-        //if(current_angle >= 270 && move_angle <= 90){//angle wraparound right turn case.
-        //    move_angle += 360.0f;
-        //}
-        //else if(current_angle <= 90 && move_angle >= 270){//angle wraparound left turn case.
-        //    current_angle += 360.0f;
-        //}
-
-        //if(move_angle - current_angle > 0){//right turn
-        //    turn = (turn < (move_angle - current_angle))?turn:(move_angle - current_angle);
-        //}
-        //else{//left turn
-        //    turn = (-turn > (move_angle - current_angle))?-turn:(move_angle - current_angle);
-        //}
-        //current_angle += turn;
-        //if(current_angle > 360.0f){current_angle -= 360.0f;}
-        //if(current_angle < 0.0f){current_angle += 360.0f;}
-
-        tracked_entity->rotation.y = move_angle;//current_angle;
         tracked_entity->movement->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{

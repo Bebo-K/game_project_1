@@ -41,9 +41,13 @@ class MovementData : Component {
 
     float	base_speed;
     float	jump_speed;
-    float   turn_speed;
+
+    float   jump_hold_boost;
+
+    float	accel_speed;
+    float   jump_accel_speed;
+
     float	multiplier;
-    float	ramp_up;
 
     bool	can_move;
     bool	is_moving;
@@ -61,6 +65,8 @@ class MovementData : Component {
     bool    cam_moving;
     float   cam_rot_goal;
     float   cam_zoom_goal;
+
+    float MaxSpeed();
 
     MovementData();
     ~MovementData();

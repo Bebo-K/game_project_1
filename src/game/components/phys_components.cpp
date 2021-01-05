@@ -13,9 +13,13 @@ MovementData::MovementData():move_goal(0,0,0){
 
 	base_speed = 1.0f;
 	jump_speed = 20.0f;
-    turn_speed = 800.0f;
+
+    jump_hold_boost =25.0f;
+
+	accel_speed = 80.0f;
+    jump_accel_speed = 20.0f;
+    
 	multiplier = 1.0f;
-	ramp_up = 1.0f;
 
 	can_move = true;
 	is_moving = false;
@@ -35,3 +39,5 @@ MovementData::MovementData():move_goal(0,0,0){
     cam_zoom_goal = 10;
 }
 MovementData::~MovementData(){}
+
+float MovementData::MaxSpeed(){return base_speed*multiplier;}

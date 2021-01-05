@@ -44,7 +44,7 @@ void SetStateFromPhysics(Entity* e){
         if(e->movement != null){
             e->movement->can_jump=true;
         }
-        if(current_speed_2 > 0){
+        if(current_speed_2 > 0.1){
             e->state->Set(RUNNING);
             //if(e->movement != null){
             //    float walk_speed = e->movement->base_speed*0.25;
@@ -77,7 +77,7 @@ void Physics::FrameUpdate(Scene* scene,float delta){
             e->y += e->velocity.y *delta;
             e->z += e->velocity.z *delta;
         }
-        //if(phys->dampen_velocity)ApplyVelocityDampening(e,delta);
+        if(phys->dampen_velocity)ApplyVelocityDampening(e,delta);
         //TODO:Entity collision
         if(e->state != null)SetStateFromPhysics(e);
     }

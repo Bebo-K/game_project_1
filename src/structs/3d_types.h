@@ -2,14 +2,23 @@
 #define _3D_TYPES_H
 
 #define PI 3.1415926535f
-#define PI_OVER_180 3.1415926535f/180.0f 
-#define FLOAT_IS_ZERO(x) x == 0.0f
+#define PI_OVER_180 (3.1415926535f/180.0f)
+#define FLOAT_IS_ZERO(x) (x == 0.0f)
 
-struct vec4{
-    float x,y,z,w;
 
-    vec4();
-    vec4(float vx,float vy,float vz,float vw);
+struct vec2{
+    float x,y;
+
+    vec2();
+    vec2(vec2* copy);
+    vec2(float x,float y);
+
+    float length();
+    float length_sqr();
+    //float dot();
+    void normalize();
+    vec2 normalized();
+    void rotate(float theta);
 };
 
 struct vec3{
@@ -35,22 +44,17 @@ struct vec3{
     vec3 operator *(float scl);
     vec3 of_length(float newlen);
     vec3 normalized();
-    vec3 xz();
+    vec3 horizontal();
+    vec2 xz();
 };
 
-struct vec2{
-    float x,y;
+struct vec4{
+    float x,y,z,w;
 
-    vec2();
-    vec2(vec2* copy);
-    vec2(float x,float y);
-
-    float length();
-    float length_sqr();
-    //float dot();
-    void normalize();
-    void rotate(float theta);
+    vec4();
+    vec4(float vx,float vy,float vz,float vw);
 };
+
 
 struct mat4;
 

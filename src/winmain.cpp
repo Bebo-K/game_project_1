@@ -4,6 +4,8 @@
 #include <windows.h>
 //#include <wingdi.h>
 #include <winuser.h>
+#include <xinput.h>
+
 #include "os.h"
 #include "gfx/gload.h"
 #include "log.h"
@@ -22,6 +24,8 @@ Performance::Alarm second;
 Performance::Counter polls_per_sec;
 
 HWND window;
+DWORD last_controller_packet=-1;
+DWORD last_directInput_button_state;
 HDC device_context;
 HGLRC gl_rendering_context;
 
@@ -75,6 +79,73 @@ void GetTimerData(){
     }
 }
 
+
+
+void PollControllerInput(){
+    XINPUT_STATE controller_state;
+    //for (DWORD i=0; i< XUSER_MAX_COUNT; i++ )
+    //{
+        memset(&controller_state,0,sizeof(XINPUT_STATE));
+        DWORD err  =  XInputGetState(0, &controller_state);
+        if(err == ERROR_SUCCESS )
+        {
+            if(last_controller_packet != controller_state.dwPacketNumber){
+                
+                
+                float LX = controller_state.Gamepad.sThumbLX;
+                float LY = controller_state.Gamepad.sThumbLY;
+                
+                float RX = controller_state.Gamepad.sThumbRX;
+                float RY = controller_state.Gamepad.sThumbRY;
+
+                float stick_min = 100;
+                float stick_max = 32767;
+
+                float LL = LX*LX + LY+LY;
+                float RL = RX*RX + RY+RY;
+
+                if(LL > stick_min*stick_min){
+                    float left_stick_x = LX/stick_max;
+                    float left_stick_y = LY/stick_max;
+                    Input::HandleControlStick(0x1A0,left_stick_x,left_stick_y);
+                }
+                else{Input::HandleControlStick(0x1A0,0,0);}
+
+                if(RL > stick_min*stick_min){
+                    float right_stick_x = RX/stick_max;
+                    float right_stick_y = RY/stick_max;
+                    Input::HandleControlStick(0x1A1,right_stick_x,right_stick_y);
+                }
+                else{Input::HandleControlStick(0x1A1,0,0);}
+                
+
+                Input::HandleKey(0x1A2,(controller_state.Gamepad.bLeftTrigger > 100));
+                Input::HandleKey(0x1A3,(controller_state.Gamepad.bRightTrigger > 100));
+
+                long button_flag = 1;
+                DWORD button_delta = last_directInput_button_state ^controller_state.Gamepad.wButtons;
+                for(int i=0;i<18;i++){
+                    bool changed = (button_delta & button_flag) > 0;
+                    bool down = (controller_state.Gamepad.wButtons & button_flag) > 0;
+                    if(changed){
+                        Input::HandleKey(0x01A4 + i,down);
+                    }
+                    button_flag = button_flag << 1;
+                }
+                
+                last_controller_packet = controller_state.dwPacketNumber;
+                last_directInput_button_state = controller_state.Gamepad.wButtons;
+            }
+        }
+        else{/* Controller is not connected */
+            //logger::info("controller %d is not connected:%d \n",i,err);
+        }
+    //}
+    
+    //logger::info("\n\n-----");
+    memset(&controller_state,0,sizeof(XINPUT_STATE));
+}
+
 //********************************************//
 //                 Polling Loop               //
 //********************************************//
@@ -83,6 +154,7 @@ int LoopMain(){
     do {
         Sleep(4);  
         Game::Poll();
+        PollControllerInput();
         GetTimerData();
         if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
             TranslateMessage(&window_message);
@@ -146,6 +218,10 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
         logger::fatal("Call to RegisterClassEx failed! Aborting!\n");
         return 1;
     }
+
+
+    Input::Destroy();
+    config::Destroy();
     return 1;
 }
 

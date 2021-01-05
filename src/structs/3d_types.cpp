@@ -110,8 +110,12 @@ vec3 vec3::normalized(){
     return {x/len,y/len,z/len};
 }
 
-vec3 vec3::xz(){
+vec3 vec3::horizontal(){
     return {x,0,z};
+}
+
+vec2 vec3::xz(){
+    return {x,z};
 }
 
 vec2::vec2(){
@@ -138,6 +142,12 @@ void vec2::normalize(){
     float len = sqrtf(x*x+y*y);
     x /= len;
     y /= len;
+}
+
+vec2 vec2::normalized(){
+    float len = length();
+    if(len ==0){return {0,0};}
+    return {x/len,y/len};
 }
 
 void vec2::rotate(float theta){

@@ -585,6 +585,19 @@ bool cstr::starts_with(const char* str, const char* start){
     return true;
 }
 
+bool cstr::contains(const char* str, const char* substr){
+    int i,j;
+    for(i=0;str[i] != 0;i++){
+        j=0;
+        for(j=0;str[i+j]==substr[j];j++){
+            if(substr[j]==0){
+                return true;
+                }
+        }
+    }
+    return false;
+}
+
 int cstr::len(char* str){
     int i;
     for(i=0;str[i]!=0;i++);
