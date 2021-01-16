@@ -48,7 +48,7 @@ void UILayer::Resize(int screen_w,int screen_h){
     for(Menu* m:menus){m->HandleResize();}
     for(byte* w:widgets){((Widget*)w)->OnResize();}
 }
-bool UILayer::OnInput(InputCode event_type){
+bool UILayer::OnInput(Input::EventID event_type){
     if(!active)return false;
     for(byte* w:widgets){
         if(((Widget*)w)->OnInput(event_type))return true;

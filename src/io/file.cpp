@@ -104,6 +104,37 @@ FileBuffer::~FileBuffer(){
 	free(contents);
 }
 
+
+FileReader::FileReader(const char* filename):source(filename){
+	mark=0;
+	last_line=nullptr;
+}
+byte* FileReader::ReadLine(){
+	if(last_line != nullptr){free(last_line);}
+	if(mark >= source.source.length){return nullptr;}
+	int newmark = mark+1;
+	byte next_byte = source.contents[newmark];
+	while(next_byte != 0x0D && next_byte != 0x0A && newmark < source.source.length){
+		newmark++;
+		next_byte = source.contents[newmark];
+	}
+	int strlen = newmark-mark;
+	byte* ret = (byte*)malloc(strlen+1);
+	memcpy(ret,&source.contents[mark],strlen);
+	ret[strlen]=0;
+
+	mark= newmark+1;
+	if(mark == 0x0D){mark++;}//Windows line endings are 0x0D,0x0A
+	mark++;//Unix are just 0x0A
+	last_line=ret;
+
+	return ret;
+}
+byte  FileReader::ReadByte(){
+	return source.contents[mark++];
+}
+FileReader::~FileReader(){}
+
 byte* GetFile(const char* filename){
     FILE *f = fopen(filename, "rb");
 	byte* data = nullptr;

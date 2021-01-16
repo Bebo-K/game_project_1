@@ -22,8 +22,9 @@ namespace config{
     extern char show_fps_counter;
 
     void Init();
-    void Destroy();
     void LoadFile(char* filename);
+    void LoadKeyLayout(char* layoutfile);
+    void Destroy();
 };
 
 

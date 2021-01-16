@@ -1,4 +1,5 @@
 #include "config.h"
+#include "io/file.h"
 #include <stdlib.h>
 
 
@@ -27,33 +28,33 @@ void config::Init(){
         key_bindings[6].key="button_c";key_bindings[6].value="j";
         key_bindings[7].key="button_d";key_bindings[7].value="k";
 
-        key_bindings[8].key="button_l1";key_bindings[8].value="q";
-        key_bindings[9].key="button_r1";key_bindings[9].value="e";
+        key_bindings[8].key="l1";key_bindings[8].value="q";
+        key_bindings[9].key="r1";key_bindings[9].value="e";
 
         key_bindings[10].key="pause";key_bindings[10].value="enter";
         key_bindings[11].key="menu";key_bindings[11].value="tab";
         
-        key_bindings[12].key="button_toggle_console";key_bindings[12].value="p";
+        key_bindings[12].key="toggle_console";key_bindings[12].value="p";
 
         
-        key_bindings[13].key="move";key_bindings[13].value="gamepad_lstick";
-        key_bindings[14].key="camera";key_bindings[14].value="gamepad_rstick";
+        key_bindings[13].key="move";key_bindings[13].value="joy_lstick";
+        key_bindings[14].key="camera";key_bindings[14].value="joy_rstick";
 
-        key_bindings[15].key="move.up";key_bindings[15].value="gamepad_d_up";
-        key_bindings[16].key="move.down";key_bindings[16].value="gamepad_d_down";
-        key_bindings[17].key="move.left";key_bindings[17].value="gamepad_d_left";
-        key_bindings[18].key="move.right";key_bindings[18].value="gamepad_d_right";
+        key_bindings[15].key="move.up";key_bindings[15].value="joy_10";
+        key_bindings[16].key="move.down";key_bindings[16].value="joy_11";
+        key_bindings[17].key="move.left";key_bindings[17].value="joy_12";
+        key_bindings[18].key="move.right";key_bindings[18].value="joy_13";
 
-        key_bindings[19].key="button_a";key_bindings[19].value="gamepad_a";
-        key_bindings[20].key="button_b";key_bindings[20].value="gamepad_b";
-        key_bindings[21].key="button_c";key_bindings[21].value="gamepad_x";
-        key_bindings[22].key="button_d";key_bindings[22].value="gamepad_y";
+        key_bindings[19].key="button_a";key_bindings[19].value="joy_2";
+        key_bindings[20].key="button_b";key_bindings[20].value="joy_3";
+        key_bindings[21].key="button_c";key_bindings[21].value="joy_1";
+        key_bindings[22].key="button_d";key_bindings[22].value="joy_4";
 
-        key_bindings[23].key="button_l1";key_bindings[23].value="gamepad_lshoulder";
-        key_bindings[24].key="button_r1";key_bindings[24].value="gamepad_rshoulder";
+        key_bindings[23].key="l1";key_bindings[23].value="joy_5";
+        key_bindings[24].key="r1";key_bindings[24].value="joy_6";
 
-        key_bindings[25].key="pause";key_bindings[25].value="gamepad_start";
-        key_bindings[26].key="menu";key_bindings[26].value="gamepad_back";
+        key_bindings[25].key="pause";key_bindings[25].value="joy_10";
+        key_bindings[26].key="menu";key_bindings[26].value="joy_9";
 
 
     show_console=false;
@@ -69,3 +70,8 @@ void config::LoadFile(char* filename){
 
     return;
 }
+
+
+    
+
+

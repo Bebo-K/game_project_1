@@ -87,8 +87,8 @@ void DeveloperConsole::OnUpdate(int frames){
 
 }
 
-bool DeveloperConsole::OnInput(InputCode event_type){
-    if(event_type == InputEvent::Button_ToggleConsole){
+bool DeveloperConsole::OnInput(Input::EventID event_type){
+    if(event_type == Input::ToggleConsole){
         if(Input::Button_ToggleConsole().IsJustPressed()){
             active = !active;
             start_timer=3;
@@ -96,7 +96,7 @@ bool DeveloperConsole::OnInput(InputCode event_type){
         }
     }
     if(!active)return false;
-    if(event_type == InputEvent::Text && start_timer == 0){
+    if(event_type == Input::Text && start_timer == 0){
         int cursor;
         text_char* input = Input::TextInput();
         for(cursor=0;entry_buffer[cursor]!=0;cursor++);

@@ -1,16 +1,13 @@
 #define WINVER 0x0601
 #define _WIN32_WINNT 0x0601
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-//#include <wingdi.h>
-#include <winuser.h>
-#include <xinput.h>
 
+#include <tchar.h>
+#include "winmain.h"
 #include "os.h"
 #include "gfx/gload.h"
 #include "log.h"
 #include "config.h"
-#include <tchar.h>
 #include "game.h"
 
 const TCHAR window_title[] = _T("Game");
@@ -24,8 +21,6 @@ Performance::Alarm second;
 Performance::Counter polls_per_sec;
 
 HWND window;
-DWORD last_controller_packet=-1;
-DWORD last_directInput_button_state;
 HDC device_context;
 HGLRC gl_rendering_context;
 
@@ -62,7 +57,6 @@ long long time_nano(){//ns elapsed since program start.
     return (sys_time()-start_time)*100;
 }
 
-
 int ms_per_second;
 void GetTimerData(){
     polls_per_sec.Increment();
@@ -80,70 +74,12 @@ void GetTimerData(){
 }
 
 
+//********************************************//
+//                 Polling Methods            //
+//********************************************//
 
 void PollControllerInput(){
-    XINPUT_STATE controller_state;
-    //for (DWORD i=0; i< XUSER_MAX_COUNT; i++ )
-    //{
-        memset(&controller_state,0,sizeof(XINPUT_STATE));
-        DWORD err  =  XInputGetState(0, &controller_state);
-        if(err == ERROR_SUCCESS )
-        {
-            if(last_controller_packet != controller_state.dwPacketNumber){
-                
-                
-                float LX = controller_state.Gamepad.sThumbLX;
-                float LY = controller_state.Gamepad.sThumbLY;
-                
-                float RX = controller_state.Gamepad.sThumbRX;
-                float RY = controller_state.Gamepad.sThumbRY;
-
-                float stick_min = 100;
-                float stick_max = 32767;
-
-                float LL = LX*LX + LY+LY;
-                float RL = RX*RX + RY+RY;
-
-                if(LL > stick_min*stick_min){
-                    float left_stick_x = LX/stick_max;
-                    float left_stick_y = LY/stick_max;
-                    Input::HandleControlStick(0x1A0,left_stick_x,left_stick_y);
-                }
-                else{Input::HandleControlStick(0x1A0,0,0);}
-
-                if(RL > stick_min*stick_min){
-                    float right_stick_x = RX/stick_max;
-                    float right_stick_y = RY/stick_max;
-                    Input::HandleControlStick(0x1A1,right_stick_x,right_stick_y);
-                }
-                else{Input::HandleControlStick(0x1A1,0,0);}
-                
-
-                Input::HandleKey(0x1A2,(controller_state.Gamepad.bLeftTrigger > 100));
-                Input::HandleKey(0x1A3,(controller_state.Gamepad.bRightTrigger > 100));
-
-                long button_flag = 1;
-                DWORD button_delta = last_directInput_button_state ^controller_state.Gamepad.wButtons;
-                for(int i=0;i<18;i++){
-                    bool changed = (button_delta & button_flag) > 0;
-                    bool down = (controller_state.Gamepad.wButtons & button_flag) > 0;
-                    if(changed){
-                        Input::HandleKey(0x01A4 + i,down);
-                    }
-                    button_flag = button_flag << 1;
-                }
-                
-                last_controller_packet = controller_state.dwPacketNumber;
-                last_directInput_button_state = controller_state.Gamepad.wButtons;
-            }
-        }
-        else{/* Controller is not connected */
-            //logger::info("controller %d is not connected:%d \n",i,err);
-        }
-    //}
-    
-    //logger::info("\n\n-----");
-    memset(&controller_state,0,sizeof(XINPUT_STATE));
+    PollJoypads();
 }
 
 //********************************************//
@@ -174,6 +110,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     logger::start("log.txt");
     config::Init();
     Input::Init();
+    SetupOSInput();
 
     WNDCLASSEX window_class;
         window_class.cbSize=sizeof(WNDCLASSEX);
@@ -229,6 +166,7 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
+            SetupDirectInput(window_handle);
             logger::info("Initializing engine...\n");
             Game::Start();
             break;
@@ -239,32 +177,44 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             PostQuitMessage(0);
             break;
         case WM_KEYDOWN:
-            Input::HandleKey(wparam,true);
+            Input::HandleBool(wparam,true);
             break;
         case WM_KEYUP:
-             Input::HandleKey(wparam,false);
+             Input::HandleBool(wparam,false);
             break;
         case WM_CHAR:
              Input::HandleCharacter(wparam);
             break;
         case WM_MOUSEMOVE:
-            Input::HandleCursor((short)LOWORD(lparam),(short)HIWORD(lparam));
+            Input::HandleIntAxis(PhysicalInput::MOUSE_CURSOR_AXIS,(short)LOWORD(lparam),(short)HIWORD(lparam));
             break;
         case WM_MOUSEWHEEL:
             //short wheel_delta = (short)HIWORD(wparam);
             break;
         case WM_LBUTTONDOWN:
-            Input::HandleKey(0x101,true);
+            Input::HandleBool(PhysicalInput::MOUSE_LEFT_BUTTON,true);
             break;
         case WM_LBUTTONUP:
-            Input::HandleKey(0x101,false);
+            Input::HandleBool(PhysicalInput::MOUSE_LEFT_BUTTON,false);
             break;
         case WM_RBUTTONDOWN:
-            Input::HandleKey(0x102,true);
+            Input::HandleBool(PhysicalInput::MOUSE_RIGHT_BUTTON,true);
             break;
         case WM_RBUTTONUP:
-            Input::HandleKey(0x102,false);
+            Input::HandleBool(PhysicalInput::MOUSE_RIGHT_BUTTON,false);
             break; 
+        // DirectInput
+        /*
+            case MM_JOY1MOVE:
+            OnDirectInputJoyEvent();
+            break; 
+        case MM_JOY1BUTTONDOWN :
+            OnDirectInputJoyEvent(wparam,true);
+            break; 
+        case MM_JOY1BUTTONUP :
+            OnDirectInputJoyEvent(wparam,false);
+            break; 
+            */
         case WM_SIZE:
             RECT new_client_area;
             if(GetClientRect(window_handle,&new_client_area)){
@@ -353,6 +303,8 @@ void DestroyOpenGL(){
     wglMakeCurrent(NULL,NULL);
     wglDeleteContext(gl_rendering_context);
 }
+
+
 
 //********************************************//
 //                 OS Hooks                   //

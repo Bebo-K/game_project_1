@@ -25,7 +25,7 @@ class UILayer{
     void Update(int frames);
     void Paint();
     void Resize(int screen_w,int screen_h);
-    bool OnInput(InputCode event_type);
+    bool OnInput(Input::EventID event_type);
     bool OnSignal(int signal_id,int metadata_len, byte* metadata);
 };
 

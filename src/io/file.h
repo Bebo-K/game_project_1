@@ -7,6 +7,7 @@
 typedef unsigned int uint32;
 typedef unsigned char byte;
 
+
 class File{
 	FILE* file_handle;
     public:
@@ -32,6 +33,18 @@ class FileBuffer{
 	FileBuffer(const char* filename);
 	int Length();
 	~FileBuffer();
+};
+
+class FileReader{
+	public:
+	FileBuffer source;
+	int mark;
+	byte* last_line;
+	
+	FileReader(const char* filename);
+	byte* ReadLine();
+	byte  ReadByte();
+	~FileReader();
 };
 
 

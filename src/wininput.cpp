@@ -1,338 +1,124 @@
+#include "winmain.h"
+#include "io/file.h"
 #include "input.h"
-#include <windows.h>
+#include "log.h"
+
 #include "config.h"
 
-///Hahaha, why yes, this IS a bad idea!
-const int VK_COUNT=0xFF;
-const char* MS_VK_NAMES [] ={
-/*0x00*/ "ERROR",
-/*0x01*/ "[?]",
-/*0x02*/ "[?]",
-/*0x03*/ "[?]",	
-/*0x04*/ "[?]",
-/*0x05*/ "[?]",
-/*0x06*/ "[?]",
-/*0x07*/ "[?]",
-/*0x08*/ "backspace",
-/*0x09*/ "tab",
-/*0x0A*/ "[?]",
-/*0x0B*/ "[?]",
-/*0x0C*/ "[?]",
-/*0x0D*/ "enter",
-/*0x0E*/ "scroll",	
-/*0x0F*/ "[?]",
-/*0x10*/ "shift",
-/*0x11*/ "ctrl",
-/*0x12*/ "alt",
-/*0x13*/ "pause",
-/*0x14*/ "capslock",
-/*0x15*/ "[?]",
-/*0x16*/ "[?]",
-/*0x17*/ "[?]",
-/*0x18*/ "[?]",
-/*0x19*/ "[?]",
-/*0x1A*/ "[?]",
-/*0x1B*/ "escape",
-/*0x1C*/ "[?]",
-/*0x1D*/ "[?]",
-/*0x1E*/ "[?]",
-/*0x1F*/ "[?]",
-/*0x20*/ "space",
-/*0x21*/ "page up",
-/*0x22*/ "page down",
-/*0x23*/ "end",
-/*0x24*/ "home",
-/*0x25*/ "left",
-/*0x26*/ "up",
-/*0x27*/ "right",
-/*0x28*/ "down",
-/*0x29*/ "[?]",
-/*0x2A*/ "[?]",
-/*0x2B*/ "[?]",
-/*0x2C*/ "print screen",
-/*0x2D*/ "insert",
-/*0x2E*/ "delete",
-/*0x2F*/ "",
-/*0x30*/ "0",
-/*0x31*/ "1",
-/*0x32*/ "2",
-/*0x33*/ "3",
-/*0x34*/ "4",
-/*0x35*/ "5",
-/*0x36*/ "6",
-/*0x37*/ "7",
-/*0x38*/ "8",
-/*0x39*/ "9",
-/*0x3A*/ "[?]",
-/*0x3B*/ "[?]",
-/*0x3C*/ "[?]",
-/*0x3D*/ "[?]",
-/*0x3E*/ "[?]",
-/*0x3F*/ "[?]",
-/*0x40*/ "[?]",
-/*0x41*/ "a",
-/*0x42*/ "b",
-/*0x43*/ "c",
-/*0x44*/ "d",
-/*0x45*/ "e",
-/*0x46*/ "f",
-/*0x47*/ "g",
-/*0x48*/ "h",
-/*0x49*/ "i",
-/*0x4A*/ "j",
-/*0x4B*/ "k",
-/*0x4C*/ "l",
-/*0x4D*/ "m",
-/*0x4E*/ "n",
-/*0x4F*/ "o",
-/*0x50*/ "p",
-/*0x51*/ "q",
-/*0x52*/ "r",
-/*0x53*/ "s",
-/*0x54*/ "t",
-/*0x55*/ "u",
-/*0x56*/ "v",
-/*0x57*/ "w",
-/*0x58*/ "x",
-/*0x59*/ "y",
-/*0x5A*/ "z",
-/*0x5B*/ "[?]",
-/*0x5C*/ "[?]",
-/*0x5D*/ "[?]",
-/*0x5E*/ "[?]",
-/*0x5F*/ "[?]",
-/*0x60*/ "keypad0",
-/*0x61*/ "keypad1",
-/*0x62*/ "keypad2",
-/*0x63*/ "keypad3",
-/*0x64*/ "keypad4",
-/*0x65*/ "keypad5",
-/*0x66*/ "keypad6",
-/*0x67*/ "keypad7",
-/*0x68*/ "keypad8",
-/*0x69*/ "keypad9",
-/*0x6A*/ "keypad*",
-/*0x6B*/ "keypad+",
-/*0x6C*/ "separator",
-/*0x6D*/ "keypad-",
-/*0x6E*/ "keypad.",
-/*0x6F*/ "keypad/",
-/*0x70*/ "f1",
-/*0x71*/ "f2",
-/*0x72*/ "f3",
-/*0x73*/ "f4",
-/*0x74*/ "f5",
-/*0x75*/ "f6",
-/*0x76*/ "f7",
-/*0x77*/ "f8",
-/*0x78*/ "f9",
-/*0x79*/ "f10",
-/*0x7A*/ "f11",
-/*0x7B*/ "f12",
-/*0x7C*/ "[?]",
-/*0x7D*/ "[?]",
-/*0x7E*/ "[?]",
-/*0x7F*/ "[?]",
-/*0x80*/ "[?]",
-/*0x81*/ "[?]",
-/*0x82*/ "[?]",
-/*0x83*/ "[?]",
-/*0x84*/ "[?]",
-/*0x85*/ "[?]",
-/*0x86*/ "[?]",
-/*0x87*/ "[?]",
-/*0x88*/ "[?]",
-/*0x89*/ "[?]",
-/*0x8A*/ "[?]",
-/*0x8B*/ "[?]",
-/*0x8C*/ "[?]",
-/*0x8D*/ "[?]",
-/*0x8E*/ "[?]",
-/*0x8F*/ "[?]",
-/*0x90*/ "num lock",
-/*0x91*/ "scroll lock",
-/*0x92*/ "[?]",
-/*0x93*/ "[?]",
-/*0x94*/ "[?]",
-/*0x95*/ "[?]",
-/*0x96*/ "[?]",
-/*0x97*/ "[?]",
-/*0x98*/ "[?]",
-/*0x99*/ "[?]",
-/*0x9A*/ "[?]",
-/*0x9B*/ "[?]",
-/*0x9C*/ "[?]",
-/*0x9D*/ "[?]",
-/*0x9E*/ "[?]",
-/*0x9F*/ "[?]",
-/*0xA0*/ "left shift",
-/*0xA1*/ "right shift",
-/*0xA2*/ "ctrl",
-/*0xA3*/ "right ctrl",
-/*0xA4*/ "[?]",
-/*0xA5*/ "[?]",
-/*0xA6*/ "[?]",
-/*0xA7*/ "[?]",
-/*0xA8*/ "[?]",
-/*0xA9*/ "[?]",
-/*0xAA*/ "[?]",
-/*0xAB*/ "[?]",
-/*0xAC*/ "[?]",
-/*0xAD*/ "[?]",
-/*0xAE*/ "[?]",
-/*0xAF*/ "[?]",
-/*0xB0*/ "[?]",
-/*0xB1*/ "[?]",
-/*0xB2*/ "[?]",
-/*0xB3*/ "[?]",
-/*0xB4*/ "[?]",
-/*0xB5*/ "[?]",
-/*0xB6*/ "[?]",
-/*0xB7*/ "[?]",
-/*0xB8*/ "[?]",
-/*0xB9*/ "[?]",
-/*0xBA*/ "[?]",
-/*0xBB*/ "=",
-/*0xBC*/ ",",
-/*0xBD*/ "-",
-/*0xBE*/ ".",
-/*0xBF*/ "/",
-/*0xC0*/ "tilde",
-/*0xC1*/ "[?]",
-/*0xC2*/ "[?]",
-/*0xC3*/ "[?]",
-/*0xC4*/ "[?]",
-/*0xC5*/ "[?]",
-/*0xC6*/ "[?]",
-/*0xC7*/ "[?]",
-/*0xC8*/ "[?]",
-/*0xC9*/ "[?]",
-/*0xCA*/ "[?]",
-/*0xCB*/ "[?]",
-/*0xCC*/ "[?]",
-/*0xCD*/ "[?]",
-/*0xCE*/ "[?]",
-/*0xCF*/ "[?]",
-/*0xD0*/ "[?]",
-/*0xD1*/ "[?]",
-/*0xD2*/ "[?]",
-/*0xD3*/ "[?]",
-/*0xD4*/ "[?]",
-/*0xD5*/ "[?]",
-/*0xD6*/ "[?]",
-/*0xD7*/ "[?]",
-/*0xD8*/ "[?]",
-/*0xD9*/ "[?]",
-/*0xDA*/ "[?]",
-/*0xDB*/ "[",
-/*0xDC*/ "\\",
-/*0xDD*/ "]",
-/*0xDE*/ "'",
-/*0xDF*/ ";",
-/*0xE0*/ "[?]",
-/*0xE1*/ "[?]",
-/*0xE2*/ "[?]",
-/*0xE3*/ "[?]",
-/*0xE4*/ "[?]",
-/*0xE5*/ "[?]",
-/*0xE6*/ "[?]",
-/*0xE7*/ "[?]",
-/*0xE8*/ "[?]",
-/*0xE9*/ "[?]",
-/*0xEA*/ "[?]",
-/*0xEB*/ "[?]",
-/*0xEC*/ "[?]",
-/*0xED*/ "[?]",
-/*0xEE*/ "[?]",
-/*0xEF*/ "[?]",
-/*0xF0*/ "[?]",
-/*0xF1*/ "[?]",
-/*0xF2*/ "[?]",
-/*0xF3*/ "[?]",
-/*0xF4*/ "[?]",
-/*0xF5*/ "[?]",
-/*0xF6*/ "[?]",
-/*0xF7*/ "[?]",
-/*0xF8*/ "[?]",
-/*0xF9*/ "[?]",
-/*0xFA*/ "[?]",
-/*0xFB*/ "[?]",
-/*0xFC*/ "[?]",
-/*0xFD*/ "[?]",
-/*0xFE*/ "[?]",
-/*0xFF*/ "[?]"
-};
+#ifdef _WINDOWS_
+//Windows input hooks
 
-int MOUSE_BUTTON_OFFSET=0x101;
-int MOUSE_BUTTON_COUNT=3;
-const char* MOUSE_BUTTON_NAMES[] ={
-    "mouse_left",
-    "mouse_right",
-    "mouse_center"
-};
+//DIRECTINPUT (For generic USB controllers)
+JOYCAPS     joystick_info[MAX_CONTROLLERS];
+JOYINFOEX   joystick_state[MAX_CONTROLLERS]; 
+DWORD       joystick_prev_button_state[MAX_CONTROLLERS];
+DWORD       joystick_prev_x_axis[MAX_CONTROLLERS];//[MAX_CONTROLLER_AXES]
+DWORD       joystick_prev_y_axis[MAX_CONTROLLERS];//[MAX_CONTROLLER_AXES]
+UINT        current_device_count;
 
-
-//XINPUT gamepad
-int GAMEPAD_OFFSET=0x1A0;
-int GAMEPAD_INPUT_COUNT=18;
-const char* GAMEPAD_BUTTON_NAMES[] ={
-    "gamepad_lstick",
-    "gamepad_rstick",
-    "gamepad_ltrigger",
-    "gamepad_rtrigger",
-    "gamepad_d_up",
-    "gamepad_d_down",
-    "gamepad_d_left",
-    "gamepad_d_right",
-    "gamepad_start",
-    "gamepad_back",
-    "gamepad_lstick_in",
-    "gamepad_rstick_in",
-    "gamepad_lshoulder",
-    "gamepad_rshoulder",
-    "gamepad_reserved",
-    "gamepad_reserved2",
-    "gamepad_a",
-    "gamepad_b",
-    "gamepad_x",
-    "gamepad_y"
-};
-
-int Input::GetKeyID(char* key_name){
-    if(cstr::starts_with(key_name,"mouse")){
-        for(int i=0;i<MOUSE_BUTTON_COUNT;i++){
-            if(cstr::compare(key_name,MOUSE_BUTTON_NAMES[i])){
-                return MOUSE_BUTTON_OFFSET + i;
-            }
-        }
-    }
-    if(cstr::starts_with(key_name,"gamepad")){
-        for(int i=0;i<GAMEPAD_INPUT_COUNT;i++){
-            if(cstr::compare(key_name,GAMEPAD_BUTTON_NAMES[i])){
-                return GAMEPAD_OFFSET + i;
-            }
-        }
-    }
-    for(int i=0;i<VK_COUNT;i++){
-        if(cstr::compare(key_name,MS_VK_NAMES[i])){
-            return i;
-        }
-    }
-    return -1;
+void SetupOSInput(){
+    SetupJoypads();
 }
 
-const char* Input::GetKeyName(int key_id){
-    if(key_id >= 0 && key_id <= VK_COUNT){return MS_VK_NAMES[key_id];}
-    if(key_id >= MOUSE_BUTTON_OFFSET && 
-    key_id <= MOUSE_BUTTON_OFFSET+MOUSE_BUTTON_COUNT){
-        return MOUSE_BUTTON_NAMES[key_id-MOUSE_BUTTON_OFFSET];
+void SetupJoypads(){
+    for(int i=0;i<MAX_CONTROLLERS;i++){
+        memset(&joystick_info[i],0,sizeof(JOYCAPS));
+        memset(&joystick_state[i],0,sizeof(JOYINFOEX));
+        joystick_state[i].dwSize = sizeof(JOYINFOEX);
+        joystick_state[i].dwFlags = JOY_RETURNALL;
+        memset(&joystick_prev_button_state[i],0,sizeof(DWORD));
     }
-    if(key_id >= GAMEPAD_OFFSET && 
-        key_id <= GAMEPAD_OFFSET+GAMEPAD_INPUT_COUNT){
-        return GAMEPAD_BUTTON_NAMES[key_id-GAMEPAD_OFFSET];
+    current_device_count = joyGetNumDevs();
+    bool plugged_in[MAX_CONTROLLERS];
+    for(int i=0;i<MAX_CONTROLLERS;i++){plugged_in[i]=false;}
+    int handled_devices = (current_device_count>MAX_CONTROLLERS)?MAX_CONTROLLERS:current_device_count;
+    for(int i=0;i<handled_devices;i++){
+        JOYINFOEX temp_device_state;
+        temp_device_state.dwSize = sizeof(JOYINFOEX);
+        temp_device_state.dwFlags = JOY_RETURNALL;
+        MMRESULT device_plugged_in = joyGetPosEx(JOYSTICKID1+i,&temp_device_state);
+        if(device_plugged_in == JOYERR_NOERROR){
+            joystick_prev_x_axis[i]=temp_device_state.dwXpos;
+            joystick_prev_y_axis[i]=temp_device_state.dwYpos;
+            plugged_in[i]=true;
+            if(joyGetDevCaps(JOYSTICKID1+i,&joystick_info[i],sizeof(JOYCAPS))== JOYERR_NOERROR ){
+                JOYCAPS stick_info;
+                memcpy(&stick_info,&joystick_info[i],sizeof(JOYCAPS));
+                printf("Controller #%d\n",i);
+                printf("ControllerName: %s\n",stick_info.szPname);
+                printf("ControllerName: %s\n",stick_info.szPname);
+                printf("Conteroller info: %s\n",stick_info.szRegKey);
+                printf("Manufacturerer ID: %d\n",stick_info.wMid);
+                printf("Product ID: %d\n",stick_info.wPid);
+            }
+        }
+
     }
-    return nullptr;
-}
+
     
+    if(plugged_in[0]){
+        //Where to put this?    
+        Input::SetAxisBounds(0,joystick_info[0].wXmax,joystick_info[0].wXmin,joystick_info[0].wYmax,joystick_info[0].wYmin);
+        Input::SetAxisDirection(0,false,true);
+        //Input::SetAxisBounds(0,joystick_info[1].wXmax,joystick_info[1].wXmin,joystick_info[1].wYmax,joystick_info[1].wYmin);
+    }
 
+}
+
+void SetupDirectInput(HWND window_handle){
+    for(int i=0;i<MAX_CONTROLLERS;i++){
+        if(joySetCapture(window_handle, JOYSTICKID1+i, 0, false) != JOYERR_NOERROR ) { /*We'll deal with this if I make couch co-op*/} 
+    }
+}
+
+//PhysicalInput::JOY1_BUTTON_0
+void PollJoypads(){
+    for(int i=0;i < MAX_CONTROLLERS;i++){
+        DWORD err=joyGetPosEx(JOYSTICKID1+i,&joystick_state[i]);
+        if(err == JOYERR_NOERROR){
+            DWORD changed_buttons = joystick_state[i].dwButtons ^ joystick_prev_button_state[i];
+            if(changed_buttons!= 0){
+                int button_id=1;
+                for(int j=0; j<32;j++){
+                    if((changed_buttons & button_id) > 0){
+                        Input::HandleBool(PhysicalInput::JOY1_BUTTON_0+j,(joystick_state[i].dwButtons & button_id) > 0);
+                    } 
+                    button_id = button_id << 1;
+                }
+            }
+
+            if(joystick_state[i].dwXpos != joystick_prev_x_axis[i] || 
+                joystick_state[i].dwYpos != joystick_prev_y_axis[i]){
+                JOYINFOEX stick_state;
+                memcpy(&stick_state,&joystick_state[i],sizeof(JOYINFOEX));
+                Input::HandleIntAxis(PhysicalInput::JOY1_AXIS_1,joystick_state[i].dwXpos,joystick_state[i].dwYpos);
+            }
+
+            joystick_prev_button_state[i] = joystick_state[i].dwButtons;
+            joystick_prev_x_axis[i] = joystick_state[i].dwXpos;
+            joystick_prev_y_axis[i] = joystick_state[i].dwYpos;
+        }
+    }
+}
+
+void OnDirectInputJoyEvent(WPARAM wparam, bool down){}
+
+void OnDirectInputButtonEvent(WPARAM wparam, bool down){
+    DWORD changed_buttons = joystick_state[0].dwButtons ^ joystick_prev_button_state[0];
+    if(changed_buttons!= 0){
+        int button_id=1;
+        for(int i=0; i<32;i++){
+            if((changed_buttons & button_id) > 0){
+                Input::HandleBool(PhysicalInput::JOY1_BUTTON_0+i,(joystick_state[0].dwButtons & button_id) > 0);
+            }
+        }
+        button_id = button_id << 1;
+    }
+}
+
+//XINPUT (For XBox controllers, I guess.)
+
+
+
+#endif
 

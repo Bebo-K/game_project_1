@@ -143,7 +143,7 @@ void Client::Update(int frames){
 
 void Client::HandleFrameInput(){
     bool handled = false;
-    for(InputCode input = Input::NextInput();input != InputEvent::None;input = Input::NextInput()){
+    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent()){
         handled = ui.OnInput(input);
         if(!handled){PlayerInput::HandleInput(input);}
     }

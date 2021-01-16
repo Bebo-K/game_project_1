@@ -39,7 +39,7 @@ void UI::Unload(){
     delete game_console;
 }
 
-bool  UI::OnInput(InputCode event_type){
+bool  UI::OnInput(Input::EventID event_type){
     bool handled = false;
     handled = debug_layer.OnInput(event_type);
     if(!handled){handled = interface_layer.OnInput(event_type);}

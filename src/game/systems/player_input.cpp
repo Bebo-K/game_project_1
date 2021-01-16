@@ -13,13 +13,11 @@ float camera_turn_sqr_speed = 0.222;
 bool PlayerInput::HandleMovementInput(){
     if(tracked_entity->movement->lock_move){return false;}
     if(!tracked_entity->movement->can_move){return true;}
-    Input::Axis move_axis = Input::Axis_1();
-    //vec2 move_axis = {(float)Input::Axis_1().x,(float)Input::Axis_1().y};
-    vec2 move_input = {move_axis.x/128.0f,move_axis.y/128.0f};
-    if(move_input.length_sqr() > 1){move_input.normalize();}
 
+    vec2 move_input = Input::Move_Axis().GetNormalized();
     Camera* cam = tracked_entity->camera_target->camera;
     float move_amount = move_input.length_sqr();
+    
     if(move_amount > 0){
         move_input.rotate(-cam->turn);
         tracked_entity->movement->move_goal =  {move_input.x,0,-move_input.y};
@@ -55,15 +53,13 @@ bool PlayerInput::HandleActionInput(){
     return true;
 }
 
-bool PlayerInput::HandleCameraInput(InputCode code_type){
+bool PlayerInput::HandleCameraInput(Input::EventID code_type){
     if(tracked_entity->movement->lock_camera){return false;}
     if(!tracked_entity->movement->can_camera){return true;}
 
-    if(code_type == InputEvent::Axis_2){
+    if(code_type == Input::EventID::CamAxis){
         Camera* cam = tracked_entity->camera_target->camera;
-        Input::Axis camera_axis = Input::Axis_2();
-        vec2 camera_input = {camera_axis.x/255.0f,camera_axis.y/255.0f};
-        if(camera_input.length_sqr() > 1){camera_input.normalize();}
+        vec2 camera_input = Input::Cam_Axis().GetNormalized();
         if(camera_input.length_sqr() > 0){
             cam->turn += camera_input.y;
             cam->pitch += camera_input.x;
@@ -83,13 +79,17 @@ bool PlayerInput::HandleCameraInput(InputCode code_type){
     return false;
 }
 
-bool PlayerInput::HandleInput(InputCode input){
-    if(input == InputEvent::Axis_1){return HandleMovementInput();}
-    if(input == InputEvent::Button_A){return HandleJumpingInput();}
-    if(input == InputEvent::Button_B){return HandleActionInput();}
-    if(input == InputEvent::Button_L1 ||
-        input == InputEvent::Button_R1 ||
-        input == InputEvent::Axis_2){return HandleCameraInput(input);}
+bool PlayerInput::HandleInput(Input::EventID input){
+    switch (input)
+    {
+    case Input::EventID::MoveAxis:return HandleMovementInput();
+    case Input::EventID::A:return HandleJumpingInput();
+    case Input::EventID::B:return HandleActionInput();
+    case Input::EventID::L1:
+    case Input::EventID::R1:
+    case Input::EventID::CamAxis:return HandleCameraInput(input);
+    default:break;
+    }
     return false;
 }
 

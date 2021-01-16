@@ -598,6 +598,32 @@ bool cstr::contains(const char* str, const char* substr){
     return false;
 }
 
+
+char* cstr::substr_before(char* str,char separator){
+    int sep_pos =0;
+    for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
+    int new_strlen = cstr::len(str)-sep_pos;
+    if(new_strlen==0)return nullptr;
+    char* result= (char*)calloc(new_strlen+1,sizeof(char));
+    for(int i=sep_pos;str[i]!=0;i++){
+        result[i-sep_pos]=str[i];
+    }
+    result[new_strlen]=0;
+    return result;
+}
+char* cstr::substr_after(char* str,char separator){
+    int sep_pos =0;
+    for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
+    int new_strlen = sep_pos-1;
+    if(new_strlen==0)return nullptr;
+    char* result= (char*)calloc(new_strlen+1,sizeof(char));
+    for(int i=0;i<sep_pos;i++){
+        result[i]=str[i];
+    }
+    result[new_strlen]=0;
+    return result;
+}
+
 int cstr::len(char* str){
     int i;
     for(i=0;str[i]!=0;i++);
@@ -677,6 +703,35 @@ char* cstr::utf16_to_utf8(const wchar_t* longstring){
 }
 
 
+int cstr::integer_from_string(char* str){
+    int value=0;
+    for(int index=0;str[index]!=0;index++){
+        if(str[index] >= '0' && str[index] <= '9'){
+            value *= 10;
+            value += str[index]-'0';
+        }
+        else return -1;
+    }
+    return value;
+}
+char* cstr::write_integer_string(int a){
+    int len=0;
+    for(int val=a;val!=0;len++){
+        val = val/10;
+    }
+    char* ret = (char*)malloc(len+1);
+    int ones=0;
+    int val = a;
+    for(int i=0;i<len;i++){
+        ones = val%10;
+        ret[(len-1)-i]=ones+'0';
+        val/= 10;
+    }
+    
+    ret[len]=0;
+    return ret;
+}
+
 text_char* TextString::from_cstr(char* str){
     if(str==null)return null;
     int i;
@@ -710,5 +765,30 @@ text_char* TextString::concat(text_char* a_part,text_char* b_part){
     int a_len=i;
     for(i=0;b_part[i]!=0;i++){result[a_len+i]=b_part[i];}
     result[a_len+i]=0;
+    return result;
+}
+
+text_char* TextString::copy(text_char* str){
+    int strlen = length(str);
+    text_char* result= (text_char*)calloc(strlen+1,sizeof(text_char));
+    for(int i=0;str[i]!=0;i++){result[i]=str[i];}
+    result[strlen]=0;
+    return result;
+}
+
+//Gets the substring of a text_char string after the occurance of a seperator char
+//1.the returned string will not have the separator char at the beginning
+//2.if the separator char isn't found, a copy of the original string is returned.
+//3.if the separator char is at the very end of the string, nullptr is returned.
+text_char* TextString::substr_after(text_char* str,unsigned int separator){
+    int sep_pos =0;
+    for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
+    int new_strlen = length(str)-sep_pos;
+    if(new_strlen==0)return nullptr;
+    text_char* result= (text_char*)calloc(new_strlen+1,sizeof(text_char));
+    for(int i=sep_pos;str[i]!=0;i++){
+        result[i-sep_pos]=str[i];
+    }
+    result[new_strlen]=0;
     return result;
 }

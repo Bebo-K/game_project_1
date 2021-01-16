@@ -178,16 +178,18 @@ namespace cstr{
     char* lowercase_copy(const char* old_string);
     char* append(const char* str1, const char* str2);
     char* append(const char* str1, char seperator, const char* str2);
-    bool compare(const char* str1, const char* subst);
+    bool compare(const char* str1, const char* str2);
     bool starts_with(const char* str, const char* start);
     bool contains(const char* str, const char* substr);
+    char* substr_after(char* str,char separator);//returns the substring after the first occurance of the separator char
+    char* substr_before(char* str,char separator);//returns the substring after the first occurance of the separator char
     int len(char* str);
 
     char* utf16_to_utf8(const wchar_t* longstring);
+    
+    int integer_from_string(char* str);
+    char* write_integer_string(int a);
     /*
-    int integer_from_string(char* str,int index);
-    char* write_integer_string(int a, char *str, int index);
-
     float float_from_string(char* str,int index);
     char* write_float_string(int a, char *str, int index);
 
@@ -201,6 +203,9 @@ namespace TextString{
     int length(text_char* str);
     int write(char* str,text_char* dest);
     text_char* concat(text_char* a_part,text_char* b_part);
+    text_char* copy(text_char* str);
+    text_char* substr_after(text_char* str,unsigned int separator);
+
 };
 
 
