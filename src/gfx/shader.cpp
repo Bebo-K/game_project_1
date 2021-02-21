@@ -41,6 +41,7 @@ Shader::Shader(char* vertexFile,char* fragmentFile){
         glBindAttribLocation(program,ATTRIB_NORMAL,"a_normal");
         glBindAttribLocation(program,ATTRIB_BONE_INDEX,"a_bone_index");
         glBindAttribLocation(program,ATTRIB_BONE_WEIGHT,"a_bone_weight");
+        glBindAttribLocation(program,ATTRIB_COLOR,"a_color");
 
         glLinkProgram(program);
         glGetProgramiv(program,GL_LINK_STATUS,&linkStatus);
@@ -50,7 +51,7 @@ Shader::Shader(char* vertexFile,char* fragmentFile){
             PROJECTION_MATRIX 	= glGetUniformLocation(program,"projection_matrix");
             NORMAL_MATRIX    	= glGetUniformLocation(program,"normal_matrix");
             TEXTURE_0 			= glGetUniformLocation(program,"texture0");
-            COLOR				= glGetUniformLocation(program,"color");
+            COLOR				= glGetUniformLocation(program,"base_color");
             AMBIENT				= glGetUniformLocation(program,"ambient");
             DIFFUSE				= glGetUniformLocation(program,"diffuse");
             SPECULAR			= glGetUniformLocation(program,"specular");

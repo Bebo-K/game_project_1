@@ -10,6 +10,8 @@ Skeleton::Skeleton(int num_bones){
     }
     bones=(Bone*)calloc(num_bones,sizeof(Bone));
     inverse_bind_mats=(mat4*)calloc(num_bones,sizeof(mat4));
+    animation_count=0;
+    animations=nullptr;
 
     for(int i=0;i<bone_count;i++){
         bones[i].parent_index=-1;

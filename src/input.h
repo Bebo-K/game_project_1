@@ -49,7 +49,6 @@ namespace Input{
         int dx,dy;
         int max_x,max_y;
         int min_x,min_y;
-        bool flip_x,flip_y;
         vec2 GetNormalized();
         void SetBounds(int maxx,int minx,int maxy, int miny);
     };
@@ -68,6 +67,7 @@ namespace Input{
         EventID event;
         //only used for button-to-axis bindings.
         int axis_direction;
+        bool flip_x,flip_y;
         //int axis_magnitude;
     };
 
@@ -77,7 +77,7 @@ namespace Input{
     void LoadKeyBindings();
     void RegisterPhysicalInput(char* name,int id);
     void SetAxisBounds(int axis_id,int xmax,int xmin,int ymax,int ymin);
-    void SetAxisDirection(int axis_id,bool flip_x,bool flip_y);
+    void SetPhysicalAxisDirection(int input_id,bool flip_x,bool flip_y);
     void ClearInputText();
     void PostUpdate();
 

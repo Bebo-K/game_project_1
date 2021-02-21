@@ -21,10 +21,11 @@ void Level::Draw(Camera* cam,mat4* view, mat4* projection){
     if(skybox != null){skybox->Draw(cam,view,projection);}
 
     cam->SetShader("scene_debug");
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
 
     mat3 normal;
     normal.set(view);
@@ -42,11 +43,12 @@ void Level::Draw(Camera* cam,mat4* view, mat4* projection){
             }
         }
     }
-    
-    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
+
+    glDisableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glDisableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+    glDisableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glDisableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
+    glDisableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
 }
 
 void Level::LoadDefault(){

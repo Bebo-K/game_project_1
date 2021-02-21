@@ -6,16 +6,19 @@ uniform mat4 modelview_matrix;
 uniform mat3 normal_matrix;
 uniform vec4 texture_location;
 uniform mat4x3 pose_matrices[64];
+uniform vec4 base_color;
 
 in vec3 a_vertex;
 in vec2 a_tex_coord;
 in vec3 a_normal;
 in ivec4 a_bone_index;
 in vec4 a_bone_weight;
+in vec3 a_color;
 
 out vec2 tex_coord;
 out vec3 normal;
 out vec4 world_pos;
+out	vec4 color;
 
 void main(void)
 {
@@ -40,6 +43,7 @@ void main(void)
   }
   world_pos = modelview_matrix * vec4(local_pos,1);
   tex_coord = a_tex_coord;
+  color = vec4(a_color,1)*base_color;
   normal = normalize(normal_matrix*local_norm);
   gl_Position = projection_matrix * world_pos;
 }

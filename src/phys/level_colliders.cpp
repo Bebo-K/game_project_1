@@ -59,6 +59,7 @@ void CollisionMesh::SetVertices(MeshGroup* group){
             }
             
             byte* indices = (byte*)calloc(group->meshes[i].vertex_count,sizeof(int));
+            glBindVertexArray(group->meshes[i].vertex_array_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,current_mesh->index.buffer_id);
             glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,current_mesh->vertex_count * index_sizeof, indices);
             int gl_err = glGetError();

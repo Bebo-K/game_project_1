@@ -46,7 +46,7 @@ void Client::Start(){
         int debug_font =FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",12);
         FontManager::SetActiveFont(debug_font);
     ModelManager::Init();
-        ModelManager::Register(PLAYER,"dat/models/human_small.glb");
+        ModelManager::Register(PLAYER,"dat/models/default_human.glb");
 
     scene_renderer.Load();
     scene_renderer.camera.ortho=false;

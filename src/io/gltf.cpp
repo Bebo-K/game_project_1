@@ -369,7 +369,7 @@ Material GLTFScene::GetMaterial(int mat_id){
 			JSONObject* baseColorTexture=PBRMaterial->GetJObject("baseColorTexture");
 				int texture_index = baseColorTexture->GetInt("index");
 				ret.texture = GetTexture(texture_index);
-				//TODO: TEXTURE LOADING
+				//TODO: Multiple texcoord loading
 				//int texture_layer = baseColorTexture->GetInt("texCoord");
 		}
 		ret.metallic_factor=(PBRMaterial->HasFloat("metallicFactor"))?PBRMaterial->GetFloat("metallicFactor") : 0;
@@ -431,6 +431,11 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		else{
 			prim->normal.CreateEmpty(GL_FLOAT,3,prim->vertex_count,GL_ARRAY_BUFFER);
 		}
+		if(attribs->HasInt("COLOR_0")){
+			prim->vertex_colors=BuildAccessorBuffer(attribs->GetInt("COLOR_0"),GL_ARRAY_BUFFER);}
+		else{
+			//prim->vertex_colors.CreateEmpty(GL_FLOAT,3,prim->vertex_count,GL_ARRAY_BUFFER);
+		}
 		if(attribs->HasInt("TEXCOORD_0")){
 			prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
 		else{
@@ -463,6 +468,7 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 			prim->index = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
 			prim->vertex_count = GetAccessor(index_accessor_id)->GetInt("count");
 		}
+		prim->Init();
 	}
 }
 
@@ -628,12 +634,21 @@ void GLTFScene::GetModel(ModelData* model){
 	int* mesh_ids = new int[nodes_array->count];//can't have more meshes than nodes.
 
 	JSONObject* node =nullptr;
+	int model_skeleton_id = -1;
 	for(int i=0;i<nodes_array->count;i++){
 		node = nodes_array->At(i)->ObjectValue();
 		if(node->HasInt("mesh")){
 			if(node->HasInt("skin")){
-				int mesh_skeleton_id = node->GetInt("skin");
-				model->skeleton=GetSkeleton(mesh_skeleton_id);
+				int new_skeleton_id = node->GetInt("skin");
+				if(model_skeleton_id >= 0 && model_skeleton_id != new_skeleton_id){
+					logger::exception("Multiple skeletons per model not supported. Only skeleton node %d will be loaded.",model_skeleton_id);
+					continue;
+				}
+				if(model_skeleton_id == new_skeleton_id){/*skeleton already loaded*/}
+				else{
+					model_skeleton_id=new_skeleton_id;
+					model->skeleton=GetSkeleton(model_skeleton_id);
+				}
 			}
 			mesh_ids[model->mesh_group_count] = node->GetInt("mesh");
 			model->mesh_group_count++;

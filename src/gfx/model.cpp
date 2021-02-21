@@ -11,13 +11,61 @@ Mesh::Mesh(){
     vertex_count=0;
 };
 
+void Mesh::Init(){
+    glGenVertexArrays(1,&vertex_array_id);
+    glBindVertexArray(vertex_array_id);
+
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
+    glEnableVertexAttribArray(Shader::ATTRIB_COLOR);
+
+    float default_normal[]={0,0,-1};
+    float default_vert_color[]={1,1,1};
+    float default_texcoord[]={0,0};
+    int default_bone_index = 0;
+    float default_bone_weight = 0;
+
+    if(!normal.Valid()){
+                normal.Create(default_normal,GL_FLOAT,3,1);}
+    if(!texcoord_0.Valid()){ 
+           texcoord_0.Create(default_texcoord,GL_FLOAT,2,1);}
+    if(!vertex_colors.Valid()){
+        //TODO:same process for the rest of the defaults. Also, where to keep these values? Also, any way to not waste memory like this?
+        float* default_colors = (float*)malloc(vertex_count*sizeof(float)*3);
+        for(int i=0;i<vertex_count;i++){memcpy(&default_colors[i*3],default_vert_color,sizeof(float)*3);}
+         vertex_colors.Create(default_colors,GL_FLOAT,3,vertex_count);}
+    if(!bone_0_index.Valid()){ 
+         bone_0_index.Create(&default_bone_index,GL_INT,1,1);}
+    if(!bone_0_weight.Valid()){
+         bone_0_weight.Create(&default_bone_weight,GL_FLOAT,1,1);}
+
+    vertex.Bind(Shader::ATTRIB_VERTEX);
+    texcoord_0.Bind(Shader::ATTRIB_TEXCOORD);
+    normal.Bind(Shader::ATTRIB_NORMAL);
+    bone_0_index.Bind(Shader::ATTRIB_BONE_INDEX);
+    bone_0_weight.Bind(Shader::ATTRIB_BONE_WEIGHT);
+    vertex_colors.Bind(Shader::ATTRIB_COLOR);
+
+    if(index.Valid()){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index.buffer_id);
+    }
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
 Mesh::~Mesh(){
     vertex.Destroy();
     index.Destroy();
+    vertex_colors.Destroy();
     texcoord_0.Destroy();
     normal.Destroy();
     bone_0_index.Destroy();
     bone_0_weight.Destroy();
+    glDeleteVertexArrays(1,&vertex_array_id);
 };
 
 MeshGroup::MeshGroup(){
@@ -65,20 +113,11 @@ void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
     glUniform1i(cam->shader->TEXTURE_0,0);
     glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat.texture.tex_coords);
-
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&m->mat.base_color);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&m->mat.base_color);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&m->mat.base_color);
-    
-    m->vertex.Bind(cam->shader->ATTRIB_VERTEX);
-    if(m->normal.Valid()){m->normal.Bind(cam->shader->ATTRIB_NORMAL);}
-    if(m->texcoord_0.Valid()){m->texcoord_0.Bind(cam->shader->ATTRIB_TEXCOORD);}
-    if(m->bone_0_index.Valid()){m->bone_0_index.Bind(cam->shader->ATTRIB_BONE_INDEX);}
-    if(m->bone_0_weight.Valid()){m->bone_0_weight.Bind(cam->shader->ATTRIB_BONE_WEIGHT);}
-
+    glUniform4fv(cam->shader->COLOR,1,(GLfloat*)&m->mat.base_color);
+    glBindVertexArray(m->vertex_array_id);
     
     if(m->index.Valid()){
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
+       ///glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
         glDrawElements(GL_TRIANGLES,m->vertex_count,m->index.element_type,nullptr);
     }
     else{
@@ -124,11 +163,12 @@ Model::~Model(){
 
 void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     cam->SetShader("basic_lighting");
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_BONE_WEIGHT);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
+    glEnableVertexAttribArray(Shader::ATTRIB_COLOR);
     
     mat4 model;
     mat3 normal;
@@ -172,11 +212,13 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
     }
 
 
-    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_WEIGHT);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_BONE_INDEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
+    //glDisableVertexAttribArray(Shader::ATTRIB_COLOR);
+    glDisableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
+    glDisableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
+    glDisableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glDisableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+    glDisableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glBindVertexArray(0);
 }
 
 void Model::StartAnimation(char* anim_name){

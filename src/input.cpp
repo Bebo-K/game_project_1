@@ -124,10 +124,12 @@ void Input::SetAxisBounds(int axis_id,int xmax,int xmin,int ymax,int ymin){
     }
 }
 
-void Input::SetAxisDirection(int axis_id,bool flip_x,bool flip_y){
-    if(axis_id >= 0 && axis_id < axis_count){
-        axes[axis_id].flip_x = flip_x? !axes[axis_id].flip_x : axes[axis_id].flip_x;
-        axes[axis_id].flip_y = flip_y? !axes[axis_id].flip_y : axes[axis_id].flip_y;
+void Input::SetPhysicalAxisDirection(int input_id,bool flip_x,bool flip_y){
+    for(int i=0;i<key_bind_count;i++){
+        if(key_binds[i].physical_input==input_id){
+            key_binds[i].flip_x=flip_x;
+            key_binds[i].flip_y=flip_y;
+        }
     }
 }
 
@@ -241,8 +243,8 @@ void HandleBoolAsAxisEvent(Input::KeyBind keybind,bool down){
     int x_axis_travel = axes[axis_id].max_x-x_axis_avg;
     int y_axis_travel = axes[axis_id].max_y-y_axis_avg;
 
-    axes[axis_id].raw_x += (down ^ axes[axis_id].flip_x) ? x_axis_travel*dir[0] : -x_axis_travel*dir[0];
-    axes[axis_id].raw_y += (down ^ axes[axis_id].flip_y) ? y_axis_travel*dir[1] : -y_axis_travel*dir[1];
+    axes[axis_id].raw_x += (down ^ keybind.flip_x) ? x_axis_travel*dir[0] : -x_axis_travel*dir[0];
+    axes[axis_id].raw_y += (down ^ keybind.flip_y) ? y_axis_travel*dir[1] : -y_axis_travel*dir[1];
     if(axes[axis_id].raw_x > axes[axis_id].max_x){axes[axis_id].raw_x = axes[axis_id].max_x;}
     if(axes[axis_id].raw_x < axes[axis_id].min_x){axes[axis_id].raw_x = axes[axis_id].min_x;}
     if(axes[axis_id].raw_y > axes[axis_id].max_y){axes[axis_id].raw_y = axes[axis_id].max_y;}
@@ -271,8 +273,8 @@ void HandleAxisAsAxisEvent(Input::KeyBind keybind,int pos_x,int pos_y){
 
     int prev_axis[2] {axes[axis_id].raw_x,axes[axis_id].raw_y};
 
-    axes[axis_id].raw_x= axes[axis_id].flip_x ? axes[axis_id].max_x-pos_x : pos_x;
-    axes[axis_id].raw_y= axes[axis_id].flip_y ? axes[axis_id].max_y-pos_y : pos_y;
+    axes[axis_id].raw_x= keybind.flip_x ? axes[axis_id].max_x-pos_x : pos_x;
+    axes[axis_id].raw_y= keybind.flip_y ? axes[axis_id].max_y-pos_y : pos_y;
     if(pos_x > axes[axis_id].max_x){axes[axis_id].max_x = pos_x;}   if(-pos_x > axes[axis_id].max_x){axes[axis_id].max_x = -pos_x;}
     if(pos_y > axes[axis_id].max_y){axes[axis_id].max_y = pos_y;}   if(-pos_y > axes[axis_id].max_y){axes[axis_id].max_y = -pos_y;}
     //Let's try to have axis' figure out their own max values.

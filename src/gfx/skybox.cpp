@@ -16,14 +16,22 @@ Skybox::Skybox(char* img_fn) : mat(){
     layer=-128;
     scale={1,1,1};
     if(!skybox_vertices.Valid()){BuildSkyboxPrimitive();}
+    glGenVertexArrays(1,&vertex_array_id);
+    glBindVertexArray(vertex_array_id);
+
+    skybox_vertices.Bind(Shader::ATTRIB_VERTEX);
+
+    glBindVertexArray(0);
+
     vertices=skybox_vertices;
     mat.texture = TextureManager::Get(img_fn);
 }
 
 void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
     cam->SetShader("skybox");//TODO: opt between skybox and skybox_flat
+    glBindVertexArray(vertex_array_id);
     glDisable(GL_DEPTH_TEST);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
 
     mat4 turn_matrix;
     mat4 pitch_matrix;
@@ -47,7 +55,7 @@ void Skybox::Draw(Camera* cam,mat4* view, mat4* projection){
     
     glDrawArrays(GL_TRIANGLES,0,6);
 
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    
+    glDisableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }

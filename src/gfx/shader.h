@@ -16,6 +16,7 @@ class Shader{
 	static const GLuint ATTRIB_NORMAL = 2;
 	static const GLuint ATTRIB_BONE_INDEX=3;
 	static const GLuint ATTRIB_BONE_WEIGHT=4;
+	static const GLuint ATTRIB_COLOR=5;
 	
     //Shader program ID
 	GLuint vertex,fragment;

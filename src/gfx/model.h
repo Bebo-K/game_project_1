@@ -14,8 +14,10 @@ enum ModelID{
 
 struct Mesh{
     Material   mat;
+    GLuint   vertex_array_id;
     VBO      vertex;
     VBO      index;
+    VBO      vertex_colors;
     VBO      texcoord_0;
     VBO      normal;
     VBO      bone_0_index;
@@ -23,6 +25,7 @@ struct Mesh{
 	int		 vertex_count;// must be a multiple of 3 ('cause triangles)
 
     Mesh();
+    void Init();
     ~Mesh();
 };
 

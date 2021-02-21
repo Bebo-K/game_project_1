@@ -6,6 +6,7 @@
 class Skybox : public Drawable{
     public:
     //could encompass global lighting too?
+    GLuint      vertex_array_id;
     VBO         vertices,tex_coords,normals;
     Material    mat;
 

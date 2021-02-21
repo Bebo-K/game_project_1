@@ -30,6 +30,10 @@ int ENDIAN_SWAP(unsigned int i) {
 	val |= (ret&0x000000FF)<<24;
 	return val;}
 
+byte GET_BITS(byte val,byte width,byte pos){
+	return (val >> (8-(width+pos))) & (255 >> (8-width));
+}
+
 int PAETH(int a,int b,int c){
 	int p = a + b - c;
 	if ((abs(p - a) <= abs(p - b))&&(abs(p - a) <=  abs(p - c)))return a;
@@ -59,7 +63,8 @@ byte read_byte(byte* base,int *p_offset){
 	return ret;
 }
 
-void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,unsigned char *tPalette,int Width,int Height,int BPP);
+unsigned char* DefilterScanline(unsigned char *scanline,unsigned char *prev,int scanline_len, int elements_per_px, int bits_per_element);
+void FormatImageScanline(unsigned char* data,int y,int width,unsigned char* scanline,int elements_per_pixel,int bits_per_element,unsigned char* palette,unsigned char* alpha_pallete);
 
 Image::Image(){
     width=0;height=0;
@@ -98,7 +103,10 @@ Image::~Image(){
 bool Image::LoadData(byte* data){
     int offset = 0;
 
-	int BytesPerPixel =3; //will be 4 by the end of this
+	int elements_per_pixel =3; //will be 4 by the end of this
+	int bits_per_element=8;
+	int elements_per_scanline;
+	int bytes_per_scanline;
 	uint32 Sig=0;
 
 	int ret=0;
@@ -143,25 +151,34 @@ bool Image::LoadData(byte* data){
 		case IHDR:{
             width = (int)read_int(data,&offset);
             height = (int)read_int(data,&offset);
-            read_byte(data,&offset);//Bit Depth
+            bits_per_element = read_byte(data,&offset);
+			if(bits_per_element > 8){
+                logger::exception("Image::LoadData -> (16+ bit channels unsupported) Image color channels are larger than 8 bits. What are we supposed to do with all those colors?!\n");
+                return -2;
+			}
 			switch(read_byte(data,&offset)){ //color type
-				case 0:BytesPerPixel=1;break;//greyscale
-				case 2:BytesPerPixel=3;break;//RBG
-				case 3:BytesPerPixel=1;// INDEX I32O PALLATE
+				case 0:elements_per_pixel=1;break;//greyscale
+				case 2:elements_per_pixel=3;break;//RBG
+				case 3:elements_per_pixel=1;// index in Pallete
 						Paletted = 1;break;
-				case 4:BytesPerPixel=2;break;// GRAY,A
-				case 6:BytesPerPixel=4;break; //RGBA
+				case 4:elements_per_pixel=2;break;// grayscale, alpha pairs
+				case 6:elements_per_pixel=4;break; //RGBA
 			    default: break;
             }
-			read_byte(data,&offset);//Compression Method. Is DEFLATE.
-			read_byte(data,&offset);//Filter Method. If this not be 0, we got problems
+			read_byte(data,&offset);//Compression Method. Must be 0 (Deflate)
+			read_byte(data,&offset);//Filter Method. Must be 0
 			if(read_byte(data,&offset)){
-                logger::warn("Image::LoadData -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.");
+                logger::warn("Image::LoadData -> (Interlacing unsupported) Image is interlaced, and will appear incorrectly. Please de-interlace the image with any image editor.\n");
             }
 
-            DecompresseDataSz = (height+1)*width*BytesPerPixel;
+			elements_per_scanline = width*elements_per_pixel;
+			bytes_per_scanline = 1 + (elements_per_scanline*bits_per_element/8);
+			if((elements_per_scanline*bits_per_element)%8 != 0){bytes_per_scanline++;}
+
+            DecompresseDataSz = height + bytes_per_scanline*height;
 			DecompressedData = (byte*)malloc(DecompresseDataSz);
-			memset(DecompressedData,0x45,DecompresseDataSz);//why'd I choose hex 45 again?
+
+			memset(DecompressedData,0xBA,DecompresseDataSz);//why'd I choose hex 45 again?
 			z.avail_out = DecompresseDataSz;
 			z.next_out  = DecompressedData;
 			ret = inflateInit(&z);
@@ -171,7 +188,7 @@ bool Image::LoadData(byte* data){
 			break;
 		case PLTE:{
 			if((Length%3 !=0) |(Paletted== 0)){
-                logger::exception("Image::LoadData -> PNG palette is invalid.");
+                logger::exception("Image::LoadData -> PNG palette is invalid.\n");
                 return -2;
             }
 			Palette = (byte*)malloc(Length);
@@ -191,11 +208,11 @@ bool Image::LoadData(byte* data){
 			z.next_in = (unsigned char*)(&data[offset]);//Saves an unnecessary copy.
 			offset += Length;
 			ret = inflate(&z,Z_NO_FLUSH);
-			if(ret == Z_STREAM_END)inflateEnd(&z);
+			if(ret == Z_STREAM_END){inflateEnd(&z);}
 			if(ret < 0) {
 				logger::exception("Image::LoadData -> Z Stream Error:%s\n",z.msg);
 				return 0;
-				}
+			}
 			break;
 			}
 		default:offset+=Length;break;
@@ -208,114 +225,91 @@ bool Image::LoadData(byte* data){
 
 	long long size = width*height*4;
 	image_data= (byte*)malloc(size);
-	FormatImage(DecompressedData,image_data,Palette,TPalette,width,height,BytesPerPixel);
+	memset(image_data,0,width*height*4);
+
+	unsigned char* scanline=nullptr;
+	unsigned char* previous_scanline=nullptr;
+	
+	for(int i=0; i<height;i++){
+ 		scanline = DefilterScanline(&DecompressedData[i*bytes_per_scanline],previous_scanline,bytes_per_scanline,elements_per_pixel,bits_per_element);
+		FormatImageScanline(image_data,i,width,scanline,elements_per_pixel,bits_per_element,Palette,TPalette);
+		if(previous_scanline != nullptr){free(previous_scanline);}
+		previous_scanline = scanline;
+	}
+	free(previous_scanline);
 	free(Palette);
 	free(TPalette);
 	free(DecompressedData);
 	return 1;
 }
-void FormatImage(unsigned char *in,unsigned char *out,unsigned char *Palette,unsigned char *tPalette,int Width,int Height,int BPP){
-	memset(out,0,Width*Height*4);
-	unsigned char fil= in[0];
-	for(int j=0; j<Width; j++){
-		for(int k=0;k<BPP;++k){
-			out[j*4+ k] = in[j*BPP+ k + 1];		
-			}
-		}
 
-	//First line filtered independently
-	if(fil==1){for(int j=0; j<Width*4; j++){out[j] += (j-4 >= 0)?out[j-4]:0;} }
-	if(fil==3){for(int j=0; j<Width*4; j++){out[j] += (j-4 >= 0)?out[j-4]/2:0;} }
-	/////////
 
-	int row = Width*4;
+unsigned char* DefilterScanline(unsigned char *scanline,unsigned char *prev,int scanline_len, int elements_per_px, int bits_per_element){
+	int len = scanline_len-1;
+	unsigned char* out = (unsigned char*) malloc(len);
+	memcpy(out,&scanline[1],len);
 
-	for(int i=1; i<Height;i++){
-		fil = in[i*(Width*BPP+1)];
-		for(int j=0; j<Width; j++){
-			for(int k=0;k<BPP;k++){
-				out[(i*row)+j*4+ k] = in[i*(Width*BPP + 1)+j*BPP+ k+1]; //shift everything over a byte, and space the array to 4BPP
-				}
-			}
-		switch(fil){
+	int bpp = elements_per_px*bits_per_element/8; //bpp= bytes per pixel
+	if(elements_per_px*bits_per_element % 8 != 0)bpp++;
+	
+	switch(scanline[0]){
 		case 0: break;
-		
-		case 1:{
-			for(int j=4; j<row; j++){
-				out[i*row+j] +=	out[i*row+j -4];}
-			break;} //Last
-
-		case 2:{
-			for(int j=0; j<row; j++){
-				out[i*row+j] += out[i*row+j-row];}
-			break;} //Up
-
-		case 3:{
-			for(int f=0; f<BPP;f++){
-				out[i*row+f] += out[(i-1)*row+f]/2;}
-			for(int j=4; j<row; j++){
-				int avg = ((int)out[i*row+j-4]+(int)out[(i-1)*row+j])/2;
-				out[i*row+j] += avg;}
-			break;} //AVG(Last,Up)
-
-		case 4:{
-			for(int f=0; f<BPP;f++){
-				out[i*row +f] +=PAETH(0,out[(i-1)*row+f],0);}
-			for(int j=4; j<row; j++){
-				out[i*row+j] +=PAETH(out[i*row+j-4],out[(i-1)*row+j],out[(i-1)*row+j-4]);}
-			break;} //PAETH(Last,Up,Up+Last)
-
-		default:logger::exception("Invalid PNG filter method:%d\n",fil);break;
-		}
+		case 1: 
+			for(int i=bpp;i<len;i++){out[i]+=out[i-bpp];};break;
+		case 2: 
+			if(prev==nullptr){break;}
+			for(int i=0;i<len;i++){out[i] += prev[i];};break;
+		case 3: 
+			for(int i=0;i<len;i++){
+				out[i] += ( ((i >= bpp)?out[i-bpp] : 0)  + ((prev != nullptr)?prev[i] : 0) ) / 2;         
+			};break;
+		case 4:
+			for(int i=0;i<len;i++){
+				out[i] += PAETH((i >= bpp)?out[i-bpp] : 0  , (prev != nullptr)?prev[i] : 0 , (i>= bpp && prev !=nullptr)? prev[i-bpp] : 0);       
+			}break;
+		default:logger::exception("Invalid PNG filter method:%d\n",scanline[0]);break;
 	}
-	///depalette
-	if(Palette){
+	return out;
+}
+
+char GetPixelElement(unsigned char *scanline,int x,int element,int elements_per_px,int bits_per_element){
+	int bit_index = (x*elements_per_px + element) * bits_per_element;
+	int byte_index = bit_index/8;
+	int bit_offset = bit_index%8;
+	return GET_BITS(scanline[byte_index],bits_per_element,bit_offset);
+}
+
+
+void FormatImageScanline(unsigned char* data,int y,int width,unsigned char* scanline,int elements_per_pixel,int bits_per_element,unsigned char* palette,unsigned char* alpha_pallete){
+	if(palette != nullptr){
 		int Index =0;
-		for(int i=0; i<Height;i++){
-			for(int j=0; j<Width;j++){
-			Index = out[i*row+(j*4)];
-			out[i*row+(j*4)]  =Palette[Index*3];
-			out[i*row+(j*4)+1]=Palette[Index*3+1];
-			out[i*row+(j*4)+2]=Palette[Index*3+2];
-			out[i*row+(j*4)+3]=(tPalette)?tPalette[Index]:255;
-				
-			}
+		for(int i=0; i<width; i++){
+			Index = GetPixelElement(scanline,i,0,elements_per_pixel,bits_per_element);
+			data[(y*width + i)* 4]  = palette[Index*3];
+			data[(y*width + i)* 4 + 1]=palette[Index*3+1];
+			data[(y*width + i)* 4 + 2]=palette[Index*3+2];
+			data[(y*width + i)* 4 + 3]=(alpha_pallete)?alpha_pallete[Index]:255;	
 		}
 	}
-	//////convert to RGBA
 	else{
-		switch(BPP){
-		case 1://greyscale
-		for(int i=0; i<Height;i++){
-			for(int j=0; j<Width;j++){
-				out[(i*Width+j)*4+1]=out[(i*Width+j)*4];
-				out[(i*Width+j)*4+2]=out[(i*Width+j)*4];
-				out[(i*Width+j)*4+3]=255;
-				}
+		for(int i=0; i<width; i++){
+			data[(y*width + i)* 4] = GetPixelElement(scanline,i,0,elements_per_pixel,bits_per_element);
+			data[(y*width + i)* 4 + 1] = (elements_per_pixel > 2)?GetPixelElement(scanline,i,1,elements_per_pixel,bits_per_element) : data[(y*width + i)* 4];
+			data[(y*width + i)* 4 + 2] = (elements_per_pixel > 2)?GetPixelElement(scanline,i,2,elements_per_pixel,bits_per_element) : data[(y*width + i)* 4];
+			if(elements_per_pixel == 2){
+				data[(y*width + i)* 4 + 3] = GetPixelElement(scanline,i,1,elements_per_pixel,bits_per_element);
 			}
-		break;
-		case 2://greyscale w/alpha?
-		for(int i=0; i<Height;i++){
-			for(int j=0; j<Width;j++){
-				out[(i*Width+j)*4+1]=out[(i*Width+j)*4];
-				out[(i*Width+j)*4+2]=out[(i*Width+j)*4];
-				out[(i*Width+j)*4+3]=255;
-				}
+			else if(elements_per_pixel == 4){
+				data[(y*width + i)* 4 + 3] = GetPixelElement(scanline,i,3,elements_per_pixel,bits_per_element);
 			}
-		break;
-		case 3://RGB
-		for(int i=0; i<Height;i++){
-			for(int j=0; j<Width;j++){
-				out[(i*Width+j)*4 +3]=255;
+			else{
+				data[(y*width + i)* 4 + 3] = 255;
 			}
-		}
-		break;
-
-		case 4:/*Image is 4 channel RGBA, no work needed.*/break;
-		default:break;
 		}
 	}
 }
+
+
 bool Image::Blit(Image* dest,int x,int y){
     if(x + width > dest->width || y + height > dest->height || x <0 || y <0){return false;}
 	for(int i=0; i<height;i++){

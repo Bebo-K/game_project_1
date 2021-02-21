@@ -75,14 +75,6 @@ void GetTimerData(){
 
 
 //********************************************//
-//                 Polling Methods            //
-//********************************************//
-
-void PollControllerInput(){
-    PollJoypads();
-}
-
-//********************************************//
 //                 Polling Loop               //
 //********************************************//
 int LoopMain(){
@@ -90,7 +82,7 @@ int LoopMain(){
     do {
         Sleep(4);  
         Game::Poll();
-        PollControllerInput();
+        PollJoypads();
         GetTimerData();
         if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
             TranslateMessage(&window_message);

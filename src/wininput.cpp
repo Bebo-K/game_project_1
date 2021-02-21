@@ -30,37 +30,43 @@ void SetupJoypads(){
     }
     current_device_count = joyGetNumDevs();
     bool plugged_in[MAX_CONTROLLERS];
-    for(int i=0;i<MAX_CONTROLLERS;i++){plugged_in[i]=false;}
-    int handled_devices = (current_device_count>MAX_CONTROLLERS)?MAX_CONTROLLERS:current_device_count;
-    for(int i=0;i<handled_devices;i++){
+    int  controller_ids[MAX_CONTROLLERS];
+    int current_controller_num =0;
+    for(int i=0;i<MAX_CONTROLLERS;i++){plugged_in[i]=false;controller_ids[i]=0;}
+    for(int i=0;i<(int)current_device_count;i++){
         JOYINFOEX temp_device_state;
         temp_device_state.dwSize = sizeof(JOYINFOEX);
         temp_device_state.dwFlags = JOY_RETURNALL;
         MMRESULT device_plugged_in = joyGetPosEx(JOYSTICKID1+i,&temp_device_state);
-        if(device_plugged_in == JOYERR_NOERROR){
-            joystick_prev_x_axis[i]=temp_device_state.dwXpos;
-            joystick_prev_y_axis[i]=temp_device_state.dwYpos;
-            plugged_in[i]=true;
+        if(device_plugged_in == JOYERR_NOERROR && current_controller_num < MAX_CONTROLLERS){
+            plugged_in[current_controller_num]=true;
+            controller_ids[current_controller_num]=i;
+            joystick_prev_x_axis[current_controller_num]=temp_device_state.dwXpos;
+            joystick_prev_y_axis[current_controller_num]=temp_device_state.dwYpos;
+
             if(joyGetDevCaps(JOYSTICKID1+i,&joystick_info[i],sizeof(JOYCAPS))== JOYERR_NOERROR ){
                 JOYCAPS stick_info;
                 memcpy(&stick_info,&joystick_info[i],sizeof(JOYCAPS));
+                /*
                 printf("Controller #%d\n",i);
                 printf("ControllerName: %s\n",stick_info.szPname);
                 printf("ControllerName: %s\n",stick_info.szPname);
                 printf("Conteroller info: %s\n",stick_info.szRegKey);
                 printf("Manufacturerer ID: %d\n",stick_info.wMid);
                 printf("Product ID: %d\n",stick_info.wPid);
+                */
             }
+            current_controller_num++;
         }
 
     }
 
-    
-    if(plugged_in[0]){
+    for(int i=0;i<current_controller_num;i++){
+        if(!plugged_in[i])continue;
+        int id = controller_ids[i];//controller device ID;
         //Where to put this?    
-        Input::SetAxisBounds(0,joystick_info[0].wXmax,joystick_info[0].wXmin,joystick_info[0].wYmax,joystick_info[0].wYmin);
-        Input::SetAxisDirection(0,false,true);
-        //Input::SetAxisBounds(0,joystick_info[1].wXmax,joystick_info[1].wXmin,joystick_info[1].wYmax,joystick_info[1].wYmin);
+        Input::SetAxisBounds(0,joystick_info[id].wXmax,joystick_info[id].wXmin,joystick_info[id].wYmax,joystick_info[id].wYmin);
+        Input::SetPhysicalAxisDirection(PhysicalInput::JOY1_AXIS_1+(i*26),false,true);
     }
 
 }
