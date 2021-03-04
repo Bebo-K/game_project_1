@@ -30,6 +30,9 @@ void SetStateFromPhysics(Entity* e){
     if(e->phys_data->is_midair){
         if(e->movement != null && e->movement->is_jumping){
             e->state->Set(JUMPING);
+            if(e->velocity.y < 0.5f){
+                e->state->Set(JUMP_APEX);
+            }
             if(e->velocity.y < 0){
                 e->movement->is_jumping=false;
             }

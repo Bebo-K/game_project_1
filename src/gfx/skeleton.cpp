@@ -36,6 +36,24 @@ void Skeleton::SetBoneName(int bone_id, char* bone_name){
     bones[bone_id].name = cstr::new_copy(bone_name);
 }
 
+void Skeleton::DebugPrint(){
+    logger::info("Bone Count: %d\n",bone_count);
+    for(int i=0; i< bone_count;i++){
+        logger::info("Bone %d:\n",i);
+        bones[i].DebugPrint();
+    }
+    
+    logger::info("..Animation Count: %d\n",animation_count);
+    for(int i=0; i< animation_count;i++){
+        logger::info("..Animation %d:\n",i);
+        animations[i].DebugPrint();
+    }
+}
+
+void Bone::DebugPrint(){
+    logger::info("Name %s:\n",name);
+}
+
 Animation* Skeleton::GetAnimation(char* name){
     for(int i=0;i<animation_count;i++){
         if(cstr::compare(name,animations[i].name)){

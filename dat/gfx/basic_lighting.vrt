@@ -25,6 +25,7 @@ void main(void)
   vec4 pose_pos = vec4(a_vertex,1);
   vec3 local_pos = a_vertex.xyz;
   vec3 local_norm = a_normal;
+  
   if(a_bone_weight.x > 0.001){
 	local_pos =  (pose_matrices[a_bone_index.x]*pose_pos) * a_bone_weight.x;
 	local_pos += (pose_matrices[a_bone_index.y]*pose_pos) * a_bone_weight.y;
@@ -43,7 +44,7 @@ void main(void)
   }
   world_pos = modelview_matrix * vec4(local_pos,1);
   tex_coord = a_tex_coord;
-  color = vec4(a_color,1)*base_color;
+  color = vec4(a_color,1);
   normal = normalize(normal_matrix*local_norm);
   gl_Position = projection_matrix * world_pos;
 }

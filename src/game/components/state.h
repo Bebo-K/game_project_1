@@ -9,6 +9,7 @@ enum MovementLayerStateID{
 	WALKING,
 	RUNNING,
 	JUMPING,
+	JUMP_APEX,
 	FALLING,
 	LANDING
 };

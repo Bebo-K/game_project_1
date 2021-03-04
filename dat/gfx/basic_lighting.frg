@@ -3,9 +3,10 @@ precision mediump float;
 
 uniform sampler2D texture0;
 uniform vec4 texture_location;
-uniform vec3 ambient;
-uniform vec3 diffuse;
-uniform vec3 specular;
+uniform vec4 base_color;
+vec3 ambient = vec3(1.0,1.0,1.0);
+vec3 diffuse = vec3(1.0,1.0,1.0);
+vec3 specular = vec3(1.0,1.0,1.0);
 
 
 in vec4 color;
@@ -32,7 +33,11 @@ void main(void) {
 	output = vec4(lighting,1);
 	*/
 	
+    float inv_gamma = 1.0/2.2;
+	vec3 gamma_correct_basecolor = pow(base_color.xyz, vec3(inv_gamma));
+	vec4 basecolor = vec4(gamma_correct_basecolor.xyz,base_color.w);
+	
 	vec2 coord =  tex_coord*texture_location.zw + texture_location.xy;
-	gl_FragColor  = color*texture2D(texture0, coord);
+	gl_FragColor  = color*basecolor*texture2D(texture0, coord);
 }
 

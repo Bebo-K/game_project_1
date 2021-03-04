@@ -37,7 +37,7 @@ void CollisionMesh::SetVertices(MeshGroup* group){
 
     vertex_count=0;
     for(int i=0;i<group->mesh_count;i++){
-        vertex_count += group->meshes[i].vertex_count;
+        vertex_count += group->meshes[i].tri_count*3;
     }
 
     vertices = (float*)calloc(vertex_count,sizeof(float)*3);
@@ -45,10 +45,11 @@ void CollisionMesh::SetVertices(MeshGroup* group){
     int current_vert_count=0;
     for(int i=0;i<group->mesh_count;i++){
         Mesh* current_mesh = &group->meshes[i];
-        float* mesh_verts = (float*)calloc(current_mesh->vertex_count*3,sizeof(float));
-
+        float* mesh_verts = (float*)calloc(current_mesh->tri_count*3*3,sizeof(float));
+        
         if(group->meshes[i].index.Valid()){
             int index_sizeof;
+            int index_count = group->meshes[i].tri_count*3;
             switch(current_mesh->index.element_type){
                 case GL_BYTE:index_sizeof=1;break;
                 case GL_SHORT:index_sizeof=2;break;
@@ -58,30 +59,22 @@ void CollisionMesh::SetVertices(MeshGroup* group){
                 default: index_sizeof=4;break;
             }
             
-            byte* indices = (byte*)calloc(group->meshes[i].vertex_count,sizeof(int));
             glBindVertexArray(group->meshes[i].vertex_array_id);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,current_mesh->index.buffer_id);
-            glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,current_mesh->vertex_count * index_sizeof, indices);
+
+            byte* indices = (byte*)calloc(index_count,index_sizeof);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,current_mesh->index.buffer_id);
+                glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,index_count * index_sizeof, indices);
             int gl_err = glGetError();
             if(gl_err != 0){logger::warn("GL error building collision mesh: index buffer error %d",&gl_err);}
             
-            int max_index=0;
-            for(int j=0;j< current_mesh->vertex_count;j++){
-                int index =GetIndex(indices,j,index_sizeof);
-                if(max_index < index){max_index=index;}
-            }
-            
             float* non_indexed_verts = (float*)calloc(current_mesh->vertex_count,sizeof(float)*3);
-
-            glBindBuffer(GL_ARRAY_BUFFER,current_mesh->vertex.buffer_id);
-            glGetBufferSubData(GL_ARRAY_BUFFER, 0, (max_index+1) * sizeof(float) * 3, non_indexed_verts);
+                glBindBuffer(GL_ARRAY_BUFFER,current_mesh->vertex.buffer_id);
+                glGetBufferSubData(GL_ARRAY_BUFFER, 0, current_mesh->vertex_count * 3 * sizeof(float), non_indexed_verts);
             
             gl_err = glGetError();
-            if(gl_err != 0){
-                logger::warn("GL error building collision mesh: vertex buffer error %d\n",&gl_err);
-            }
+            if(gl_err != 0){logger::warn("GL error building collision mesh: vertex buffer error %d\n",&gl_err);}
 
-            for(int j=0;j< current_mesh->vertex_count;j++){
+            for(int j=0;j< index_count;j++){
                 int index = GetIndex(indices,j,index_sizeof);
                 mesh_verts[j*3] =   non_indexed_verts[index*3];
                 mesh_verts[j*3+1] = non_indexed_verts[index*3+1];
@@ -96,8 +89,8 @@ void CollisionMesh::SetVertices(MeshGroup* group){
             glGetBufferSubData(GL_ARRAY_BUFFER, 0, current_mesh->vertex_count * sizeof(float) * 3, mesh_verts);
         }
 
-        memcpy(vertices,mesh_verts,current_mesh->vertex_count*sizeof(float)*3);
-        current_vert_count+=group->meshes[i].vertex_count;
+        memcpy(vertices,mesh_verts,current_mesh->tri_count*3*3*sizeof(float));
+        current_vert_count+=group->meshes[i].tri_count*3;
         free(mesh_verts);
     } 
 }

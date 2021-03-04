@@ -69,6 +69,7 @@ class Animation{
 
     void SetName(char* anim_name);
     void SetChannelCount(int num_channels);
+    void DebugPrint();
 };
 
 struct ClipInfo{ //Info about the currently running animation

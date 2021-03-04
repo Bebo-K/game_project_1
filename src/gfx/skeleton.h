@@ -12,6 +12,8 @@ struct Bone{
     char* name;
     int parent_index;
     mat4 bind_transform;
+    
+    void DebugPrint();
 };
 
 class Skeleton{
@@ -28,6 +30,7 @@ class Skeleton{
     ~Skeleton();
 
     void SetBoneName(int bone_id,char* bone_name);
+    void DebugPrint();
 
     //void Clone(Skeleton* dest);
     //void DestroySharedData();

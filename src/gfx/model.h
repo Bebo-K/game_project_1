@@ -13,6 +13,8 @@ enum ModelID{
 };
 
 struct Mesh{
+	int		 vertex_count;
+    int      tri_count;
     Material   mat;
     GLuint   vertex_array_id;
     VBO      vertex;
@@ -22,10 +24,10 @@ struct Mesh{
     VBO      normal;
     VBO      bone_0_index;
     VBO      bone_0_weight;
-	int		 vertex_count;// must be a multiple of 3 ('cause triangles)
 
     Mesh();
     void Init();
+    void DebugPrint();
     ~Mesh();
 };
 
@@ -36,6 +38,7 @@ struct MeshGroup{
     AABB  bounds;
     MeshGroup();
     ~MeshGroup();
+    void DebugPrint();
 };
 
 class ModelData{
@@ -51,6 +54,7 @@ class ModelData{
     ~ModelData();
 
     void DrawMesh(Camera* cam,int group_index,int mesh_index);
+    void DebugPrint();
 };
 
 class Model: public Drawable{

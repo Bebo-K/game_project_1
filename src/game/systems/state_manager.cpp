@@ -10,7 +10,7 @@ void UpdateStateAnimation(Entity* e){
         if(e->state->Is(IDLE)){new_anim="idle";anim_options.end_action=LOOP;}
         if(e->state->Is(WALKING)){new_anim="walk";anim_options.end_action=LOOP;}
         if(e->state->Is(RUNNING)){new_anim="run";anim_options.end_action=LOOP;}
-        if(e->state->Is(JUMPING)){new_anim="jump";anim_options.end_action=STOP;}
+        if(e->state->Is(JUMPING)){new_anim="jump_start";next_anim="jump_loop";anim_options.end_action=GOTO;}
         if(e->state->Is(FALLING)){new_anim="fall_start";next_anim="fall_loop";anim_options.end_action=GOTO;}
         if(e->state->Is(LANDING)){new_anim="land";anim_options.end_action=STOP;}
         if(e->state->Is(ATTACKING)){new_anim="attack";anim_options.end_action=STOP;}

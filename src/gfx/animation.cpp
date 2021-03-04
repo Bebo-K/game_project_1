@@ -123,6 +123,15 @@ void Animation::SetChannelCount(int num_channels){
     channels = new AnimationChannel[num_channels]();
 }
 
+void Animation::DebugPrint(){
+    logger::info("....Animation Name: %s\n",name);
+    logger::info("....Channel Count: %d\n",channel_count);
+    //for(int i=0; i< channel_count;i++){
+    //   logger::info("Animation %d:\n",i);
+    //    channels[i].DebugPrint();
+    //}
+}
+
 //------------------------------------------------//
 //            Animation manager code              //
 //------------------------------------------------//

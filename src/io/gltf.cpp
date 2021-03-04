@@ -399,20 +399,21 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 	JSONObject* mesh = meshes->At(group_id)->ObjectValue();
 	JSONArray* primitives = mesh->GetArray("primitives");
 
-
 	group->name = FindMeshGroupName(group_id);
 	if(group->name== null){group->name = cstr::new_copy(mesh->GetString("name")->string);}
 	group->mesh_count=primitives->count;
 	group->meshes = new Mesh[primitives->count];
 
+	Mesh* prim = nullptr;
 	for(int i=0;i<primitives->count;i++){
-		Mesh* prim = &group->meshes[i];
+		prim = &group->meshes[i];
 		JSONObject* primitive = primitives->At(i)->ObjectValue();
 		JSONObject* attribs = primitive->GetJObject("attributes");
 
 		int pos_attrib_id=attribs->GetInt("POSITION");
 		JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
 		prim->vertex_count = pos_accessor->GetInt("count");
+		prim->tri_count = prim->vertex_count/3;
 
 		JSONArray* max_array = pos_accessor->GetArray("max");
 		JSONArray* min_array = pos_accessor->GetArray("min");
@@ -426,36 +427,13 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		group->bounds.Union(prim_bounds);
 
 		prim->vertex=BuildAccessorBuffer(pos_attrib_id,GL_ARRAY_BUFFER);
-		if(attribs->HasInt("NORMAL")){
-			prim->normal=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
-		else{
-			prim->normal.CreateEmpty(GL_FLOAT,3,prim->vertex_count,GL_ARRAY_BUFFER);
-		}
-		if(attribs->HasInt("COLOR_0")){
-			prim->vertex_colors=BuildAccessorBuffer(attribs->GetInt("COLOR_0"),GL_ARRAY_BUFFER);}
-		else{
-			//prim->vertex_colors.CreateEmpty(GL_FLOAT,3,prim->vertex_count,GL_ARRAY_BUFFER);
-		}
-		if(attribs->HasInt("TEXCOORD_0")){
-			prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
-		else{
-			prim->texcoord_0.CreateEmpty(GL_FLOAT,2,prim->vertex_count,GL_ARRAY_BUFFER);
-		}
-		if(attribs->HasInt("JOINTS_0")){
-			prim->bone_0_index=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
-		else{
-			prim->bone_0_index.CreateEmpty(GL_SHORT,4,prim->vertex_count,GL_ARRAY_BUFFER);
-		}
-		if(attribs->HasInt("WEIGHTS_0")){
-			prim->bone_0_weight=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
-		else{
-			prim->bone_0_weight.CreateEmptyWeights(GL_FLOAT,4,prim->vertex_count,GL_ARRAY_BUFFER);
-		}
-		//if(attribs->HasInt("TEXCOORD_1")){
-		//	mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
-		if(primitive->HasInt("material")){
-			prim->mat = GetMaterial(primitive->GetInt("material"));
-		}
+		if(attribs->HasInt("NORMAL")){prim->normal=BuildAccessorBuffer(attribs->GetInt("NORMAL"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("COLOR_0")){prim->vertex_colors=BuildAccessorBuffer(attribs->GetInt("COLOR_0"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("TEXCOORD_0")){prim->texcoord_0=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_0"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("JOINTS_0")){prim->bone_0_index=BuildAccessorBuffer(attribs->GetInt("JOINTS_0"),GL_ARRAY_BUFFER);}
+		if(attribs->HasInt("WEIGHTS_0")){prim->bone_0_weight=BuildAccessorBuffer(attribs->GetInt("WEIGHTS_0"),GL_ARRAY_BUFFER);}
+		//if(attribs->HasInt("TEXCOORD_1")){mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
+		if(primitive->HasInt("material")){prim->mat = GetMaterial(primitive->GetInt("material"));}
 		else{
 			prim->mat.base_color[0]=prim->mat.base_color[1]=prim->mat.base_color[2]=prim->mat.base_color[3]=1.0f;
 			prim->mat.texture=TextureManager::DefaultTexture();
@@ -466,7 +444,11 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		if(primitive->HasInt("indices")){
 			int index_accessor_id=primitive->GetInt("indices"); 
 			prim->index = BuildAccessorBuffer(index_accessor_id,GL_ELEMENT_ARRAY_BUFFER);
-			prim->vertex_count = GetAccessor(index_accessor_id)->GetInt("count");
+			int index_count = GetAccessor(index_accessor_id)->GetInt("count");
+			prim->tri_count = index_count/3;
+			if(index_count % 3 != 0){
+				logger::warn("Non-Triangulated Mesh: %s has an index buffer length that is not a multiple of 3: %d", group->name, index_count);
+			}
 		}
 		prim->Init();
 	}
