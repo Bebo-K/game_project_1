@@ -1,26 +1,35 @@
-#ifndef MENU_H
-#define MENU_H
+#ifndef UI_LAYER_H
+#define UI_LAYER_H
 
-#include "widget.h"
-#include "layout.h"
-#include "../structs/data_types.h"
 #include "../input.h"
+#include "../structs/list.h"
+#include "layout.h"
+#include "widget.h"
 
-class Menu{
+class UIWindow{
     public:
-    bool active;
+    bool    active;
+    bool    visible;
+    Layout  layout;
+    int     type_id;
 
-    Layout    layout;
-    StringMap widgets;
-
-    void SetLayout(int height,int width,LayoutOffset pos);
-    //virtual ~Menu(){}
+    List<UIWindow>  sub_windows;
+    StringMap   widgets;
+    
+    UIWindow();
+    UIWindow(UIWindow* parent);
 
     Widget* AddWidget(Widget* w,char* name);
     Widget* AddWidget(Widget* w,char* name,LayoutOffset pos);
     Widget* GetWidget(char* name);
     Widget* RemoveWidget(char* name);
+    //Widget* GetWidgetAtPos(int x,int y);
+    void Clear();
 
+    void Open();
+        virtual void OnOpen(){}
+    void Close();
+        virtual void OnClose(){};
     void Update(int frames);
         virtual void OnUpdate(int frames){};
     void Paint();

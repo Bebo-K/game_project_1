@@ -8,30 +8,63 @@
 #include "widgets/text_widget.h"
 #include "widgets/dev_console.h"
 
-UI::UI(){}
+#include "menus/main_menu.h"
+#include "menus/loading_menu.h"
+#include "menus/ingame_menu.h"
+
+UI::UI():debug_widgets(1){
+    current_screen = nullptr;
+}
 
 DeveloperConsole* game_console;
 
 void UI::Load(){
     logger::info("loading ui...\n");
     game_console = new DeveloperConsole();
-    debug_layer.active=true;
-    debug_layer.AddWidget(game_console,"console");
+    game_console->layout.offset.parent = &fullscreen_layout;
+    game_console->active = false;
+    debug_widgets.Add("console",(byte*)game_console);
     DeveloperConsole::Write("hello world!");
+}
+    
+    
+UIWindow* BuildMenu(int window_id){
+    switch(window_id){
+        case UI::MAIN_MENU: return new MainMenu(); break;
+        case UI::LOADING: return new LoadingMenu(); break;
+        case UI::INGAME: return new IngameMenu(); break;
+        default: break;
+    }
+    return nullptr;
+}
+
+UIWindow* UI::OpenWindow(int window_id){
+    if(current_screen != nullptr){CloseWindow();}
+    current_screen = BuildMenu(window_id);
+    return current_screen;
+}
+
+void UI::CloseWindow(){
+    free(this->current_screen);
+    current_screen=nullptr;
 }
 
 void UI::Paint(){
-    interface_layer.Paint();
-    menu_layer.Paint();
-    pause_layer.Paint();
-    debug_layer.Paint();
+    if(current_screen && current_screen->visible){
+        current_screen->Paint();
+    }
+    for(int i=0;i<debug_widgets.Count();i++){
+        Widget* pWidget = (Widget*)debug_widgets.begin()[i];
+        if(pWidget != null){pWidget->Paint();}
+    }
 }
 
 void UI::Update(Scene* scene, int frames){
-    interface_layer.Update(frames);
-    menu_layer.Update(frames);
-    pause_layer.Update(frames);
-    debug_layer.Update(frames);
+    if(current_screen && current_screen->active){
+        current_screen->Update(frames);
+    }
+    
+    for(byte* w:debug_widgets){((Widget*)w)->OnUpdate(frames);}
 }
 
 void UI::Unload(){
@@ -41,22 +74,27 @@ void UI::Unload(){
 
 bool  UI::OnInput(Input::EventID event_type){
     bool handled = false;
-    handled = debug_layer.OnInput(event_type);
-    if(!handled){handled = interface_layer.OnInput(event_type);}
-    if(!handled){handled = pause_layer.OnInput(event_type);}
-    if(!handled){handled = menu_layer.OnInput(event_type);}
+    for(byte* w:debug_widgets){if(!handled && ((Widget*)w)->OnInput(event_type))handled = true;}
+    if(current_screen && current_screen->active){
+        handled = current_screen->HandleInput(event_type);
+    }
     return handled;
 }
 void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     bool handled = false;
-    handled = debug_layer.OnSignal(signal_id,metadata_len,metadata);
-    if(!handled){handled = interface_layer.OnSignal(signal_id,metadata_len,metadata);}
-    if(!handled){handled = pause_layer.OnSignal(signal_id,metadata_len,metadata);}
-    if(!handled){handled = menu_layer.OnSignal(signal_id,metadata_len,metadata);}
+    for(byte* w:debug_widgets){if(!handled && ((Widget*)w)->OnSignal(signal_id,metadata_len,metadata))handled = true;}
+    if(current_screen && current_screen->active){
+        handled = current_screen->HandleSignal(signal_id,metadata_len,metadata);
+    }
 }
+
 void UI::OnResize(int screen_w,int screen_h){
-    debug_layer.Resize(screen_w, screen_h);
-    interface_layer.Resize(screen_w, screen_h);
-    pause_layer.Resize(screen_w, screen_h);
-    menu_layer.Resize(screen_w, screen_h);
+    fullscreen_layout.X=0;
+    fullscreen_layout.Y=0;
+    fullscreen_layout.W=screen_w;
+    fullscreen_layout.H=screen_h;
+    for(byte* w:debug_widgets){((Widget*)w)->OnResize();}
+    if(current_screen){
+        current_screen->HandleResize();
+    }
 }

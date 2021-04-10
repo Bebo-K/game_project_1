@@ -151,26 +151,23 @@ struct IDMap{
     void  Clear();
 };
 
-class StringMap{
-    private:
-        char**  keys;
-        byte**  values;
-        int     slots;
+struct StringMap{
+    char**  keys;
+    byte**  values;
+    int     slots;
 
-    public:
-        StringMap();
-        StringMap(int initial_size);
-        ~StringMap();
+    StringMap();
+    StringMap(int initial_size);
+    ~StringMap();
 
-        bool Add(char* name,byte* value);
-        byte* Remove(char* name);
-        byte* Get(char* name);
-        bool  Has(char* name);
-        void  Clear();
+    bool  Add(char* name,byte* value);
+    byte* Remove(char* name);
+    byte* Get(char* name);
+    bool  Has(char* name);
+    void  Clear();
 
-        byte** begin();
-        byte** end();
-        int    Count();
+    int    Max();
+    byte*  At(int index);
 };
 
 namespace cstr{

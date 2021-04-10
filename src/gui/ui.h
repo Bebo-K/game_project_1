@@ -4,20 +4,34 @@
 #include "../game/scene.h"
 #include "../gfx/renderer.h"
 #include "../input.h"
-#include "ui_layer.h"
+#include "window.h"
 
 class UI{
     public:
-    const int MAX_LAYERS =8;
+    static const int MAIN_MENU=1;
+    static const int LOADING=2;
+    static const int INGAME=3;
+    //static const int OPTIONS=4;
+    const static int LAYER_STACK_MAX=4;
 
     UI();
     void Load();
-    void Unload();
+    void ClearWindows();
+    //void AddWindow(UIWindow* p_window);
+    //void RemoveWindow();
+    //void ActivateWindow();
+    //void DeactivateWindow();
+    //void ShowWindow(); 
+    //void HideWindow(); 
+    UIWindow* OpenWindow(int window_id);
+    void CloseWindow();
 
-    UILayer debug_layer;
-    UILayer interface_layer;
-    UILayer pause_layer;
-    UILayer menu_layer;
+    void Unload();
+    Layout      fullscreen_layout;
+    StringMap   debug_widgets;
+
+    UIWindow*   current_screen;
+    //int       screen_stack_max=8;
 
     void Paint();
     void Update(Scene* scene, int frames);

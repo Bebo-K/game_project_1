@@ -133,9 +133,7 @@ void Level::LoadFromJSON(JSONObject* json){
         for(int i=0;i<locations->count;i++){
             //TODO: load location tags, spawn point
         }
-    }
-
-
+    } 
 }
 
 void Level::Unload(){

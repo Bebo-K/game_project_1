@@ -19,6 +19,7 @@ class Client{
     ~Client();
     void Start();
     void LoadScene(int scene_id);
+    void SetMenu(int menu_id);
     void AddEntity(int eid);
     void RemoveEntity(int uuid);
     void SpawnPlayer(Entrance entrance);
