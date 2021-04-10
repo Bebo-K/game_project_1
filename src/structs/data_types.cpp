@@ -398,23 +398,8 @@ void StringMap::Clear(){
     }
 }
 
-int StringMap::Count(){
-    int count = 0;
-    for(int i=0;i<slots;i++){if(keys[i] != null)count++;}
-    return count;
-}
-
-byte** StringMap::begin(){
-    return &values[0];
-}
-
-byte** StringMap::end(){
-    int end=0;
-    for(int i=0;i< slots; i++){
-        if(keys[i]!=null){end=i;}
-    }
-    return &values[end+1];
-}
+int    StringMap::Max(){return slots;}
+byte*   StringMap::At(int index){if(keys[index]!= null)return values[index];else return null;}
 
 
 /*
