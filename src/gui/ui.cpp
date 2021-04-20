@@ -41,6 +41,8 @@ UIWindow* BuildMenu(int window_id){
 UIWindow* UI::OpenWindow(int window_id){
     if(current_screen != nullptr){CloseWindow();}
     current_screen = BuildMenu(window_id);
+    current_screen->active=true;
+    current_screen->visible=true;
     return current_screen;
 }
 
@@ -53,8 +55,8 @@ void UI::Paint(){
     if(current_screen && current_screen->visible){
         current_screen->Paint();
     }
-    for(int i=0;i<debug_widgets.Count();i++){
-        Widget* pWidget = (Widget*)debug_widgets.begin()[i];
+    for(int i=0;i<debug_widgets.Max();i++){
+        Widget* pWidget = (Widget*)debug_widgets.At(i);
         if(pWidget != null){pWidget->Paint();}
     }
 }
@@ -64,7 +66,10 @@ void UI::Update(Scene* scene, int frames){
         current_screen->Update(frames);
     }
     
-    for(byte* w:debug_widgets){((Widget*)w)->OnUpdate(frames);}
+    for(int i=0;i<debug_widgets.Max();i++){
+        Widget* pWidget = (Widget*)debug_widgets.At(i);
+        if(pWidget != null){pWidget->OnUpdate(frames);}
+    }
 }
 
 void UI::Unload(){
@@ -74,7 +79,10 @@ void UI::Unload(){
 
 bool  UI::OnInput(Input::EventID event_type){
     bool handled = false;
-    for(byte* w:debug_widgets){if(!handled && ((Widget*)w)->OnInput(event_type))handled = true;}
+    for(int i=0;i<debug_widgets.Max();i++){
+        Widget* pWidget = (Widget*)debug_widgets.At(i);
+        if(pWidget != null && pWidget->OnInput(event_type)){handled = true;}
+    }
     if(current_screen && current_screen->active){
         handled = current_screen->HandleInput(event_type);
     }
@@ -82,7 +90,10 @@ bool  UI::OnInput(Input::EventID event_type){
 }
 void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     bool handled = false;
-    for(byte* w:debug_widgets){if(!handled && ((Widget*)w)->OnSignal(signal_id,metadata_len,metadata))handled = true;}
+    for(int i=0;i<debug_widgets.Max();i++){
+        Widget* pWidget = (Widget*)debug_widgets.At(i);
+        if(pWidget != null && pWidget->OnSignal(signal_id,metadata_len,metadata)){handled = true;}
+    }
     if(current_screen && current_screen->active){
         handled = current_screen->HandleSignal(signal_id,metadata_len,metadata);
     }
@@ -93,7 +104,10 @@ void UI::OnResize(int screen_w,int screen_h){
     fullscreen_layout.Y=0;
     fullscreen_layout.W=screen_w;
     fullscreen_layout.H=screen_h;
-    for(byte* w:debug_widgets){((Widget*)w)->OnResize();}
+    for(int i=0;i<debug_widgets.Max();i++){
+        Widget* pWidget = (Widget*)debug_widgets.At(i);
+        if(pWidget != null){pWidget->OnResize();}
+    }
     if(current_screen){
         current_screen->HandleResize();
     }

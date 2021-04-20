@@ -216,7 +216,7 @@ Model::~Model(){
 }
 
 void Model::Draw(Camera* cam,mat4* view, mat4* projection){
-    cam->SetShader("basic_lighting");
+    cam->SetShader("model_dynamic_lighting");
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);

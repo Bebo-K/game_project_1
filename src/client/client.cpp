@@ -16,15 +16,16 @@
 
 Client::Client() : scene(), scene_renderer(), ui(){
     ShaderManager::Init();
-        ShaderManager::AddShader("basic_lighting","dat/gfx/basic_lighting.vrt","dat/gfx/basic_lighting.frg");
-        ShaderManager::AddShader("scene_debug","dat/gfx/scene_debug.vrt","dat/gfx/scene_debug.frg");
-        ShaderManager::AddShader("shadeless","dat/gfx/shadeless.vrt","dat/gfx/shadeless.frg");
+        ShaderManager::AddShader("default","dat/gfx/default.vrt","dat/gfx/default.frg");
+        ShaderManager::AddShader("level_debug","dat/gfx/level_debug.vrt","dat/gfx/level_debug.frg");
+        ShaderManager::AddShader("model_dynamic_lighting","dat/gfx/model_dynamic_lighting.vrt","dat/gfx/model_dynamic_lighting.frg");
+        ShaderManager::AddShader("model_static_shadeless","dat/gfx/model_static_shadeless.vrt","dat/gfx/model_static_shadeless.frg");
         ShaderManager::AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
-        ShaderManager::AddShader("flat_skybox","dat/gfx/flat_skybox.vrt","dat/gfx/flat_skybox.frg");
+        ShaderManager::AddShader("skybox_flat","dat/gfx/skybox_flat.vrt","dat/gfx/skybox_flat.frg");
         ShaderManager::AddShader("ui_default","dat/gfx/ui_default.vrt","dat/gfx/ui_default.frg");
-        ShaderManager::AddShader("text_default","dat/gfx/text_default.vrt","dat/gfx/text_default.frg");
         ShaderManager::AddShader("ui_shape","dat/gfx/ui_shape.vrt","dat/gfx/ui_shape.frg");
-        //ShaderManager::AddShader("ui_sprite","dat/gfx/ui_sprite.vrt","dat/gfx/ui_sprite.vrt");
+        ShaderManager::AddShader("ui_sprite","dat/gfx/ui_sprite.vrt","dat/gfx/ui_sprite.frg");
+        ShaderManager::AddShader("ui_text","dat/gfx/ui_text.vrt","dat/gfx/ui_text.frg");
     TextureManager::Init();
     ModelManager::Init();
     AnimationManager::Init();
@@ -118,6 +119,7 @@ void Client::UpdatePositions(){
 }
 
 void Client::Update(int frames){
+    if(!scene.loaded)return;
     float frame_interval = Game::FrameInterval();
     float seconds = frames*frame_interval;
         AnimationManager::Update(seconds);

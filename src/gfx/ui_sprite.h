@@ -6,7 +6,6 @@
 //Sprite: A UI primitive for drawing animateed+static images.
 class Sprite{
     public:
-    GLuint      vertex_buffer, texcoord_buffer;
     Texture     texture;
 	int		    vertices;// must be a multiple of 3 ('cause triangles)
 	

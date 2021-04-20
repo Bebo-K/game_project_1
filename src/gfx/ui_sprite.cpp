@@ -5,16 +5,32 @@
 //Renders on one big triangle instead of 2 in a quad, to prevent diagonal seams.
 float sprite_vert_data[] =       {0,2,0,  0,0,0,  2,0,0};//   0,0,0,  0,1,0,  1,1,0};
 float sprite_texcoord_data[] =   {0,-1,    0,1,    2,1};//   0,1,  0,0,  1,0};
+GLuint sprite_vertex_array_id= -1;
 VBO sprite_vertices;
 VBO sprite_texcoords;
 
 void BuildSpritePrimitive(){
+    glGenVertexArrays(1,&sprite_vertex_array_id);
+    glBindVertexArray(sprite_vertex_array_id);
+
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+
+    Shader* sprite_shader = ShaderManager::GetShader("ui_sprite");
+    sprite_shader->Use();
+    //TODO: Memory leak. Where to keep these values?
     sprite_vertices.Create(sprite_vert_data,GL_FLOAT,3,9);
     sprite_texcoords.Create(sprite_texcoord_data,GL_FLOAT,2,6);
-    int err = glGetError();
-    if(err != 0){
-        logger::warn("Error building text glyph primitive, code: %d \n",err);
-    }
+
+
+    sprite_vertices.Bind(Shader::ATTRIB_VERTEX);
+    sprite_texcoords.Bind(Shader::ATTRIB_TEXCOORD);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    int gl_err = glGetError();
+    if(gl_err != 0){logger::warn("GL error initializing sprite primitive: %d",&gl_err);}
 }
 
 Sprite::Sprite(Texture spritesheet){
@@ -24,6 +40,9 @@ Sprite::Sprite(Texture spritesheet){
     height = spritesheet.height_px;
     max_frames=max_strips=1;
     frame=strip=0;
+    x=y=0;
+    center_x=center_y=0;
+    rotation=0;
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
@@ -33,6 +52,9 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips){
     width = spritesheet.width_px/max_frames;
     height = spritesheet.height_px/max_strips;
     frame=strip=0;
+    x=y=0;
+    center_x=center_y=0;
+    rotation=0;
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_center){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
@@ -42,31 +64,31 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_
     width = spritesheet.width_px/max_frames;
     height = spritesheet.height_px/max_strips;
     frame=strip=0;
+    x=y=0;
+    center_x=center_y=0;
+    rotation=0;
 }
 Sprite::~Sprite(){
     //remove one from texture user count?
 }
 
 void Sprite::Draw(){
-    Shader* sprite_shader = ShaderManager::GetShader("sprite_default");
-    sprite_shader->Use();
-    
-    int true_frame = (frame < 0)?(-frame)-1:frame; 
-    int true_strip = (strip < 0)?(-strip)-1:strip;
-
-    TextureRectangle frame_rect = texture.GetSubTexture(width*true_frame,height*true_strip, width, height);
-
     glDisable(GL_DEPTH_TEST);
-    glEnableVertexAttribArray(sprite_shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(sprite_shader->ATTRIB_TEXCOORD);
-    sprite_vertices.Bind(0);
-    sprite_texcoords.Bind(1);
+    Shader* sprite_shader = ShaderManager::GetShader("ui_sprite");
+    int abs_frame = (frame < 0)?(-frame)-1:frame; 
+    int abs_strip = (strip < 0)?(-strip)-1:strip;
+
+    TextureRectangle frame_rect = texture.GetSubTexture(width*abs_frame,height*abs_strip, width, height);
+
+    glBindVertexArray(sprite_vertex_array_id);  
+    int gl_err = glGetError();
+    if(gl_err != 0){logger::warn("GL error binding sprite vertex array: %d",&gl_err);}
 
     mat4 modelview;
         modelview.identity();
-        modelview.translate(-center_x/(float)width,-center_y/(float)height,0);
+        //modelview.translate(-center_x/(float)width,-center_y/(float)height,0);
         modelview.rotate_z(rotation);
-        //modelview.scale(scale);
+        //modelview.scale(width,height,1);
         if(x_flip != (frame < 0))modelview.scale(-1,1,1);
         if(y_flip != (strip < 0))modelview.scale(1,-1,1);
 
@@ -83,9 +105,12 @@ void Sprite::Draw(){
     glUniform4fv(sprite_shader->TEXTURE_LOCATION,1,(GLfloat*)&frame_rect);
 
     glDrawArrays(GL_TRIANGLES,0,3);
-
-    glDisableVertexAttribArray(sprite_shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(sprite_shader->ATTRIB_TEXCOORD);
     
+    int err = glGetError(); 
+    if(err != 0){
+        logger::warn("ModelData.DrawMesh() -> GL Error: %d \n",err);
+    }
+
+    glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }

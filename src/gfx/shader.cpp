@@ -121,9 +121,9 @@ void ShaderManager::Init(){
 }
 void ShaderManager::Free(){
     Shader* pShader;
-    for(byte* b:cachedShaders){
-        pShader= (Shader*)b;
-        if(pShader!= null)delete pShader;
+    for(int i=0;i<cachedShaders.Max();i++){
+        pShader = (Shader*)cachedShaders.At(i);
+        if(pShader)delete pShader;
     }
     cachedShaders.Clear();
 }
@@ -137,7 +137,7 @@ void ShaderManager::AddShader(char* name,char* vertexFile,char* fragmentFile){
 Shader* ShaderManager::GetShader(char* name){
     Shader* ret = (Shader*)cachedShaders.Get(name);
     if(ret == null){
-        ret = DefaultShader();
+        ret = DefaultShader();//4/11 rename your shaders
     }
     return ret;
 }

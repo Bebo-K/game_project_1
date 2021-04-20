@@ -18,8 +18,8 @@ TextureRectangle Texture::GetSubTexture(int  x,int y,int w,int h) {
 	
 	ret.x = tex_coords.x + (tex_coords.w/width_px) * x;
 	ret.y = tex_coords.y + (tex_coords.h/height_px) * y;
-	ret.w = (tex_coords.w/width_px) * h;
-	ret.h = (tex_coords.h/height_px) * w;
+	ret.w = (tex_coords.w/width_px) * w;
+	ret.h = (tex_coords.h/height_px) * h;
 	return ret;
 }
 
@@ -89,9 +89,10 @@ void TextureManager::Init(){
 void TextureManager::Free(){
     Image* pImage;
     Texture* pTexture;
-    for(byte* b : cached_textures){
-        pTexture=(Texture*)b;
-        if(pTexture!= null){delete pTexture;}
+
+    for(int i=0;i<cached_textures.Max();i++){
+    pTexture = (Texture*)cached_textures.At(i);
+    if(pTexture)delete pTexture;
     }
     cached_textures.Clear();
     for(int i=0;i<texture_atlases.slots;i++){
