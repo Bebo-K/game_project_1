@@ -16,7 +16,7 @@ class Sprite{
 	float		center_y;
     vec4        color={1.0f,1.0f,1.0f,1.0f};
     float       rotation;
-    float       scale;
+    vec2        scale;
     
     Sprite(Texture spritesheet);
     Sprite(Texture spritesheet,int frames,int strips);

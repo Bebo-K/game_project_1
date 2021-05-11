@@ -43,6 +43,7 @@ Sprite::Sprite(Texture spritesheet){
     x=y=0;
     center_x=center_y=0;
     rotation=0;
+    scale={1,1};
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
@@ -55,6 +56,7 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips){
     x=y=0;
     center_x=center_y=0;
     rotation=0;
+    scale={1,1};
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_center){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
@@ -67,6 +69,7 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_
     x=y=0;
     center_x=center_y=0;
     rotation=0;
+    scale={1,1};
 }
 Sprite::~Sprite(){
     //remove one from texture user count?
@@ -88,7 +91,7 @@ void Sprite::Draw(){
         modelview.identity();
         //modelview.translate(-center_x/(float)width,-center_y/(float)height,0);
         modelview.rotate_z(rotation);
-        //modelview.scale(width,height,1);
+        modelview.scale(scale.x,scale.y,1);
         if(x_flip != (frame < 0))modelview.scale(-1,1,1);
         if(y_flip != (strip < 0))modelview.scale(1,-1,1);
 

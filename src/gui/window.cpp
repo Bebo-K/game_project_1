@@ -6,10 +6,10 @@ UIWindow::UIWindow(){
     type_id=0;
     visible=false;
     active=false;
-    layout.X=0;
-    layout.Y=0;
-    layout.H=Window::height;
-    layout.W=Window::width;
+    layout.h_pos_mode = LayoutScaleMode::MATCH_PARENT;
+    layout.v_pos_mode = LayoutScaleMode::MATCH_PARENT;
+    layout.h_fill_mode = LayoutScaleMode::MATCH_PARENT;
+    layout.v_fill_mode = LayoutScaleMode::MATCH_PARENT;
 }
 
 UIWindow::UIWindow(UIWindow* parent){

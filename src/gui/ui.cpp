@@ -43,6 +43,7 @@ UIWindow* UI::OpenWindow(int window_id){
     current_screen = BuildMenu(window_id);
     current_screen->active=true;
     current_screen->visible=true;
+    current_screen->layout.offset.parent=&fullscreen_layout;
     return current_screen;
 }
 
@@ -90,11 +91,11 @@ bool  UI::OnInput(Input::EventID event_type){
 }
 void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     bool handled = false;
-    for(int i=0;i<debug_widgets.Max();i++){
+    for(int i=0;i<debug_widgets.Max() && !handled;i++){
         Widget* pWidget = (Widget*)debug_widgets.At(i);
         if(pWidget != null && pWidget->OnSignal(signal_id,metadata_len,metadata)){handled = true;}
     }
-    if(current_screen && current_screen->active){
+    if(!handled && current_screen && current_screen->active){
         handled = current_screen->HandleSignal(signal_id,metadata_len,metadata);
     }
 }
