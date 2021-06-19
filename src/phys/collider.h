@@ -1,7 +1,7 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
-#include "../structs/3d_types.h"
+#include "../struct/3d_types.h"
 
 
 class CapsuleCollider{

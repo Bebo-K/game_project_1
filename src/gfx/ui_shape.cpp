@@ -19,20 +19,17 @@ void BuildShapePrimitives(){
 
 UI_Rect::UI_Rect(){
     if(!rect_vertices.Valid()){BuildShapePrimitives();}
-    width=height=1;
-    x=y=0;
+    rect={0,0,1,1};
+    center={0,0};
     scale=1.0f;
     rotation=0.0f;
-    center_x=center_y=0.0f;
 }
 UI_Rect::UI_Rect(int w,int h){
     if(!rect_vertices.Valid()){BuildShapePrimitives();}
-    width=w;
-    height=h;
-    x=y=0;
+    rect={0,0,w,h};
+    center={0,0};
     scale=1.0f;
     rotation=0.0f;
-    center_x=center_y=0.0f;
 }
 UI_Rect::~UI_Rect(){
 
@@ -52,7 +49,7 @@ void UI_Rect::Draw(){
 
     mat4 modelview;
         modelview.identity();
-        modelview.translate(-center_x/(float)width,-center_y/(float)height,0);
+        modelview.translate(-center.x/(float)rect.w,-center.y/(float)rect.h,0);
         modelview.rotate_z(rotation);
         //modelview.scale(width,height,1);
 
@@ -60,8 +57,8 @@ void UI_Rect::Draw(){
     glBindTexture(GL_TEXTURE_2D,no_tex.atlas_id);
     glUniform1i(shape_shader->TEXTURE_0,0);
 
-    glUniform2f(shape_shader->IMAGE_POS,x,y);
-    glUniform2f(shape_shader->IMAGE_SIZE,(float)width,(float)height);
+    glUniform2f(shape_shader->IMAGE_POS,rect.x,rect.y);
+    glUniform2f(shape_shader->IMAGE_SIZE,(float)rect.w,(float)rect.h);
     glUniform2f(shape_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);

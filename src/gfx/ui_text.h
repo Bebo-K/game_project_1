@@ -1,8 +1,8 @@
 #ifndef UI_TEXT_H
 #define UI_TEXT_H
 
-#include "../structs/3d_types.h"
-#include "../structs/math_types.h"
+#include "../struct/3d_types.h"
+#include "../struct/math_types.h"
 #include "font_manager.h"
 
 
@@ -14,7 +14,7 @@ struct Glyph{
     //vec2  offset;
 };
 
-class UIText{
+class UI_Text{
     public:
     int x,y;
     text_char* string;
@@ -22,30 +22,18 @@ class UIText{
     Glyph* glyphs;
 
     
-    UIText();
-    UIText(char* str);
-    UIText(text_char* str);
-    UIText(text_char* str,FontID font);
+    UI_Text();
+    UI_Text(char* str);
+    UI_Text(text_char* str);
+    UI_Text(text_char* str,FontID font);
+    
     void SetString(char* str);
+    void SetString(char* str,FontID font);
+    void SetString(text_char* str);
     void SetString(text_char* str,FontID font);
-    ~UIText();
-
-    void Update(int frames);
     void Draw();
+    ~UI_Text();
 };
-/*
-class TextBoxText: public Drawable{
-    public:
-    text_string string;
-
-
-    TextBoxText(text_string str);
-    ~TextBoxText();
-
-    void Update(int frames);
-    void Draw(Camera* cam,mat4* view, mat4* projection);
-};
-*/
 
 
 

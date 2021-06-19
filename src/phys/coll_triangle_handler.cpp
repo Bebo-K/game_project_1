@@ -1,5 +1,5 @@
 #include "coll_triangle_handler.h"
-#include "../game/systems/level_collision.h"
+#include "../game/system/level_collision.h"
 
 CollisionList* TriangleHandler::DoCollision(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
     CollisionList* ret =null;

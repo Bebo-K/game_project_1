@@ -4,8 +4,8 @@
 #include "../window.h"
 
 class IngameMenu: public UIWindow{
-
-
+    public:
+    IngameMenu(Layout* parent);
 };
 
 

@@ -23,12 +23,13 @@ class UI{
     //void DeactivateWindow();
     //void ShowWindow(); 
     //void HideWindow(); 
+    UIWindow* BuildMenu(int window_id);
     UIWindow* OpenWindow(int window_id);
     void CloseWindow();
 
     void Unload();
     Layout      fullscreen_layout;
-    StringMap   debug_widgets;
+    WidgetContainer debug_widgets;
 
     UIWindow*   current_screen;
     //int       screen_stack_max=8;

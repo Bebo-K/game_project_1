@@ -2,8 +2,8 @@
 #define PHYS_COMPONENTS_H
 
 #include "component.h"
-#include "../../structs/list.h"
-#include "../../structs/3d_types.h"
+#include "../../struct/list.h"
+#include "../../struct/3d_types.h"
 #include "../../phys/collision_types.h"
 #include "../../phys/collider.h"
 

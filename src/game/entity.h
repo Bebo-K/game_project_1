@@ -1,12 +1,12 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include "components/component.h"
-#include "components/gfx_components.h"
-#include "components/phys_components.h"
-#include "components/logic_components.h"
-#include "components/anim_components.h"
-#include "components/state.h"
+#include "component/component.h"
+#include "component/gfx_components.h"
+#include "component/phys_components.h"
+#include "component/logic_components.h"
+#include "component/anim_components.h"
+#include "component/state.h"
 
 
 struct Entity{

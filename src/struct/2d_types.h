@@ -13,7 +13,7 @@ struct rect_i{
     rect_i(int ix,int iy,int iw,int ih);
     int area();
     point_i center();
-    bool intersects(point_i b);
+    bool contains(point_i b);
     bool intersects(rect_i b);
 };
 
@@ -27,7 +27,7 @@ struct rect_f{
     rect_i to_integers();
     rect_f ratio_of(rect_f);
     point_f center();
-    bool intersects(point_f b);
+    bool contains(point_f b);
     bool intersects(rect_f b);
 };
 

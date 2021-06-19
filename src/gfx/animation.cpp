@@ -1,6 +1,6 @@
 #include "animation.h"
-#include "../structs/data_types.h"
-#include "../structs/3d_types.h"
+#include "../struct/data_types.h"
+#include "../struct/3d_types.h"
 #include "../log.h"
 #include <string.h>
 #include "math.h"

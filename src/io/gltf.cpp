@@ -1,7 +1,7 @@
 #include "gltf.h"
 #include "../log.h"
-#include "../structs/data_types.h"
-#include "../structs/list.h"
+#include "../struct/data_types.h"
+#include "../struct/list.h"
 
 GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
 	if(model_file.error)return;

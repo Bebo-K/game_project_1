@@ -3,12 +3,12 @@
 //Simple flat shapes for use in drawing UI
 
 #include "drawable.h"
+#include "../struct/2d_types.h"
 
 class UI_Rect{
     public:
-    int         x,y,width,height;
-	float		center_x;//offset from rect's top left, used for center of rotation
-	float		center_y;
+    rect_i      rect;
+    point_f     center;
     vec4        color={1.0f,1.0f,1.0f,1.0f};
     float       rotation;
     float       scale;

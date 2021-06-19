@@ -1,8 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "structs/data_types.h"
-#include "structs/3d_types.h"
+#include "struct/data_types.h"
+#include "struct/3d_types.h"
 
 //Possible physical inputs to handle (referred to as 'keys')
 namespace PhysicalInput{

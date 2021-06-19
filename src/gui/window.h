@@ -2,7 +2,7 @@
 #define UI_LAYER_H
 
 #include "../input.h"
-#include "../structs/list.h"
+#include "../struct/list.h"
 #include "layout.h"
 #include "widget.h"
 
@@ -14,16 +14,11 @@ class UIWindow{
     int     type_id;
 
     List<UIWindow>  sub_windows;
-    StringMap   widgets;
+    WidgetContainer widgets;
     
     UIWindow();
     UIWindow(UIWindow* parent);
-
-    Widget* AddWidget(Widget* w,char* name);
-    Widget* AddWidget(Widget* w,char* name,LayoutOffset pos);
-    Widget* GetWidget(char* name);
-    Widget* RemoveWidget(char* name);
-    //Widget* GetWidgetAtPos(int x,int y);
+    
     void Clear();
 
     void Open();

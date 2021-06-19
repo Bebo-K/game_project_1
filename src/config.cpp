@@ -14,6 +14,9 @@ StringPair* config::key_bindings = null;
 
 char config::show_console;
 char config::show_fps_counter;
+char config::debug_mode;
+
+
 
 void config::Init(){
     key_binding_count = 26;
@@ -59,6 +62,7 @@ void config::Init(){
 
     show_console=false;
     show_fps_counter=true;
+    debug_mode=false;
 }
 
 void config::Destroy(){

@@ -1,7 +1,7 @@
 #include "gfx_components.h"
-#include "../../structs/math_types.h"
+#include "../../struct/math_types.h"
 #include "../entity.h"
-#include "../systems/camera_manager.h"
+#include "../system/camera_manager.h"
 
 CameraTarget::CameraTarget(Camera* cam,vec3 cam_offset,float_range zoom_scale,float_range tilt){
     camera = cam;

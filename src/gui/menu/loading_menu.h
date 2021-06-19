@@ -4,7 +4,8 @@
 #include "../window.h"
 
 class LoadingMenu: public UIWindow{
-
+    public:
+    LoadingMenu(Layout* parent);
 
 };
 

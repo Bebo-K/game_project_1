@@ -3,6 +3,7 @@
 #include "../os.h"
 #include "drawable.h"
 
+
 //Renders on one big triangle instead of 2 in a quad, to prevent diagonal seams.
 float glyph_vert_data[] =       {0,2,0,  0,0,0,  2,0,0};//   0,0,0,  0,1,0,  1,1,0};
 float glyph_texcoord_data[] =   {0,-1,    0,1,    2,1};//   0,1,  0,0,  1,0};
@@ -21,36 +22,44 @@ void BuildGlyphPrimitive(){
     }
 }
 
-UIText::UIText(){
+
+
+UI_Text::UI_Text(){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     string=nullptr;
     glyph_count=0;
     x=y=0;
 }
-UIText::UIText(char* str){
+UI_Text::UI_Text(char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=0;
     SetString(TextString::from_cstr(str),-1);
 }
-UIText::UIText(text_char* str){
+UI_Text::UI_Text(text_char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=0;
     SetString(str,-1);
 }
-UIText::UIText(text_char* str,FontID font_id){
+UI_Text::UI_Text(text_char* str,FontID font_id){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=0;
     SetString(str,font_id);
 }
 
-void UIText::SetString(char* str){
+void UI_Text::SetString(char* str){
     SetString(TextString::from_cstr(str),-1);
 }
-void UIText::SetString(text_char* str,FontID font_id){
+void UI_Text::SetString(char* str,FontID font_id){
+    SetString(TextString::from_cstr(str),font_id);
+}
+void UI_Text::SetString(text_char* str){
+    SetString(str,-1);
+}
+void UI_Text::SetString(text_char* str,FontID font_id){
     if(str ==null)return;
     string=str;
     if(font_id >= 0){FontManager::SetActiveFont(font_id);}
@@ -78,12 +87,11 @@ void UIText::SetString(text_char* str,FontID font_id){
     }
 }
 
-UIText::~UIText(){
+UI_Text::~UI_Text(){
     free(glyphs);
 }
 
-void UIText::Update(int frames){}
-void UIText::Draw(){
+void UI_Text::Draw(){
     Shader* text_shader = ShaderManager::GetShader("text_default");
     text_shader->Use();
     glDisable(GL_DEPTH_TEST);
@@ -111,3 +119,5 @@ void UIText::Draw(){
     
     glEnable(GL_DEPTH_TEST);
 }
+
+

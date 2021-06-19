@@ -3,8 +3,8 @@
 
 #include "../phys/level_colliders.h"
 #include "../io/json.h"
-#include "../structs/data_types.h"
-#include "../structs/3d_types.h"
+#include "../struct/data_types.h"
+#include "../struct/3d_types.h"
 #include "../gfx/renderer.h"
 #include "../gfx/skybox.h"
 

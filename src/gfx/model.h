@@ -2,8 +2,8 @@
 #define MODEL_H
 
 
-#include "../structs/3d_types.h"
-#include "../structs/math_types.h"
+#include "../struct/3d_types.h"
+#include "../struct/math_types.h"
 #include "drawable.h"
 #include "skeleton.h"
 

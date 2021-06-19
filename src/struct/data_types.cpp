@@ -743,6 +743,22 @@ int TextString::write(char* str,text_char* dest){
     return ret;
 }
 
+text_char* TextString::first(text_char* src,int max){
+    int len = length(src);
+    len = (max<len)?max:len;
+    text_char* ret = (text_char*)calloc(len,sizeof(text_char));
+    for(int i=0;src[i]!=0 && i<len;i++){ret[i]=src[i];}
+    return ret;
+}
+
+text_char* TextString::substr(text_char* src,int start,int len){
+    int strlen = length(src);
+    if((start+strlen) >= len || start < 0){logger::exception("Invalid substring indices: %d to %d for string %s",start,start+strlen,src);return nullptr;}
+    text_char* ret = (text_char*)calloc(len,sizeof(text_char));
+    for(int i=start;src[i]!=0 && i<(start+len);i++){ret[i]=src[i];}
+    return ret;
+}
+
 text_char* TextString::concat(text_char* a_part,text_char* b_part){
     text_char* result= (text_char*)calloc(length(a_part)+length(b_part)+1,sizeof(text_char));
     int i;

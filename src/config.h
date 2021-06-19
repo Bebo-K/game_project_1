@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "structs/data_types.h"
+#include "struct/data_types.h"
 
 
 
@@ -20,6 +20,7 @@ namespace config{
     extern StringPair* key_bindings;
     extern char show_console;
     extern char show_fps_counter;
+    extern char debug_mode;
 
     void Init();
     void LoadFile(char* filename);

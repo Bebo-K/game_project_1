@@ -1,13 +1,15 @@
 #ifndef DEV_CONSOLE_H
 #define DEV_CONSOLE_H
 
+#include "../widget.h"
 #include "../../gfx/ui_text.h"
 #include "../../gfx/ui_shape.h"
-#include "../widget.h"
+#include "../../gfx/font_manager.h"
+#include "../../gfx/ui_text.h"
 
 
-
-class DeveloperConsole:public Widget{
+class DeveloperConsole: public Widget{
+    private:
     static const int CACHED_LINE_COUNT = 64;
     static const int SHOWN_LINE_COUNT = 10;
     static const int MAX_LINE_LENGTH = 256;
@@ -20,27 +22,26 @@ class DeveloperConsole:public Widget{
     text_char entry_buffer[MAX_LINE_LENGTH];
     
     public:
-    bool active = false;
     int  start_timer;//hack to get the character that spawned the console from being immediately printed.
     int font_size =12;
     int line_wrap = 80;
-    UIText shown_lines[SHOWN_LINE_COUNT];
-    UIText entry_line;
+    UI_Text shown_lines[SHOWN_LINE_COUNT];
+    UI_Text entry_line;
     UI_Rect background_rect;
     UI_Rect entry_rect;
 
     DeveloperConsole();
     ~DeveloperConsole();
 
-    void Paint();
+    void OnPaint();
     void OnUpdate(int frames);
     bool OnInput(Input::EventID event_type);
     void OnResize();
-    bool OnSignal(int signal_id,int metadata_len, byte* metadata);
-    
+    void OnDestroy();
 
-    static void Write(char* str);
     void UpdateShownLines();
+    
+    static void Write(char* str);
 };
 
 

@@ -1,8 +1,8 @@
 #ifndef COLLISION_TYPES_H
 #define COLLISION_TYPES_H
 
-#include "../structs/math_types.h"
-#include "../structs/data_types.h"
+#include "../struct/math_types.h"
+#include "../struct/data_types.h"
 
 
 struct Ellipse_t{

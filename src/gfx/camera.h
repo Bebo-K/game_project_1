@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "../structs/3d_types.h"
+#include "../struct/3d_types.h"
 #include "shader.h"
 
 class Camera{

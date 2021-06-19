@@ -24,9 +24,8 @@ class List{
     protected:
     DataArray data;
     int count;
-
-    ListIterator<T> bad_index(){return {this,-1};}
-
+    
+    friend class ListIterator<T>;
     public:
 
     List():data(1,sizeof(T)){
@@ -81,6 +80,12 @@ class List{
     T* operator[](int index){
         return (T*)data.Get(index);
     }
+    
+    int next(int start_index){
+        int next=start_index;
+        while( ++next < data.slots && !data.occupancy.Get(next));
+        return next;
+    }
 
     void Clear(){
         T* objs;
@@ -103,35 +108,9 @@ class List{
         }
         return ret;
     }
-
-    ListIterator<T> begin(){
-        int i;
-        if(count==0){return bad_index();}
-        for(i=0;data.occupancy.Get(i)==false;i++){
-            if(i >= data.slots){return bad_index();}
-        }
-        return {this,i};
-    }
-
-    int next(int index){
-        int i=index+1;
-        if(i >= data.slots){return -1;}
-        while(data.occupancy.Get(i)==false){
-            i++;
-            if(i >= data.slots){return -1;}
-        }
-        return i;
-    }
-
-    ListIterator<T> end(){
-        return bad_index();
-        //int end=0;
-        //for(int i=count-1;i < data.slots; i++){
-       //     if(data.occupancy.Get(i)){end=i;}
-        //}
-        //return {this,end};
-    }
-
+    
+    ListIterator<T> begin(){ return {this,next(-1)};}
+    ListIterator<T> end(){return {this,data.slots};}
 };
 
 

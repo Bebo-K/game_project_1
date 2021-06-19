@@ -1,8 +1,8 @@
 #ifndef LEVEL_COLLIDERS_H
 #define LEVEL_COLLIDERS_H
 
-#include "../structs/3d_types.h"
-#include "../structs/math_types.h"
+#include "../struct/3d_types.h"
+#include "../struct/math_types.h"
 #include "../io/image.h"
 #include "../gfx/model.h"
 #include "../game/entity.h"

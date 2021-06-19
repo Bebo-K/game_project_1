@@ -1,7 +1,7 @@
 #ifndef SKELETON_H
 #define SKELETON_H
 
-#include "../structs/3d_types.h"
+#include "../struct/3d_types.h"
 #include "animation.h"
 
 //https://www.youtube.com/watch?v=aBN_dEA4jO0

@@ -1,6 +1,6 @@
 #include "shader.h"
 #include "../log.h"
-#include "../structs/data_types.h"
+#include "../struct/data_types.h"
 
 Shader* defaultShader=nullptr;
 StringMap cachedShaders(2);

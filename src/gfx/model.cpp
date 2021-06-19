@@ -2,7 +2,7 @@
 #include <string.h>
 #include "../log.h"
 #include "../io/gltf.h"
-#include "../structs/list.h"
+#include "../struct/list.h"
 
 List<ModelCacheEntry> model_registry;
 ModelData empty_model;

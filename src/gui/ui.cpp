@@ -5,34 +5,32 @@
 #include <math.h>
 #include "../test/perf.h"
 
-#include "widgets/text_widget.h"
-#include "widgets/dev_console.h"
+#include "menu/main_menu.h"
+#include "menu/loading_menu.h"
+#include "menu/ingame_menu.h"
 
-#include "menus/main_menu.h"
-#include "menus/loading_menu.h"
-#include "menus/ingame_menu.h"
+#include "widget/dev_console.h"
 
-UI::UI():debug_widgets(1){
+UI::UI():debug_widgets(&this->fullscreen_layout){
     current_screen = nullptr;
 }
 
-DeveloperConsole* game_console;
+DeveloperConsole* developer_console;
 
 void UI::Load(){
     logger::info("loading ui...\n");
-    game_console = new DeveloperConsole();
-    game_console->layout.offset.parent = &fullscreen_layout;
-    game_console->active = false;
-    debug_widgets.Add("console",(byte*)game_console);
+    developer_console = new DeveloperConsole();
+    developer_console->active=false;
     DeveloperConsole::Write("hello world!");
+    OnResize(Window::width,Window::height);
 }
     
     
-UIWindow* BuildMenu(int window_id){
+UIWindow* UI::BuildMenu(int window_id){
     switch(window_id){
-        case UI::MAIN_MENU: return new MainMenu(); break;
-        case UI::LOADING: return new LoadingMenu(); break;
-        case UI::INGAME: return new IngameMenu(); break;
+        case UI::MAIN_MENU: return new MainMenu(&this->fullscreen_layout); break;
+        case UI::LOADING: return new LoadingMenu(&this->fullscreen_layout); break;
+        case UI::INGAME: return new IngameMenu(&this->fullscreen_layout); break;
         default: break;
     }
     return nullptr;
@@ -56,34 +54,27 @@ void UI::Paint(){
     if(current_screen && current_screen->visible){
         current_screen->Paint();
     }
-    for(int i=0;i<debug_widgets.Max();i++){
-        Widget* pWidget = (Widget*)debug_widgets.At(i);
-        if(pWidget != null){pWidget->Paint();}
-    }
+    for(Widget* w: debug_widgets){w->Paint();}
 }
 
 void UI::Update(Scene* scene, int frames){
     if(current_screen && current_screen->active){
         current_screen->Update(frames);
     }
-    
-    for(int i=0;i<debug_widgets.Max();i++){
-        Widget* pWidget = (Widget*)debug_widgets.At(i);
-        if(pWidget != null){pWidget->OnUpdate(frames);}
-    }
+ 
+    for(Widget* w: debug_widgets){w->Update(frames);}
 }
 
 void UI::Unload(){
     logger::info("unloading ui...\n");
-    delete game_console;
+    delete developer_console;
 }
 
 bool  UI::OnInput(Input::EventID event_type){
     bool handled = false;
-    for(int i=0;i<debug_widgets.Max();i++){
-        Widget* pWidget = (Widget*)debug_widgets.At(i);
-        if(pWidget != null && pWidget->OnInput(event_type)){handled = true;}
-    }
+    
+    for(Widget* w: debug_widgets){if(w->HandleInput(event_type)){handled=true;};}
+
     if(current_screen && current_screen->active){
         handled = current_screen->HandleInput(event_type);
     }
@@ -91,10 +82,8 @@ bool  UI::OnInput(Input::EventID event_type){
 }
 void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     bool handled = false;
-    for(int i=0;i<debug_widgets.Max() && !handled;i++){
-        Widget* pWidget = (Widget*)debug_widgets.At(i);
-        if(pWidget != null && pWidget->OnSignal(signal_id,metadata_len,metadata)){handled = true;}
-    }
+    for(Widget* w: debug_widgets){if(w->HandleSignal(signal_id,metadata_len,metadata)){handled=true;};}
+
     if(!handled && current_screen && current_screen->active){
         handled = current_screen->HandleSignal(signal_id,metadata_len,metadata);
     }
@@ -105,10 +94,9 @@ void UI::OnResize(int screen_w,int screen_h){
     fullscreen_layout.Y=0;
     fullscreen_layout.W=screen_w;
     fullscreen_layout.H=screen_h;
-    for(int i=0;i<debug_widgets.Max();i++){
-        Widget* pWidget = (Widget*)debug_widgets.At(i);
-        if(pWidget != null){pWidget->OnResize();}
-    }
+    
+    for(Widget* w: debug_widgets){w->OnResize();}
+
     if(current_screen){
         current_screen->HandleResize();
     }

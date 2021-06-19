@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "../structs/3d_types.h"
+#include "../struct/3d_types.h"
 #include "drawable.h"
 
 class Renderer{

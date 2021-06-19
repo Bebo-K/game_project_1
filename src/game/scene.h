@@ -3,7 +3,7 @@
 
 #include "entity.h"
 #include "level.h"
-#include "../structs/list.h"
+#include "../struct/list.h"
 
 
 

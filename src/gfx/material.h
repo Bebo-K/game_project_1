@@ -2,7 +2,7 @@
 #define MATERIAL_H
 
 #include "texture.h"
-#include "../structs/3d_types.h"
+#include "../struct/3d_types.h"
 
 class Material{
     public:

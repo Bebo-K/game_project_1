@@ -199,6 +199,9 @@ namespace TextString{
     text_char* from_cstr(char* str);
     int length(text_char* str);
     int write(char* str,text_char* dest);
+    
+    text_char* first(text_char* src,int max);
+    text_char* substr(text_char* src,int start,int end);
     text_char* concat(text_char* a_part,text_char* b_part);
     text_char* copy(text_char* str);
     text_char* substr_after(text_char* str,unsigned int separator);

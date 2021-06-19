@@ -67,5 +67,6 @@ void Game::Exit(){
     if(client != nullptr){
         //client->Unload();
         delete client;
+        client=nullptr;
     }
 }

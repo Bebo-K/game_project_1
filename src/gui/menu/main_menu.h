@@ -10,7 +10,7 @@ class MainMenu: public UIWindow{
     Sprite* background_img;
 
 
-    MainMenu();
+    MainMenu(Layout* parent);
 
     void OnOpen();
     void OnClose();

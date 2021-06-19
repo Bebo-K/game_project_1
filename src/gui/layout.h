@@ -1,7 +1,7 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
-#include "../structs/2d_types.h"
+#include "../struct/2d_types.h"
 
 namespace HLayoutMode{
     const int H_CENTERED=0,H_RIGHT=1,H_LEFT=2,H_TO_RIGHT=3,H_TO_LEFT=4,H_CUSTOM=5;
