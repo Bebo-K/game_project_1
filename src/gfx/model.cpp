@@ -141,16 +141,16 @@ ModelData::~ModelData(){
     }
 }
 
-void ModelData::DrawMesh(Camera* cam,int group_index,int mesh_index){
+void ModelData::DrawMesh(Shader* shader,int group_index,int mesh_index){
     if(group_index < 0 || group_index >= mesh_group_count){return;}
     if(mesh_index < 0 || mesh_index >= mesh_groups[group_index].mesh_count){return;}
     
     Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
-    glUniform1i(cam->shader->TEXTURE_0,0);
-    glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat.texture.tex_coords);
-    glUniform4fv(cam->shader->COLOR,1,(GLfloat*)&m->mat.base_color);
+    glUniform1i(shader->TEXTURE_0,0);
+    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat.texture.tex_coords);
+    glUniform4fv(shader->COLOR,1,(GLfloat*)&m->mat.base_color);
     glBindVertexArray(m->vertex_array_id);
     
     if(m->index.Valid()){
@@ -215,8 +215,9 @@ Model::~Model(){
     }
 }
 
-void Model::Draw(Camera* cam,mat4* view, mat4* projection){
-    cam->SetShader("model_dynamic_lighting");
+void Model::Draw(mat4* view, mat4* projection){
+    Shader* shader = ShaderManager::UseShader("model_dynamic_lighting");
+
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
@@ -245,24 +246,24 @@ void Model::Draw(Camera* cam,mat4* view, mat4* projection){
         pose->Calculate(); 
         
         for(int i=0;i< bones;i++){
-            glUniformMatrix4x3fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
+            glUniformMatrix4x3fv(shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
         } 
     }
 
-    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
-    glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
-    glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
+    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
     for(int i=0;i<data->mesh_group_count;i++){
         int group_count = data->mesh_groups[i].mesh_count;
         for(int j=group_count-1;j>=0;j--){
-            data->DrawMesh(cam,i,j);
+            data->DrawMesh(shader,i,j);
         }
     }
 
     if(pose != null){
         for(int i=0;i< bones;i++){ 
-            glUniformMatrix4x3fv(cam->shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
+            glUniformMatrix4x3fv(shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
         }
     }
 

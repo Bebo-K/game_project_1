@@ -16,8 +16,7 @@ void BuildSpritePrimitive(){
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
 
-    Shader* sprite_shader = ShaderManager::GetShader("ui_sprite");
-    sprite_shader->Use();
+    Shader* sprite_shader = ShaderManager::UseShader("ui_sprite");
     //TODO: Memory leak. Where to keep these values?
     sprite_vertices.Create(sprite_vert_data,GL_FLOAT,3,9);
     sprite_texcoords.Create(sprite_texcoord_data,GL_FLOAT,2,6);
@@ -77,7 +76,7 @@ Sprite::~Sprite(){
 
 void Sprite::Draw(){
     glDisable(GL_DEPTH_TEST);
-    Shader* sprite_shader = ShaderManager::GetShader("ui_sprite");
+    Shader* sprite_shader = ShaderManager::UseShader("ui_sprite");
     int abs_frame = (frame < 0)?(-frame)-1:frame; 
     int abs_strip = (strip < 0)?(-strip)-1:strip;
 

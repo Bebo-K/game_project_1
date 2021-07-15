@@ -3,6 +3,8 @@
 
 Widget::Widget():sub_widgets(&this->layout){
     name=nullptr;
+    active=true;
+    visible=true;
 }
 
 //Destroy is called from the destructor.

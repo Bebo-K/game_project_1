@@ -1,9 +1,9 @@
 #ifndef LOADING_MENU_H
 #define LOADING_MENU_H
 
-#include "../window.h"
+#include "menu.h"
 
-class LoadingMenu: public UIWindow{
+class LoadingMenu: public Menu{
     public:
     LoadingMenu(Layout* parent);
 

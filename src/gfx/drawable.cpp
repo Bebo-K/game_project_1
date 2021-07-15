@@ -115,19 +115,19 @@ void VBO::Destroy(){
     buffer_id = -1;
 }
 
-void ShapePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
+void ShapePrimitive::Draw(Shader* shader,mat4* view, mat4* projection){
+    glEnableVertexAttribArray(shader->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(shader->ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(shader->ATTRIB_NORMAL);
     
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->AMBIENT,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->SPECULAR,1,(GLfloat*)&mat.base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
-    glUniform1i(cam->shader->TEXTURE_0,0);
-    glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform1i(shader->TEXTURE_0,0);
+    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
     mat4 model;
     mat3 normal;
@@ -142,34 +142,34 @@ void ShapePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.transpose();
     normal.invert();
     
-    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
-    glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
-    glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
+    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
     
     vertices.Bind(0);
     tex_coords.Bind(1);
     normals.Bind(2);
     
     glDrawArrays(GL_TRIANGLES,0,vertex_count);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
+    glDisableVertexAttribArray(shader->ATTRIB_TEXCOORD);
+    glDisableVertexAttribArray(shader->ATTRIB_VERTEX);
+    glDisableVertexAttribArray(shader->ATTRIB_NORMAL);
 }
 
-void WirePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
+void WirePrimitive::Draw(Shader* shader,mat4* view, mat4* projection){
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-    glEnableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
+    glEnableVertexAttribArray(shader->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(shader->ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(shader->ATTRIB_NORMAL);
     
-    glUniform3fv(cam->shader->AMBIENT,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(cam->shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(cam->shader->SPECULAR,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->AMBIENT,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(shader->SPECULAR,1,(GLfloat*)&mat.base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
-    glUniform1i(cam->shader->TEXTURE_0,0);
-    glUniform4fv(cam->shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform1i(shader->TEXTURE_0,0);
+    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
     mat4 model;
     mat3 normal;
@@ -184,18 +184,18 @@ void WirePrimitive::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.transpose();
     normal.invert();
     
-    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
-    glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
-    glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
+    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
     
     vertices.Bind(0);
     tex_coords.Bind(1);
     normals.Bind(2);
     
     glDrawArrays(GL_TRIANGLES,0,vertex_count);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_TEXCOORD);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(cam->shader->ATTRIB_NORMAL);
+    glDisableVertexAttribArray(shader->ATTRIB_TEXCOORD);
+    glDisableVertexAttribArray(shader->ATTRIB_VERTEX);
+    glDisableVertexAttribArray(shader->ATTRIB_NORMAL);
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
  

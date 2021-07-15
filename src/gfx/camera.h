@@ -17,11 +17,8 @@ class Camera{
     float fov;
     float near_clip;
     float far_clip;
-    Shader* shader;
 
     Camera();
-    void SetShader(char* shader_name);
-    void SetShader(Shader* new_shader);
     vec3 FromCameraSpace(vec3 v);
     void ToCameraSpace(mat4* m);
 };

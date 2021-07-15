@@ -14,8 +14,8 @@ Renderer::Renderer():camera(),primitives(){
 }
 
 void Renderer::Load(){
-    camera.SetShader(ShaderManager::DefaultShader());
-
+    
+    
     camera.width= config::ui_width;
     camera.height= config::ui_height;
 
@@ -42,8 +42,8 @@ void Renderer::Remove(Drawable* p){
 
 void Renderer::Draw(){
     if(primitive_count <= 0){return;}
-    camera.shader->Use();
     
+
     view_matrix.identity(); 
     if(camera.ortho == true){
         projection_matrix.ortho(camera.width,camera.height,camera.near_clip,camera.far_clip);

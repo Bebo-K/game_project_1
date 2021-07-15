@@ -92,8 +92,7 @@ UI_Text::~UI_Text(){
 }
 
 void UI_Text::Draw(){
-    Shader* text_shader = ShaderManager::GetShader("text_default");
-    text_shader->Use();
+    Shader* text_shader = ShaderManager::UseShader("ui_text");
     glDisable(GL_DEPTH_TEST);
     glEnableVertexAttribArray(text_shader->ATTRIB_VERTEX);
     glEnableVertexAttribArray(text_shader->ATTRIB_TEXCOORD);

@@ -53,7 +53,7 @@ class ModelData{
     ModelData();
     ~ModelData();
 
-    void DrawMesh(Camera* cam,int group_index,int mesh_index);
+    void DrawMesh(Shader* shader,int group_index,int mesh_index);
     void DebugPrint();
 };
 
@@ -66,7 +66,7 @@ class Model: public Drawable{
     Model(ModelID type);
     Model(ModelData* dat);
     ~Model();
-    void Draw(Camera* cam,mat4* view, mat4* projection);
+    void Draw(mat4* view, mat4* projection);
     void StartAnimation(char* anim_name);
     void StartAnimation(char* anim_name,AnimationOptions options);
 

@@ -7,7 +7,6 @@
 class Sprite{
     public:
     Texture     texture;
-	int		    vertices;// must be a multiple of 3 ('cause triangles)
 	
     int         x,y,width,height;
     int         frame,strip,max_frames,max_strips;

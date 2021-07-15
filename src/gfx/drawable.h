@@ -47,7 +47,7 @@ class ShapePrimitive : public Drawable{
     ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d);
     ~ShapePrimitive();
  
-    void Draw(Camera* cam,mat4* view, mat4* projection);
+    void Draw(Shader* shader,mat4* view, mat4* projection);
 };
 
 class WirePrimitive : public Drawable{
@@ -61,7 +61,7 @@ class WirePrimitive : public Drawable{
     WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d);
     ~WirePrimitive();
  
-    void Draw(Camera* cam,mat4* view, mat4* projection);
+    void Draw(Shader* shader,mat4* view, mat4* projection);
 };
 
 #endif

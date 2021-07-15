@@ -11,7 +11,7 @@ class Skybox : public Drawable{
     Material    mat;
 
     Skybox(char* image_fn);
-    void Draw(Camera* cam,mat4* view, mat4* projection);
+    void Draw(float pitch, float turn);
 };
 
 

@@ -36,8 +36,7 @@ UI_Rect::~UI_Rect(){
 }
 
 void UI_Rect::Draw(){
-    Shader* shape_shader = ShaderManager::GetShader("ui_shape");
-    shape_shader->Use();
+    Shader* shape_shader = ShaderManager::UseShader("ui_shape");
     
     Texture no_tex = TextureManager::DefaultTexture();
 

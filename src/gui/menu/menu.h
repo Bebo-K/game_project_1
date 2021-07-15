@@ -1,16 +1,16 @@
-#ifndef MAIN_MENU_H
-#define MAIN_MENU_H
+#ifndef MENU_H
+#define MENU_H
 
-#include "menu.h"
+#include "../window.h"
 #include "../../gfx/ui_sprite.h"
 
-class MainMenu: public Menu{
+
+class Menu: public UIWindow{
 
     public:
-    Sprite* background_img;
 
 
-    MainMenu(Layout* parent);
+    Menu(Layout* parent);
 
     void OnOpen();
     void OnClose();
@@ -21,10 +21,9 @@ class MainMenu: public Menu{
     bool OnSignal(int signal_id,int metadata_len, byte* metadata);
 
 
-
-
-
 };
+
+
 
 
 

@@ -17,10 +17,10 @@ Level::Level(){
     layer = -128;
 }
 
-void Level::Draw(Camera* cam,mat4* view, mat4* projection){
+void Level::Draw(mat4* view, mat4* projection){
     if(skybox != null){skybox->Draw(cam,view,projection);}
+    Shader* shader = ShaderManager::UseShader("level_debug");
 
-    cam->SetShader("level_debug");
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
@@ -32,14 +32,14 @@ void Level::Draw(Camera* cam,mat4* view, mat4* projection){
     normal.transpose();
     normal.invert();
     
-    glUniformMatrix4fv(cam->shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
-    glUniformMatrix4fv(cam->shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
-    glUniformMatrix3fv(cam->shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
+    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
     for(int i=0;i<model_count;i++){
         for(int j=0;j<models[i].mesh_group_count;j++){
             for(int k=0;k<models[i].mesh_groups[j].mesh_count;k++){
-                models[i].DrawMesh(cam,j,k);
+                models[i].DrawMesh(shader,j,k);
             }
         }
     }

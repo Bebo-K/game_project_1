@@ -13,22 +13,9 @@ Camera::Camera(){
     fov = 60.0f;
     near_clip = 1.0f;
     far_clip = 100.0f;
-    shader = nullptr;
     turn=0;
     pitch=0;
     yaw = 0;
-}
-
-void Camera::SetShader(char* shader_name){
-    shader = ShaderManager::GetShader(shader_name);
-    if(shader != nullptr){shader->Use();}
-    else{
-        logger::exception("Draw binding to invalid shader %s\n",shader_name);
-    }
-}
-
-void Camera::SetShader(Shader* new_shader){
-    shader = new_shader;
 }
 
 void Camera::ToCameraSpace(mat4* m){

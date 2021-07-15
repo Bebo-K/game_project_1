@@ -2,37 +2,38 @@
 #include "../log.h"
 #include "../struct/data_types.h"
 
-Shader* defaultShader=nullptr;
-StringMap cachedShaders(2);
+Shader* DEFAULT_SHADER=nullptr;
+Shader* CURRENT_SHADER=nullptr;
+StringMap CACHED_SHADERS(2);
 
 
-Shader::Shader(char* vertexFile,char* fragmentFile){
-    FileBuffer vertexProgram(vertexFile);
-    FileBuffer fragmentProgram(fragmentFile);
+Shader::Shader(char* vertex_file,char* fragment_file){
+    FileBuffer vertex_program(vertex_file);
+    FileBuffer fragment_program(fragment_file);
 
-    if(vertexProgram.contents == null){
-        logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertexFile);
+    if(vertex_program.contents == null){
+        logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertex_file);
     }
-    if(fragmentProgram.contents == null){
-        logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragmentFile);
+    if(fragment_program.contents == null){
+        logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragment_file);
     }
 
     vertex = glCreateShader(GL_VERTEX_SHADER);
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     program = glCreateProgram();
-    glShaderSource(vertex, 1, (GLchar**)&vertexProgram.contents,nullptr);
-    glShaderSource(fragment, 1, (GLchar**)&fragmentProgram.contents,nullptr);
+    glShaderSource(vertex, 1, (GLchar**)&vertex_program.contents,nullptr);
+    glShaderSource(fragment, 1, (GLchar**)&fragment_program.contents,nullptr);
 
     glCompileShader(vertex);
     glCompileShader(fragment);
 
-    GLint vtxCompileStatus = 0;
-    GLint frgCompileStatus = 0;
-    GLint linkStatus = 0;
-    glGetShaderiv(vertex,GL_COMPILE_STATUS,&vtxCompileStatus);
-    glGetShaderiv(fragment,GL_COMPILE_STATUS,&frgCompileStatus);
+    GLint vtx_compile_status = 0;
+    GLint frg_compile_status = 0;
+    GLint link_status = 0;
+    glGetShaderiv(vertex,GL_COMPILE_STATUS,&vtx_compile_status);
+    glGetShaderiv(fragment,GL_COMPILE_STATUS,&frg_compile_status);
     
-    if(vtxCompileStatus != 0 && frgCompileStatus != 0){
+    if(vtx_compile_status != 0 && frg_compile_status != 0){
         glAttachShader(program,vertex);
         glAttachShader(program,fragment);
         
@@ -44,9 +45,9 @@ Shader::Shader(char* vertexFile,char* fragmentFile){
         glBindAttribLocation(program,ATTRIB_COLOR,"a_color");
 
         glLinkProgram(program);
-        glGetProgramiv(program,GL_LINK_STATUS,&linkStatus);
+        glGetProgramiv(program,GL_LINK_STATUS,&link_status);
         
-        if(linkStatus != 0){
+        if(link_status != 0){
             MODELVIEW_MATRIX 	= glGetUniformLocation(program,"modelview_matrix");
             PROJECTION_MATRIX 	= glGetUniformLocation(program,"projection_matrix");
             NORMAL_MATRIX    	= glGetUniformLocation(program,"normal_matrix");
@@ -116,37 +117,58 @@ void Shader::Use(){
 }
 
 void ShaderManager::Init(){
-    defaultShader = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
-    cachedShaders.Add("default",(byte*)defaultShader);
+    DEFAULT_SHADER = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
+    CACHED_SHADERS.Add("default",(byte*)DEFAULT_SHADER);
 }
 void ShaderManager::Free(){
     Shader* pShader;
-    for(int i=0;i<cachedShaders.Max();i++){
-        pShader = (Shader*)cachedShaders.At(i);
+    for(int i=0;i<CACHED_SHADERS.Max();i++){
+        pShader = (Shader*)CACHED_SHADERS.At(i);
         if(pShader)delete pShader;
     }
-    cachedShaders.Clear();
+    CACHED_SHADERS.Clear();
 }
 
-void ShaderManager::AddShader(char* name,char* vertexFile,char* fragmentFile){
-    if(cachedShaders.Get(name)!=null)return;
-    Shader* newshader = new Shader(vertexFile,fragmentFile);
-    cachedShaders.Add(cstr::new_copy(name),(byte*)newshader);
+void ShaderManager::AddShader(char* name,char* vertex_file,char* fragment_file){
+    if(CACHED_SHADERS.Get(name)!=null)return;
+    Shader* newshader = new Shader(vertex_file,fragment_file);
+    CACHED_SHADERS.Add(cstr::new_copy(name),(byte*)newshader);
 }
 
+/*
 Shader* ShaderManager::GetShader(char* name){
-    Shader* ret = (Shader*)cachedShaders.Get(name);
-    if(ret == null){
-        ret = DefaultShader();//4/11 rename your shaders
+    Shader* ret = (Shader*)CACHED_SHADERS.Get(name);
+    if(ret== null){
+        logger::warn("Shader not found, using default.");
+        ret=DEFAULT_SHADER;
     }
     return ret;
 }
+*/
+
+Shader* ShaderManager::UseShader(char* name){
+    Shader* ret = (Shader*)CACHED_SHADERS.Get(name);
+    if(ret== null){
+        logger::warn("Shader not found, using default.");
+        ret=DEFAULT_SHADER;
+    }
+    if(ret != CURRENT_SHADER){
+        ret->Use();
+        CURRENT_SHADER=ret;
+    }
+    return ret;
+}
+
+
+
 void ShaderManager::RemoveShader(char* name){
-    Shader* ret = (Shader*)cachedShaders.Remove(name);
+    Shader* ret = (Shader*)CACHED_SHADERS.Remove(name);
     if(ret != null){
         delete ret;
     }   
 }
+/*
 Shader* ShaderManager::DefaultShader(){
     return defaultShader;
 }
+*/

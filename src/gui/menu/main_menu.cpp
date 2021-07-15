@@ -11,22 +11,11 @@ void LaunchSingleplayerButtonCallback(){
 
 }
               
-MainMenu::MainMenu(Layout* parent){
-    layout.offset.parent=parent;
-    if(parent != null){
-        layout.W = parent->W;
-        layout.H = parent->H;
-    }
-    else{
-        layout.W = 512;
-        layout.H = 256;
-    }
-
+MainMenu::MainMenu(Layout* parent) : Menu(parent){
     background_img = new Sprite(TextureManager::Get("dat/ui/low_effort_banner.png"));
 
     FontID Big_Button_Font = FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",32);
 
-    //this->AddWidget("play_button");
     ButtonWidget* play_button = new ButtonWidget(LaunchSingleplayerButtonCallback);
         play_button->layout.W = 256;
         play_button->layout.H = 64;
