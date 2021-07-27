@@ -16,6 +16,9 @@ Camera::Camera(){
     turn=0;
     pitch=0;
     yaw = 0;
+
+    view_matrix.identity();
+    projection_matrix.identity();
 }
 
 void Camera::ToCameraSpace(mat4* m){
@@ -31,4 +34,22 @@ void Camera::ToCameraSpace(mat4* m){
 vec3 Camera::FromCameraSpace(vec3 v){
     v.rotate_y(rotation.y);
     return v;
+}
+
+void Camera::ApplyTransforms(){
+
+    view_matrix.identity(); 
+    if(ortho){
+        projection_matrix.ortho(width,height,near_clip,far_clip);
+    }
+    else{
+        projection_matrix.perspective(width,height,near_clip,far_clip,fov);
+    }
+     
+    ToCameraSpace(&view_matrix);
+}
+
+
+void Camera::ResetViewMatrix(mat4* view){
+    view_matrix.set(view);
 }

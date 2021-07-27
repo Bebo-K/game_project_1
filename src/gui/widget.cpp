@@ -26,6 +26,7 @@ void Widget::SetName(char* new_name){
 
 void Widget::ParentTo(Widget* parent,char* my_name){
     parent->sub_widgets.Add(this,my_name);
+    OnResize();
 }
 
 

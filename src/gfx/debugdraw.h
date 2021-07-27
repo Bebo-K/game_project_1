@@ -5,7 +5,7 @@
 
 namespace DebugDraw{
 
-    void Init(){};
+    void Init();
     void DrawRect(int x,int y,int w,int h,vec4 color);
     void Draw3DRect(int x,int y,int z,int w,int h,int d,vec4 color);
 

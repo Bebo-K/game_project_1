@@ -48,9 +48,9 @@ void UI_Rect::Draw(){
 
     mat4 modelview;
         modelview.identity();
-        modelview.translate(-center.x/(float)rect.w,-center.y/(float)rect.h,0);
-        modelview.rotate_z(rotation);
-        //modelview.scale(width,height,1);
+        //modelview.translate(-center.x/(float)rect.w,-center.y/(float)rect.h,0);
+        //modelview.rotate_z(rotation);
+        //modelview.scale(rect.w,rect.h,1);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,no_tex.atlas_id);

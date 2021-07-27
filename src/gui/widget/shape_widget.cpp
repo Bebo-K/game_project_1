@@ -2,8 +2,10 @@
 
 
 
-RectWidget::RectWidget(vec4 colour){
+RectWidget::RectWidget(vec4 colour):shape(){
     shape.color = colour;
+    layout.h_fill_mode = LayoutScaleMode::MATCH_PARENT;
+    layout.v_fill_mode = LayoutScaleMode::MATCH_PARENT;
 }
 
 RectWidget::RectWidget(int w,int h,vec4 colour):shape(w,h){

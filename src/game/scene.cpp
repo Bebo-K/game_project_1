@@ -8,19 +8,10 @@ Scene::Scene() :entities(){
 
 Scene::~Scene(){}
 
-void Scene::Load(){
-    logger::info("loading default scene...\n");
-    level.LoadDefault();
-    loaded = true;
-}
-
-void Scene::Load(int area_id){
-    logger::info("loading scene for area id %d...\n",area_id);
-    loaded = true;
-}
-
 void Scene::Unload(){
     logger::info("unloading scene...\n");
+    level.Unload();
+    entities.Clear();
     loaded = false;
 }
 

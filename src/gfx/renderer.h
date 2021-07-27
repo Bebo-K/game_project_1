@@ -7,8 +7,6 @@
 class Renderer{
 private:
     int primitive_count;
-    mat4 view_matrix;
-    mat4 projection_matrix;
 public:
     Camera camera;
     PointerArray primitives;

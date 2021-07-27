@@ -12,9 +12,10 @@ class Drawable{
     vec3  scale;
     char layer;
     bool hidden;
+    char* shader_name;
 
     Drawable();
-    virtual void Draw(Camera* cam,mat4* view, mat4* projection);
+    virtual void Draw(Camera* cam);
     virtual ~Drawable();
 };
 

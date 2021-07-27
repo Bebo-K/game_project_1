@@ -30,7 +30,7 @@ class ModelSet : public List<Model> ,public Component,public Drawable{
 	public:
 	
 	Model* Add(ModelID model_id);
-	void Draw(Camera* cam,mat4* view, mat4* projection);
+	void Draw(Camera* cam);
 	~ModelSet();
 };
 

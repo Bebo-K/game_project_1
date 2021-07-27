@@ -18,9 +18,16 @@ class Camera{
     float near_clip;
     float far_clip;
 
+    mat4 view_matrix;
+    mat4 projection_matrix;
+
     Camera();
+
     vec3 FromCameraSpace(vec3 v);
     void ToCameraSpace(mat4* m);
+
+    void ApplyTransforms();
+    void ResetViewMatrix(mat4* view);
 };
 
 

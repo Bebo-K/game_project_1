@@ -3,6 +3,7 @@
 #include "../widget/button_widget.h"
 #include "../widget/text_widget.h"
 #include "../widget/shape_widget.h"
+#include "../widget/sprite_widget.h"
 
 #include "../../gfx/font_manager.h"
 
@@ -20,11 +21,14 @@ MainMenu::MainMenu(Layout* parent) : Menu(parent){
         play_button->layout.W = 256;
         play_button->layout.H = 64;
 
+        //RectWidget* play_button_background = new RectWidget({0.3,0.3,1.0,0.8});
+        Texture asdf = TextureManager::Get("dat/ui/playbutton.png");
+        SpriteWidget* play_button_background = new SpriteWidget("dat/ui/playbutton.png");
+            play_button_background->ParentTo(play_button,"background");
+
         TextWidget* play_button_text = new TextWidget("Play",Big_Button_Font);
             play_button_text->ParentTo(play_button,"text");
         
-        RectWidget* play_button_background = new RectWidget({0.3,0.3,1.0,0.8});
-            play_button_background->ParentTo(play_button,"background");
 
     widgets.Add(play_button,"play_button");
 }
@@ -36,7 +40,7 @@ void  MainMenu::OnUpdate(int frames){
 
 };
 void  MainMenu::OnPaint(){
-    background_img->Draw();
+    //background_img->Draw();
 
 }
 bool  MainMenu::OnInput(Input::EventID event_type){return false;}

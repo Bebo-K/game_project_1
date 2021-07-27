@@ -3,8 +3,6 @@
 #include "../log.h"
 
 Renderer::Renderer():camera(),primitives(){
-    view_matrix.identity();
-    projection_matrix.identity();
     primitive_count=0;
 
     glClearColor(0.1, 0.1, 0.1, 1.0);
@@ -14,8 +12,6 @@ Renderer::Renderer():camera(),primitives(){
 }
 
 void Renderer::Load(){
-    
-    
     camera.width= config::ui_width;
     camera.height= config::ui_height;
 
@@ -43,23 +39,12 @@ void Renderer::Remove(Drawable* p){
 void Renderer::Draw(){
     if(primitive_count <= 0){return;}
     
-
-    view_matrix.identity(); 
-    if(camera.ortho == true){
-        projection_matrix.ortho(camera.width,camera.height,camera.near_clip,camera.far_clip);
-    }
-    else{
-        projection_matrix.perspective(camera.width,camera.height,camera.near_clip,camera.far_clip,camera.fov);
-    }
-     
-    camera.ToCameraSpace(&view_matrix);
-
-    mat4 view,projection;
+    camera.ApplyTransforms();
+    mat4 view_matrix = camera.view_matrix.copy();
     Drawable** sorted_list = SortPrimitives();
     for(int p=0; p < primitive_count; p++){
-        view.set(&view_matrix);
-        projection.set(&projection_matrix); 
-        sorted_list[p]->Draw(&camera,&view,&projection);
+        camera.ResetViewMatrix(&view_matrix);
+        sorted_list[p]->Draw(&camera);
     }
     free(sorted_list);
 }
@@ -80,7 +65,7 @@ Drawable** Renderer::SortPrimitives(){
     vec3 camera_axis = {0.0f,0.0f,1.0f};
     vec3 camera_pos = {camera.x,camera.y,camera.z};
 
-    view_matrix.multiply_vec3(&camera_axis);	
+    camera.view_matrix.multiply_vec3(&camera_axis);	
     
     //insertion sort because it's quick and works well if we pre-sort. Also am lazy
     Drawable* to_insert =  null;

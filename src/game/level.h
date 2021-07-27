@@ -2,7 +2,6 @@
 #define LEVEL_H
 
 #include "../phys/level_colliders.h"
-#include "../io/json.h"
 #include "../struct/data_types.h"
 #include "../struct/3d_types.h"
 #include "../gfx/renderer.h"
@@ -29,7 +28,6 @@ class Exit{
 
 class Level : public Drawable{
     public: 
-	Skybox*		    skybox;
     //Heightmap     terrain;
     int             model_count;
     ModelData*      models;
@@ -45,10 +43,7 @@ class Level : public Drawable{
     Entrance GetEntranceByName(char* name);
     Exit GetExitByName(char* name);
 
-	void Draw(Camera* cam,mat4* view, mat4* projection);
-
-    void LoadDefault();
-    void LoadFromJSON(JSONObject* level_data);
+    void Draw(Camera* cam);
     void Unload();
 };
 

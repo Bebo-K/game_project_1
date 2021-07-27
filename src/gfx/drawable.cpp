@@ -2,7 +2,7 @@
 #include "../log.h"
 
 
-void Drawable::Draw(Camera* cam,mat4* modelview, mat4* projection){}
+void Drawable::Draw(Camera* cam){}
 
 Drawable::Drawable(){ 
     x=0;y=0;z=0;
@@ -10,6 +10,7 @@ Drawable::Drawable(){
     rotation={0,0,0};
     hidden=false;
     layer=1;
+    shader_name=null;
 }
 
 Drawable::~Drawable(){}

@@ -23,12 +23,12 @@ Model* ModelSet::Add(ModelID model_id){
     return ret;
 }
 
-void ModelSet::Draw(Camera* cam,mat4* view, mat4* projection){
-    view->translate(x,y,z);
-    view->rotate(rotation);
-    view->scale(scale);
+void ModelSet::Draw(Camera* cam){
+    cam->view_matrix.translate(x,y,z);
+    cam->view_matrix.rotate(rotation);
+    cam->view_matrix.scale(scale);
     for(Model* m: (*this)){
-        m->Draw(cam,view,projection);
+        m->Draw(cam);
     }
 }
 

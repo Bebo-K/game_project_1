@@ -15,20 +15,4 @@ class RectWidget: public Widget{
     void OnResize();
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif

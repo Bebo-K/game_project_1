@@ -12,7 +12,7 @@ void BuildSkyboxPrimitive(){
     }
 }
 
-Skybox::Skybox(char* img_fn) : mat(){
+Skybox::Skybox() : mat(){
     layer=-128;
     scale={1,1,1};
     if(!skybox_vertices.Valid()){BuildSkyboxPrimitive();}
@@ -24,10 +24,13 @@ Skybox::Skybox(char* img_fn) : mat(){
     glBindVertexArray(0);
 
     vertices=skybox_vertices;
-    mat.texture = TextureManager::Get(img_fn);
 }
 
-void Skybox::Draw(float pitch,float turn){
+void Skybox::Build(char* image_fn){
+    mat.texture = TextureManager::Get(image_fn);
+}
+
+void Skybox::Draw(Camera* cam){
     Shader* shader = ShaderManager::UseShader("skybox");//TODO: opt between skybox and skybox_flat
     glBindVertexArray(vertex_array_id);
     glDisable(GL_DEPTH_TEST);
@@ -38,8 +41,8 @@ void Skybox::Draw(float pitch,float turn){
 
         turn_matrix.identity();
         pitch_matrix.identity();
-        if(pitch != 0){pitch_matrix.rotate_x(pitch);}
-        if(turn != 0){turn_matrix.rotate_y(turn);}
+        if(cam->pitch != 0){pitch_matrix.rotate_x(cam->pitch);}
+        if(cam->turn != 0){turn_matrix.rotate_y(cam->turn);}
         //if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
 
     glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&turn_matrix);

@@ -10,8 +10,9 @@ class Skybox : public Drawable{
     VBO         vertices,tex_coords,normals;
     Material    mat;
 
-    Skybox(char* image_fn);
-    void Draw(float pitch, float turn);
+    Skybox();
+    void Build(char* image_fn);
+    void Draw(Camera* cam);
 };
 
 

@@ -14,8 +14,8 @@ out vec2 tex_coord;
 
 void main(void)
 {
-  vec4 ui_pos = modelview_matrix * vec4(a_vertex, 1.0);
-  vec2 screen_pos = (image_pos/window_size) + (ui_pos.xy*image_size /window_size);
+  vec2 vertex = (modelview_matrix * vec4(a_vertex,1)).xy; 
+  vec2 screen_pos = ((vertex*image_size)+image_pos) /window_size;
   screen_pos *= 2.0;
   screen_pos -= vec2(1.0,1.0);
   gl_Position = vec4(screen_pos.x,screen_pos.y,0,1.0);

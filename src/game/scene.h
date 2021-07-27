@@ -6,7 +6,6 @@
 #include "../struct/list.h"
 
 
-
 class Scene{
     public:
     bool loaded;
@@ -14,17 +13,18 @@ class Scene{
 
     List<Entity> entities;
 	Level level;
+    Skybox skybox;
 
     Scene();
     ~Scene();
-
-    void Load();//loads default scene
-    void Load(int area_id);
     void Unload();
 
     Entity* AddEntity(int eid);
     Entity* GetEntity(int eid);
     void RemoveEntity(int eid);
+
+
+
 };
 
 

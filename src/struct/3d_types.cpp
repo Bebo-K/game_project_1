@@ -231,6 +231,12 @@ void mat4::set(mat4* m2){
     for(int i=0;i<16;i++){m[i]=m2->m[i];}
 }
 
+mat4 mat4::copy(){
+    mat4 new_m = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+    for(int i=0;i<16;i++){new_m.m[i]=m[i];}
+    return new_m;
+}
+
 void mat4::multiply_by(mat4* mat){
     float new_m[] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
     //Column major on the left = Row Major on the right. In other words, this is a column major muliplication of mat*this, so its this*mat row major.

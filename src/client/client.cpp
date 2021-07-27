@@ -2,6 +2,7 @@
 #include "../game.h"
 #include "../log.h"
 #include <stdio.h>
+#include "../game/scene_loader.h"
 #include "../game/system/camera_manager.h"
 #include "../game/system/entity_collision.h"
 #include "../game/system/movement.h"
@@ -62,8 +63,9 @@ void Client::Start(){
 }
 
 void Client::LoadScene(int scene_id){
-    scene.Load();
+    SceneLoader::LoadDefault(&scene);
     scene_renderer.Add(&scene.level);
+    scene_renderer.Add(&scene.skybox);
 }
 
 void Client::AddEntity(int eid){

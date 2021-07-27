@@ -66,7 +66,7 @@ class Model: public Drawable{
     Model(ModelID type);
     Model(ModelData* dat);
     ~Model();
-    void Draw(mat4* view, mat4* projection);
+    void Draw(Camera* cam);
     void StartAnimation(char* anim_name);
     void StartAnimation(char* anim_name,AnimationOptions options);
 

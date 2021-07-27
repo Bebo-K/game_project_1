@@ -185,6 +185,7 @@ void ModelData::DebugPrint(){
 }
 
 Model::Model(ModelID type){
+    shader_name = "model_dynamic_lighting";
     type_id = type;
     data = ModelManager::Use(type);
     if(data->skeleton != null){
@@ -196,6 +197,7 @@ Model::Model(ModelID type){
 }
 
 Model::Model(ModelData* dat){//Does not use cache. 
+    shader_name = "model_dynamic_lighting";
     type_id= NONE;
     data = dat;
     if(data->skeleton != null){
@@ -215,8 +217,8 @@ Model::~Model(){
     }
 }
 
-void Model::Draw(mat4* view, mat4* projection){
-    Shader* shader = ShaderManager::UseShader("model_dynamic_lighting");
+void Model::Draw(Camera* cam){
+    Shader* shader = ShaderManager::UseShader(shader_name);
 
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
@@ -236,9 +238,9 @@ void Model::Draw(mat4* view, mat4* projection){
     model.translate(x,y,z);
     model.rotate(rotation);
     model.scale(scale);
-    view->multiply_by(&model);
+    cam->view_matrix.multiply_by(&model);
 
-    normal.set(view);
+    normal.set(&cam->view_matrix);
     normal.transpose();
     normal.invert();
     
@@ -250,8 +252,8 @@ void Model::Draw(mat4* view, mat4* projection){
         } 
     }
 
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)view);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)projection);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
     for(int i=0;i<data->mesh_group_count;i++){
