@@ -111,11 +111,11 @@ void Layout::Resize(){
         default:break;
     };
     switch (offset.vertical_mode){
-        case VLayoutMode::V_CENTERED:  Y += offset.parent->X +(offset.parent->W/2) - (W/2);break;
-        case VLayoutMode::V_TOP:       Y += offset.parent->X; break;
-        case VLayoutMode::V_BOTTOM:    Y += offset.parent->X + offset.parent->W - W;break;
-        case VLayoutMode::V_ABOVE:     Y += offset.parent->X - W;
-        case VLayoutMode::V_BELOW:     Y += offset.parent->X + offset.parent->W; break;
+        case VLayoutMode::V_CENTERED:  Y += offset.parent->Y +(offset.parent->H/2) - (H/2);break;
+        case VLayoutMode::V_TOP:       Y += offset.parent->Y; break;
+        case VLayoutMode::V_BOTTOM:    Y += offset.parent->Y + offset.parent->H - H;break;
+        case VLayoutMode::V_ABOVE:     Y += offset.parent->Y - H;
+        case VLayoutMode::V_BELOW:     Y += offset.parent->Y + offset.parent->H; break;
         default:break;
     }
     switch(h_fill_mode){
@@ -131,6 +131,14 @@ void Layout::Resize(){
         default:break;
     }
 
+
+    if(offset.parent->W <= 0 || offset.parent->H <= 0){
+        relative.x=0;
+        relative.y=0;
+        relative.w=1;
+        relative.h=1;
+        return;
+    }
     relative.x = offset.x/offset.parent->W;
     relative.y = offset.y/offset.parent->H;
     relative.w = W/offset.parent->W;

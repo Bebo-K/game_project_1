@@ -17,6 +17,7 @@ struct Glyph{
 class UI_Text{
     public:
     int x,y;
+    int w,h;
     text_char* string;
     int    glyph_count;
     Glyph* glyphs;

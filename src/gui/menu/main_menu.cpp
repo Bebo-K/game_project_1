@@ -22,8 +22,8 @@ MainMenu::MainMenu(Layout* parent) : Menu(parent){
         play_button->layout.H = 64;
 
         //RectWidget* play_button_background = new RectWidget({0.3,0.3,1.0,0.8});
-        Texture asdf = TextureManager::Get("dat/ui/playbutton.png");
-        SpriteWidget* play_button_background = new SpriteWidget("dat/ui/playbutton.png");
+        Texture button_tex = TextureManager::Get("dat/ui/playbutton.png");
+        SpriteWidget* play_button_background = new SpriteWidget(button_tex);
             play_button_background->ParentTo(play_button,"background");
 
         TextWidget* play_button_text = new TextWidget("Play",Big_Button_Font);

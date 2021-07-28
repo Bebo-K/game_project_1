@@ -1,10 +1,10 @@
 #include "text_widget.h"
 
-TextWidget::TextWidget() :text(){}
-TextWidget::TextWidget(char* str):text(str){}
-TextWidget::TextWidget(char* str,FontID font_id):text(TextString::from_cstr(str),font_id){}
-TextWidget::TextWidget(text_char* str):text(str){}
-TextWidget::TextWidget(text_char* str,FontID font_id):text(str,font_id){}
+TextWidget::TextWidget() :text(){layout.W = text.w; layout.H = text.h;}
+TextWidget::TextWidget(char* str):text(str){layout.W = text.w; layout.H = text.h;}
+TextWidget::TextWidget(char* str,FontID font_id):text(TextString::from_cstr(str),font_id){layout.W = text.w; layout.H = text.h;}
+TextWidget::TextWidget(text_char* str):text(str){layout.W = text.w; layout.H = text.h;}
+TextWidget::TextWidget(text_char* str,FontID font_id):text(str,font_id){layout.W = text.w; layout.H = text.h;}
 TextWidget::~TextWidget(){Destroy();}
 void TextWidget::OnDestroy(){}
 void TextWidget::OnPaint(){
@@ -13,6 +13,16 @@ void TextWidget::OnPaint(){
 void TextWidget::OnResize(){
     text.x = layout.X;
     text.y = layout.Y;
+}
+void TextWidget::SetString(char* str){
+    text.SetString(str);
+    layout.W = text.w;
+    layout.H = text.h;
+}
+void TextWidget::SetString(text_char* str,FontID font){
+    text.SetString(str,font);
+    layout.W = text.w;
+    layout.H = text.h;
 }
 
 

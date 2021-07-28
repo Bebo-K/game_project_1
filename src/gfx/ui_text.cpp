@@ -29,24 +29,24 @@ UI_Text::UI_Text(){
     glyphs=nullptr;
     string=nullptr;
     glyph_count=0;
-    x=y=0;
+    x=y=w=h=0;
 }
 UI_Text::UI_Text(char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
-    x=y=0;
+    x=y=w=h=0;
     SetString(TextString::from_cstr(str),-1);
 }
 UI_Text::UI_Text(text_char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
-    x=y=0;
+    x=y=w=h=0;
     SetString(str,-1);
 }
 UI_Text::UI_Text(text_char* str,FontID font_id){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
-    x=y=0;
+    x=y=w=h=0;
     SetString(str,font_id);
 }
 
@@ -72,12 +72,16 @@ void UI_Text::SetString(text_char* str,FontID font_id){
     glyphs = (Glyph*)calloc(glyph_count,sizeof(Glyph));
 
     int pen_x=0,pen_y=0;
+    int max_height=0;
 
     for(int i=0;str[i] != 0;i++){
         int err = FT_Load_Char(fontface,str[i],FT_LOAD_DEFAULT);
         if(err != 0){logger::warn("Unable to load glyph. Code:%d\n",err);}        
 
+        if(max_height < fontface->glyph->metrics.height){max_height = fontface->glyph->metrics.height;}
+
         glyphs[i].x = (float)(pen_x + (fontface->glyph->metrics.horiBearingX/64));
+        
         glyphs[i].y = (float)(pen_y - (fontface->glyph->metrics.height- fontface->glyph->metrics.horiBearingY)/64);
         glyphs[i].glyph_texture = FontManager::GetGlyph(str[i]);
 
@@ -85,6 +89,8 @@ void UI_Text::SetString(text_char* str,FontID font_id){
         if(str[i] != ' '){pen_x-=1;}else pen_x += 1;//don't know why but I promise this is a thing
         pen_y += fontface->glyph->advance.y/64;
     }
+    w = pen_x;
+    h = max_height/64;
 }
 
 UI_Text::~UI_Text(){

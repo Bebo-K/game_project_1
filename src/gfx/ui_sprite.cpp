@@ -16,7 +16,7 @@ void BuildSpritePrimitive(){
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
 
-    Shader* sprite_shader = ShaderManager::UseShader("ui_sprite");
+    ShaderManager::UseShader("ui_sprite");
     //TODO: Memory leak. Where to keep these values?
     sprite_vertices.Create(sprite_vert_data,GL_FLOAT,3,9);
     sprite_texcoords.Create(sprite_texcoord_data,GL_FLOAT,2,6);

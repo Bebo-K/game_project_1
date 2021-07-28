@@ -8,6 +8,7 @@ class SpriteWidget: public Widget{
     Sprite sprite;
     public:
     SpriteWidget(char* filename);
+    SpriteWidget(Texture sprite_tex);
     SpriteWidget(Texture sprite_tex, int w, int h);
     ~SpriteWidget();
 
