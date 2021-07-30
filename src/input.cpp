@@ -134,7 +134,6 @@ void Input::SetPhysicalAxisDirection(int input_id,bool flip_x,bool flip_y){
 }
 
 void Input::PostUpdate(){
-    state_changed_flags=0;
     for(int i=0;i< axis_count;i++){
         axes[i].dx=0;axes[i].dy=0;
     }
@@ -149,6 +148,7 @@ void Input::PostUpdate(){
     if(any_button.state == 3){any_button.state=1;}
     if(any_button.state == 2){any_button.state=0;}
     ClearInputText();
+    ClearAllEvents();
 }
 
 Input::EventID Input::GetEventID(char* event_name){
@@ -173,20 +173,30 @@ Input::KeyBind Input::GetKeyBindByInput(int input_id){
 }
 
 Input::EventID Input::NextEvent(){
-    int input_id_mask=1;
-    for(int i=1; i<input_count;i++){
-        if((state_changed_flags& input_id_mask) > 0){
-            state_changed_flags = state_changed_flags ^ input_id_mask;
-            return (EventID)i;
-        }
-        input_id_mask = input_id_mask << 1;
+    for(int i=0; i<input_count;i++){
+        if((state_changed_flags & (1 << i)) > 0){return (EventID)(i+1);}
+    }
+    return EventID::None;
+}
+Input::EventID Input::NextEvent(Input::EventID start){
+    if(start < 0 || (start + 1) >= input_count)return EventID::None;
+    for(int i=start; i<input_count;i++){
+        if((state_changed_flags & (1 << i)) > 0){return (EventID)(i+1);}
     }
     return EventID::None;
 }
 
-Input::Axis Input::Move_Axis(){
-    return axes[0];
+void Input::ClearEvent(Input::EventID event){
+    if(event <= 0 || event >= input_count)return;
+    state_changed_flags = state_changed_flags ^ (1 << (event-1));
 }
+
+void Input::ClearAllEvents(){
+    state_changed_flags=0;
+}
+
+
+Input::Axis Input::Move_Axis(){return axes[0];}
 Input::Axis Input::Cam_Axis(){return axes[1];}
 Input::Axis Input::Cursor_Axis(){return axes[2];}
 Input::Axis Input::Scroll_Axis(){return axes[3];}
@@ -211,6 +221,11 @@ Input::Button Input::Button_Cursor_Select(){return buttons[15];}
 
 text_char* Input::TextInput(){return input_text;}
 
+
+void OnEvent(Input::EventID event, bool down){
+    int event_flag = 1 << (event - 1);
+    state_changed_flags |= event_flag;
+}
 
 void HandleBoolAsButtonEvent(Input::KeyBind keybind,bool down){
     int event_flag = 1 << (keybind.event - 1);
@@ -253,6 +268,7 @@ void HandleBoolAsAxisEvent(Input::KeyBind keybind,bool down){
     axes[axis_id].dx = axes[axis_id].raw_x - prev_axis[0];
     axes[axis_id].dy = axes[axis_id].raw_y - prev_axis[1];
 }
+
 void HandleAxisAsButtonEvent(Input::KeyBind keybind,int pos_x,int pos_y){
     //Moving at all = down. 
     int button_id = (keybind.event-1)-axis_count;
@@ -301,23 +317,22 @@ void Input::HandleIntAxis(int axis_id,int pos_x,int pos_y){
 void Input::HandleCharacter(int code_point){
     character_code[0]=code_point;
     input_text = character_code;
-    state_changed_flags |= Input::EventID::Text;
+    state_changed_flags |= (1 << (Input::EventID::PC_Text-1));
 }
 
 void Input::HandleText(text_char* text){
     input_text = TextString::copy(text);
-    state_changed_flags |= Input::EventID::Text;
+    state_changed_flags |= (1 << (Input::EventID::PC_Text-1));
 }
 
 void Input::ClearInputText(){
-    state_changed_flags ^= (1 << (Input::EventID::Text-1));//clear text event;
+    state_changed_flags ^= (1 << (Input::EventID::PC_Text-1));//clear text event;
     character_code[0]=0;
     if(input_text != nullptr){
         if(input_text != character_code){free(input_text);}
         input_text = nullptr;
     }
 }
-
 
 int Input::GetKeyID(char* key_name){
     char* phys_input_id=null;

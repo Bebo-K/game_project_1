@@ -55,6 +55,7 @@ void SetupJoypads(){
                 printf("Manufacturerer ID: %d\n",stick_info.wMid);
                 printf("Product ID: %d\n",stick_info.wPid);
                 */
+               
             }
             current_controller_num++;
         }
