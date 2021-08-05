@@ -27,6 +27,7 @@ class Client{
     void Paint();
     void Update(int frames);
     void UpdatePositions();
+    void HandleUIInput();
     void HandleFrameInput();
 
 };

@@ -121,36 +121,43 @@ void Client::UpdatePositions(){
 }
 
 void Client::Update(int frames){
-    if(!scene.loaded)return;
-    float frame_interval = Game::FrameInterval();
-    float seconds = frames*frame_interval;
+    HandleUIInput();
+    if(scene.loaded){
+        float frame_interval = Game::FrameInterval();
+        float seconds = frames*frame_interval;
+        
         AnimationManager::Update(seconds);
 
-    int frames_to_run = (frames < FRAMESKIP_MAX)?frames:FRAMESKIP_MAX;
-    scene.global_timer+= frames_to_run;
+        int frames_to_run = (frames < FRAMESKIP_MAX)?frames:FRAMESKIP_MAX;
+        scene.global_timer+= frames_to_run;
 
-    for(int frame=0;frame<frames_to_run;frame++){
-        HandleFrameInput();
-        
-        //NPCController::Update(&scene);
-        //EntityCollision::Update(&scene);
-        Movement::Update(&scene,frame_interval);
-        Physics::FrameUpdate(&scene,frame_interval); 
-        //TransitionManager::Update(&scene,ms);
-        StateManager::Update(&scene,frame_interval);
-        UpdatePositions();
-        ui.Update(&scene,frames);
-        
-        PlayerInput::UpdateCamera(&scene,frame_interval);
+        for(int frame=0;frame<frames_to_run;frame++){
+            HandleFrameInput();
+            
+            //NPCController::Update(&scene);
+            //EntityCollision::Update(&scene);
+            Movement::Update(&scene,frame_interval);
+            Physics::FrameUpdate(&scene,frame_interval); 
+            //TransitionManager::Update(&scene,ms);
+            StateManager::Update(&scene,frame_interval);
+            UpdatePositions();
+            ui.Update(&scene,frames);
+            
+            PlayerInput::UpdateCamera(&scene,frame_interval);
+        }
+        //Network::RunSync(scene);
     }
-    //Network::RunSync(scene);
+    Input::PostUpdate();
+}
+
+void Client::HandleUIInput(){
+    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
+        if(ui.OnInput(input)){Input::ClearEvent(input);}
+    }
 }
 
 void Client::HandleFrameInput(){
-    bool handled = false;
-    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent()){
-        handled = ui.OnInput(input);
-        if(!handled){PlayerInput::HandleInput(input);}
+    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
+        if(PlayerInput::HandleInput(input)){Input::ClearEvent(input);}
     }
-    Input::PostUpdate();
 }

@@ -4,16 +4,31 @@
 
 float rect_vert_data[] =       {0,1,0,  0,0,0,  1,0,0,  1,0,0,  1,1,0,  0,1,0};
 float rect_texcoord_data[] =   {0,0,    0,1,    1,1,   1,1,    1,0,    0,0};
+GLuint rect_vertex_array_id= -1;
 VBO rect_vertices;
 VBO rect_texcoords;
 
 void BuildShapePrimitives(){
+    glGenVertexArrays(1,&rect_vertex_array_id);
+    glBindVertexArray(rect_vertex_array_id);
+
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+
+    ShaderManager::UseShader("ui_shape");
+    
     rect_vertices.Create(rect_vert_data,GL_FLOAT,3,18);
     rect_texcoords.Create(rect_texcoord_data,GL_FLOAT,2,12);
-    int err = glGetError();
-    if(err != 0){
-        logger::warn("Error building text glyph primitive, code: %d \n",err);
-    }
+
+    
+    rect_vertices.Bind(Shader::ATTRIB_VERTEX);
+    rect_texcoords.Bind(Shader::ATTRIB_TEXCOORD);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    int gl_err = glGetError();
+    if(gl_err != 0){logger::warn("GL error initializing rect primitive: %d",&gl_err);}
 }
 
 
@@ -36,15 +51,14 @@ UI_Rect::~UI_Rect(){
 }
 
 void UI_Rect::Draw(){
+    glDisable(GL_DEPTH_TEST);
     Shader* shape_shader = ShaderManager::UseShader("ui_shape");
     
     Texture no_tex = TextureManager::DefaultTexture();
 
-    glDisable(GL_DEPTH_TEST);
-    glEnableVertexAttribArray(shape_shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(shape_shader->ATTRIB_TEXCOORD);
-    rect_vertices.Bind(0);
-    rect_texcoords.Bind(1);
+    glBindVertexArray(rect_vertex_array_id); 
+    int err = glGetError();
+    if(err != 0){logger::warn("GL error binding rect vertex array: %d",&err);}
 
     mat4 modelview;
         modelview.identity();
@@ -65,12 +79,11 @@ void UI_Rect::Draw(){
 
     glDrawArrays(GL_TRIANGLES,0,6);
 
-    int err = glGetError();
+    err = glGetError();
     if(err != 0){
         logger::warn("gl error");
     }
-    glDisableVertexAttribArray(shape_shader->ATTRIB_VERTEX);
-    glDisableVertexAttribArray(shape_shader->ATTRIB_TEXCOORD);
-    
+
+    glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }

@@ -1,5 +1,5 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifdef INPUT_H
+#define INPUT2_H
 
 #include "struct/data_types.h"
 #include "struct/3d_types.h"
@@ -35,13 +35,34 @@ namespace PhysicalInput{
 namespace Input{
     const float AXIS_CUTOFF = 0.01;
 
-    enum EventID{None=0,
-    MoveAxis=1,CamAxis=2,CursorAxis=3,ScrollAxis=4,
-    A=5,B=6,C=7,D=8,
-    DPAD_Up=9,DPAD_Down=10,DPAD_Left=11,DPAD_Right=12,
-    L1=13,L2=14,R1=15,R2=16,
-    Pause=17, Menu=18, CursorSelect=19, ToggleConsole=20,
-    Any_Button=21,Text=22};
+    enum EventID{
+    None=0,
+    MoveAxis=1,
+    CamAxis=2,
+    A=3,
+    B=4,
+    C=5,
+    D=6,
+    DPAD_Up=7,
+    DPAD_Down=8,
+    DPAD_Left=9,
+    DPAD_Right=10,
+    L1=11,
+    L2=12,
+    R1=13,
+    R2=14,
+    Pause=15, 
+    Menu=16,
+    
+    PC_CursorAxis=17,
+    PC_ScrollAxis=18,
+    PC_RClick=18,
+    PC_LClick=19,
+    PC_Text=21,
+
+    ToggleConsole=22,
+    Any_Button=23
+    };
 
     struct Axis{
         EventID event_id;
@@ -90,6 +111,9 @@ namespace Input{
     KeyBind GetKeyBindByInput(int input_id);
 
     EventID NextEvent();
+    EventID NextEvent(EventID start);
+    void    ClearEvent(EventID event);
+    void    ClearAllEvents();
     //bool   StateChanged(InputCode input_id);
     //Button GetButton(InputCode button_id);
     //Axis   GetAxis(InputCode axis_id);

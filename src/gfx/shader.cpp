@@ -52,7 +52,7 @@ Shader::Shader(char* vertex_file,char* fragment_file){
             PROJECTION_MATRIX 	= glGetUniformLocation(program,"projection_matrix");
             NORMAL_MATRIX    	= glGetUniformLocation(program,"normal_matrix");
             TEXTURE_0 			= glGetUniformLocation(program,"texture0");
-            COLOR				= glGetUniformLocation(program,"base_color");
+            COLOR				= glGetUniformLocation(program,"color");
             AMBIENT				= glGetUniformLocation(program,"ambient");
             DIFFUSE				= glGetUniformLocation(program,"diffuse");
             SPECULAR			= glGetUniformLocation(program,"specular");

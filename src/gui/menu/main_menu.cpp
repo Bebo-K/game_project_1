@@ -7,8 +7,11 @@
 
 #include "../../gfx/font_manager.h"
 
-void LaunchSingleplayerButtonCallback(){
 
+#include "../../log.h"
+
+void LaunchSingleplayerButtonCallback(){
+    logger::warn("Launching server!");
 
 }
               
@@ -19,11 +22,11 @@ MainMenu::MainMenu(Layout* parent) : Menu(parent){
 
     ButtonWidget* play_button = new ButtonWidget(LaunchSingleplayerButtonCallback);
         play_button->layout.W = 256;
-        play_button->layout.H = 64;
+        play_button->layout.H = 128;
 
-        //RectWidget* play_button_background = new RectWidget({0.3,0.3,1.0,0.8});
-        Texture button_tex = TextureManager::Get("dat/ui/playbutton.png");
-        SpriteWidget* play_button_background = new SpriteWidget(button_tex);
+        RectWidget* play_button_background = new RectWidget({0.3,0.3,1.0,0.8});
+        //Texture button_tex = TextureManager::Get("dat/ui/playbutton.png");
+        //SpriteWidget* play_button_background = new SpriteWidget(button_tex);
             play_button_background->ParentTo(play_button,"background");
 
         TextWidget* play_button_text = new TextWidget("Play",Big_Button_Font);
@@ -40,10 +43,15 @@ void  MainMenu::OnUpdate(int frames){
 
 };
 void  MainMenu::OnPaint(){
-    //background_img->Draw();
-
+    background_img->Draw();
 }
-bool  MainMenu::OnInput(Input::EventID event_type){return false;}
+bool  MainMenu::OnInput(Input::EventID event_type){
+    if(event_type != Input::EventID::MoveAxis){
+        
+        logger::warn("clicked?");
+    }
+    return false;
+    }
 void  MainMenu::OnResize(){
     background_img->scale.x = ((float)layout.W)/background_img->width;
     background_img->scale.y = ((float)layout.H)/background_img->height;

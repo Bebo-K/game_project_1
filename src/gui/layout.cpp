@@ -90,6 +90,19 @@ void Layout::Resize(){
      Y=offset.y;
     if(offset.parent == nullptr){return;}
 
+    switch(h_fill_mode){
+        case LayoutScaleMode::NOSCALE: break;
+        case LayoutScaleMode::MATCH_PARENT: W = offset.parent->W - offset.x; break;
+        case LayoutScaleMode::RATIO: W = offset.parent->W * relative.w;break;
+        default:break;
+    }
+    switch(v_fill_mode){
+        case LayoutScaleMode::NOSCALE: break;
+        case LayoutScaleMode::MATCH_PARENT: H = offset.parent->H - offset.y; break;
+        case LayoutScaleMode::RATIO: H = offset.parent->H * relative.h;break;
+        default:break;
+    }
+
     switch(h_pos_mode){
         case LayoutScaleMode::NOSCALE: X = offset.x;break;
         case LayoutScaleMode::MATCH_PARENT: X = offset.parent->X; offset.x=0;break;
@@ -118,18 +131,7 @@ void Layout::Resize(){
         case VLayoutMode::V_BELOW:     Y += offset.parent->Y + offset.parent->H; break;
         default:break;
     }
-    switch(h_fill_mode){
-        case LayoutScaleMode::NOSCALE: break;
-        case LayoutScaleMode::MATCH_PARENT: W = offset.parent->W - offset.x; break;
-        case LayoutScaleMode::RATIO: W = offset.parent->W * relative.w;break;
-        default:break;
-    }
-    switch(v_fill_mode){
-        case LayoutScaleMode::NOSCALE: break;
-        case LayoutScaleMode::MATCH_PARENT: H = offset.parent->H - offset.y; break;
-        case LayoutScaleMode::RATIO: H = offset.parent->H * relative.h;break;
-        default:break;
-    }
+
 
 
     if(offset.parent->W <= 0 || offset.parent->H <= 0){
