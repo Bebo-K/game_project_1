@@ -17,16 +17,6 @@
 
 Client::Client() : scene(), scene_renderer(), ui(){
     ShaderManager::Init();
-        ShaderManager::AddShader("default","dat/gfx/default.vrt","dat/gfx/default.frg");
-        ShaderManager::AddShader("level_debug","dat/gfx/level_debug.vrt","dat/gfx/level_debug.frg");
-        ShaderManager::AddShader("model_dynamic_lighting","dat/gfx/model_dynamic_lighting.vrt","dat/gfx/model_dynamic_lighting.frg");
-        ShaderManager::AddShader("model_static_shadeless","dat/gfx/model_static_shadeless.vrt","dat/gfx/model_static_shadeless.frg");
-        ShaderManager::AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
-        ShaderManager::AddShader("skybox_flat","dat/gfx/skybox_flat.vrt","dat/gfx/skybox_flat.frg");
-        ShaderManager::AddShader("ui_default","dat/gfx/ui_default.vrt","dat/gfx/ui_default.frg");
-        ShaderManager::AddShader("ui_shape","dat/gfx/ui_shape.vrt","dat/gfx/ui_shape.frg");
-        ShaderManager::AddShader("ui_sprite","dat/gfx/ui_sprite.vrt","dat/gfx/ui_sprite.frg");
-        ShaderManager::AddShader("ui_text","dat/gfx/ui_text.vrt","dat/gfx/ui_text.frg");
     TextureManager::Init();
     ModelManager::Init();
     AnimationManager::Init();
@@ -147,17 +137,17 @@ void Client::Update(int frames){
         }
         //Network::RunSync(scene);
     }
-    Input::PostUpdate();
+    Input::Update();
 }
 
 void Client::HandleUIInput(){
-    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
+    for(Input::Event input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
         if(ui.OnInput(input)){Input::ClearEvent(input);}
     }
 }
 
 void Client::HandleFrameInput(){
-    for(Input::EventID input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
+    for(Input::Event input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
         if(PlayerInput::HandleInput(input)){Input::ClearEvent(input);}
     }
 }

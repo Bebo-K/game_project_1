@@ -8,11 +8,11 @@
 namespace PlayerInput{
 
     void UpdateCamera(Scene* scene, float delta);
-    bool HandleInput(Input::EventID input);
+    bool HandleInput(Input::Event input);
     bool HandleMovementInput();
     bool HandleJumpingInput();
     bool HandleActionInput();
-    bool HandleCameraInput(Input::EventID code_type);
+    bool HandleCameraInput(Input::Event code_type);
 
     void Track(Entity* e);
     void Untrack(Entity* e);

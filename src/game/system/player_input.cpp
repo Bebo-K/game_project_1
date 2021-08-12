@@ -14,7 +14,7 @@ bool PlayerInput::HandleMovementInput(){
     if(tracked_entity->movement->lock_move){return false;}
     if(!tracked_entity->movement->can_move){return true;}
 
-    vec2 move_input = Input::Move_Axis().GetNormalized();
+    vec2 move_input = Controller::GetAxis(Controller::Move).GetNormalized();
     Camera* cam = tracked_entity->camera_target->camera;
     float move_amount = move_input.length_sqr();
     
@@ -31,13 +31,13 @@ bool PlayerInput::HandleMovementInput(){
 bool PlayerInput::HandleJumpingInput(){
     if(tracked_entity->movement->lock_jump){return false;}
     if(tracked_entity->movement->can_jump){
-        if(Input::Button_A().IsJustPressed()){
+        if(Controller::GetButton(Controller::A).IsJustPressed()){
             tracked_entity->movement->jump_goal=true;
             return true;
         }
     }
     else{
-        if(Input::Button_A().IsJustReleased()){
+        if(Controller::GetButton(Controller::A).IsJustReleased()){
             tracked_entity->movement->jump_goal = false;
             return true;
         }
@@ -49,17 +49,17 @@ bool PlayerInput::HandleActionInput(){
     if(tracked_entity->movement->lock_jump){return false;}
     if(!tracked_entity->movement->can_jump){return true;}
 
-    tracked_entity->movement->action_goal=Input::Button_B().IsJustPressed();
+    tracked_entity->movement->action_goal=Controller::GetButton(Controller::B).IsJustPressed();
     return true;
 }
 
-bool PlayerInput::HandleCameraInput(Input::EventID code_type){
+bool PlayerInput::HandleCameraInput(Input::Event code_type){
     if(tracked_entity->movement->lock_camera){return false;}
     if(!tracked_entity->movement->can_camera){return true;}
 
-    if(code_type == Input::EventID::CamAxis){
+    if(code_type == Input::Cam){
         Camera* cam = tracked_entity->camera_target->camera;
-        vec2 camera_input = Input::Cam_Axis().GetNormalized();
+        vec2 camera_input = Controller::GetAxis(Controller::Camera).GetNormalized();
         if(camera_input.length_sqr() > 0){
             cam->turn += camera_input.y;
             cam->pitch += camera_input.x;
@@ -67,11 +67,11 @@ bool PlayerInput::HandleCameraInput(Input::EventID code_type){
         return true;
     }
     else{
-        if(Input::Button_L1().IsJustPressed()){
+        if(Controller::GetButton(Controller::L1).IsJustPressed()){
             tracked_entity->movement->cam_rot_goal += 45.0f;
             return true;
         }
-        if(Input::Button_R1().IsJustPressed()){
+        if(Controller::GetButton(Controller::R1).IsJustPressed()){
             tracked_entity->movement->cam_rot_goal -= 45.0f;
             return true;
         }
@@ -79,15 +79,15 @@ bool PlayerInput::HandleCameraInput(Input::EventID code_type){
     return false;
 }
 
-bool PlayerInput::HandleInput(Input::EventID input){
+bool PlayerInput::HandleInput(Input::Event input){
     switch (input)
     {
-    case Input::EventID::MoveAxis:return HandleMovementInput();
-    case Input::EventID::A:return HandleJumpingInput();
-    case Input::EventID::B:return HandleActionInput();
-    case Input::EventID::L1:
-    case Input::EventID::R1:
-    case Input::EventID::CamAxis:return HandleCameraInput(input);
+    case Input::Move:return HandleMovementInput();
+    case Input::A:return HandleJumpingInput();
+    case Input::B:return HandleActionInput();
+    case Input::L1:
+    case Input::R1:
+    case Input::Cam:return HandleCameraInput(input);
     default:break;
     }
     return false;

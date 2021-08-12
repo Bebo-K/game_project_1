@@ -401,140 +401,6 @@ void StringMap::Clear(){
 int    StringMap::Max(){return slots;}
 byte*   StringMap::At(int index){if(keys[index]!= null)return values[index];else return null;}
 
-
-/*
-AssociativeArray::AssociativeArray(int initial_size):slot_is_filled(initial_size){
-    slots=initial_size;
-    key_data= (u_associative_array_key*)calloc(slots,sizeof(u_associative_array_key));
-    value_data= (byte**)calloc(slots,sizeof(byte*));
-}
-AssociativeArray::~AssociativeArray(){
-    free(key_data);
-    free(value_data);
-}
-
-bool AssociativeArray::Add(int key,byte* value){
-    u_associative_array_key u_key; u_key.intvalue=key;
-    if(IndexOf(u_key) >= 0)return false;//already in map.
-    int added_slot = -1;
-    for(int i=0;i < slots; i++){
-        if(!slot_is_filled.Get(i)){
-            added_slot =i;
-            break;
-        }
-    }
-    if(added_slot == -1){
-        added_slot = slots;
-        Resize(slots*2);
-    }
-    slot_is_filled.Set(added_slot);
-    key_data[added_slot] = u_key;
-    value_data[added_slot] = value;
-    return added_slot;
-}
-bool AssociativeArray::Add(byte* key,byte* value){
-    u_associative_array_key u_key; u_key.ptrvalue=key;
-    if(IndexOf(u_key) >= 0)return false;//already in map.
-    int added_slot = -1;
-    for(int i=0;i < slots; i++){
-        if(!slot_is_filled.Get(i)){
-            added_slot =i;
-            break;
-        }
-    }
-    if(added_slot == -1){
-        added_slot = slots;
-        Resize(slots*2);
-    }
-    slot_is_filled.Set(added_slot);
-    key_data[added_slot] = u_key;
-    value_data[added_slot] = value;
-    return added_slot;
-}
-byte* AssociativeArray::Remove(int key){
-    u_associative_array_key u_key; u_key.intvalue=key;
-    int value_index = IndexOf(u_key);
-    if(value_index >= 0){
-        slot_is_filled.Unset(value_index);
-        return value_data[value_index];
-    }
-    return null;
-}
-byte* AssociativeArray::Remove(byte* key){
-    u_associative_array_key u_key; u_key.ptrvalue=key;
-    int value_index = IndexOf(u_key);
-    if(value_index >= 0){
-        slot_is_filled.Unset(value_index);
-        return value_data[value_index];
-    }
-    return null;
-}
-byte* AssociativeArray::Get(int index){
-    u_associative_array_key key; key.intvalue =index;
-    int value_index = IndexOf(key);
-    return (value_index >= 0)?value_data[value_index]:null;
-}
-byte* AssociativeArray::Get(byte* index){
-    u_associative_array_key key; key.ptrvalue=index;
-    int value_index = IndexOf(key);
-    return (value_index >= 0)?value_data[value_index]:null;
-}
-int   AssociativeArray::IndexOf(u_associative_array_key key){
-    for(int i=0; i<slots;i++){
-        if(slot_is_filled.Get(i)==true){
-            if(key_data[i].ptrvalue == key.ptrvalue ||
-                key_data[i].intvalue == key.intvalue){
-                    return i;
-                }
-        }
-    }
-    return -1;
-}
-
-
-byte* AssociativeArray::StrGet(const char* index){
-    for(int i=0; i<slots;i++){
-        if(slot_is_filled.Get(i)==true){
-            if((char*)key_data[i].ptrvalue == index||
-                strcmp((char*)key_data[i].ptrvalue,index)==0){
-                    return value_data[i];
-                }
-        }
-    }
-    return null;
-}
-byte* AssociativeArray::StrRemove(const char* index){
-    for(int i=0; i<slots;i++){
-        if(slot_is_filled.Get(i)==true){
-            if((char*)key_data[i].ptrvalue == index||
-                strcmp((char*)key_data[i].ptrvalue,index)==0){
-                    slot_is_filled.Unset(i);
-                    return value_data[i];
-                }
-        }
-    }
-    return null;
-}
-int AssociativeArray::Count(){
-    return slot_is_filled.CountBitsSet();
-}
-
-void AssociativeArray::Resize(int new_count){
-    slot_is_filled.Resize(new_count);
-    byte** new_value_data = (byte**)calloc(new_count,sizeof(byte*));
-    byte** new_key_data = (byte**)calloc(new_count,sizeof(u_associative_array_key));
-    if(slots <= new_count){
-        memcpy(new_value_data,value_data,sizeof(byte*)*slots);
-        memcpy(new_key_data,key_data,sizeof(u_associative_array_key)*slots);   
-    }
-    free(value_data);
-    free(key_data);
-    value_data=new_value_data;
-    key_data=(u_associative_array_key*)new_key_data;
-    slots=new_count;
-}
-*/
-
 char* cstr::new_copy(const char* old_string){
     if(old_string==nullptr)return nullptr;
     int str_len = strlen(old_string);
@@ -543,7 +409,6 @@ char* cstr::new_copy(const char* old_string){
     str[str_len]=0;
     return str;
 }
-
 char* cstr::lowercase_copy(const char* old_string){
     int str_len = strlen(old_string);
     char* str = (char*)malloc(str_len+1);
@@ -555,12 +420,10 @@ char* cstr::lowercase_copy(const char* old_string){
     }
     return str;
 }
-
 bool cstr::compare(const char* str1,const char* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
     return strcmp(str1,str2)==0;
 }
-
 bool cstr::starts_with(const char* str, const char* start){
     int i=0;
     for(i=0;str[i] != 0 && start[i]!= 0;i++){
@@ -569,7 +432,6 @@ bool cstr::starts_with(const char* str, const char* start){
     if(str[i]==0 && start[i] != 0)return false;
     return true;
 }
-
 bool cstr::contains(const char* str, const char* substr){
     int i,j;
     for(i=0;str[i] != 0;i++){
@@ -582,21 +444,7 @@ bool cstr::contains(const char* str, const char* substr){
     }
     return false;
 }
-
-
 char* cstr::substr_before(char* str,char separator){
-    int sep_pos =0;
-    for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
-    int new_strlen = cstr::len(str)-sep_pos;
-    if(new_strlen==0)return nullptr;
-    char* result= (char*)calloc(new_strlen+1,sizeof(char));
-    for(int i=sep_pos;str[i]!=0;i++){
-        result[i-sep_pos]=str[i];
-    }
-    result[new_strlen]=0;
-    return result;
-}
-char* cstr::substr_after(char* str,char separator){
     int sep_pos =0;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
     int new_strlen = sep_pos-1;
@@ -608,13 +456,23 @@ char* cstr::substr_after(char* str,char separator){
     result[new_strlen]=0;
     return result;
 }
-
+char* cstr::substr_after(char* str,char separator){
+    int sep_pos =0;
+    for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}
+    int new_strlen = cstr::len(str)-sep_pos;
+    if(new_strlen==0)return nullptr;
+    char* result= (char*)calloc(new_strlen+1,sizeof(char));
+    for(int i=sep_pos;str[i]!=0;i++){
+        result[i-sep_pos]=str[i];
+    }
+    result[new_strlen]=0;
+    return result;
+}
 int cstr::len(char* str){
     int i;
     for(i=0;str[i]!=0;i++);
     return i;
 }
-
 char* cstr::append(const char* str1,const char* str2){
     int str1_len = strlen(str1);
     int str2_len = strlen(str2);
@@ -624,7 +482,6 @@ char* cstr::append(const char* str1,const char* str2){
     str[str1_len+str2_len]=0;
     return str;
 }
-
 char* cstr::append(const char* str1, char seperator, const char* str2){
     int str1_len = strlen(str1);
     int str2_len = strlen(str2);
@@ -635,7 +492,6 @@ char* cstr::append(const char* str1, char seperator, const char* str2){
     str[str1_len+str2_len+1]=0;
     return str;
 }
-
 char* cstr::utf16_to_utf8(const wchar_t* longstring){
     if(longstring==nullptr){return nullptr;}
     int utf_8_len=1;
@@ -686,8 +542,6 @@ char* cstr::utf16_to_utf8(const wchar_t* longstring){
     utf8_str[j]=0;
     return utf8_str;
 }
-
-
 int cstr::integer_from_string(char* str){
     int value=0;
     for(int index=0;str[index]!=0;index++){
@@ -716,6 +570,29 @@ char* cstr::write_integer_string(int a){
     ret[len]=0;
     return ret;
 }
+float cstr::float_from_string(char* str){
+    return (float)atof(str);
+}
+char* cstr::write_float_string(float a){
+    int before_decimal_places = 1;
+    int after_decimal_places=8;
+    int sign_places = (a<0)? 1:0;
+
+    for(float decimal=10;a > decimal; a *= 10){before_decimal_places++;}
+
+    char* ret = new char[sign_places+before_decimal_places+after_decimal_places+2];
+    sprintf(ret,"%8f",a);
+    return ret;
+}
+
+bool cstr::bool_from_string(char* str){
+    if(cstr::compare(str,"true"))return true;
+    if(cstr::compare(str,"false"))return false;
+    return false;
+}
+char* cstr::write_bool_string(bool val){
+    return cstr::new_copy(val?"true":"false");
+}
 
 text_char* TextString::from_cstr(char* str){
     if(str==null)return null;
@@ -726,14 +603,12 @@ text_char* TextString::from_cstr(char* str){
     ret[i]=0;
     return ret;
 }
-
 int TextString::length(text_char* str){
     if(str == nullptr)return -1;
     int ret;
     for(ret=0;str[ret]!= 0;ret++);
     return ret;
 }
-
 int TextString::write(char* str,text_char* dest){
     int ret;
     for(ret=0;str[ret] != 0;ret++){
@@ -742,7 +617,6 @@ int TextString::write(char* str,text_char* dest){
     dest[ret]=0;
     return ret;
 }
-
 text_char* TextString::first(text_char* src,int max){
     int len = length(src);
     len = (max<len)?max:len;
@@ -750,7 +624,6 @@ text_char* TextString::first(text_char* src,int max){
     for(int i=0;src[i]!=0 && i<len;i++){ret[i]=src[i];}
     return ret;
 }
-
 text_char* TextString::substr(text_char* src,int start,int len){
     int strlen = length(src);
     if((start+strlen) >= len || start < 0){logger::exception("Invalid substring indices: %d to %d for string %s",start,start+strlen,src);return nullptr;}
@@ -758,7 +631,6 @@ text_char* TextString::substr(text_char* src,int start,int len){
     for(int i=start;src[i]!=0 && i<(start+len);i++){ret[i]=src[i];}
     return ret;
 }
-
 text_char* TextString::concat(text_char* a_part,text_char* b_part){
     text_char* result= (text_char*)calloc(length(a_part)+length(b_part)+1,sizeof(text_char));
     int i;
@@ -768,7 +640,6 @@ text_char* TextString::concat(text_char* a_part,text_char* b_part){
     result[a_len+i]=0;
     return result;
 }
-
 text_char* TextString::copy(text_char* str){
     int strlen = length(str);
     text_char* result= (text_char*)calloc(strlen+1,sizeof(text_char));
@@ -776,11 +647,6 @@ text_char* TextString::copy(text_char* str){
     result[strlen]=0;
     return result;
 }
-
-//Gets the substring of a text_char string after the occurance of a seperator char
-//1.the returned string will not have the separator char at the beginning
-//2.if the separator char isn't found, a copy of the original string is returned.
-//3.if the separator char is at the very end of the string, nullptr is returned.
 text_char* TextString::substr_after(text_char* str,unsigned int separator){
     int sep_pos =0;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;break;}}

@@ -70,7 +70,7 @@ void UI::Unload(){
     delete developer_console;
 }
 
-bool  UI::OnInput(Input::EventID event_type){
+bool  UI::OnInput(Input::Event event_type){
     bool handled = false;
     
     for(Widget* w: debug_widgets){if(w->HandleInput(event_type)){handled=true;};}

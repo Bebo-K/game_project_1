@@ -29,8 +29,8 @@ class UIWindow{
         virtual void OnUpdate(int frames){};
     void Paint();
         virtual void OnPaint(){}
-    bool HandleInput(Input::EventID event_type);
-        virtual bool OnInput(Input::EventID event_type){return false;}
+    bool HandleInput(Input::Event event_type);
+        virtual bool OnInput(Input::Event event_type){return false;}
     void HandleResize();
         virtual void OnResize(){}
     bool HandleSignal(int signal_id,int metadata_len, byte* metadata);

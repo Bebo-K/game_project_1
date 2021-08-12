@@ -18,6 +18,6 @@
     void Menu::OnClose(){}
     void Menu::OnUpdate(int frames){}
     void Menu::OnPaint(){}
-    bool Menu::OnInput(Input::EventID event_type){return false;}
+    bool Menu::OnInput(Input::Event event_type){return false;}
     void Menu::OnResize(){}
     bool Menu::OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}

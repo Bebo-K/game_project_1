@@ -14,7 +14,7 @@ class ButtonWidget: public Widget{
     ~ButtonWidget();
 
     void OnUpdate(int frames);
-    bool OnInput(Input::EventID event_type);
+    bool OnInput(Input::Event event_type);
 };
 
 

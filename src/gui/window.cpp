@@ -61,7 +61,7 @@ void UIWindow::HandleResize(){
     for(Widget* w : widgets){w->HandleResize();}
 }
 
-bool UIWindow::HandleInput(Input::EventID event_type){
+bool UIWindow::HandleInput(Input::Event event_type){
     //if(!active)return false; Windows should keep input handlers on to listen for activation key. (e.g. 'M' for map)
     if(OnInput(event_type))return true;
     for(Widget* w : widgets){if(w->HandleInput(event_type))return true;}

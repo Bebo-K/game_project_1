@@ -9,24 +9,22 @@ ButtonWidget::~ButtonWidget(){}
 
 void ButtonWidget::OnUpdate(int frames){
     if(state == Released){
-        Input::Axis cursorAxis = Input::Cursor_Axis();
-        point_i cursor_pos = {cursorAxis.raw_x,cursorAxis.raw_y};
+        point_i cursor = Controller::GetPCCursor();
         rect_i layout_rect = {layout.X,layout.Y,layout.W,layout.H};
 
-        state = layout_rect.contains(cursor_pos)?Hovering:Not_Pressed;
+        state = layout_rect.contains(cursor)?Hovering:Not_Pressed;
     } 
 }
 
-bool ButtonWidget::OnInput(Input::EventID event_type){
+bool ButtonWidget::OnInput(Input::Event event_type){
     bool handled=false;
-    if(event_type== Input::EventID::CursorSelect ||
-        event_type== Input::EventID::CursorAxis){
-        Input::Axis cursorAxis = Input::Cursor_Axis();
-        point_i cursor_pos = {cursorAxis.raw_x,cursorAxis.raw_y};
+    if(event_type== Input::PC_Cursor||
+        event_type== Input::PC_LClick){
+        point_i cursor = Controller::GetPCCursor();
         rect_i layout_rect = {layout.X,layout.Y,layout.W,layout.H};
 
-        if(layout_rect.contains(cursor_pos)){
-            Input::Button cursor = Input::Button_Cursor_Select();
+        if(layout_rect.contains(cursor)){
+            Controller::Button cursor = Controller::GetPCLeftMouse();
 
             if(cursor.IsDown()){
                 if(cursor.IsJustPressed()){

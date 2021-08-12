@@ -5,6 +5,10 @@
 #define null nullptr
 #endif
 
+#define GET_BIT(x,bit) (((x) | (1<<(bit))) >> (bit) )
+#define SET_BIT(x,bit) (x) |= (1<<(bit))
+#define CLEAR_BIT(x, bit) (x) ^= (1<<(bit))
+
 typedef unsigned int uint32;
 typedef unsigned char byte;
 typedef unsigned int text_char;
@@ -31,7 +35,6 @@ struct BitArray{
     bool Toggle(int index);//returns new value;
     void Clear();
 };
-
 
 //A dynamic object array.
 //Memory is allocated for objects inside the array, if a new object is added with no available slots, the array's size will be doubled.
@@ -90,50 +93,8 @@ struct PointerArray{
     void Clear();
 };
 
-//Associative Array: PointerArray with an integer/pointer key association. As close to a map as it gets.
-// Uses both the PointerArray system and DataArray vacancy bit array system, so 0/null values are valid
-//Memory allocation for keys(if any) and values are not done by this array, only pointers are stored.
-//Add() will overwrite+return the first empty slot, or double the array size if there are none.
-//Remove() simply frees the array's slot.
-//Relative to the start of the array, there are no methods defined to move data,
-//  so the integer index of an object should be a safe reference if the user does not move array data.
-
-//BIG CAVEAT to this is that the array is only safe for as many spaces as min(sizeof(int),sizeof(byte*)).
-//On most systems both are 4, but...
-
-//ANOTHER BIG CAVEAT - Don't mix types of keys.
-// It won't complain if you add a char* key and an int key, but good luck remembering which ones you can dereference.
-/*
-union u_associative_array_key{
-    int intvalue;
-    byte* ptrvalue;
-};
-struct AssociativeArray{
-    u_associative_array_key* key_data;
-    BitArray slot_is_filled;
-    byte** value_data;
-    int slots;
-    
-    AssociativeArray();
-    AssociativeArray(int initial_size);
-    ~AssociativeArray();
-
-    bool Add(int key,byte* value);
-    bool Add(byte* key,byte* object);
-    byte* Remove(int key);
-    byte* Remove(byte* key);
-    byte* Get(int index);
-    byte* Get(byte* index);
-    int   IndexOf(u_associative_array_key key);
-    //StrGet is a special form of get that assumes the compares the key as a cstring pointer.
-    byte* StrGet(const char* index);
-    byte* StrRemove(const char* index);
-
-    int Count();
-    void Resize(int new_count);
-};
-*/
-
+//A pair of dynamic arrays, one of unique integer keys and another of byte* data pointers
+//Similar to PointerArray, except objects are accessed by key rather than slot index
 struct IDMap{
     int*        keys;
     byte**      values;
@@ -151,6 +112,7 @@ struct IDMap{
     void  Clear();
 };
 
+//Dynamic array pair for string -> byte* mapping,
 struct StringMap{
     char**  keys;
     byte**  values;
@@ -186,13 +148,13 @@ namespace cstr{
     
     int integer_from_string(char* str);
     char* write_integer_string(int a);
-    /*
-    float float_from_string(char* str,int index);
-    char* write_float_string(int a, char *str, int index);
-
-    int bool_from_string(char* str,int index);
-    char* write_bool_string(int a, char *str, int index);
-    */
+    
+    float float_from_string(char* str);
+    char* write_float_string(float a);
+    
+    bool bool_from_string(char* str);
+    char* write_bool_string(bool a);
+    
 };
 
 namespace TextString{
@@ -204,12 +166,14 @@ namespace TextString{
     text_char* substr(text_char* src,int start,int end);
     text_char* concat(text_char* a_part,text_char* b_part);
     text_char* copy(text_char* str);
+
+    //Gets the substring of a text_char string after the occurance of a seperator char
+    //1.the returned string will not have the separator char at the beginning
+    //2.if the separator char isn't found, a copy of the original string is returned.
+    //3.if the separator char is at the very end of the string, nullptr is returned.
     text_char* substr_after(text_char* str,unsigned int separator);
 
 };
-
-
-
 
 #endif
 

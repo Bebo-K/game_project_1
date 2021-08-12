@@ -169,31 +169,31 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             PostQuitMessage(0);
             break;
         case WM_KEYDOWN:
-            Input::HandleBool(wparam,true);
+            Input::OnKey(wparam,true);
             break;
         case WM_KEYUP:
-             Input::HandleBool(wparam,false);
+             Input::OnKey(wparam,false);
             break;
         case WM_CHAR:
-             Input::HandleCharacter(wparam);
+             Input::OnCharacter(wparam);
             break;
         case WM_MOUSEMOVE:
-            Input::HandleIntAxis(PhysicalInput::MOUSE_CURSOR_AXIS,(short)LOWORD(lparam),(short)HIWORD(lparam));
+            Input::OnPCCursor(LOWORD(lparam),HIWORD(lparam));
             break;
         case WM_MOUSEWHEEL:
-            //short wheel_delta = (short)HIWORD(wparam);
+            Input::OnPCScroll(0,HIWORD(wparam));
             break;
         case WM_LBUTTONDOWN:
-            Input::HandleBool(PhysicalInput::MOUSE_LEFT_BUTTON,true);
+            Input::OnPCClick(true,true);
             break;
         case WM_LBUTTONUP:
-            Input::HandleBool(PhysicalInput::MOUSE_LEFT_BUTTON,false);
+            Input::OnPCClick(false,true);
             break;
         case WM_RBUTTONDOWN:
-            Input::HandleBool(PhysicalInput::MOUSE_RIGHT_BUTTON,true);
+            Input::OnPCClick(true,false);
             break;
         case WM_RBUTTONUP:
-            Input::HandleBool(PhysicalInput::MOUSE_RIGHT_BUTTON,false);
+            Input::OnPCClick(false,false);
             break; 
         // DirectInput
         /*

@@ -1,8 +1,12 @@
-#ifdef INPUT_H
-#define INPUT2_H
+#ifndef INPUT_H
+#define INPUT_H
 
 #include "struct/data_types.h"
 #include "struct/3d_types.h"
+#include "struct/2d_types.h"
+#include "config.h"
+
+//July 29th, 2021 rendition of Input Handling
 
 //Possible physical inputs to handle (referred to as 'keys')
 namespace PhysicalInput{
@@ -29,126 +33,143 @@ namespace PhysicalInput{
     //JOY2_BUTTON_1 - 31            = 0x141 - 0x15F;
 };
 
-//Possible input events to generate (referred to as 'events'), negative event IDs should not be bindable.
+typedef int AxisID;
+typedef int ButtonID;
+namespace Controller{
 
-
-namespace Input{
-    const float AXIS_CUTOFF = 0.01;
-
-    enum EventID{
-    None=0,
-    MoveAxis=1,
-    CamAxis=2,
-    A=3,
-    B=4,
-    C=5,
-    D=6,
-    DPAD_Up=7,
-    DPAD_Down=8,
-    DPAD_Left=9,
-    DPAD_Right=10,
-    L1=11,
-    L2=12,
-    R1=13,
-    R2=14,
-    Pause=15, 
-    Menu=16,
-    
-    PC_CursorAxis=17,
-    PC_ScrollAxis=18,
-    PC_RClick=18,
-    PC_LClick=19,
-    PC_Text=21,
-
-    ToggleConsole=22,
-    Any_Button=23
-    };
-
-    struct Axis{
-        EventID event_id;
-        int raw_x,raw_y;
-        int dx,dy;
-        int max_x,max_y;
-        int min_x,min_y;
+    struct Axis{                                     
+        float x,y;
+        float dx,dy;
+        void AddTilt(vec2 tilt);
         vec2 GetNormalized();
-        void SetBounds(int maxx,int minx,int maxy, int miny);
     };
 
     struct Button{
-        EventID event_id;
         byte state;
-        bool IsDown();
-        bool IsUp();
-        bool IsJustPressed();
-        bool IsJustReleased();
+        inline bool IsDown(){return (state&1) > 0;}
+        inline bool IsUp(){return (state&1) == 0;}
+        inline bool IsJustPressed(){return state == 3;}
+        inline bool IsJustReleased(){return state == 2;}
     };
 
-    struct KeyBind{
-        int physical_input;
-        EventID event;
-        //only used for button-to-axis bindings.
-        int axis_direction;
-        bool flip_x,flip_y;
-        //int axis_magnitude;
+    const AxisID Move=0;
+    const AxisID Camera=1;
+    const ButtonID A=0;
+    const ButtonID B=1;
+    const ButtonID C=2;
+    const ButtonID D=3;
+    const ButtonID D_Up=4;
+    const ButtonID D_Down=5;
+    const ButtonID D_Left=6;
+    const ButtonID D_Right=7;
+    const ButtonID L1=8;
+    const ButtonID L2=9;
+    const ButtonID R1=10;
+    const ButtonID R2=11;
+    const ButtonID Pause=12;
+    const ButtonID Menu=13;
+
+    //Input state accessors
+    Button      GetButton(ButtonID id);
+    Axis        GetAxis(AxisID axis);
+    point_i     GetPCCursor();
+    Button      GetPCLeftMouse();
+    Button      GetPCRightMouse();
+    Button      GetPCCenterMouse();
+    Button      GetAnyButton();
+    Button      GetToggleConsole();
+    vec2        GetPCScroll();
+    text_char*  GetTextInput();
+};
+
+namespace Input{
+    enum Event{
+        None=0,
+        Move=1,
+        Cam=2,
+        A=3,
+        B=4,
+        C=5,
+        D=6,
+        D_Up=7,
+        D_Down=8,
+        D_Left=9,
+        D_Right=10,
+        L1=11,
+        L2=12,
+        R1=13,
+        R2=14,
+        Pause=15, 
+        Menu=16,
+        PC_Cursor=17,
+        PC_Scroll=18,
+        PC_RClick=18,
+        PC_LClick=19,
+        PC_Text=21,
+        ToggleConsole=22,
+        AnyButton=23
     };
 
+    struct Key_Button_Bind{
+        int physical_key_id;
+        ButtonID button;
+    };
+
+    struct Key_Axis_Bind{
+        int physical_key_id;
+        AxisID axis;
+        vec2 direction;
+    };
+
+    struct Axis_Bind{
+        int physical_axis_id;
+        AxisID axis;
+    };
+
+    //Engine events
     void Init();
+    void Update();
     void Destroy();
+
+    //Input event handlers
+    void OnKey(int key_id,bool down);
+    void OnAxis(int axis_id,float x,float y);
+
+    void OnPCCursor(int x,int y);
+    void OnPCClick(bool down, bool left);
+    void OnPCScroll(int dx, int dy);
+
+    void OnText(text_char* text);
+    void OnCharacter(int code_point);
+
+    //Event flag management
+    Event NextEvent();
+    Event NextEvent(Event start);
+    void    ClearEvent(Event event);
+    void    ClearAllEvents();
+
+    //Key binding management
     void LoadKeyLayout(char* layout_filename);
-    void LoadKeyBindings();
-    void RegisterPhysicalInput(char* name,int id);
-    void SetAxisBounds(int axis_id,int xmax,int xmin,int ymax,int ymin);
-    void SetPhysicalAxisDirection(int input_id,bool flip_x,bool flip_y);
-    void ClearInputText();
-    void PostUpdate();
+    void LoadDefaultKeyBindings();
+    void LoadKeyBindings(ConfigMap* bindings);
+    void AddKeyButtonBind(ButtonID button, int key_id);
+    void RemoveKeyButtonBind(ButtonID button, int key_id);
+    void AddKeyAxisBind(AxisID axis, int key_id, vec2 direction);
+    void RemoveKeyAxisBind(AxisID axis, int key_id);
+    void AddAxisBind(AxisID axis, int physical_axis_id);
+    void ClearButtonBinds(int key_id);//clears all kinds of bindings from a key
+    void ClearAxisBind(int physical_axis_id);
 
-    EventID GetEventID(char* event_name);
-    const char* GetEventName(EventID event);
+    void UnbindButton(ButtonID button);
+    void UnbindAxis(AxisID axis);
 
+    //Utility
     int GetKeyID(char* key_name);
     const char* GetKeyName(int key_id);
 
-    KeyBind GetKeyBindByInput(int input_id);
-
-    EventID NextEvent();
-    EventID NextEvent(EventID start);
-    void    ClearEvent(EventID event);
-    void    ClearAllEvents();
-    //bool   StateChanged(InputCode input_id);
-    //Button GetButton(InputCode button_id);
-    //Axis   GetAxis(InputCode axis_id);
-
-    
-    Axis Move_Axis();
-    Axis Cam_Axis();
-    Axis Cursor_Axis();
-    Axis Scroll_Axis();
-
-    Button AnyButton();
-    Button Button_A();
-    Button Button_B();
-    Button Button_C();
-    Button Button_D();
-    Button Button_Up(); 
-    Button Button_Down();
-    Button Button_Left();
-    Button Button_Right();
-    Button Button_L1();
-    Button Button_L2();
-    Button Button_R1();
-    Button Button_R2();
-    Button Button_Pause();
-    Button Button_Menu();
-    Button Button_ToggleConsole();
-    Button Button_Cursor_Select();
-
-    text_char* TextInput();
-
-    void HandleBool(int key_id, bool down);
-    void HandleIntAxis(int axis_id,int pos_x,int pos_y);
-    //void HandleFloatAxis(float pos_x,int pos_y);
-    void HandleCharacter(int code_point);
-    void HandleText(text_char* text);
+    //EventID GetEventID(char* event_name);
+    //const char* GetEventName(EventID event);
 };
+
 
 #endif

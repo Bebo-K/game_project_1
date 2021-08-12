@@ -9,11 +9,7 @@
 //Windows input hooks
 
 //DIRECTINPUT (For generic USB controllers)
-JOYCAPS     joystick_info[MAX_CONTROLLERS];
-JOYINFOEX   joystick_state[MAX_CONTROLLERS]; 
-DWORD       joystick_prev_button_state[MAX_CONTROLLERS];
-DWORD       joystick_prev_x_axis[MAX_CONTROLLERS];//[MAX_CONTROLLER_AXES]
-DWORD       joystick_prev_y_axis[MAX_CONTROLLERS];//[MAX_CONTROLLER_AXES]
+JoystickStateInfo joy_states[MAX_CONTROLLERS];
 UINT        current_device_count;
 
 void SetupOSInput(){
@@ -22,11 +18,11 @@ void SetupOSInput(){
 
 void SetupJoypads(){
     for(int i=0;i<MAX_CONTROLLERS;i++){
-        memset(&joystick_info[i],0,sizeof(JOYCAPS));
-        memset(&joystick_state[i],0,sizeof(JOYINFOEX));
-        joystick_state[i].dwSize = sizeof(JOYINFOEX);
-        joystick_state[i].dwFlags = JOY_RETURNALL;
-        memset(&joystick_prev_button_state[i],0,sizeof(DWORD));
+        memset(&joy_states[i].info,0,sizeof(JOYCAPS));
+        memset(&joy_states[i].state,0,sizeof(JOYINFOEX));
+        joy_states[i].state.dwSize = sizeof(JOYINFOEX);
+        joy_states[i].state.dwFlags = JOY_RETURNALL;
+        memset(&joy_states[i].prev_button_state,0,sizeof(DWORD));
     }
     current_device_count = joyGetNumDevs();
     bool plugged_in[MAX_CONTROLLERS];
@@ -41,21 +37,12 @@ void SetupJoypads(){
         if(device_plugged_in == JOYERR_NOERROR && current_controller_num < MAX_CONTROLLERS){
             plugged_in[current_controller_num]=true;
             controller_ids[current_controller_num]=i;
-            joystick_prev_x_axis[current_controller_num]=temp_device_state.dwXpos;
-            joystick_prev_y_axis[current_controller_num]=temp_device_state.dwYpos;
+            joy_states[current_controller_num].prev_x_axis=temp_device_state.dwXpos;
+            joy_states[current_controller_num].prev_y_axis=temp_device_state.dwYpos;
 
-            if(joyGetDevCaps(JOYSTICKID1+i,&joystick_info[i],sizeof(JOYCAPS))== JOYERR_NOERROR ){
-                JOYCAPS stick_info;
-                memcpy(&stick_info,&joystick_info[i],sizeof(JOYCAPS));
-                /*
-                printf("Controller #%d\n",i);
-                printf("ControllerName: %s\n",stick_info.szPname);
-                printf("ControllerName: %s\n",stick_info.szPname);
-                printf("Conteroller info: %s\n",stick_info.szRegKey);
-                printf("Manufacturerer ID: %d\n",stick_info.wMid);
-                printf("Product ID: %d\n",stick_info.wPid);
-                */
-               
+            MMRESULT getCapsResult = joyGetDevCaps(JOYSTICKID1+i,&joy_states[i].info,sizeof(JOYCAPS));
+            if(getCapsResult != JOYERR_NOERROR ){
+                logger::exception("Failed to retrieve joystick capabilities for Joy ID %d: error code %d",JOYSTICKID1+i,getCapsResult);
             }
             current_controller_num++;
         }
@@ -65,11 +52,19 @@ void SetupJoypads(){
     for(int i=0;i<current_controller_num;i++){
         if(!plugged_in[i])continue;
         int id = controller_ids[i];//controller device ID;
-        //Where to put this?    
-        Input::SetAxisBounds(0,joystick_info[id].wXmax,joystick_info[id].wXmin,joystick_info[id].wYmax,joystick_info[id].wYmin);
-        Input::SetPhysicalAxisDirection(PhysicalInput::JOY1_AXIS_1+(i*26),false,true);
+        //Set joystick to range {-1,1};
+        UINT joy_x_range = joy_states[id].info.wXmax -  joy_states[id].info.wXmin;
+        UINT joy_y_range = joy_states[id].info.wYmax -  joy_states[id].info.wYmin;
+        joy_states[i].x_axis_multiplier = (1.0f/joy_x_range);
+        joy_states[i].y_axis_multiplier = (1.0f/joy_y_range);
+        FlipJoyAxis(i,false,true);
     }
+}
 
+
+void FlipJoyAxis(int joy_id, bool flip_horizontal,bool flip_vertical){
+    joy_states[joy_id].x_axis_multiplier *= (flip_horizontal)?-1:1;
+    joy_states[joy_id].y_axis_multiplier *= (flip_vertical)?-1:1;
 }
 
 void SetupDirectInput(HWND window_handle){
@@ -78,32 +73,32 @@ void SetupDirectInput(HWND window_handle){
     }
 }
 
-//PhysicalInput::JOY1_BUTTON_0
 void PollJoypads(){
     for(int i=0;i < MAX_CONTROLLERS;i++){
-        DWORD err=joyGetPosEx(JOYSTICKID1+i,&joystick_state[i]);
+        DWORD err=joyGetPosEx(JOYSTICKID1+i,&joy_states[i].state);
         if(err == JOYERR_NOERROR){
-            DWORD changed_buttons = joystick_state[i].dwButtons ^ joystick_prev_button_state[i];
+            DWORD changed_buttons = joy_states[i].state.dwButtons ^ joy_states[i].prev_button_state;
             if(changed_buttons!= 0){
                 int button_id=1;
                 for(int j=0; j<32;j++){
                     if((changed_buttons & button_id) > 0){
-                        Input::HandleBool(PhysicalInput::JOY1_BUTTON_0+j,(joystick_state[i].dwButtons & button_id) > 0);
+                        Input::OnKey(PhysicalInput::JOY1_BUTTON_0+j,(joy_states[i].state.dwButtons & button_id) > 0);
                     } 
                     button_id = button_id << 1;
                 }
             }
 
-            if(joystick_state[i].dwXpos != joystick_prev_x_axis[i] || 
-                joystick_state[i].dwYpos != joystick_prev_y_axis[i]){
-                JOYINFOEX stick_state;
-                memcpy(&stick_state,&joystick_state[i],sizeof(JOYINFOEX));
-                Input::HandleIntAxis(PhysicalInput::JOY1_AXIS_1,joystick_state[i].dwXpos,joystick_state[i].dwYpos);
+            if(joy_states[i].state.dwXpos != joy_states[i].prev_x_axis || 
+                joy_states[i].state.dwYpos != joy_states[i].prev_y_axis){
+                    
+                float axis_x = (joy_states[i].state.dwXpos - joy_states[i].info.wXmin)*joy_states[i].x_axis_multiplier;
+                float axis_y = (joy_states[i].state.dwYpos - joy_states[i].info.wYmin)*joy_states[i].y_axis_multiplier;
+                Input::OnAxis(PhysicalInput::JOY1_AXIS_1,axis_x,axis_y);
             }
 
-            joystick_prev_button_state[i] = joystick_state[i].dwButtons;
-            joystick_prev_x_axis[i] = joystick_state[i].dwXpos;
-            joystick_prev_y_axis[i] = joystick_state[i].dwYpos;
+            joy_states[i].prev_button_state = joy_states[i].state.dwButtons;
+            joy_states[i].prev_x_axis = joy_states[i].state.dwXpos;
+            joy_states[i].prev_y_axis = joy_states[i].state.dwYpos;
         }
     }
 }
@@ -111,12 +106,12 @@ void PollJoypads(){
 void OnDirectInputJoyEvent(WPARAM wparam, bool down){}
 
 void OnDirectInputButtonEvent(WPARAM wparam, bool down){
-    DWORD changed_buttons = joystick_state[0].dwButtons ^ joystick_prev_button_state[0];
+    DWORD changed_buttons = joy_states[0].state.dwButtons ^ joy_states[0].prev_button_state;
     if(changed_buttons!= 0){
         int button_id=1;
         for(int i=0; i<32;i++){
             if((changed_buttons & button_id) > 0){
-                Input::HandleBool(PhysicalInput::JOY1_BUTTON_0+i,(joystick_state[0].dwButtons & button_id) > 0);
+                Input::OnKey(PhysicalInput::JOY1_BUTTON_0+i,(joy_states[0].state.dwButtons & button_id) > 0);
             }
         }
         button_id = button_id << 1;

@@ -38,7 +38,7 @@ class UI{
     void Update(Scene* scene, int frames);
 
     //UI interaction events
-    bool OnInput(Input::EventID event_type);
+    bool OnInput(Input::Event event_type);
     void OnSignal(int signal_id,int metadata_len, byte* metadata);
     void OnResize(int screen_w,int screen_h);
 };

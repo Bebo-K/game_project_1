@@ -45,13 +45,7 @@ void  MainMenu::OnUpdate(int frames){
 void  MainMenu::OnPaint(){
     background_img->Draw();
 }
-bool  MainMenu::OnInput(Input::EventID event_type){
-    if(event_type != Input::EventID::MoveAxis){
-        
-        logger::warn("clicked?");
-    }
-    return false;
-    }
+bool  MainMenu::OnInput(Input::Event event_type){return false;}
 void  MainMenu::OnResize(){
     background_img->scale.x = ((float)layout.W)/background_img->width;
     background_img->scale.y = ((float)layout.H)/background_img->height;

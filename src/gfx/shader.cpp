@@ -119,7 +119,18 @@ void Shader::Use(){
 void ShaderManager::Init(){
     DEFAULT_SHADER = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
     CACHED_SHADERS.Add("default",(byte*)DEFAULT_SHADER);
+    
+    AddShader("level_debug","dat/gfx/level_debug.vrt","dat/gfx/level_debug.frg");
+    AddShader("model_dynamic_lighting","dat/gfx/model_dynamic_lighting.vrt","dat/gfx/model_dynamic_lighting.frg");
+    AddShader("model_static_shadeless","dat/gfx/model_static_shadeless.vrt","dat/gfx/model_static_shadeless.frg");
+    AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
+    AddShader("skybox_flat","dat/gfx/skybox_flat.vrt","dat/gfx/skybox_flat.frg");
+    AddShader("ui_default","dat/gfx/ui_default.vrt","dat/gfx/ui_default.frg");
+    AddShader("ui_shape","dat/gfx/ui_shape.vrt","dat/gfx/ui_shape.frg");
+    AddShader("ui_sprite","dat/gfx/ui_sprite.vrt","dat/gfx/ui_sprite.frg");
+    AddShader("ui_text","dat/gfx/ui_text.vrt","dat/gfx/ui_text.frg");
 }
+
 void ShaderManager::Free(){
     Shader* pShader;
     for(int i=0;i<CACHED_SHADERS.Max();i++){

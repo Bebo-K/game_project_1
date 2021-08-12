@@ -55,7 +55,7 @@ void Widget::Paint(){
     for(Widget* sw: sub_widgets){sw->Paint();}
 }
 
-bool Widget::HandleInput(Input::EventID event_type){
+bool Widget::HandleInput(Input::Event event_type){
     if(!active)return false;
     bool handled = OnInput(event_type);
     if(!handled){

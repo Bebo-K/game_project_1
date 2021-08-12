@@ -35,7 +35,7 @@ class DeveloperConsole: public Widget{
 
     void OnPaint();
     void OnUpdate(int frames);
-    bool OnInput(Input::EventID event_type);
+    bool OnInput(Input::Event event_type);
     void OnResize();
     void OnDestroy();
 
