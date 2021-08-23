@@ -2,6 +2,7 @@
 #include <math.h>
 #include "struct/list.h"
 #include "io/file.h"
+#include "os.h"
 
 const int BUTTON_COUNT=14;
 const int AXIS_COUNT=2;
@@ -83,11 +84,14 @@ void Input::Update(){
 
     //clear "changed" flag for buttons
         for(int i=0;i<BUTTON_COUNT;i++){
-            controller_buttons[i].state ^= 2; 
+            CLEAR_BIT(controller_buttons[i].state,1);
         }
-        mouse_l.state ^= 2; mouse_r.state ^= 2; mouse_c.state ^= 2;
-        toggle_console.state ^= 2;
-        any_button.state ^= 2;
+        
+        CLEAR_BIT(mouse_l.state,1);
+        CLEAR_BIT(mouse_r.state,1);
+        CLEAR_BIT(mouse_c.state,1);
+        CLEAR_BIT(toggle_console.state,1);
+        CLEAR_BIT(any_button.state,1);
     //clear deltas for axes
         for(int i=0;i<AXIS_COUNT;i++){
             controller_axes[i].dx=0;controller_axes[i].dy=0;
@@ -121,7 +125,7 @@ void Input::OnKey(int key_id,bool down){
     }
     for(Key_Axis_Bind* keybind:key_axis_binds){
         if(key_id == keybind->physical_key_id){
-            controller_axes[keybind->axis].AddTilt(keybind->direction);
+            controller_axes[keybind->axis].SetDirection(keybind->direction_id,down);
             SET_BIT(input_state,AXIS_EVENT_BASE+keybind->axis);
         }
     }
@@ -129,14 +133,14 @@ void Input::OnKey(int key_id,bool down){
 void Input::OnAxis(int axis_id,float x,float y){
     for(Axis_Bind* keybind:axis_binds){
         if(axis_id == keybind->physical_axis_id){
-            controller_axes[keybind->axis].AddTilt({x,y});
+            controller_axes[keybind->axis].SetTilt({x,y});
             SET_BIT(input_state,AXIS_EVENT_BASE+keybind->axis);
         }
     }
 }
 void Input::OnPCCursor(int x,int y){
     mouse_cursor.x=x;
-    mouse_cursor.y=y;
+    mouse_cursor.y=Window::height-y;
     SET_BIT(input_state,PC_EVENT_CURSOR);
 }
 void Input::OnPCClick(bool down, bool left){
@@ -218,10 +222,10 @@ void Input::RemoveKeyButtonBind(ButtonID button, int key_id){
         }
     }
 }
-void Input::AddKeyAxisBind(AxisID axis, int key_id, vec2 direction){
+void Input::AddKeyAxisBind(AxisID axis, int key_id, int direction_id){
     Key_Axis_Bind* newbind = key_axis_binds.Add();
     newbind->axis=axis;
-    newbind->direction=direction;
+    newbind->direction_id=direction_id;
     newbind->physical_key_id=key_id;
 }
 void Input::RemoveKeyAxisBind(AxisID axis, int key_id){
@@ -322,11 +326,45 @@ const char* Input::GetEventName(EventID event){
 //    Axis
 ////////////////////
 void Controller::Axis::AddTilt(vec2 tilt){
-    x += tilt.x;
-    y += tilt.y;
-    dx = tilt.x;
-    dy = tilt.y;
+    float new_x = x+tilt.x;
+    float new_y = y+tilt.y;
     if(x*x + y*y < AXIS_CUTOFF){x=0;y=0;}//deadzone
+    if(x > 1.0f){x=1.0f;}
+    if(x < -1.0f){x=-1.0f;}
+    if(y > 1.0f){y=1.0f;}
+    if(y < -1.0f){y=-1.0f;}
+    dx = new_x-x;
+    dy = new_y-y;
+    x = tilt.x;
+    y = tilt.y;
+}
+
+void Controller::Axis::SetTilt(vec2 tilt){
+    dx = tilt.x-x;
+    dy = tilt.y-y;
+    x = tilt.x;
+    y = tilt.y;
+    if(x*x + y*y < AXIS_CUTOFF){x=0;y=0;}//deadzone
+}
+
+void Controller::Axis::SetDirection(int directiond_id,bool down){
+    if(down){SET_BIT(direction_down,directiond_id);}
+    else{CLEAR_BIT(direction_down,directiond_id);}
+
+    vec2 old_pos = {x,y};
+    x=0;y=0;
+    if(direction_down != 0){
+        if(GET_BIT(direction_down,0)){y += 1.0f;}
+        if(GET_BIT(direction_down,1)){y -= 1.0f;}
+        if(GET_BIT(direction_down,2)){x -= 1.0f;}
+        if(GET_BIT(direction_down,3)){x += 1.0f;}
+            
+        vec2 new_pos = GetNormalized();
+        x=new_pos.x;
+        y=new_pos.y;
+    }
+    dx=x-old_pos.x;
+    dy=x-old_pos.y;
 }
 
 vec2 Controller::Axis::GetNormalized(){
@@ -366,14 +404,14 @@ void Input::LoadKeyLayout(char* layout_filename){
 void Input::LoadDefaultKeyBindings(){
     char* keybinds[] = { 
         "w=move.up", "a=move.left", "s=move.down", "d=move.right",
-        "n=button_a", "m=button_b", "j=button_c", "k=button_d",
+        "n=a", "m=b", "j=c", "k=d",
         "q=l1", "e=r1",
         "enter=pause",
         "tab=menu",
         "joy_lstick=move",
         "joy_lstick=down",
         "joy_10=move.up", "joy_11=move.down", "joy_12=move.left", "joy_13=move.right",
-        "joy_2=button_a", "joy_3=button_b", "joy_1=button_c", "joy_4=button_d",
+        "joy_2=a", "joy_3=b", "joy_1=c", "joy_4=d",
         "joy_5=l1", "joy_6=r1",
         "joy_9=menu",
         "joy_10=pause"
@@ -405,17 +443,7 @@ void Input::LoadKeyBindings(ConfigMap* bindings){
                         direction_id = j;
                     }
                 }
-
-                vec2 dir = {0,0};
-                switch (direction_id)
-                {
-                    case 0:dir ={0,1};break;
-                    case 1:dir ={0,-1};break;
-                    case 2:dir ={-1,0};break;
-                    case 3:dir ={1,0};break;
-                    default:break;
-                }
-                AddKeyAxisBind((AxisID)i,physical_input_id,dir);
+                AddKeyAxisBind((AxisID)i,physical_input_id,direction_id);
             }
         }
     }

@@ -10,7 +10,7 @@ class MainMenu: public Menu{
     Sprite* background_img;
 
 
-    MainMenu(Layout* parent);
+    MainMenu(LayoutRect* parent);
 
     void OnOpen();
     void OnClose();

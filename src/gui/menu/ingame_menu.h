@@ -5,7 +5,7 @@
 
 class IngameMenu: public Menu{
     public:
-    IngameMenu(Layout* parent);
+    IngameMenu(LayoutRect* parent);
 };
 
 

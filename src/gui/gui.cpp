@@ -1,4 +1,4 @@
-#include "ui.h"
+#include "gui.h"
 #include "../os.h"
 #include "../config.h"
 #include "../log.h"
@@ -11,13 +11,63 @@
 
 #include "widget/dev_console.h"
 
-UI::UI():debug_widgets(&this->fullscreen_layout){
+GUI::GUI(){
+
+
+}
+void GUI::Load(){
+
+
+}
+void GUI::Unload(){
+    for(int i=0;i<MENU_STACK_MAX;i++){
+        if(menu_stack[i]!= nullptr){
+            delete menu_stack[i];
+        }
+
+    }
+
+}
+
+void GUI::OpenMenu(MenuID menu){
+
+}
+//void OpenMenu(MenuID menu,MenuContext* context);
+void GUI::CloseMenu(MenuID menu){
+
+}
+
+template <class T> T* GUI::GetMenu(MenuID menu){
+    Menu* ret = nullptr;
+    for(int i=0;i<MENU_STACK_MAX;i++){
+        menu_stack[i]
+
+
+    }
+
+    return (T*)ret;
+}
+
+//For modding later:
+//void RegisterMenu(MenuID menu,Menu* menu);
+
+//Client events
+void GUI::Paint();
+void GUI::Update(Scene* scene, int frames);
+
+//UI interaction events
+bool GUI::OnInput(Input::Event event_type);
+void GUI::OnSignal(int signal_id,int metadata_len, byte* metadata);
+void GUI::OnResize(int screen_w,int screen_h);
+
+
+GUI::GUI():debug_widgets(&this->fullscreen_layout){
     current_screen = nullptr;
 }
 
 DeveloperConsole* developer_console;
 
-void UI::Load(){
+void GUI::Load(){
     logger::info("loading ui...\n");
     developer_console = new DeveloperConsole();
     developer_console->active=false;
@@ -26,7 +76,7 @@ void UI::Load(){
 }
     
     
-UIWindow* UI::BuildMenu(int window_id){
+UIWindow* GUI::BuildMenu(int window_id){
     switch(window_id){
         case UI::MAIN_MENU: return new MainMenu(&this->fullscreen_layout); break;
         case UI::LOADING: return new LoadingMenu(&this->fullscreen_layout); break;
@@ -36,7 +86,7 @@ UIWindow* UI::BuildMenu(int window_id){
     return nullptr;
 }
 
-UIWindow* UI::OpenWindow(int window_id){
+UIWindow* GUI::OpenWindow(int window_id){
     if(current_screen != nullptr){CloseWindow();}
     current_screen = BuildMenu(window_id);
     current_screen->active=true;
@@ -45,19 +95,19 @@ UIWindow* UI::OpenWindow(int window_id){
     return current_screen;
 }
 
-void UI::CloseWindow(){
+void GUI::CloseWindow(){
     free(this->current_screen);
     current_screen=nullptr;
 }
 
-void UI::Paint(){
+void GUI::Paint(){
     if(current_screen && current_screen->visible){
         current_screen->Paint();
     }
     for(Widget* w: debug_widgets){w->Paint();}
 }
 
-void UI::Update(Scene* scene, int frames){
+void GUI::Update(Scene* scene, int frames){
     if(current_screen && current_screen->active){
         current_screen->Update(frames);
     }
@@ -65,12 +115,12 @@ void UI::Update(Scene* scene, int frames){
     for(Widget* w: debug_widgets){w->Update(frames);}
 }
 
-void UI::Unload(){
+void GUI::Unload(){
     logger::info("unloading ui...\n");
     delete developer_console;
 }
 
-bool  UI::OnInput(Input::Event event_type){
+bool GUI::OnInput(Input::Event event_type){
     bool handled = false;
     
     for(Widget* w: debug_widgets){if(w->HandleInput(event_type)){handled=true;};}
@@ -80,7 +130,7 @@ bool  UI::OnInput(Input::Event event_type){
     }
     return handled;
 }
-void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
+void GUI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     bool handled = false;
     for(Widget* w: debug_widgets){if(w->HandleSignal(signal_id,metadata_len,metadata)){handled=true;};}
 
@@ -89,11 +139,8 @@ void UI::OnSignal(int signal_id,int metadata_len, byte* metadata){
     }
 }
 
-void UI::OnResize(int screen_w,int screen_h){
-    fullscreen_layout.X=0;
-    fullscreen_layout.Y=0;
-    fullscreen_layout.W=screen_w;
-    fullscreen_layout.H=screen_h;
+void GUI::OnResize(int screen_w,int screen_h){
+    fullscreen_layout.absolute = {0,0,screen_w,screen_h};
     
     for(Widget* w: debug_widgets){w->OnResize();}
 

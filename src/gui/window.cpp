@@ -2,14 +2,40 @@
 #include "../os.h"
 
 
+UI::Menu::Menu():layout(){
+    active=false;
+    visible=false;
+    id=0;
+}
+void UI::Menu::Open(Layout* menu_area){
+    layout.SetParent(menu_area);
+    active=true;
+    visible=true;
+
+}
+void UI::Menu::Close(){
+    active=false;
+    visible=false;
+}
+
+void UI::Menu::Update(int frames){
+
+}
+void UI::Menu::Paint(){}
+bool UI::Menu::HandleInput(Input::Event event_type){}
+void UI::Menu::HandleResize(){layout.Resize();}
+bool UI::Menu::HandleSignal(int signal_id,int metadata_len, byte* metadata){}
+
+/*
+
 UIWindow::UIWindow():widgets(&this->layout){
     type_id=0;
     visible=false;
     active=false;
-    layout.h_pos_mode = LayoutScaleMode::MATCH_PARENT;
-    layout.v_pos_mode = LayoutScaleMode::MATCH_PARENT;
-    layout.h_fill_mode = LayoutScaleMode::MATCH_PARENT;
-    layout.v_fill_mode = LayoutScaleMode::MATCH_PARENT;
+    layout.h_pos_mode = Layout::MATCH_PARENT;
+    layout.v_pos_mode = Layout::MATCH_PARENT;
+    layout.h_fill_mode = Layout::MATCH_PARENT;
+    layout.v_fill_mode = Layout::MATCH_PARENT;
 }
 
 UIWindow::UIWindow(UIWindow* parent):widgets(&this->layout){
@@ -75,3 +101,5 @@ bool UIWindow::HandleSignal(int signal_id,int metadata_len, byte* metadata){
     for(UIWindow* w:sub_windows){if(w->HandleSignal(signal_id,metadata_len,metadata))return true;}
     return false;
 }
+
+*/

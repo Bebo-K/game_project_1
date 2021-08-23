@@ -6,36 +6,25 @@
 #include "layout.h"
 #include "widget.h"
 
-class UIWindow{
-    public:
-    bool    active;
-    bool    visible;
-    Layout  layout;
-    int     type_id;
+namespace UI{
+    //What does this represent?
+    class Menu{
+        public:
+        bool        active;
+        bool        visible;
+        Layout      layout;
+        int         id;
 
-    List<UIWindow>  sub_windows;
-    WidgetContainer widgets;
-    
-    UIWindow();
-    UIWindow(UIWindow* parent);
-    
-    void Clear();
-
-    void Open();
-        virtual void OnOpen(){}
-    void Close();
-        virtual void OnClose(){};
-    void Update(int frames);
-        virtual void OnUpdate(int frames){};
-    void Paint();
-        virtual void OnPaint(){}
-    bool HandleInput(Input::Event event_type);
-        virtual bool OnInput(Input::Event event_type){return false;}
-    void HandleResize();
-        virtual void OnResize(){}
-    bool HandleSignal(int signal_id,int metadata_len, byte* metadata);
-        virtual bool OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}
-};
-
+        Menu();
+        virtual ~Menu();
+        void Open(Layout* menu_area);
+        void Close();
+        void Update(int frames);
+        void Paint();
+        bool HandleInput(Input::Event event_type);
+        void HandleResize();
+        bool HandleSignal(int signal_id,int metadata_len, byte* metadata);
+    };
+}
 
 #endif

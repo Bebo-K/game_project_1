@@ -40,7 +40,10 @@ namespace Controller{
     struct Axis{                                     
         float x,y;
         float dx,dy;
+        int direction_down;
         void AddTilt(vec2 tilt);
+        void SetTilt(vec2 tilt);
+        void SetDirection(int direction_id,bool down);
         vec2 GetNormalized();
     };
 
@@ -48,8 +51,10 @@ namespace Controller{
         byte state;
         inline bool IsDown(){return (state&1) > 0;}
         inline bool IsUp(){return (state&1) == 0;}
-        inline bool IsJustPressed(){return state == 3;}
-        inline bool IsJustReleased(){return state == 2;}
+        inline bool IsJustPressed(){
+            return state == 3;}
+        inline bool IsJustReleased(){
+            return state == 2;}
     };
 
     const AxisID Move=0;
@@ -118,7 +123,7 @@ namespace Input{
     struct Key_Axis_Bind{
         int physical_key_id;
         AxisID axis;
-        vec2 direction;
+        int direction_id;
     };
 
     struct Axis_Bind{
@@ -154,7 +159,7 @@ namespace Input{
     void LoadKeyBindings(ConfigMap* bindings);
     void AddKeyButtonBind(ButtonID button, int key_id);
     void RemoveKeyButtonBind(ButtonID button, int key_id);
-    void AddKeyAxisBind(AxisID axis, int key_id, vec2 direction);
+    void AddKeyAxisBind(AxisID axis, int key_id, int direction_id);
     void RemoveKeyAxisBind(AxisID axis, int key_id);
     void AddAxisBind(AxisID axis, int physical_axis_id);
     void ClearButtonBinds(int key_id);//clears all kinds of bindings from a key

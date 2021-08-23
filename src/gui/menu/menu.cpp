@@ -1,6 +1,6 @@
 #include "menu.h"
 
-    Menu::Menu(Layout* parent){
+    Menu::Menu(LayoutRect* parent){
         layout.offset.parent=parent;
         if(parent != null){
             layout.W = parent->W;

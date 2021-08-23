@@ -90,7 +90,7 @@ bool Widget::HandleSignal(int signal_id,int metadata_len, byte* metadata){
  *   Widget Containers   *
  *************************/
 
-WidgetContainer::WidgetContainer(Layout* parent){
+WidgetContainer::WidgetContainer(LayoutRect* parent){
     parent_layout = parent;
     slots=1;
     keys = (char**)calloc(1,sizeof(char*));
@@ -111,7 +111,7 @@ void WidgetContainer::Clear(){
 }
 
 
-Widget* WidgetContainer::Add(Widget* w,char* name,LayoutOffset pos){
+Widget* WidgetContainer::Add(Widget* w,char* name,Layout::Offset pos){
     w->layout.offset=pos;
     return Add(w,name);
 }

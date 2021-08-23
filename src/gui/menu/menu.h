@@ -4,21 +4,15 @@
 #include "../window.h"
 #include "../../gfx/ui_sprite.h"
 
+//A collection of UI elements managing a single gameplay element. More than one can be displayed at a time.
 
 class Menu: public UIWindow{
 
     public:
 
-
     Menu(Layout* parent);
 
-    void OnOpen();
-    void OnClose();
-    void OnUpdate(int frames);
-    void OnPaint();
-    bool OnInput(Input::Event event_type);
-    void OnResize();
-    bool OnSignal(int signal_id,int metadata_len, byte* metadata);
+
 
 
 };

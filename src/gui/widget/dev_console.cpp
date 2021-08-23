@@ -12,8 +12,8 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
     start_timer=999;
     layout.H=200;
     layout.W=512;
-    layout.offset.vertical_mode = VLayoutMode::V_TOP;
-    layout.offset.horizontal_mode = HLayoutMode::H_LEFT;
+    layout.offset.vertical_mode = Layout::V_TOP;
+    layout.offset.horizontal_mode = Layout::H_LEFT;
 
     background_rect.color = {0,0,0,0.6};
     entry_rect.color = {0,0,0,0.8};

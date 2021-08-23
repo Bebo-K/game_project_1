@@ -5,6 +5,8 @@
 
 const int DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE = 4;
 
+bool GET_BIT(int x,int bit){return ((x & (1 << bit)) != 0);}
+
 void* i_to_p(int ptr){
     byte* ret = null;
     ret += ptr;

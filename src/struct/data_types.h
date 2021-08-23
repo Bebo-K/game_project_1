@@ -5,15 +5,16 @@
 #define null nullptr
 #endif
 
-#define GET_BIT(x,bit) (((x) | (1<<(bit))) >> (bit) )
-#define SET_BIT(x,bit) (x) |= (1<<(bit))
-#define CLEAR_BIT(x, bit) (x) ^= (1<<(bit))
+#define SET_BIT(x,bit) x |= (1<<(bit))
+#define CLEAR_BIT(x, bit) x &= ~(1<<(bit))
 
 typedef unsigned int uint32;
 typedef unsigned char byte;
 typedef unsigned int text_char;
 
 void* i_to_p(int ptr);
+bool GET_BIT(int x,int bit);
+
 
 //A dynamic array of bits. Used by other maps to keep track of data slot occupancy.
 struct BitArray{

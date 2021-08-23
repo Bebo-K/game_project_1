@@ -146,12 +146,16 @@ void ModelData::DrawMesh(Shader* shader,int group_index,int mesh_index){
     if(mesh_index < 0 || mesh_index >= mesh_groups[group_index].mesh_count){return;}
     
     Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
+    glBindVertexArray(m->vertex_array_id);
+    int gl_err = glGetError();
+    if(gl_err != 0){logger::warn("GL error binding model vertex array: %d",&gl_err);}
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
     glUniform1i(shader->TEXTURE_0,0);
     glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat.texture.tex_coords);
     glUniform4fv(shader->COLOR,1,(GLfloat*)&m->mat.base_color);
-    glBindVertexArray(m->vertex_array_id);
+ 
+
     
     if(m->index.Valid()){
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);

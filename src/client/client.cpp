@@ -48,8 +48,6 @@ void Client::Start(){
     ui.Load();
 
     ui.OpenWindow(UI::MAIN_MENU);
-    //LoadScene(0);
-    //SpawnPlayer(scene.level.entrances[0]);
 }
 
 void Client::LoadScene(int scene_id){

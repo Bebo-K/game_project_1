@@ -22,7 +22,7 @@ class WidgetContainer{
     ~WidgetContainer();
     
     Widget* Add(Widget* w,char* name);
-    Widget* Add(Widget* w,char* name,LayoutOffset pos);
+    Widget* Add(Widget* w,char* name,Layout pos);
     Widget* Get(char* name);
     //Widget* Find(char* pathname);
     Widget* Remove(char* name);
@@ -34,7 +34,7 @@ class WidgetContainer{
     WidgetContainerIterator end();
 
     private:
-    Layout*     parent_layout;
+    Layout* parent_layout;
     char**      keys;
     Widget**    values;
     int         slots;

@@ -5,7 +5,7 @@
 
 class LoadingMenu: public Menu{
     public:
-    LoadingMenu(Layout* parent);
+    LoadingMenu(LayoutRect* parent);
 
 };
 
