@@ -11,20 +11,26 @@ void UI::Menu::Open(Layout* menu_area){
     layout.SetParent(menu_area);
     active=true;
     visible=true;
-
+    OnOpen();
 }
 void UI::Menu::Close(){
     active=false;
     visible=false;
+    OnClose();
 }
+void UI::Menu::Update(int frames){OnUpdate(frames);}
+void UI::Menu::Paint(){OnPaint();}
+bool UI::Menu::HandleInput(Input::Event event_type){return OnInput(event_type);}
+void UI::Menu::HandleResize(){layout.Resize();OnResize();}
+bool UI::Menu::HandleSignal(int signal_id,int metadata_len, byte* metadata){return OnSignal(signal_id,metadata_len,metadata);}
 
-void UI::Menu::Update(int frames){
-
-}
-void UI::Menu::Paint(){}
-bool UI::Menu::HandleInput(Input::Event event_type){}
-void UI::Menu::HandleResize(){layout.Resize();}
-bool UI::Menu::HandleSignal(int signal_id,int metadata_len, byte* metadata){}
+void UI::Menu::OnOpen(){}
+void UI::Menu::OnClose(){}
+void UI::Menu::OnUpdate(int frames){}
+void UI::Menu::OnPaint(){}
+bool UI::Menu::OnInput(Input::Event event_type){return false;}
+void UI::Menu::OnResize(){}
+bool UI::Menu::OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}
 
 /*
 
