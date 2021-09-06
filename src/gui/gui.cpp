@@ -5,6 +5,8 @@
 #include <math.h>
 #include "../test/perf.h"
 
+
+#include "menu.h"
 #include "menu/main_menu.h"
 #include "menu/loading_menu.h"
 #include "menu/ingame_menu.h"
@@ -12,11 +14,12 @@
 #include "widget/dev_console.h"
 
 GUI::GUI(){
-
-
+    for(int i=0;i< MENU_STACK_MAX;i++){
+        menu_stack[i]=nullptr;
+    }
 }
 void GUI::Load(){
-
+    
 
 }
 void GUI::Unload(){
@@ -24,9 +27,7 @@ void GUI::Unload(){
         if(menu_stack[i]!= nullptr){
             delete menu_stack[i];
         }
-
     }
-
 }
 
 void GUI::OpenMenu(MenuID menu){
@@ -37,15 +38,23 @@ void GUI::CloseMenu(MenuID menu){
 
 }
 
+bool GUI::IsMenuOpen(MenuID menu){
+    for(int i=0;i<MENU_STACK_MAX;i++){
+        if(menu_stack[i]->id == menu){
+           return true;
+        }
+    } 
+    return false;
+}
+
 template <class T> T* GUI::GetMenu(MenuID menu){
     Menu* ret = nullptr;
     for(int i=0;i<MENU_STACK_MAX;i++){
-        menu_stack[i]
-
-
+        if(menu_stack[i]->id == menu){
+            return (T*)menu_stack[i];
+        }
     }
-
-    return (T*)ret;
+    return (T*)null;
 }
 
 //For modding later:

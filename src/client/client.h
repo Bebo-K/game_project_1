@@ -1,24 +1,23 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "../gui/ui.h"
+#include "../gui/gui.h"
 #include "../game/scene.h"
 
 class Client{
 
     public:
-
     Scene       scene;
-    Entity*     my_player;
     Renderer    scene_renderer;
-    UI          ui;
+    GUI         ui;
 
     const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 
     Client();
     ~Client();
     void Start();
-    void LoadScene(int scene_id);
+    void StartLoadScene(int scene_id);
+    //void OnLoadSceneFinish();
     void SetMenu(int menu_id);
     void AddEntity(int eid);
     void RemoveEntity(int uuid);
@@ -26,6 +25,8 @@ class Client{
 
     void Paint();
     void Update(int frames);
+    void LoadingUpdate();
+
     void UpdatePositions();
     void HandleUIInput();
     void HandleFrameInput();

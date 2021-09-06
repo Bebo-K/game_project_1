@@ -13,7 +13,7 @@ namespace UI{
         bool        active;
         bool        visible;
         Layout      layout;
-        int         id;
+        MenuID      id;
 
         Menu();
         virtual ~Menu();

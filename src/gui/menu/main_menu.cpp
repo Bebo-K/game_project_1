@@ -12,9 +12,12 @@
 
 void LaunchSingleplayerButtonCallback(){
     logger::warn("Launching server!");
-    Game::client->ui.CloseWindow();
-    Game::client->LoadScene(0);
+    Game::client->ui.OpenMenu(MenuType::LOADING);
+    Game::client->ui.CloseMenu(MenuType::MAIN_MENU);
+    Game::client->StartLoadScene(1);
     Game::client->SpawnPlayer(Game::client->scene.level.entrances[0]);
+    Game::client->ui.OpenMenu(MenuType::INGAME);
+    Game::client->ui.CloseMenu(MenuType::LOADING);
 }
 
 void LaunchMultiplayerButtonCallback(){
@@ -23,17 +26,20 @@ void LaunchMultiplayerButtonCallback(){
 }
    
               
-MainMenu::MainMenu(LayoutRect* parent) : Menu(parent){
+MainMenu::MainMenu() : UI::Menu(){
+    id = MenuType::MAIN_MENU;
     background_img = new Sprite(TextureManager::Get("dat/ui/low_effort_banner.png"));
 
     FontID Big_Button_Font = FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",32);
 
-    ButtonWidget* play_sp_button = new ButtonWidget(LaunchSingleplayerButtonCallback);
-        play_sp_button->layout.offset.vertical_mode= Layout::V_TOP;
+    play_sp_button = new ButtonWidget(LaunchSingleplayerButtonCallback);
+        play_sp_button->layout.v_offset_type = UI::TOP;
         play_sp_button->layout.offset.y = -32;
-        play_sp_button->layout.W = 312;
-        play_sp_button->layout.H = 128;
-
+        play_sp_button->layout.absolute.w = 312;
+        play_sp_button->layout.absolute.h = 128;
+        //play_sp_button->layout.width_scale= UI::RATIO;
+        //play_sp_button->layout.height_scale= UI::RATIO;
+        
         RectWidget* play_sp_button_background = new RectWidget({0.3,0.15,1.0,0.8});
         //Texture button_tex = TextureManager::Get("dat/ui/playbutton.png");
         //SpriteWidget* play_button_background = new SpriteWidget(button_tex);
@@ -42,11 +48,11 @@ MainMenu::MainMenu(LayoutRect* parent) : Menu(parent){
         TextWidget* play_sp_button_text = new TextWidget("Play Singleplayer",Big_Button_Font);
             play_sp_button_text->ParentTo(play_sp_button,"text");
 
-    ButtonWidget* play_mp_button = new ButtonWidget(LaunchMultiplayerButtonCallback);;
-        play_mp_button->layout.offset.vertical_mode= Layout::V_BELOW;
+    play_mp_button = new ButtonWidget(LaunchMultiplayerButtonCallback);;
+        play_mp_button->layout.v_offset_type = UI::BELOW;
         play_mp_button->layout.offset.y = -32;
-        play_mp_button->layout.W = 312;
-        play_mp_button->layout.H = 128;
+        play_mp_button->layout.absolute.w = 312;
+        play_mp_button->layout.absolute.h = 128;
 
 
         RectWidget* play_mp_button_background = new RectWidget({0.3,0.15,1.0,0.8});
@@ -58,8 +64,6 @@ MainMenu::MainMenu(LayoutRect* parent) : Menu(parent){
             play_mp_button_text->ParentTo(play_mp_button,"text");
         
     play_mp_button->ParentTo(play_sp_button,"othabutton");
-    widgets.Add(play_sp_button,"play_sp_button");
-    //widgets.Add(play_mp_button,"play_mp_button");
 }
 
 void  MainMenu::OnOpen(){}
@@ -70,7 +74,10 @@ void  MainMenu::OnUpdate(int frames){
 };
 void  MainMenu::OnPaint(){
     background_img->Draw();
+    play_sp_button->OnPaint();
+    play_mp_button->OnPaint();
 }
+
 bool  MainMenu::OnInput(Input::Event event_type){return false;}
 void  MainMenu::OnResize(){
     background_img->scale.x = ((float)layout.W)/background_img->width;

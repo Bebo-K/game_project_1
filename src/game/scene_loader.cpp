@@ -2,8 +2,10 @@
 #include "../log.h"
 #include "../io/gltf.h"
 
+#include "../gui/gui.h"
 
-void SceneLoader::LoadDefault(Scene* scene){
+
+void SceneLoader::StartLoadDefault(Scene* scene){
     logger::info("loading default scene...\n");
     JSONParser parser(File("dat/levels/default.lvl"));
     LoadGeometry(scene,parser.Parse());
@@ -17,14 +19,16 @@ void SceneLoader::LoadDefault(Scene* scene){
     }
 }
 
-
-void SceneLoader::LoadByArea(Scene* scene, int area_id){
+//Todo: If this gets long, break into a seperate thread process
+void SceneLoader::StartLoadByArea(Scene* scene, int area_id){
     logger::info("loading scene for area id %d...\n",area_id);
     //TODO get area_id mapping to scene name
     char* scene_name = null;
     JSONParser parser = JSONParser(File(scene_name));
     LoadGeometry(scene,parser.Parse());
 }
+
+void SceneLoader::LoadComplete(Scene* scene){}
 
 void SceneLoader::LoadGeometry(Scene* scene,JSONObject* json){
 

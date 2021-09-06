@@ -47,11 +47,11 @@ void Client::Start(){
 
     ui.Load();
 
-    ui.OpenWindow(UI::MAIN_MENU);
+    ui.OpenMenu(MenuType::MAIN_MENU);
 }
 
-void Client::LoadScene(int scene_id){
-    SceneLoader::LoadDefault(&scene);
+void Client::StartLoadScene(int scene_id){
+    SceneLoader::StartLoadDefault(&scene);
     scene_renderer.Add(&scene.level);
     scene_renderer.Add(&scene.skybox);
 }
@@ -68,7 +68,7 @@ void Client::RemoveEntity(int eid){
 }
 
 void Client::SpawnPlayer(Entrance eid){
-    my_player = scene.AddEntity(0);
+    Entity* my_player = scene.AddEntity(0);
     my_player->type = 1;
     my_player->name= cstr::new_copy("Chowzang");
     my_player->state = new State();

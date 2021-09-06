@@ -1,11 +1,12 @@
 #ifndef INGAME_MENU_H
 #define INGAME_MENU_H
 
-#include "menu.h"
+#include "../menu.h"
 
-class IngameMenu: public Menu{
+
+class IngameMenu: public UI::Menu{
     public:
-    IngameMenu(LayoutRect* parent);
+    IngameMenu();
 };
 
 

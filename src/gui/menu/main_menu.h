@@ -1,16 +1,20 @@
 #ifndef MAIN_MENU_H
 #define MAIN_MENU_H
 
-#include "menu.h"
+#include "../menu.h"
 #include "../../gfx/ui_sprite.h"
+#include "../widget/button_widget.h"
 
-class MainMenu: public Menu{
+
+class MainMenu: public UI::Menu {
 
     public:
     Sprite* background_img;
+    ButtonWidget* play_sp_button;
+    ButtonWidget* play_mp_button;
 
 
-    MainMenu(LayoutRect* parent);
+    MainMenu();
 
     void OnOpen();
     void OnClose();

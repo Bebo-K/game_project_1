@@ -4,7 +4,7 @@
 #include "../game/scene.h"
 #include "../gfx/renderer.h"
 #include "../input.h"
-#include "window.h"
+#include "menu.h"
 
 typedef int MenuID;
 struct MenuType{
@@ -19,7 +19,7 @@ struct MenuType{
 class GUI{
     public:
     const static int    MENU_STACK_MAX=32;
-    Menu*               menu_stack[MENU_STACK_MAX];
+    UI::Menu*           menu_stack[MENU_STACK_MAX];
     Layout              fullscreen_layout;
     WidgetContainer     debug_widgets;
 
@@ -31,6 +31,7 @@ class GUI{
     void OpenMenu(MenuID menu);
     //void OpenMenu(MenuID menu,MenuContext* context);
     void CloseMenu(MenuID menu);
+    bool IsMenuOpen(MenuID menu);
 
     template <class T> T* GetMenu(MenuID menu);
     

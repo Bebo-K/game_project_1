@@ -90,8 +90,7 @@ bool Widget::HandleSignal(int signal_id,int metadata_len, byte* metadata){
  *   Widget Containers   *
  *************************/
 
-WidgetContainer::WidgetContainer(LayoutRect* parent){
-    parent_layout = parent;
+WidgetContainer::WidgetContainer(){
     slots=1;
     keys = (char**)calloc(1,sizeof(char*));
     values = (Widget**)calloc(1,sizeof(Widget*));

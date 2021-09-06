@@ -7,8 +7,12 @@
 namespace SceneLoader
 {
 
-    void LoadDefault(Scene* scene);
-    void LoadByArea(Scene* scene, int area_id);
+    void StartLoadDefault(Scene* scene);
+    void StartLoadByArea(Scene* scene, int area_id);
+
+    void LoadUpdate(Scene* scene);
+    void LoadComplete(Scene* scene);
+
     void LoadGeometry(Scene* scene, JSONObject* json);
     void LoadEntityLayer(Scene* scene, JSONObject* json);
 

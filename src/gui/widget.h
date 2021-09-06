@@ -18,7 +18,7 @@ struct WidgetContainerIterator{
 class WidgetContainer{
     public:
 
-    WidgetContainer(Layout* parent_layout);
+    WidgetContainer();
     ~WidgetContainer();
     
     Widget* Add(Widget* w,char* name);
