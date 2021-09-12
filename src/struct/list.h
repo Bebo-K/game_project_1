@@ -19,6 +19,7 @@ struct ListIterator{
 };
 
 //Combines DataArray with template programming and iterators to make data access easy.
+//Note that Lists manage the lifecycle of all of it's entries (e.g. deconstructor is called on removed entries)
 template <typename T>
 class List{
     protected:
@@ -55,6 +56,11 @@ class List{
     T* Add(){
         count++;
         return new (data.Add()) T();
+    }
+
+    void Add(T* obj){
+        count++;
+        data.Add(obj);
     }
 
     void Delete(T* obj){

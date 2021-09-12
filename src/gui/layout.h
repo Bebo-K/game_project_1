@@ -4,14 +4,35 @@
 #include "../struct/2d_types.h"
 
 namespace UI{
-    enum ScaleMode{NO_SCALE, RATIO};
+    enum ScaleMode{ABSOLUTE, RELATIVE};
     enum HorizontalOrigin{CENTER_H,RIGHT,LEFT,TO_RIGHT,TO_LEFT};
     enum VerticalOrigin{CENTER_V,TOP,BOTTOM,ABOVE,BELOW};
+
+
+    class Layout{
+        public: 
+        class Layout* parent;
+        ScaleMode width_scale,height_scale;
+        ScaleMode x_pos_scale,y_pos_scale;
+        rect_f relative;
+
+        int x,y,w,h;
+        Layout();
+        Layout(Layout* parent);
+
+        void SetParent(Layout* parent);
+        void SetOffset(int x,int y);
+        void Resize();
+        rect_i GetRect();
+
+        void MoveTo(Layout* l2,VerticalOrigin vmode,HorizontalOrigin hmode, point_i offset);
+    };
+
 }
 
 //A general struct for self-sizing rectangles to position menus/panels/widgets
-struct Layout{
-    struct Layout* parent;
+struct Layout2{
+    struct Layout2* parent;
     UI::ScaleMode width_scale,height_scale;
     UI::ScaleMode h_offset_scale,v_offset_scale;
     UI::HorizontalOrigin h_offset_type;
@@ -21,8 +42,8 @@ struct Layout{
     rect_i absolute;
     rect_f relative;
 
-    Layout();
-    Layout(Layout* parent);
+    Layout2();
+    Layout2(Layout2* parent);
 
     void SetHorizontalOffset(UI::HorizontalOrigin origin,int pos);
     void SetVerticalOffset(UI::VerticalOrigin origin,int pos);
@@ -30,9 +51,11 @@ struct Layout{
     void SetOffset(point_i new_offset);
     void SetRelativeSize(point_f new_size);
     void SetRelativeOffset(point_f new_offset);
-    void SetParent(Layout* new_parent);
+    void SetParent(Layout2* new_parent);
     void Resize();
 };
+
+
 
 
 /*

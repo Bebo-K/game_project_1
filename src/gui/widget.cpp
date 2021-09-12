@@ -1,95 +1,67 @@
 #include "widget.h"
 #include "../log.h"
 
-Widget::Widget():sub_widgets(&this->layout){
+using namespace UI;
+
+Widget::Widget() : layout(), components(){
     name=nullptr;
     active=true;
     visible=true;
 }
 
-//Destroy is called from the destructor.
-void Widget::Destroy(){
-    OnDestroy();
-    for(Widget* sw: sub_widgets){sw->Destroy();}
-    if(name != null){free(name);name=null;}
+Widget::Widget(char* name) : layout(), components(){
+    name=cstr::new_copy(name);
+    active=true;
+    visible=true;
 }
 
-void Widget::SetName(char* new_name){
-    if(cstr::contains(new_name,".")){
-        name = cstr::substr_before(new_name,'.');
-        logger::warn("Widget name '%s' contains a '.' character, truncating to '%s' to preserve name heirarchy.\n",new_name,name);
-    }
-    else{
-        name = cstr::new_copy(new_name);
-    }
+Widget::~Widget(){
+    if(name != nullptr){free(name);}
+    for(WidgetComponent* c: components){delete c;}
 }
-
-void Widget::ParentTo(Widget* parent,char* my_name){
-    parent->sub_widgets.Add(this,my_name);
-    OnResize();
-}
-
 
 void Widget::Activate(){
     visible=true;
     active=true;
-    OnActivate();
-    for(Widget* sw: sub_widgets){sw->Activate();}
+    for(WidgetComponent* c: components){c->OnActivate(this);}
 }
 
 void Widget::Deactivate(){
     visible=false;
     active=false;
-    OnDeactivate();
-    for(Widget* sw: sub_widgets){sw->Deactivate();}
+    for(WidgetComponent* c: components){c->OnDeactivate(this);}
 }
 
 void Widget::Update(int frames){
     if(!active)return;
-    OnUpdate(frames);
-    for(Widget* sw: sub_widgets){sw->Update(frames);}
+    for(WidgetComponent* c: components){c->OnUpdate(this,frames);}
 }
 void Widget::Paint(){
     if(!visible)return;
-    OnPaint();
-    for(Widget* sw: sub_widgets){sw->Paint();}
+    for(WidgetComponent* c: components){c->OnPaint(this);}
 }
 
 bool Widget::HandleInput(Input::Event event_type){
     if(!active)return false;
-    bool handled = OnInput(event_type);
-    if(!handled){
-        for(Widget* sw: sub_widgets){
-            handled = sw->HandleInput(event_type);
-            if(handled)break;
-        }
-    } 
-    return handled;
+    for(WidgetComponent* c: components){if(c->OnInput(this,event_type))return true;}
+    return false;
 }
 void Widget::HandleResize(){
     layout.Resize();
-    OnResize();
-    for(Widget* sw: sub_widgets){sw->HandleResize();}
+    for(WidgetComponent* c: components){c->OnResize(this);}
 }
 
-
-bool Widget::HandleSignal(int signal_id,int metadata_len, byte* metadata){
+bool Widget::HandleSignal(UISignal signal){
     if(!active)return false;
-    bool handled = OnSignal(signal_id,metadata_len,metadata);
-    if(!handled){
-        for(Widget* sw: sub_widgets){
-            handled = sw->OnSignal(signal_id,metadata_len,metadata);
-            if(handled)break;
-        }
-    } 
-    return handled;
+    for(WidgetComponent* c: components){if(c->OnSignal(this,signal))return true;}
+    return false;
 }
 
 
 /*************************
  *   Widget Containers   *
  *************************/
-
+/*
 WidgetContainer::WidgetContainer(){
     slots=1;
     keys = (char**)calloc(1,sizeof(char*));
@@ -211,3 +183,5 @@ bool WidgetContainerIterator::operator==(WidgetContainerIterator& l2){
 bool WidgetContainerIterator::operator!=(WidgetContainerIterator& l2){
     return !(index ==l2.index);
 }
+
+*/

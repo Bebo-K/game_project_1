@@ -139,19 +139,19 @@ bool GUI::OnInput(Input::Event event_type){
     }
     return handled;
 }
-void GUI::OnSignal(int signal_id,int metadata_len, byte* metadata){
+void GUI::OnSignal(UISignal signal){
     bool handled = false;
-    for(Widget* w: debug_widgets){if(w->HandleSignal(signal_id,metadata_len,metadata)){handled=true;};}
+    for(Widget* w: debug_widgets){if(w->HandleSignal(signal)){handled=true;};}
 
     if(!handled && current_screen && current_screen->active){
-        handled = current_screen->HandleSignal(signal_id,metadata_len,metadata);
+        handled = current_screen->HandleSignal(signal);
     }
 }
 
 void GUI::OnResize(int screen_w,int screen_h){
     fullscreen_layout.absolute = {0,0,screen_w,screen_h};
     
-    for(Widget* w: debug_widgets){w->OnResize();}
+    for(Widget* w: debug_widgets){w->HandleResize();}
 
     if(current_screen){
         current_screen->HandleResize();

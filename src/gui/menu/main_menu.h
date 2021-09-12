@@ -3,16 +3,13 @@
 
 #include "../menu.h"
 #include "../../gfx/ui_sprite.h"
-#include "../widget/button_widget.h"
+#include "../widget/control_components.h"
+#include "../panel.h"
 
 
 class MainMenu: public UI::Menu {
 
     public:
-    Sprite* background_img;
-    ButtonWidget* play_sp_button;
-    ButtonWidget* play_mp_button;
-
 
     MainMenu();
 

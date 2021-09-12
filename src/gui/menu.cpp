@@ -1,36 +1,67 @@
 #include "menu.h"
 #include "../os.h"
 
+using namespace UI;
 
-UI::Menu::Menu():layout(){
+Menu::Menu():layout(), widgets(){
     active=false;
     visible=false;
     id=0;
 }
-void UI::Menu::Open(Layout* menu_area){
+void Menu::Open(Layout* menu_area){
     layout.SetParent(menu_area);
     active=true;
     visible=true;
     OnOpen();
 }
-void UI::Menu::Close(){
+void Menu::Close(){
     active=false;
     visible=false;
     OnClose();
 }
-void UI::Menu::Update(int frames){OnUpdate(frames);}
-void UI::Menu::Paint(){OnPaint();}
-bool UI::Menu::HandleInput(Input::Event event_type){return OnInput(event_type);}
-void UI::Menu::HandleResize(){layout.Resize();OnResize();}
-bool UI::Menu::HandleSignal(int signal_id,int metadata_len, byte* metadata){return OnSignal(signal_id,metadata_len,metadata);}
+void Menu::Update(int frames){
+    if(!active)return;
+    OnUpdate(frames);
+    for(Widget* w: widgets){w->Update(frames);}
+}
+void Menu::Paint(){
+    if(!visible)return;
+    OnPaint();
+    for(Widget* w: widgets){w->Paint();}
+}
+bool Menu::HandleInput(Input::Event event_type){
+    if(!active)return false;
+    for(Widget* w: widgets){if(w->HandleInput(event_type))return true;}
+    if(OnInput(event_type))return true;
+    return false;
+}
+void Menu::HandleResize(){
+    layout.Resize();
+    OnResize();
+    for(Widget* w: widgets){w->HandleResize();}
+}
+bool Menu::HandleSignal(UISignal signal){
+    if(!active)return false;
+    for(Widget* w: widgets){if(w->HandleSignal(signal))return true;}
+    if(OnSignal(signal))return true;
+    return false;
+}
 
-void UI::Menu::OnOpen(){}
-void UI::Menu::OnClose(){}
-void UI::Menu::OnUpdate(int frames){}
-void UI::Menu::OnPaint(){}
-bool UI::Menu::OnInput(Input::Event event_type){return false;}
-void UI::Menu::OnResize(){}
-bool UI::Menu::OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}
+void Menu::OnOpen(){}
+void Menu::OnClose(){}
+void Menu::OnUpdate(int frames){}
+void Menu::OnPaint(){}
+bool Menu::OnInput(Input::Event event_type){return false;}
+void Menu::OnResize(){}
+bool Menu::OnSignal(UISignal signal){return false;}
+
+void Menu::AddWidget(Widget* w){
+    w->layout.SetParent(&layout);
+    widgets.Add(w);
+}
+void Menu::RemoveWidget(Widget* w){
+    widgets.Delete(w);
+}
 
 /*
 

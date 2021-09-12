@@ -18,8 +18,6 @@
         sprite.scale.y = (h/sprite.height);
     }
 
-    SpriteWidget::~SpriteWidget(){}
-
     void SpriteWidget::OnPaint(){
         sprite.Draw();
     }

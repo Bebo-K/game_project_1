@@ -10,10 +10,11 @@ namespace UI{
     //A collection of UI elements managing a single gameplay element. More than one can be displayed at a time.
     class Menu{
         public:
-        bool        active;
-        bool        visible;
-        Layout      layout;
-        MenuID      id;
+        bool         active;
+        bool         visible;
+        Layout       layout;
+        MenuID       id;
+        List<Widget> widgets;
 
         Menu();
         virtual ~Menu();
@@ -23,7 +24,7 @@ namespace UI{
         void Paint();
         bool HandleInput(Input::Event event_type);
         void HandleResize();
-        bool HandleSignal(int signal_id,int metadata_len, byte* metadata);
+        bool HandleSignal(UISignal signal);
 
         virtual void OnOpen();
         virtual void OnClose();
@@ -31,7 +32,10 @@ namespace UI{
         virtual void OnPaint();
         virtual bool OnInput(Input::Event event_type);
         virtual void OnResize();
-        virtual bool OnSignal(int signal_id,int metadata_len, byte* metadata);
+        virtual bool OnSignal(UISignal signal);
+
+        void AddWidget(Widget* w);
+        void RemoveWidget(Widget* w);
     };
 }
 

@@ -1,5 +1,80 @@
 #include "layout.h"
 
+
+
+using namespace UI;
+
+
+Layout::Layout(){
+    parent=nullptr;
+    width_scale = ABSOLUTE;
+    height_scale = ABSOLUTE;
+    x_pos_scale= ABSOLUTE;
+    y_pos_scale= ABSOLUTE;
+    relative = {0,0,1,1};
+    x=y=0;
+    w=h=1;
+}
+Layout::Layout(Layout* parent_layout){
+    parent = parent_layout;
+    width_scale = ABSOLUTE;
+    height_scale = ABSOLUTE;
+    x_pos_scale= ABSOLUTE;
+    y_pos_scale= ABSOLUTE;
+}
+void Layout::SetParent(Layout* parent_layout){
+    parent = parent_layout;
+    Resize();
+}
+void Layout::SetOffset(int x_pos,int y_pos){
+    x=x_pos;
+    y=y_pos;
+    if(parent != nullptr){
+        x += parent->x;
+        y += parent->y;
+    }
+}
+void Layout::Resize(){
+    if(parent == nullptr || parent->w == 0 || parent->h ==0){return;}
+    if(x_pos_scale==RELATIVE){x = relative.x * parent->w;}
+     else{relative.x = x/parent->w;}
+    if(y_pos_scale==RELATIVE){y = relative.y * parent->h;}
+     else{relative.y = y/parent->h;}
+    if(width_scale==RELATIVE){w = relative.w * parent->w;}
+     else{relative.w = w/parent->w;}
+    if(height_scale==RELATIVE){h = relative.h * parent->h;}
+     else{relative.h = h/parent->h;}
+}
+rect_i Layout::GetRect(){
+    return {x,y,w,h};
+}
+void Layout::MoveTo(Layout* l2,VerticalOrigin vmode,HorizontalOrigin hmode, point_i offset){
+    x = l2->x + offset.x;
+    y = l2->y + offset.y;
+
+    switch (hmode){
+        case UI::CENTER_H:  x += (l2->w/2) - (w/2);break;
+        case UI::LEFT:      break;
+        case UI::RIGHT:     x += l2->w - w;break;
+        case UI::TO_LEFT:   x -= w;
+        case UI::TO_RIGHT:  x += l2->w; break;
+        default:break;
+    };
+    switch (vmode){
+        case UI::CENTER_V:  y += (l2->w/2) - (w/2);break;
+        case UI::TOP:       break;
+        case UI::BOTTOM:    y += l2->w -w; break;
+        case UI::ABOVE:     y -= w; break;
+        case UI::BELOW:     y += l2->w; break;
+        default:break;
+    };
+}
+
+
+
+
+/*
+
 Layout::Layout(){
     offset = {0,0};
     absolute = {0,0,1,1};
@@ -86,31 +161,15 @@ void Layout::Resize(){
     if(width_scale==UI::RATIO){absolute.w = parent->absolute.w*relative.w;}
     if(height_scale==UI::RATIO){absolute.h = parent->absolute.h*relative.h;}
     
-    absolute.x+=parent->absolute.x;
-    absolute.y+=parent->absolute.y;
-    switch (h_offset_type){
-        case UI::CENTER_H:  absolute.x += (parent->absolute.w/2) - (absolute.w/2);break;
-        case UI::LEFT:      break;
-        case UI::RIGHT:     absolute.x += parent->absolute.w - absolute.w;break;
-        case UI::TO_LEFT:   absolute.x -= absolute.w;
-        case UI::TO_RIGHT:  absolute.x += parent->absolute.w; break;
-        default:break;
-    };
-    switch (v_offset_type){
-        case UI::CENTER_V:  absolute.y += (parent->absolute.w/2) - (absolute.w/2);break;
-        case UI::TOP:       break;
-        case UI::BOTTOM:    absolute.y += parent->absolute.w - absolute.w;break;
-        case UI::ABOVE:     absolute.y -= absolute.w;
-        case UI::BELOW:     absolute.y += parent->absolute.w; break;
-        default:break;
-    };
+
+
 }
 
 
 
 
 
-
+*/
 
 
 

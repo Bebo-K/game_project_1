@@ -1,10 +1,14 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include "ui_types.h"
 #include "layout.h"
 #include "../input.h"
+#include "../struct/list.h"
 
+namespace UI{
 class Widget;
+/*
 class WidgetContainer;
 
 struct WidgetContainerIterator{
@@ -44,37 +48,40 @@ class WidgetContainer{
 
     friend class WidgetContainerIterator;
 };
+*/
 
+class WidgetComponent{
+    public:
+    virtual void OnActivate(Widget* w){}
+    virtual void OnDeactivate(Widget* w){}
+    virtual void OnUpdate(Widget* w,int frames){};
+    virtual void OnPaint(Widget* w){}
+    virtual bool OnInput(Widget* w,Input::Event event_type){return false;}
+    virtual void OnResize(Widget* w){}
+    virtual bool OnSignal(Widget* w,UISignal signal){return false;}
+};
 
 class Widget{
     public:
-    Layout          layout;
-    char*           name;
-    bool            active;
-    bool            visible;
-    WidgetContainer sub_widgets;
+    Layout                  layout;
+    char*                   name;
+    bool                    active;
+    bool                    visible;
+    List<WidgetComponent>   components;
+    //WidgetContainer sub_widgets;
 
-    void SetName(char* widget_name);
-    void ParentTo(Widget* parent,char* my_name);
     Widget();
-    virtual ~Widget(){Destroy();}
-    void Destroy();
-        virtual void OnDestroy(){};
-
+    Widget(char* widget_name);
+    ~Widget();
     void Activate();
-        virtual void OnActivate(){}
     void Deactivate();
-        virtual void OnDeactivate(){}
     void Update(int frames);
-        virtual void OnUpdate(int frames){};
     void Paint();
-        virtual void OnPaint(){}
     bool HandleInput(Input::Event event_type);
-        virtual bool OnInput(Input::Event event_type){return false;}
     void HandleResize();
-        virtual void OnResize(){}
-    bool HandleSignal(int signal_id,int metadata_len, byte* metadata);
-        virtual bool OnSignal(int signal_id,int metadata_len, byte* metadata){return false;}
+    bool HandleSignal(UISignal signal);
 };
+
+}
 
 #endif

@@ -5,35 +5,27 @@
 #include "../gfx/renderer.h"
 #include "../input.h"
 #include "menu.h"
+#include "ui_types.h"
 
-typedef int MenuID;
-struct MenuType{
-    //0 is reserved for "no menu" constant
-    static const MenuID MAIN_MENU=1;
-    static const MenuID LOADING=2;
-    static const MenuID INGAME=3;
-    static const MenuID OPTIONS=4;
-};
 
 //Manages the screen real estate for menus,text, and other 2D objects
 class GUI{
+    private:
+    UI::Menu*           menus[4];
     public:
-    const static int    MENU_STACK_MAX=32;
-    UI::Menu*           menu_stack[MENU_STACK_MAX];
-    Layout              fullscreen_layout;
-    WidgetContainer     debug_widgets;
+    UI::Layout          fullscreen_layout;
+    List<Widget>        debug_widgets;
+
+    
+    //MainMenu            main_menu;
+    //OptionsMenu         options_menu;
+    //LoadingMenu         loading_menu;
+    //IngameMenu          ingame_menu;
 
     GUI();
     void Load();
     void Unload();
-    //void Reload();
-
-    void OpenMenu(MenuID menu);
-    //void OpenMenu(MenuID menu,MenuContext* context);
-    void CloseMenu(MenuID menu);
-    bool IsMenuOpen(MenuID menu);
-
-    template <class T> T* GetMenu(MenuID menu);
+    void Reload();
     
     //For modding later:
     //void RegisterMenu(MenuID menu,Menu* menu);
@@ -44,7 +36,7 @@ class GUI{
 
     //UI interaction events
     bool OnInput(Input::Event event_type);
-    void OnSignal(int signal_id,int metadata_len, byte* metadata);
+    void OnSignal(UISignal signal);
     void OnResize(int screen_w,int screen_h);
 };
 
