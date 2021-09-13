@@ -5,7 +5,8 @@
 #include "../game/scene.h"
 
 class Client{
-
+    private:
+    static class Client* instance;
     public:
     Scene       scene;
     Renderer    scene_renderer;
@@ -15,6 +16,9 @@ class Client{
 
     Client();
     ~Client();
+
+    static Client* GetClient();
+
     void Start();
     void StartLoadScene(int scene_id);
     //void OnLoadSceneFinish();
@@ -31,6 +35,7 @@ class Client{
     void HandleUIInput();
     void HandleFrameInput();
 
+    void Quit();
 };
 
 #endif

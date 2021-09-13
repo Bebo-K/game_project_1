@@ -13,75 +13,90 @@
 
 #include "widget/dev_console.h"
 
-GUI::GUI(){
-    for(int i=0;i< MENU_STACK_MAX;i++){
-        menu_stack[i]=nullptr;
-    }
+GUI* GUI::instance = nullptr;
+
+using namespace UI;
+
+GUI::GUI(): 
+menus(),
+fullscreen_layout(),
+debug_widgets(){
+    GUI::instance=this;
+    logger::info("loading ui...\n");
+    Widget* developer_console = new DeveloperConsole();
+        developer_console->active=false;
+        developer_console->visible=false;
+    debug_widgets.Add(developer_console);
+    DeveloperConsole::Write("Hello World! GUI Initialized.");
+
+    OnResize(Window::width,Window::height);
+
+    Load();
+    main_menu->Open();
 }
 void GUI::Load(){
-    
-
+    main_menu = new MainMenu(&fullscreen_layout);
+    options_menu = new OptionsMenu(&fullscreen_layout);
+    loading_menu = new LoadingMenu(&fullscreen_layout);
+    ingame_menu = new IngameMenu(&fullscreen_layout);
+    menus.Add(main_menu);
+    menus.Add(main_menu);
+    menus.Add(main_menu);
+    menus.Add(main_menu);
 }
+
 void GUI::Unload(){
-    for(int i=0;i<MENU_STACK_MAX;i++){
-        if(menu_stack[i]!= nullptr){
-            delete menu_stack[i];
-        }
-    }
+    menus.Clear();
+}
+void GUI::Reload(){
+    Unload();
+    Load();
 }
 
-void GUI::OpenMenu(MenuID menu){
+GUI* GUI::GetGUI(){return instance;}
 
+Menu* GUI::GetMenu(int id){
+    for(Menu* m: menus){if(id == m->id)return m;}
+    return null;
 }
-//void OpenMenu(MenuID menu,MenuContext* context);
-void GUI::CloseMenu(MenuID menu){
-
+    
+void GUI::Paint(){
+    for(Menu* m: menus){m->Paint();}
+    for(Widget* w: debug_widgets){w->Paint();}
 }
-
-bool GUI::IsMenuOpen(MenuID menu){
-    for(int i=0;i<MENU_STACK_MAX;i++){
-        if(menu_stack[i]->id == menu){
-           return true;
-        }
-    } 
+void GUI::Update(Scene* scene, int frames){
+    for(Menu* m: menus){m->Update(frames);}
+    for(Widget* w: debug_widgets){w->Update(frames);}
+}
+bool GUI::OnInput(Input::Event event_type){
+    for(Widget* w: debug_widgets){if(w->HandleInput(event_type))return true;}
+    for(Menu* m: menus){if(m->HandleInput(event_type))return true;}
     return false;
 }
-
-template <class T> T* GUI::GetMenu(MenuID menu){
-    Menu* ret = nullptr;
-    for(int i=0;i<MENU_STACK_MAX;i++){
-        if(menu_stack[i]->id == menu){
-            return (T*)menu_stack[i];
-        }
-    }
-    return (T*)null;
+void GUI::OnSignal(UI::Signal signal){
+    for(Widget* w: debug_widgets){if(w->HandleSignal(signal))return;}
+    for(Menu* m: menus){if(m->HandleSignal(signal))return;}
+}
+void GUI::OnResize(int screen_w,int screen_h){
+    for(Menu* m: menus){m->HandleResize();}
+    for(Widget* w: debug_widgets){w->HandleResize();}
 }
 
-//For modding later:
-//void RegisterMenu(MenuID menu,Menu* menu);
 
-//Client events
-void GUI::Paint();
-void GUI::Update(Scene* scene, int frames);
-
-//UI interaction events
-bool GUI::OnInput(Input::Event event_type);
-void GUI::OnSignal(int signal_id,int metadata_len, byte* metadata);
-void GUI::OnResize(int screen_w,int screen_h);
-
-
-GUI::GUI():debug_widgets(&this->fullscreen_layout){
+/////////////////////////////OLD
+GUI::GUI():{
     current_screen = nullptr;
 }
 
 DeveloperConsole* developer_console;
 
-void GUI::Load(){
-    logger::info("loading ui...\n");
-    developer_console = new DeveloperConsole();
-    developer_console->active=false;
-    DeveloperConsole::Write("hello world!");
-    OnResize(Window::width,Window::height);
+void GUI::Load(): 
+main_menu(&fullscreen_layout),
+options_menu(&fullscreen_layout),
+loading_menu(&fullscreen_layout),
+ingame_menu(&fullscreen_layout)
+{
+
 }
     
     

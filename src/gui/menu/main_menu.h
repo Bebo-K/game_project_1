@@ -2,29 +2,23 @@
 #define MAIN_MENU_H
 
 #include "../menu.h"
-#include "../../gfx/ui_sprite.h"
-#include "../widget/control_components.h"
-#include "../panel.h"
+#include "../ui_types.h"
 
 
 class MainMenu: public UI::Menu {
-
     public:
 
-    MainMenu();
+    MainMenu(UI::Layout* parent);
 
+    void OnLoad();
+    void OnUnload();
     void OnOpen();
     void OnClose();
     void OnUpdate(int frames);
     void OnPaint();
     bool OnInput(Input::Event event_type);
     void OnResize();
-    bool OnSignal(int signal_id,int metadata_len, byte* metadata);
-
-
-
-
-
+    bool OnSignal(UI::Signal signal);
 };
 
 

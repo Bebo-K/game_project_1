@@ -14,8 +14,10 @@
 #include "../game/system/state_manager.h"
 #include "../gfx/ui_text.h"
 
+Client* Client::instance = nullptr;
 
 Client::Client() : scene(), scene_renderer(), ui(){
+    Client::instance = this;
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
@@ -29,6 +31,7 @@ Client::~Client(){
     AnimationManager::Free();
 }
 
+Client* Client::GetClient(){return Client::instance;}
 
 void Client::Start(){
     logger::info("Initializing client...\n");
@@ -148,4 +151,8 @@ void Client::HandleFrameInput(){
     for(Input::Event input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
         if(PlayerInput::HandleInput(input)){Input::ClearEvent(input);}
     }
+}
+
+void Client::Quit(){
+    Game::running = false;
 }

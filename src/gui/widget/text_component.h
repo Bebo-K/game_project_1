@@ -1,29 +1,29 @@
-#ifndef TEXT_VIEW_H
-#define TEXT_VIEW_H
+#ifndef TEXT_COMPONENT_H
+#define TEXT_COMPONENT_H
 
 #include "../widget.h"
 #include "../../gfx/ui_text.h"
 
+namespace UI{
+
 //Statically shown UI text, e.g. labels
-class TextWidget: public Widget{
+class TextComponent: public WidgetComponent{
     public:
     UI_Text text;
-    TextWidget();
-    TextWidget(char* str);
-    TextWidget(char* str,FontID font);
-    TextWidget(text_char* str);
-    TextWidget(text_char* str,FontID font);
-    ~TextWidget();
-    void OnDestroy();
-    
+    TextComponent();
+    TextComponent(char* str);
+    TextComponent(char* str,FontID font);
+    TextComponent(text_char* str);
+    TextComponent(text_char* str,FontID font);
+
     void SetString(char* str);
     void SetString(text_char* str,FontID font);
-    void OnPaint();
-    void OnResize();
+    void OnPaint(Widget* w);
+    void OnResize(Widget* w);
 };
 
 //Statically shown multi-line text. 
-class TextBoxWidget: public Widget{
+class TextBoxComponent: public WidgetComponent{
     public:
     int line_count;
     int max_line_length;
@@ -32,20 +32,20 @@ class TextBoxWidget: public Widget{
     text_char** lines;
     UI_Text* shown_lines;
 
-    TextBoxWidget(int lines);
-    TextBoxWidget(int lines,int line_length);
-    ~TextBoxWidget();
-    void OnDestroy();
-    void OnPaint();
+    TextBoxComponent(int lines);
+    TextBoxComponent(int lines,int line_length);
+    ~TextBoxComponent();
+    
+    void OnPaint(Widget* w);
+    void OnResize(Widget* w);
 
     void AddLine(text_char* newline);
     void SetLine(text_char* line,int line_num);
     void FormatLines();
-
 };
 
 //Player-input text. Chatboxes, naming screens, etc.
-class TextEntryWidget:public Widget{
+class TextEntryComponent:public Widget{
     public:
     bool focused;
     bool player_edited;//
@@ -55,12 +55,14 @@ class TextEntryWidget:public Widget{
     UI_Text* shown_line;
     //TODO: sanitize() callback for length requirements, acceptable characters/words 
 
-    TextEntryWidget(int max_length);
-    TextEntryWidget(int max_length, text_char* prompt);
-    ~TextEntryWidget();
-    void OnDestroy();
+    TextEntryComponent(int max_length);
+    TextEntryComponent(int max_length, text_char* prompt);
+    ~TextEntryComponent();
 
-    void OnPaint();
+    void OnPaint(Widget* w);
+    void OnResize(Widget* w);
 };
+
+}
 
 #endif

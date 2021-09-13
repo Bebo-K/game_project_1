@@ -1,6 +1,9 @@
 #include "ingame_menu.h"
 
+using namespace UI;
 
-IngameMenu::IngameMenu(LayoutRect* parent):  Menu(parent){
-    
+IngameMenu::IngameMenu(Layout* parent) : Menu(parent){id = Menu::INGAME;}
+
+void IngameMenu::OnLoad(){
+
 }

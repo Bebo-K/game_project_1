@@ -8,7 +8,7 @@
 #include "../../gfx/ui_text.h"
 
 
-class DeveloperConsole: public Widget{
+class DeveloperConsole: public UI::Widget{
     private:
     static const int CACHED_LINE_COUNT = 64;
     static const int SHOWN_LINE_COUNT = 10;

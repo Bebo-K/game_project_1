@@ -1,32 +1,31 @@
-#include "text_widget.h"
+#include "text_component.h"
 
-TextWidget::TextWidget() :text(){layout.W = text.w; layout.H = text.h;}
-TextWidget::TextWidget(char* str):text(str){layout.W = text.w; layout.H = text.h;}
-TextWidget::TextWidget(char* str,FontID font_id):text(TextString::from_cstr(str),font_id){layout.W = text.w; layout.H = text.h;}
-TextWidget::TextWidget(text_char* str):text(str){layout.W = text.w; layout.H = text.h;}
-TextWidget::TextWidget(text_char* str,FontID font_id):text(str,font_id){layout.W = text.w; layout.H = text.h;}
-TextWidget::~TextWidget(){Destroy();}
-void TextWidget::OnDestroy(){}
-void TextWidget::OnPaint(){
+using namespace UI;
+
+TextComponent::TextComponent() :text(){}
+TextComponent::TextComponent(char* str):text(str){}
+TextComponent::TextComponent(char* str,FontID font_id):text(TextString::from_cstr(str),font_id){}
+TextComponent::TextComponent(text_char* str):text(str){}
+TextComponent::TextComponent(text_char* str,FontID font_id):text(str,font_id){}
+
+void TextComponent::OnPaint(Widget* w){
     text.Draw();
 }
-void TextWidget::OnResize(){
-    text.x = layout.X;
-    text.y = layout.Y;
+void TextComponent::OnResize(Widget* w){
+    text.x = w->layout.x;
+    text.y = w->layout.y;
+    text.w = w->layout.w;
+    text.h = w->layout.h;
 }
-void TextWidget::SetString(char* str){
+void TextComponent::SetString(char* str){
     text.SetString(str);
-    layout.W = text.w;
-    layout.H = text.h;
 }
-void TextWidget::SetString(text_char* str,FontID font){
+void TextComponent::SetString(text_char* str,FontID font){
     text.SetString(str,font);
-    layout.W = text.w;
-    layout.H = text.h;
 }
 
 
-TextBoxWidget::TextBoxWidget(int num_lines){
+TextBoxComponent::TextBoxComponent(int num_lines){
     line_count=num_lines;
     max_line_length=256;
     wrap_lines=false;
@@ -34,7 +33,7 @@ TextBoxWidget::TextBoxWidget(int num_lines){
     lines = (text_char**)calloc(line_count,sizeof(text_char*));
     shown_lines = new UI_Text[line_count];
 }
-TextBoxWidget::TextBoxWidget(int num_lines,int line_length){
+TextBoxComponent::TextBoxComponent(int num_lines,int line_length){
     line_count=num_lines;
     max_line_length=line_length;
     wrap_lines=false;
@@ -42,8 +41,8 @@ TextBoxWidget::TextBoxWidget(int num_lines,int line_length){
     lines = (text_char**)calloc(line_count,sizeof(text_char*));
     shown_lines = new UI_Text[line_count];
 }
-TextBoxWidget::~TextBoxWidget(){Destroy();}
-void TextBoxWidget::OnDestroy(){
+
+TextBoxComponent::~TextBoxComponent(){
     if(lines != null){
         for(int i=0;i<line_count;i++){free(lines[i]);}
         free(lines);
@@ -55,20 +54,20 @@ void TextBoxWidget::OnDestroy(){
     }
 }
 
-void TextBoxWidget::OnPaint(){
+void TextBoxComponent::OnPaint(Widget* w){
     for(int i=0;i<line_count;i++){
         shown_lines[i].Draw();
     }
 }
-void TextBoxWidget::AddLine(text_char* new_line){
+void TextBoxComponent::AddLine(text_char* new_line){
 
 }
-void TextBoxWidget::SetLine(text_char* new_line,int line_num){
+void TextBoxComponent::SetLine(text_char* new_line,int line_num){
 
 }
 
 //Chops entries to fit line size and displays as many as possible, prioritizing last entries
-void TextBoxWidget::FormatLines(){
+void TextBoxComponent::FormatLines(){
     int shown_line_index=line_count-1;
     UI_Text shown_line = shown_lines[shown_line_index];
     for(int i=line_count; i>= 0 && shown_line_index >= 0;i--){
@@ -95,25 +94,24 @@ void TextBoxWidget::FormatLines(){
 }
 
 
-TextEntryWidget::TextEntryWidget(int max_length){
+TextEntryComponent::TextEntryComponent(int max_length){
     focused=false;
     player_edited=false;
     font_size=12;
     line = (text_char*)calloc(max_length,sizeof(text_char));
     shown_line = new UI_Text();
 }
-TextEntryWidget::TextEntryWidget(int max_length, text_char* prompt){
+TextEntryComponent::TextEntryComponent(int max_length, text_char* prompt){
     focused=false;
     player_edited=false;
     font_size=12;
     line = (text_char*)calloc(max_length,sizeof(text_char));
     shown_line = new UI_Text(prompt);
 }
-TextEntryWidget::~TextEntryWidget(){Destroy();}
-void TextEntryWidget::OnDestroy(){
+TextEntryComponent::~TextEntryComponent(){
     if(line != null){free(line);line=null;}
 }
 
-void TextEntryWidget::OnPaint(){
+void TextEntryComponent::OnPaint(Widget* w){
     shown_line->Draw();
 }
