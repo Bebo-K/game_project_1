@@ -3,6 +3,7 @@
 #include "../../os.h"
 #include "../../struct/data_types.h"
 
+using namespace UI;
 
 DeveloperConsole* DeveloperConsole::instance = null;
 FontID DeveloperConsole::console_font = -1;
@@ -10,10 +11,10 @@ FontID DeveloperConsole::console_font = -1;
 DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),entry_rect(256,18){
     DeveloperConsole::instance = this;
     start_timer=999;
-    layout.H=200;
-    layout.W=512;
-    layout.offset.vertical_mode = Layout::V_TOP;
-    layout.offset.horizontal_mode = Layout::H_LEFT;
+    layout.width_scale=Absolute;
+    layout.height_scale=Absolute;
+    layout.h=200;
+    layout.w=512;
 
     background_rect.color = {0,0,0,0.6};
     entry_rect.color = {0,0,0,0.8};
@@ -26,8 +27,7 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
         console_font = FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",14);
     }
 }
-DeveloperConsole::~DeveloperConsole(){Destroy();}
-void DeveloperConsole::OnDestroy(){
+DeveloperConsole::~DeveloperConsole(){
     if(DeveloperConsole::instance == this){DeveloperConsole::instance = null;}
 }
 
@@ -41,18 +41,18 @@ void DeveloperConsole::OnPaint(){
 }
 
 void DeveloperConsole::OnResize(){
-    background_rect.rect = {layout.X,layout.Y+(font_size+8),
-                            layout.W,layout.H-(font_size+8)};
+    background_rect.rect = {layout.x,layout.y+(font_size+8),
+                            layout.w,layout.h-(font_size+8)};
                                 
-    entry_rect.rect = {layout.X,layout.Y,
-                       layout.W,font_size+8};
+    entry_rect.rect = {layout.x,layout.y,
+                       layout.w,font_size+8};
 
     for(int i=0; i < DeveloperConsole::SHOWN_LINE_COUNT;i++){
-        shown_lines[i].x = layout.X+2;
-        shown_lines[i].y = layout.Y+10 + (i+1)*(font_size+4);
+        shown_lines[i].x = layout.x+2;
+        shown_lines[i].y = layout.y+10 + (i+1)*(font_size+4);
     }
-    entry_line.x = layout.X;
-    entry_line.y = layout.Y+2;// (SHOWN_LINE_COUNT*(font_size+2)) + 8;
+    entry_line.x = layout.x;
+    entry_line.y = layout.y+2;// (SHOWN_LINE_COUNT*(font_size+2)) + 8;
 }
 
 void DeveloperConsole::OnUpdate(int frames){

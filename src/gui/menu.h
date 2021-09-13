@@ -3,36 +3,41 @@
 
 #include "../input.h"
 #include "../struct/list.h"
-#include "layout.h"
+#include "ui_types.h"
 #include "widget.h"
 
 namespace UI{
+    typedef int MenuID;
     //A collection of UI elements managing a single gameplay element. More than one can be displayed at a time.
     class Menu{
         public:
+        const static MenuID MAIN=1,OPTIONS=2,LOADING=3,INGAME=4;
+        MenuID       id;
         bool         active;
         bool         visible;
         Layout       layout;
-        MenuID       id;
         List<Widget> widgets;
 
-        Menu();
+        Menu(Layout* parent);
         virtual ~Menu();
-        void Open(Layout* menu_area);
+
+        void Open();
         void Close();
         void Update(int frames);
         void Paint();
         bool HandleInput(Input::Event event_type);
         void HandleResize();
-        bool HandleSignal(UISignal signal);
+        bool HandleSignal(Signal signal);
 
+        virtual void OnLoad();
+        virtual void OnUnload();
         virtual void OnOpen();
         virtual void OnClose();
         virtual void OnUpdate(int frames);
         virtual void OnPaint();
         virtual bool OnInput(Input::Event event_type);
         virtual void OnResize();
-        virtual bool OnSignal(UISignal signal);
+        virtual bool OnSignal(Signal signal);
 
         void AddWidget(Widget* w);
         void RemoveWidget(Widget* w);
