@@ -1,8 +1,10 @@
 #include "texture.h"
 #include "../log.h"
+#include "../struct/pool.h"
+#include "../struct/map.h"
 
-IDMap texture_atlases(2);
-StringMap cached_textures(8);
+Map<int, Image*> texture_atlases(2);
+Map<char*,Texture*> cached_textures(8);
 GLuint current_atlas_id =-1;
 GLuint empty_texture_id = -1;
 int atlas_x=0,atlas_y=0,atlas_h=0;
@@ -40,7 +42,7 @@ void SubmitImage(Image* image){
 Image* CreateAtlas() {
     glGenTextures(1,&current_atlas_id);
     Image* img = new Image(TextureManager::ATLAS_SIZE,TextureManager::ATLAS_SIZE);
-    texture_atlases.Add((int)current_atlas_id,(byte*)img);
+    texture_atlases.Add((int)current_atlas_id,img);
     atlas_x = 0;
     atlas_y = 0;
     atlas_h = 0;
@@ -87,21 +89,15 @@ void TextureManager::Init(){
 }
 
 void TextureManager::Free(){
-    Image* pImage;
-    Texture* pTexture;
-
-    for(int i=0;i<cached_textures.Max();i++){
-    pTexture = (Texture*)cached_textures.At(i);
-    if(pTexture)delete pTexture;
+    for(Tuple<int,Image*> img:texture_atlases){
+        glDeleteTextures(1,(GLuint*)&img.key);
+        if(img.value)delete img.value;
     }
-    cached_textures.Clear();
-    for(int i=0;i<texture_atlases.slots;i++){
-        if(!texture_atlases.slot_is_filled.Get(i))continue;
-        pImage=(Image*)texture_atlases.values[i];
-        if(pImage!= null){delete pImage;}
-        glDeleteTextures(1,(GLuint*)&texture_atlases.keys[i]);
+    for(Tuple<char*,Texture*> tex:cached_textures){
+        if(tex.value)delete tex.value;
     }
     texture_atlases.Clear();
+    cached_textures.Clear();
 }
     
 Texture TextureManager::DefaultTexture(){
@@ -146,7 +142,7 @@ Texture TextureManager::MapToAtlas(Image* texture_image){
         tex.tex_coords.y =0;
         tex.tex_coords.w =1;
         tex.tex_coords.h =1;
-        texture_atlases.Add((int)tex.atlas_id,(byte*)texture_image);
+        texture_atlases.Add((int)tex.atlas_id,texture_image);
     }
     else{//start a new atlas
         CreateAtlas();
@@ -177,7 +173,7 @@ Texture TextureManager::Add(char* texname,Image* texture_image){
     if(cached_textures.Get(texname)==null){
         Texture* cached_tex = (Texture*)malloc(sizeof(Texture));
         memcpy(cached_tex,&texture_to_cache,sizeof(Texture));
-        cached_textures.Add(texname,(byte*)cached_tex);
+        cached_textures.Add(texname,cached_tex);
     }
     return texture_to_cache;
 }
@@ -192,7 +188,8 @@ Texture TextureManager::Get(char* texname){
 }
 
 void TextureManager::Remove(char* texname){
-    Texture* tex = (Texture*)cached_textures.Remove(texname);
+    Texture* tex = cached_textures.Get(texname);
+    cached_textures.Remove(texname);
     if(tex != null)delete tex;
 }
 

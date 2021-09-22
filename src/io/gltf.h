@@ -16,12 +16,13 @@
 
 #include "json.h"
 #include "../struct/data_types.h"
+#include "../struct/list.h"
 #include "../gfx/model.h"
 
 class GLTFScene{
 	private:
 	JSONObject* gltf_data;
-	PointerArray binary_buffers;
+	TEMP<byte> binary_buffers;
 	const char*	filename;
 
 	void LoadAsGLTF(File gltf_file);

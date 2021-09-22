@@ -1,4 +1,4 @@
-#include "button.h"
+#include "button_component.h"
 
 using namespace UI;
 
@@ -6,10 +6,12 @@ ButtonComponent::ButtonComponent(void (*callback)() ){
     onClickCallback = callback;
 }
 
+ButtonComponent::~ButtonComponent(){}
+
 void ButtonComponent::OnUpdate(Widget* w, int frames){
     if(state == Released){
         point_i cursor = Controller::GetPCCursor();
-        rect_i layout_rect = w->layout.GetRect();
+        rect_i layout_rect = w->layout.GetRect().to_integers();
 
         state = layout_rect.contains(cursor)?Hovering:Not_Pressed;
     } 
@@ -20,11 +22,10 @@ bool ButtonComponent::OnInput(Widget* w, Input::Event event_type){
     if(event_type== Input::PC_Cursor||
         event_type== Input::PC_LClick){
         point_i cursor = Controller::GetPCCursor();
-        rect_i layout_rect = w->layout.GetRect();
+        rect_i layout_rect = w->layout.GetRect().to_integers();
 
         if(layout_rect.contains(cursor)){
             Controller::Button cursor = Controller::GetPCLeftMouse();
-
             if(cursor.IsDown()){
                 if(cursor.IsJustPressed()){
                     state = Pressed;

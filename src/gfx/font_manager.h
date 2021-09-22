@@ -1,6 +1,7 @@
 #ifndef FONT_MANAGER_H
 #define FONT_MANAGER_H
 
+#include "../struct/map.h"
 #include "texture.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -26,7 +27,7 @@ namespace FontManager{
         int     dynamic_atlas_start[3];
         int     atlas_next_glyph[3];
         Texture glyph_static_textures[FontManager::precached_codepoints_range_hi-FontManager::precached_codepoints_range_lo];
-        IDMap   glyph_dynamic_textures;
+        Map<int,Texture*>   glyph_dynamic_textures;
 
         FontCache();
         FontCache(char* font_filename,int font_size);

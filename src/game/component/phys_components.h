@@ -2,7 +2,7 @@
 #define PHYS_COMPONENTS_H
 
 #include "component.h"
-#include "../../struct/list.h"
+#include "../../struct/pool.h"
 #include "../../struct/3d_types.h"
 #include "../../phys/collision_types.h"
 #include "../../phys/collider.h"
@@ -25,7 +25,7 @@ class PhysicsData : Component{
     ~PhysicsData();
 };
 
-class ColliderSet : List<CapsuleCollider> , Component{
+class ColliderSet : Pool<CapsuleCollider> , Component{
     public:
     float bounds_xz;
     float bounds_y;

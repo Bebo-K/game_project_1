@@ -3,7 +3,7 @@
 
 #include "entity.h"
 #include "level.h"
-#include "../struct/list.h"
+#include "../struct/pool.h"
 
 
 class Scene{
@@ -11,7 +11,7 @@ class Scene{
     bool loaded;
     long long global_timer;//Frame count since the scene has been loaded.
 
-    List<Entity> entities;
+    Pool<Entity> entities;
 	Level level;
     Skybox skybox;
 

@@ -7,12 +7,16 @@ Widget::Widget() : layout(), components(){
     name=nullptr;
     active=true;
     visible=true;
+    layout.x_pos_scale=Relative;
+    layout.y_pos_scale=Relative;
 }
 
-Widget::Widget(char* name) : layout(), components(){
-    name=cstr::new_copy(name);
+Widget::Widget(char* widget_name) : layout(), components(){
+    name=cstr::new_copy(widget_name);
     active=true;
     visible=true;
+    layout.x_pos_scale=Relative;
+    layout.y_pos_scale=Relative;
 }
 
 Widget::~Widget(){
@@ -20,10 +24,12 @@ Widget::~Widget(){
     for(WidgetComponent* c: components){delete c;}
 }
 
+WidgetComponent::~WidgetComponent(){}
+
 void Widget::Activate(){
     visible=true;
     active=true;
-    for(WidgetComponent* c: components){c->OnActivate(this);}
+   for(WidgetComponent* c: components){c->OnActivate(this);}
 }
 
 void Widget::Deactivate(){
@@ -38,7 +44,8 @@ void Widget::Update(int frames){
 }
 void Widget::Paint(){
     if(!visible)return;
-    for(WidgetComponent* c: components){c->OnPaint(this);}
+    for(WidgetComponent* c: components){
+        c->OnPaint(this);}
 }
 
 bool Widget::HandleInput(Input::Event event_type){

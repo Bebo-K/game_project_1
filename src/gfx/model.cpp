@@ -2,9 +2,9 @@
 #include <string.h>
 #include "../log.h"
 #include "../io/gltf.h"
-#include "../struct/list.h"
+#include "../struct/pool.h"
 
-List<ModelCacheEntry> model_registry;
+Pool<ModelCacheEntry> model_registry;
 ModelData empty_model;
 
 Mesh::Mesh(){

@@ -1,12 +1,13 @@
 #include "font_manager.h"
 #include "../log.h"
+#include "../struct/list.h"
 #include "drawable.h"
 #include "../os.h"
 #include "freetype/ftcolor.h"
 
 FT_Library   ft_library;
 FontID       default_font_id,current_font_id;
-PointerArray cached_fonts(1);
+TEMP<FontManager::FontCache> cached_fonts;
 
 void FontManager::Init(){
     int err = FT_Init_FreeType(&ft_library);
@@ -18,15 +19,16 @@ void FontManager::Init(){
 }
 
 FontID FontManager::LoadFontFace(char* font_name,int font_size){
-    FontCache* cache_entry = new FontCache(font_name,font_size);
-    return cached_fonts.Add(cache_entry);
+    FontCache* fc = new FontCache(font_name,font_size);
+    int newid = cached_fonts.Add(fc);
+    return (FontID)newid;
 }
 
 void FontManager::SetActiveFont(FontID font){current_font_id = font;}
 
 FontManager::FontCache* FontManager::GetActiveFont(){
-    FontCache* cache_entry = (FontCache*)cached_fonts.Get(current_font_id);
-    if(cache_entry == null){return (FontCache*)cached_fonts.Get(default_font_id);}
+    FontCache* cache_entry = cached_fonts[current_font_id];
+    if(cache_entry == null){return cached_fonts[default_font_id];}
     return cache_entry;
 }
 
@@ -36,7 +38,7 @@ Texture FontManager::GetGlyph(int code_point){
     if(code_point >= precached_codepoints_range_lo && code_point <= precached_codepoints_range_hi){
         return font->glyph_static_textures[code_point-precached_codepoints_range_lo];
     }
-    Texture* ret = (Texture*)font->glyph_dynamic_textures.Get(code_point);
+    Texture* ret = font->glyph_dynamic_textures.Get(code_point);
     if(ret != null){ return *ret;}
     else return font->AddDynamicGlyph(code_point);
 }
@@ -162,15 +164,13 @@ Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
     glyph_tex->tex_coords = BlitGlyphToAtlas(glyph_atlas,fontface->glyph->bitmap,atlas_next_glyph);
     SubmitAtlas(glyph_atlas,atlas_gl_id);
     
-    glyph_dynamic_textures.Add(codepoint,(byte*)glyph_tex);
+    glyph_dynamic_textures.Add(codepoint,glyph_tex);
     return *glyph_tex;
 }
 
 void FontManager::FontCache::ClearDynamicGlyphs(){
-    for(int i=0;i<glyph_dynamic_textures.slots;i++){
-        if(glyph_dynamic_textures.slot_is_filled.Get(i)==false)continue;
-        Texture* glyph_tex = (Texture*)glyph_dynamic_textures.values[i];
-        free(glyph_tex);
-    }   
+    for(Tuple<int,Texture*> t: glyph_dynamic_textures){
+        if(t.value != nullptr){free(t.value);}
+    }
     glyph_dynamic_textures.Clear();
 }

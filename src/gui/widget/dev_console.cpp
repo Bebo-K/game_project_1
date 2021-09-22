@@ -26,6 +26,10 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
     if(console_font < 0){
         console_font = FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",14);
     }
+
+    //Start inactive by default
+    visible = false;
+    active = false;
 }
 DeveloperConsole::~DeveloperConsole(){
     if(DeveloperConsole::instance == this){DeveloperConsole::instance = null;}
@@ -41,18 +45,19 @@ void DeveloperConsole::OnPaint(){
 }
 
 void DeveloperConsole::OnResize(){
-    background_rect.rect = {layout.x,layout.y+(font_size+8),
-                            layout.w,layout.h-(font_size+8)};
+    rect_i layoutrect = layout.GetRect().to_integers();
+    background_rect.rect = {layoutrect.x,layoutrect.y+(font_size+8),
+                            layoutrect.w,layoutrect.h-(font_size+8)};
                                 
-    entry_rect.rect = {layout.x,layout.y,
-                       layout.w,font_size+8};
+    entry_rect.rect = {layoutrect.x,layoutrect.y,
+                       layoutrect.w,font_size+8};
 
     for(int i=0; i < DeveloperConsole::SHOWN_LINE_COUNT;i++){
-        shown_lines[i].x = layout.x+2;
-        shown_lines[i].y = layout.y+10 + (i+1)*(font_size+4);
+        shown_lines[i].x = layoutrect.x+2;
+        shown_lines[i].y = layoutrect.y+10 + (i+1)*(font_size+4);
     }
-    entry_line.x = layout.x;
-    entry_line.y = layout.y+2;// (SHOWN_LINE_COUNT*(font_size+2)) + 8;
+    entry_line.x = layoutrect.x;
+    entry_line.y = layoutrect.y+2;// (SHOWN_LINE_COUNT*(font_size+2)) + 8;
 }
 
 void DeveloperConsole::OnUpdate(int frames){

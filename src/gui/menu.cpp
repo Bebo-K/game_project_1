@@ -9,11 +9,9 @@ Menu::Menu(Layout* parent):layout(parent), widgets(){
     layout.height_scale=Relative;
     active=false;
     visible=false;
-    OnLoad();
 }
-Menu::~Menu(){
-    OnUnload();
-}
+Menu::~Menu(){}
+
 
 void Menu::Open(){
     active=true;
@@ -25,6 +23,14 @@ void Menu::Close(){
     visible=false;
     OnClose();
 }
+void Menu::Load(){
+    OnLoad();
+    //for(Widget* w:widgets){w->OnLoad();}
+}
+void Menu::Unload(){
+    OnUnload();
+    widgets.Clear();
+}
 void Menu::Update(int frames){
     if(!active)return;
     OnUpdate(frames);
@@ -33,7 +39,8 @@ void Menu::Update(int frames){
 void Menu::Paint(){
     if(!visible)return;
     OnPaint();
-    for(Widget* w: widgets){w->Paint();}
+    for(Widget* w: widgets){
+        w->Paint();}
 }
 bool Menu::HandleInput(Input::Event event_type){
     if(!active)return false;
@@ -55,6 +62,8 @@ bool Menu::HandleSignal(Signal signal){
 
 void Menu::OnOpen(){}
 void Menu::OnClose(){}
+void Menu::OnLoad(){}
+void Menu::OnUnload(){}
 void Menu::OnUpdate(int frames){}
 void Menu::OnPaint(){}
 bool Menu::OnInput(Input::Event event_type){return false;}
@@ -66,5 +75,6 @@ void Menu::AddWidget(Widget* w){
     widgets.Add(w);
 }
 void Menu::RemoveWidget(Widget* w){
-    widgets.Delete(w);
+    widgets.Remove(w);
+    delete w;
 }

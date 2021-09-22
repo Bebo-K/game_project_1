@@ -18,6 +18,8 @@ class WidgetComponent{
     virtual bool OnInput(Widget* w,Input::Event event_type){return false;}
     virtual void OnResize(Widget* w){}
     virtual bool OnSignal(Widget* w,Signal signal){return false;}
+
+    virtual ~WidgetComponent();
 };
 
 class Widget{
@@ -26,7 +28,7 @@ class Widget{
     char*                   name;
     bool                    active;
     bool                    visible;
-    List<WidgetComponent>   components;
+    TEMP<WidgetComponent>   components;
     //WidgetContainer sub_widgets;
 
     Widget();

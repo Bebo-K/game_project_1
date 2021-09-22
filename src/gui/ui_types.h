@@ -2,6 +2,7 @@
 #define UI_TYPES_H
 
 #include "../struct/2d_types.h"
+#include "../struct/data_types.h"
 
 namespace UI{
 
@@ -22,16 +23,22 @@ class Layout{
     class Layout* parent;
     ScaleMode width_scale,height_scale;
     ScaleMode x_pos_scale,y_pos_scale;
+    point_f center;//center in absolute coordinates.
+    float w,h;
     rect_f relative;
 
-    int x,y,w,h;
     Layout();
     Layout(Layout* parent);
 
     void SetParent(Layout* parent);
-    void SetOffset(int x,int y);
+    void SetOffsetMode(ScaleMode x, ScaleMode y);
+    void SetOffset(float x,float y);
+    void SetSizeMode(ScaleMode w, ScaleMode h);
+    void SetSize(float w,float h);
     void Resize();
-    rect_i GetRect();
+    int  X();
+    int  Y();
+    rect_f GetRect();
 
     void MoveTo(Layout* l2,VerticalOrigin vmode,HorizontalOrigin hmode, point_i offset);
 };

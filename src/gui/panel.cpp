@@ -47,5 +47,5 @@ void Panel::AddWidget(Widget* w){
     widgets.Add(w);
 }
 void Panel::RemoveWidget(Widget* w){
-    widgets.Delete(w);
+    widgets.Remove(w);
 }

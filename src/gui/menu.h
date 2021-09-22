@@ -2,6 +2,7 @@
 #define UI_MENU_H
 
 #include "../input.h"
+#include "../struct/data_types.h"
 #include "../struct/list.h"
 #include "ui_types.h"
 #include "widget.h"
@@ -16,13 +17,18 @@ namespace UI{
         bool         active;
         bool         visible;
         Layout       layout;
-        List<Widget> widgets;
+        TEMP<Widget> widgets;
 
         Menu(Layout* parent);
         virtual ~Menu();
 
+        //Open/Close are triggered when a menu transitions from one to another.
         void Open();
         void Close();
+        //void TransitionTo(Menu* m2); TODO: special transitions?
+        //Load/Unload happen for all menus at once at client load/reload
+        void Load();
+        void Unload();
         void Update(int frames);
         void Paint();
         bool HandleInput(Input::Event event_type);

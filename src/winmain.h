@@ -38,6 +38,4 @@ void OnDirectInputJoyEvent(WPARAM wparam, bool down);
 
 
 
-
-
 #endif

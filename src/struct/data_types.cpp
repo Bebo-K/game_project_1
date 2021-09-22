@@ -1,9 +1,8 @@
+
+#include "data_types.h"
 #include "../log.h"
-#include "data_Types.h"
 #include <stdlib.h>
 #include <string.h>
-
-const int DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE = 4;
 
 bool GET_BIT(int x,int bit){return ((x & (1 << bit)) != 0);}
 
@@ -13,6 +12,9 @@ void* i_to_p(int ptr){
     return ret;
 }
 
+//////////////////////////
+//////***BitArray***/////
+////////////////////////
 BitArray::BitArray(){
     bits = 0;
     data = null;
@@ -42,7 +44,6 @@ void BitArray::Initialize(int bit_count){
     int char_count = bit_count/8 + ((bit_count % 8) > 0);
     data = (unsigned char*)calloc(char_count,1);
 }
-
 int BitArray::CountBitsSet(){
     int count = 0;
     for(int i=0; i< bits/8;i++){
@@ -84,42 +85,105 @@ void BitArray::Clear(){
     memset(data,0,char_count);
 }
 
-DataArray::DataArray():occupancy(){
+
+/////////////////////////////
+/////***DynamicArray***/////
+///////////////////////////
+DynamicArray::DynamicArray(int block_size):occupancy(1){
+    slots=1;
+    slot_size=block_size;
+    data = (byte*)calloc(slots,slot_size);
+}
+DynamicArray::DynamicArray(int count,int block_size):occupancy(count){
+    slots=count;
+    slot_size=block_size;
+    data = (byte*)calloc(slots,slot_size);
+}
+DynamicArray::~DynamicArray(){//occupancy array is auto-deallocated 
+    free(data);
+}
+void* DynamicArray::Allocate(){
+    int slot_to_add=0;
+    while(slot_to_add < slots && occupancy.Get(slot_to_add)){slot_to_add++;}
+    if(slot_to_add == slots){Resize(slots*2);}
+    occupancy.Set(slot_to_add);
+    return data + (slot_to_add*slot_size);
+}
+int DynamicArray::Add(void* object){
+    int slot_to_add=0;
+    while(slot_to_add < slots && occupancy.Get(slot_to_add)){slot_to_add++;}
+    if(slot_to_add == slots){Resize(slots*2);}
+    occupancy.Set(slot_to_add);
+    memcpy(data + (slot_to_add*slot_size),object,slot_size);
+    return slot_to_add;
+}
+void DynamicArray::Remove(int index){
+    if(index < 0 || index >= slots){logger::exception("DynamicArray::Remove -> Index %d is out of range.",index);}
+    memset(&data[index*slot_size],0,slot_size);
+    occupancy.Unset(index);
+}
+
+int  DynamicArray::Index(byte* obj){
+    if(obj < data || obj >= data+(slot_size*slots)){logger::exception("DynamicArray::Index -> Memory address 0x%08x is out of range.",obj);}
+    return (obj-data)/slot_size;
+}
+void* DynamicArray::Get(int index){return &data[index*slot_size];}
+int   DynamicArray::NextNonEmpty(int start_index){
+    int next=start_index;
+    while( ++next < slots && !occupancy.Get(next));
+    return next;
+}
+int DynamicArray::Count(){return occupancy.CountBitsSet();}
+void DynamicArray::Resize(int new_count){
+    occupancy.Resize(new_count);
+    byte* new_data = (byte*)calloc(new_count,slot_size);
+    int slots_to_copy = (slots < new_count)?slots:new_count;
+    memcpy(new_data,data,slots_to_copy*slot_size);
+    slots = new_count;
+    free(data);
+    data = new_data;
+}
+void DynamicArray::Clear(){
+    memset(data,0,slot_size*slots);
+    occupancy.Clear();
+}
+DynamicArrayIterator DynamicArray::begin(){return {this,NextNonEmpty(-1)};}
+DynamicArrayIterator DynamicArray::end(){return {this,slots};}
+
+
+byte* DynamicArrayIterator::operator*(){
+    return &parent->data[index*parent->slot_size];
+}
+DynamicArrayIterator DynamicArrayIterator::operator++(){
+    index = parent->NextNonEmpty(index);
+    return (*this);
+}
+bool DynamicArrayIterator::operator==(DynamicArrayIterator& l2){return index ==l2.index;}
+bool DynamicArrayIterator::operator!=(DynamicArrayIterator& l2){return index !=l2.index;}
+
+
+/*
+DynamicArray::DynamicArray():occupancy(){
     slots=0;
     slot_size=0;
     data=null;
 }
-DataArray::DataArray(int object_size):occupancy(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
-    slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
+DynamicArray::DynamicArray(int object_size):occupancy(1){
+    slots=1;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
 }
-
-DataArray::DataArray(int count,int object_size):occupancy(count){
+DynamicArray::DynamicArray(int count,int object_size):occupancy(count){
     slots=count;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
 }
-DataArray::~DataArray(){
+DynamicArray::~DynamicArray(){
     free(data);
 }
-
-void* DataArray::Add(){
-    int added_slot = -1;
-    for(int i=0;i < slots; i++){
-        if(!occupancy.Get(i)){
-            added_slot =i;
-            break;
-        }
-    }
-    if(added_slot == -1){
-        added_slot = slots;
-        Resize(slots*2);
-    }
-    occupancy.Set(added_slot);
-    return (char*)data+(added_slot*slot_size);
+void* DynamicArray::Add(){
 }
-int DataArray::Add(void* object){
+int DynamicArray::Add(void* object){
     int added_slot = -1;
     for(int i=0;i < slots; i++){
         if(!occupancy.Get(i)){
@@ -135,23 +199,23 @@ int DataArray::Add(void* object){
     memcpy((char*)data+(added_slot*slot_size),object,slot_size);
     return added_slot;
 }
-void DataArray::Remove(int index){
-    if(index < 0 || index >= slots){logger::exception("DataArray::Remove -> Index %d is out of range.",index);}
+void DynamicArray::Remove(int index){
+    if(index < 0 || index >= slots){logger::exception("DynamicArray::Remove -> Index %d is out of range.",index);}
     occupancy.Unset(index);
     memset ((char*)data+(index*slot_size),0,slot_size);
 }
-void* DataArray::Get(int index){
-    if(index < 0 || index >= slots){logger::exception("DataArray::Get -> Index %d is out of range.",index);}
+void* DynamicArray::Get(int index){
+    if(index < 0 || index >= slots){logger::exception("DynamicArray::Get -> Index %d is out of range.",index);}
     if(!occupancy.Get(index)){return null;}
     return (char*)data+(index*slot_size);
 }
-byte* DataArray::GetArray(){
+byte* DynamicArray::GetArray(){
     return data;
 }
-int DataArray::Count(){
+int DynamicArray::Count(){
     return occupancy.CountBitsSet();
 }
-void DataArray::Resize(int new_count){
+void DynamicArray::Resize(int new_count){
     occupancy.Resize(new_count);
     byte* new_data = (byte*)calloc(new_count,slot_size);
     if(slots <= new_count){
@@ -161,93 +225,22 @@ void DataArray::Resize(int new_count){
     free(data);
     data = new_data;
 }
-void DataArray::Clear(){
+void DynamicArray::Clear(){
     memset(data,0,slot_size*slots);
     occupancy.Clear();
 }
-void DataArray::Initialize(int count,int object_size){
+void DynamicArray::Initialize(int count,int object_size){
     slots=count;
     slot_size=object_size;
     data = (byte*)calloc(slots,slot_size);
     occupancy.Initialize(count);
 }
 
-
-PointerArray::PointerArray(){
-    slots=0;
-    data=null;
-}
-PointerArray::PointerArray(int size){
-    slots=size;data=null;
-    if(size > 0){
-        data= (byte**)calloc(slots,sizeof(byte*));
-    }
-}
-PointerArray::~PointerArray(){
-    if(data != nullptr){
-        free(data); 
-        data=nullptr;
-    }
-}
-int PointerArray::Add(void* object){
-    int slot_to_add=-1;
-    for(int i=0;i<slots;i++){
-        if(data[i] == null){slot_to_add = i;break;}
-    }
-    if(slot_to_add == -1){
-        slot_to_add = slots;
-        Resize(slots*2);
-    }
-    data[slot_to_add] = (byte*)object;
-    return slot_to_add;
-}
-void* PointerArray::Remove(int index){
-    if(index < 0 || index >= slots){logger::exception("PointerArray::Remove -> Index %d is out of range.",index);}
-    byte* ret = data[index];
-    data[index] = null;
-    return ret;
-}
-int PointerArray::Remove(void* object){
-    for(int i=0;i<slots;i++){
-        if(data[i] == object){
-            data[i] = null;
-            return i;
-        }
-    }
-    return -1;
-}
-void* PointerArray::Get(int index){
-    if(index < 0 || index >= slots){logger::exception("PointerArray::Get -> Index %d is out of range.",index);}
-    return data[index];
-}
-int PointerArray::Count(){
-    int count =0;
-    for(int i=0;i<slots;i++){
-        if(data[i]!= null){count++;}
-        }
-    return count;
-}
-void PointerArray::Resize(int newsize){
-    if(newsize == 0){
-        Clear();
-        return;
-    }
-    byte** newdata = (byte**)calloc(newsize,sizeof(byte*));
-    if(slots <= newsize){
-        for(int i=0;i<slots;i++){newdata[i] = data[i];}
-    }
-    free(data);
-    slots=newsize;
-    data=newdata;
-}
-void PointerArray::Clear(){
-    if(data != nullptr){
-        free(data); 
-        data=nullptr;
-    }
-    slots=0;
-}
-
+*/
+//////////////////////////
+///////***IDMap***///////
+////////////////////////
+/*
 IDMap::IDMap():slot_is_filled(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE){
     slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
     keys = (int*)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(int));
@@ -325,9 +318,9 @@ void IDMap::Clear(){
 }
 
 StringMap::StringMap(){
-    slots=DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE;
-    keys = (char**)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(char*));
-    values = (byte**)calloc(DEFAULT_DYNAMIC_ARRAY_INITIAL_SIZE,sizeof(byte*));
+    slots=1;
+    keys = (char**)calloc(slots,sizeof(char*));
+    values = (byte**)calloc(slots,sizeof(byte*));
 }
 StringMap::StringMap(int initial_size){
     slots=initial_size;
@@ -335,7 +328,7 @@ StringMap::StringMap(int initial_size){
     values = (byte**)calloc(initial_size,sizeof(byte*));
 }
 StringMap::~StringMap(){
-     for(int i=0;i< slots;i++){
+    for(int i=0;i< slots;i++){
         if(keys[i]==null)continue;
         free(keys[i]);keys[i]=null;
     }
@@ -402,6 +395,8 @@ void StringMap::Clear(){
 
 int    StringMap::Max(){return slots;}
 byte*   StringMap::At(int index){if(keys[index]!= null)return values[index];else return null;}
+
+*/
 
 char* cstr::new_copy(const char* old_string){
     if(old_string==nullptr)return nullptr;

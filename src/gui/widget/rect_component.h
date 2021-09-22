@@ -10,6 +10,7 @@ class RectComponent: public WidgetComponent{
     UI_Rect shape;
     public:
     RectComponent(vec4 colour);
+    ~RectComponent();
 
     void OnPaint(Widget* w);
     void OnResize(Widget* w);

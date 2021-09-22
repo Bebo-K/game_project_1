@@ -16,7 +16,7 @@ void* i_to_p(int ptr);
 bool GET_BIT(int x,int bit);
 
 
-//A dynamic array of bits. Used by other maps to keep track of data slot occupancy.
+//A resizable array of individually settable bits.
 struct BitArray{
     int bits;
     byte* data;
@@ -37,65 +37,53 @@ struct BitArray{
     void Clear();
 };
 
-//A dynamic object array.
-//Memory is allocated for objects inside the array, if a new object is added with no available slots, the array's size will be doubled.
-//Because objects can have any data, a separate, additional bit array is kept for vacancy info of data slots.
-//Add() and Remove() must be used to set/clear vacancy bits. 
+//A resizeable array of data blocks and corresponding BitArray of block occupancy.
+//Memory blocks can have any data.
+//Allocated memory is doubled by default once the array runs out of slots.
+//Add(),Allocate() and Remove() must be used to add/remove elements to maintain the vacancy bit array.
 //Though Get(),GetArray() and the subscript operator([]) all are ways to access data, they handle vacant object slots differently
-//   Using the subscript operator([]) on a data slot with an unset occupancy bit will throw an exception. Only use on known valid slots.
-//   Accessing objects with Get() with an unset occupancy bit will return a null pointer. Use this to iterate through only valid objects.
-//   Accssing objects with GetArray will return all allocated data. It's not reccomended, but can be used to access *any* slot.
-struct DataArray{
-    int slots;
-    int slot_size;
+class DynamicArray;
+struct DynamicArrayIterator{
+    DynamicArray* parent;
+    int          index;
+    byte* operator*();
+    DynamicArrayIterator operator++();
+    bool operator==(DynamicArrayIterator& l2);
+    bool operator!=(DynamicArrayIterator& l2);
+};
+class DynamicArray{
+    private:
     BitArray occupancy;
     byte* data;
-
-    DataArray();
-    DataArray(int object_size);
-    DataArray(int count,int object_size);
-    ~DataArray();
-
-    void* Add();
-    int Add(void* object);
-    void Remove(int index);
-
-    void* Get(int index);
-    byte* GetArray();
-
-    int Count();
-    void Clear();
-    void Resize(int new_count);
-    void Initialize(int count,int object_size);
-};
-
-//A dynamic array of pointers to objects. 
-//Memory allocation for objects are not done by this array, only pointers are stored.
-//Add() will overwrite+return the first null pointer, or double the array size if there are none.
-//Remove() simply nulls out the indexed pointer.
-//Since any slot could contain a null pointer, null checks should be done before accessing data.
-//Relative to the start of the array, there are no methods defined to move data,
-//  so the integer index of an object should be a safe reference.
-struct PointerArray{
-    byte** data;
-    int slots;
     
-    PointerArray();
-    PointerArray(int initial_size);
-    ~PointerArray();
+    friend class DynamicArrayIterator;
+    public:
+    int slots;
+    int slot_size;
 
-    int Add(void* object);
-    void* Remove(int index);
-    int Remove(void* object);
+    //DynamicArray();
+    DynamicArray(int block_size);
+    DynamicArray(int count,int block_size);
+    ~DynamicArray();
+
+    void* Allocate();//returns empty space for one object. Example usage: 'Object* o = new (DynamicArray.Allocate()) Object()'
+    int Add(void* object);//copies existing data into a new slot.
+    void Remove(int index);//deallocates memory for one slot. This does not free any objects allocated with the data.
+
+    int  Index(byte* data);//If data is a pointer inside this memory block, returns it's index in the array.
     void* Get(int index);
+    int   NextNonEmpty(int index);
 
     int Count();
-    void Resize(int new_count);
     void Clear();
+    void Resize(int new_count);   
+    DynamicArrayIterator begin();
+    DynamicArrayIterator end();
 };
 
 //A pair of dynamic arrays, one of unique integer keys and another of byte* data pointers
 //Similar to PointerArray, except objects are accessed by key rather than slot index
+/*
 struct IDMap{
     int*        keys;
     byte**      values;
@@ -112,8 +100,10 @@ struct IDMap{
     byte* Get(int id);
     void  Clear();
 };
+*/
 
 //Dynamic array pair for string -> byte* mapping,
+/*
 struct StringMap{
     char**  keys;
     byte**  values;
@@ -132,6 +122,7 @@ struct StringMap{
     int    Max();
     byte*  At(int index);
 };
+*/
 
 namespace cstr{
     char* new_copy(const char* old_string);

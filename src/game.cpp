@@ -48,18 +48,19 @@ void Game::Poll(){
     long poll_time = time_ms();
     long delta_ms = poll_time - last_frame;
 
-    if(delta_ms >= frame_interval_ms){
-        int elapsed_frames = (int)(delta_ms/frame_interval_ms);
-        Update(elapsed_frames);
-        last_frame = poll_time - (delta_ms%frame_interval_ms);
-    }
-
     delta_ms = poll_time - last_render;
     if(delta_ms >= draw_interval_ms){
         Paint();
         PostRender();
         last_render = poll_time - (delta_ms%draw_interval_ms);
     }
+
+    if(delta_ms >= frame_interval_ms){
+        int elapsed_frames = (int)(delta_ms/frame_interval_ms);
+        Update(elapsed_frames);
+        last_frame = poll_time - (delta_ms%frame_interval_ms);
+    }
+
 }  
 
 void Game::Exit(){
@@ -69,4 +70,5 @@ void Game::Exit(){
         delete client;
         client=nullptr;
     }
+    exit(0);
 }

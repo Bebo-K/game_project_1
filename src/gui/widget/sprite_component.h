@@ -11,6 +11,7 @@ class SpriteComponent: public WidgetComponent{
     public:
     SpriteComponent(char* filename);
     SpriteComponent(Texture sprite_tex);
+    ~SpriteComponent();
 
     void OnPaint(Widget *w);
     void OnResize(Widget *w);

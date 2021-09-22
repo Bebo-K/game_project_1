@@ -30,6 +30,7 @@ UI_Text::UI_Text(){
     string=nullptr;
     glyph_count=0;
     x=y=w=h=0;
+    font=-1;
 }
 UI_Text::UI_Text(char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
@@ -63,6 +64,7 @@ void UI_Text::SetString(text_char* str,FontID font_id){
     if(str ==null)return;
     string=str;
     if(font_id >= 0){FontManager::SetActiveFont(font_id);}
+    font=font_id;
     FT_Face fontface = FontManager::GetActiveFont()->fontface;
 
     int strlen=0;

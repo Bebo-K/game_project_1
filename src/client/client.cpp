@@ -35,7 +35,7 @@ Client* Client::GetClient(){return Client::instance;}
 
 void Client::Start(){
     logger::info("Initializing client...\n");
-
+    
     FontManager::Init();
         FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",8);
         int debug_font =FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",12);
@@ -49,8 +49,7 @@ void Client::Start(){
     scene_renderer.camera.y = 2.0f;
 
     ui.Load();
-
-    ui.OpenMenu(MenuType::MAIN_MENU);
+    ui.main_menu->Open();
 }
 
 void Client::StartLoadScene(int scene_id){
@@ -154,5 +153,5 @@ void Client::HandleFrameInput(){
 }
 
 void Client::Quit(){
-    Game::running = false;
+    Game::Exit();
 }

@@ -2,14 +2,13 @@
 #define RENDERER_H
 
 #include "../struct/3d_types.h"
+#include "../struct/list.h"
 #include "drawable.h"
 
 class Renderer{
-private:
-    int primitive_count;
 public:
     Camera camera;
-    PointerArray primitives;
+    TEMP<Drawable> primitives;
 
     Renderer();
     void Load();

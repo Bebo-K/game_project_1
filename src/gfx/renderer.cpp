@@ -3,8 +3,6 @@
 #include "../log.h"
 
 Renderer::Renderer():camera(),primitives(){
-    primitive_count=0;
-
     glClearColor(0.1, 0.1, 0.1, 1.0);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -19,30 +17,24 @@ void Renderer::Load(){
 }
 
 void Renderer::Unload(){
-    for(int i=0;i<primitives.slots;i++){
-        primitives.Remove(i);
-    }
-    primitive_count=0;
+    primitives.Clear();
 }
 
 void Renderer::Add(Drawable* p){
     primitives.Add(p);
-    primitive_count++;
 }
 
 void Renderer::Remove(Drawable* p){
     primitives.Remove(p);
-    primitive_count--;
 }
 
-
 void Renderer::Draw(){
-    if(primitive_count <= 0){return;}
+    if(primitives.Count() <= 0){return;}
     
     camera.ApplyTransforms();
     mat4 view_matrix = camera.view_matrix.copy();
     Drawable** sorted_list = SortPrimitives();
-    for(int p=0; p < primitive_count; p++){
+    for(int p=0; p < primitives.Count(); p++){
         camera.ResetViewMatrix(&view_matrix);
         sorted_list[p]->Draw(&camera);
     }
@@ -60,7 +52,7 @@ boolean PrimitiveIsCloser(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera_
 
 //return a sorted list of primitive pointers based on layer and distance on camera's z axis
 Drawable** Renderer::SortPrimitives(){
-	Drawable** ret = new Drawable*[primitive_count];
+	Drawable** ret = new Drawable*[primitives.Count()];
 
     vec3 camera_axis = {0.0f,0.0f,1.0f};
     vec3 camera_pos = {camera.x,camera.y,camera.z};
@@ -71,10 +63,8 @@ Drawable** Renderer::SortPrimitives(){
     Drawable* to_insert =  null;
     Drawable* current = null;
     int last=0;
-    for(int p=0;p<primitives.slots;p++){
-        to_insert=(Drawable*)primitives.Get(p);
-        if(to_insert==null)continue;
-
+    for(Drawable* p: primitives){
+        to_insert = p;
         for(int i=0;i <last;i++){
             current=ret[i];
             if(PrimitiveIsCloser(to_insert,current,camera_pos,camera_axis)){
@@ -85,5 +75,6 @@ Drawable** Renderer::SortPrimitives(){
         ret[last]=to_insert;
         last++;
     }
+
     return ret;
 }

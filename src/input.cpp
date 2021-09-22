@@ -1,6 +1,7 @@
 #include "input.h"
 #include <math.h>
-#include "struct/list.h"
+#include "struct/pool.h"
+#include "struct/map.h"
 #include "io/file.h"
 #include "os.h"
 
@@ -10,13 +11,6 @@ const float AXIS_CUTOFF = 0.01;
 
 const int AXIS_EVENT_BASE=0;
 const int BUTTON_EVENT_BASE=2;
-
-const int PC_EVENT_CURSOR =16;
-const int PC_EVENT_SCROLL =17;
-const int PC_EVENT_RCLICK =18;
-const int PC_EVENT_LCLICK =19;
-const int PC_EVENT_CCLICK =20;
-const int PC_EVENT_TEXT = 21;
 
 const int EVENT_CONSOLE = 22;
 const int EVENT_ANYBUTTON = 23;
@@ -48,11 +42,11 @@ Controller::Button any_button;
 text_char* input_text=null;            
 text_char  character_code[2]  = {0,0};
 
-IDMap physical_input_map= IDMap(8);
+Map<int,char*> physical_input_map= Map<int,char*>(8);
 
-List<Input::Key_Button_Bind> button_binds;
-List<Input::Key_Axis_Bind> key_axis_binds;
-List<Input::Axis_Bind> axis_binds;
+Pool<Input::Key_Button_Bind> button_binds;
+Pool<Input::Key_Axis_Bind> key_axis_binds;
+Pool<Input::Axis_Bind> axis_binds;
 
 
 //////////////////////
@@ -107,6 +101,8 @@ void Input::Update(){
 
 }
 void Input::Destroy(){
+    for(Tuple<int,char*> t: physical_input_map){if(t.value)free(t.value);}
+    physical_input_map.Clear();
     button_binds.Clear();
     key_axis_binds.Clear();
     axis_binds.Clear();
@@ -141,31 +137,31 @@ void Input::OnAxis(int axis_id,float x,float y){
 void Input::OnPCCursor(int x,int y){
     mouse_cursor.x=x;
     mouse_cursor.y=Window::height-y;
-    SET_BIT(input_state,PC_EVENT_CURSOR);
+    SET_BIT(input_state,Input::PC_Cursor-1);
 }
 void Input::OnPCClick(bool down, bool left){
     if(left){
         mouse_l.state=(down)?3:2; 
-        SET_BIT(input_state,PC_EVENT_LCLICK);
+        SET_BIT(input_state,Input::PC_LClick-1);
     }
     else {
         mouse_r.state=(down)?3:2; 
-        SET_BIT(input_state,PC_EVENT_RCLICK);
+        SET_BIT(input_state,Input::PC_RClick-1);
     }
 }
 void Input::OnPCScroll(int dx, int dy){
     mouse_scroll.x = dx;
     mouse_scroll.y = dy;
-    SET_BIT(input_state,PC_EVENT_SCROLL);
+    SET_BIT(input_state,Input::PC_Scroll-1);
 }
 void Input::OnText(text_char* text){
     input_text = TextString::copy(text);
-    SET_BIT(input_state,PC_EVENT_TEXT);
+    SET_BIT(input_state,Input::PC_Text-1);
 }
 void Input::OnCharacter(int code_point){
     character_code[0]=code_point;
     input_text = character_code;
-    SET_BIT(input_state,PC_EVENT_TEXT);
+    SET_BIT(input_state,Input::PC_Text-1);
 }
 
 //////////////////////
@@ -290,19 +286,14 @@ void Input::UnbindAxis(AxisID axis){
 //    Utility
 ////////////////////
 int Input::GetKeyID(char* key_name){
-    char* phys_input_id=null;
-    for(int i=0;i< physical_input_map.slots;i++){
-        if(!physical_input_map.slot_is_filled.Get(i))continue;
-        phys_input_id=(char*)physical_input_map.values[i];
-        if(cstr::compare(key_name,phys_input_id)){
-            return physical_input_map.keys[i];
-        }
+    for(Tuple<int,char*> t: physical_input_map){
+        if(cstr::compare(t.value,key_name))return t.key;
     }
     return -1;
 }
 const char* Input::GetKeyName(int key_id){
     if(physical_input_map.Has(key_id)){
-        return (char*)physical_input_map.Get(key_id);
+        return physical_input_map.Get(key_id);
     }
     return nullptr;
 }
@@ -393,7 +384,7 @@ void Input::LoadKeyLayout(char* layout_filename){
         if(key!=nullptr&&value!=nullptr){
             int key_id = cstr::integer_from_string(value);
             if(key_id > 0){
-                physical_input_map.Add(key_id,(byte*)cstr::new_copy(key));
+                physical_input_map.Add(key_id,cstr::new_copy(key));
             }
         }
         if(key)free(key);

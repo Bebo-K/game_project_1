@@ -2,7 +2,7 @@
 #define GFX_COMPONENTS_H
 
 #include "component.h"
-#include "../../struct/list.h"
+#include "../../struct/pool.h"
 #include "../../struct/math_types.h"
 #include "../../struct/3d_types.h"
 #include "../../gfx/camera.h"
@@ -26,7 +26,7 @@ class CameraTarget : Component{
     ~CameraTarget();
 };
 
-class ModelSet : public List<Model> ,public Component,public Drawable{
+class ModelSet : public Pool<Model> ,public Component,public Drawable{
 	public:
 	
 	Model* Add(ModelID model_id);
@@ -34,7 +34,7 @@ class ModelSet : public List<Model> ,public Component,public Drawable{
 	~ModelSet();
 };
 
-class SpriteSet : List<Sprite> , Component, Drawable{
+class SpriteSet : Pool<Sprite> , Component, Drawable{
 	public:
 
 	//Sprite* Add(char* name);

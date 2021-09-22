@@ -3,6 +3,8 @@
 
 #include "../game/scene.h"
 #include "../input.h"
+#include "../struct/list.h"
+#include "../struct/pool.h"
 #include "ui_types.h"
 #include "widget.h"
 #include "menu.h"
@@ -18,7 +20,8 @@ class GUI{
     static class GUI*   instance;
     public:
     UI::Layout          fullscreen_layout;
-    List<UI::Widget>    debug_widgets;
+    TEMP<UI::Widget>    debug_widgets;
+    TEMP<UI::Menu>      menus;
 
     //List<Widget>      world_anchored_elements; TODO: things like player nameplates
 
@@ -27,7 +30,6 @@ class GUI{
     LoadingMenu*         loading_menu;
     IngameMenu*          ingame_menu;
 
-    List<Menu>           menus;
 
     GUI();
     void Load();
@@ -35,7 +37,7 @@ class GUI{
     void Reload();
 
     static GUI* GetGUI();
-    Menu* GetMenu(int ID);
+    UI::Menu* GetMenu(int ID);
     
     //Client events
     void Paint();

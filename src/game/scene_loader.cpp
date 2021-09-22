@@ -3,6 +3,7 @@
 #include "../io/gltf.h"
 
 #include "../gui/gui.h"
+#include "../struct/list.h"
 
 
 void SceneLoader::StartLoadDefault(Scene* scene){
@@ -32,8 +33,8 @@ void SceneLoader::LoadComplete(Scene* scene){}
 
 void SceneLoader::LoadGeometry(Scene* scene,JSONObject* json){
 
-    PointerArray collision_mesh_list(1);
-    PointerArray collision_surface_list(1);
+    TEMP<MeshGroup>  collision_mesh_list(1);
+    TEMP<CollisionSurface> collision_surface_list(1);
 
     Level* lvl = &scene->level;
 
@@ -81,8 +82,8 @@ void SceneLoader::LoadGeometry(Scene* scene,JSONObject* json){
     lvl->geometry_count = collision_mesh_list.Count();
     lvl->geometry = new CollisionMesh[lvl->geometry_count]();//collision_mesh_list.Harden();
     for(int i=0;i<lvl->geometry_count;i++){
-        lvl->geometry[i].SetVertices((MeshGroup*)collision_mesh_list.Get(i));
-        lvl->geometry[i].SetSurface((CollisionSurface*)collision_surface_list.Get(i));
+        lvl->geometry[i].SetVertices((MeshGroup*)collision_mesh_list[i]);
+        lvl->geometry[i].SetSurface((CollisionSurface*)collision_surface_list[i]);
     }
    
     if(json->HasString("skybox")){

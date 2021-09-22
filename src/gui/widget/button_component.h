@@ -13,9 +13,11 @@ class ButtonComponent: public WidgetComponent{
     void (*onClickCallback)();
     
     ButtonComponent(void (*callback)() );
+    ~ButtonComponent();
 
     void OnUpdate(Widget* w, int frames);
     bool OnInput(Widget* w, Input::Event event_type);
+
 
 };
 

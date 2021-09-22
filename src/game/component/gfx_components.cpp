@@ -17,10 +17,7 @@ CameraTarget::~CameraTarget(){}
 
 
 Model* ModelSet::Add(ModelID model_id){
-    Model* ret = new Model(model_id);
-    data.Add(ret);
-    count++;
-    return ret;
+    return new (Allocate()) Model(model_id);
 }
 
 void ModelSet::Draw(Camera* cam){

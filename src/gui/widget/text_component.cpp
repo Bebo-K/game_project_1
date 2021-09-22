@@ -7,15 +7,14 @@ TextComponent::TextComponent(char* str):text(str){}
 TextComponent::TextComponent(char* str,FontID font_id):text(TextString::from_cstr(str),font_id){}
 TextComponent::TextComponent(text_char* str):text(str){}
 TextComponent::TextComponent(text_char* str,FontID font_id):text(str,font_id){}
+TextComponent::~TextComponent(){}
 
 void TextComponent::OnPaint(Widget* w){
     text.Draw();
 }
 void TextComponent::OnResize(Widget* w){
-    text.x = w->layout.x;
-    text.y = w->layout.y;
-    text.w = w->layout.w;
-    text.h = w->layout.h;
+    text.x = w->layout.center.x - (text.w/2);
+    text.y = w->layout.center.y - (text.h/2);
 }
 void TextComponent::SetString(char* str){
     text.SetString(str);
@@ -57,6 +56,15 @@ TextBoxComponent::~TextBoxComponent(){
 void TextBoxComponent::OnPaint(Widget* w){
     for(int i=0;i<line_count;i++){
         shown_lines[i].Draw();
+    }
+}
+
+void TextBoxComponent::OnResize(Widget* w){
+    for(int i=0;i<line_count;i++){
+        shown_lines[i].x = w->layout.center.x;
+        shown_lines[i].y = w->layout.center.y + (w->layout.h/2) - (i * (font_size + 2));
+        shown_lines[i].w = w->layout.w;
+        shown_lines[i].h = font_size;
     }
 }
 void TextBoxComponent::AddLine(text_char* new_line){

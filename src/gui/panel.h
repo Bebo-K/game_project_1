@@ -3,6 +3,7 @@
 
 #include "widget.h"
 #include "ui_types.h"
+#include "../struct/list.h"
 
 namespace UI{
 
@@ -12,7 +13,7 @@ namespace UI{
         bool         active;
         bool         visible;
         Layout       layout;
-        List<Widget> widgets;
+        TEMP<Widget> widgets;
 
         Panel(Layout* parent);
         ~Panel();

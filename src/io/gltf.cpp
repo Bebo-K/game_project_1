@@ -311,7 +311,7 @@ byte* GLTFScene::GetBufferViewData(int buffer_view_id,int* len){
 	int buffer_id= bufferview->GetInt("buffer");
 	int offset= bufferview->GetInt("byteOffset");
 	if(len != null){*len = bufferview->GetInt("byteLength");}
-	byte* buffer = (byte*)binary_buffers.Get(buffer_id);
+	byte* buffer = binary_buffers[buffer_id];
 	return &buffer[offset];
 }
 

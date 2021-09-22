@@ -12,8 +12,6 @@ class MainMenu: public UI::Menu {
 
     void OnLoad();
     void OnUnload();
-    void OnOpen();
-    void OnClose();
     void OnUpdate(int frames);
     void OnPaint();
     bool OnInput(Input::Event event_type);

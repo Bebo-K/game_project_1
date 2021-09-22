@@ -1,11 +1,12 @@
 #include "animation.h"
 #include "../struct/data_types.h"
+#include "../struct/list.h"
 #include "../struct/3d_types.h"
 #include "../log.h"
 #include <string.h>
 #include "math.h"
 
-PointerArray managed_clips(8);
+TEMP<ClipInfo> managed_clips(8);
 int active_layer=0;
 bool layer_is_active[ANIMATION_LAYER_COUNT];
 
@@ -342,15 +343,12 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
 }
 
 void AnimationManager::Update(float seconds){
-    ClipInfo* current_clip;
     Animation *animation;
     AnimationHook *hook;
     AnimationChannel *channel;
     float* value;
 
-    for(int i=0;i<managed_clips.slots;i++){
-        current_clip = (ClipInfo*)managed_clips.Get(i);
-        if(current_clip==nullptr)continue;
+    for(ClipInfo* current_clip: managed_clips){
         if(!layer_is_active[current_clip->layer])continue;
 
         current_clip->elapsed_time += seconds*current_clip->timescale;

@@ -15,6 +15,7 @@ class TextComponent: public WidgetComponent{
     TextComponent(char* str,FontID font);
     TextComponent(text_char* str);
     TextComponent(text_char* str,FontID font);
+    ~TextComponent();
 
     void SetString(char* str);
     void SetString(text_char* str,FontID font);

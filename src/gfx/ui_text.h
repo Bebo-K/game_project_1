@@ -19,6 +19,7 @@ class UI_Text{
     int x,y;
     int w,h;
     text_char* string;
+    FontID font;
     int    glyph_count;
     Glyph* glyphs;
 

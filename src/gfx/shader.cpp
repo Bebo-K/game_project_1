@@ -1,10 +1,10 @@
 #include "shader.h"
 #include "../log.h"
-#include "../struct/data_types.h"
+#include "../struct/map.h"
 
 Shader* DEFAULT_SHADER=nullptr;
 Shader* CURRENT_SHADER=nullptr;
-StringMap CACHED_SHADERS(2);
+Map<char*,Shader*> CACHED_SHADERS(2);
 
 
 Shader::Shader(char* vertex_file,char* fragment_file){
@@ -118,7 +118,7 @@ void Shader::Use(){
 
 void ShaderManager::Init(){
     DEFAULT_SHADER = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
-    CACHED_SHADERS.Add("default",(byte*)DEFAULT_SHADER);
+    CACHED_SHADERS.Add("default",DEFAULT_SHADER);
     
     AddShader("level_debug","dat/gfx/level_debug.vrt","dat/gfx/level_debug.frg");
     AddShader("model_dynamic_lighting","dat/gfx/model_dynamic_lighting.vrt","dat/gfx/model_dynamic_lighting.frg");
@@ -132,18 +132,15 @@ void ShaderManager::Init(){
 }
 
 void ShaderManager::Free(){
-    Shader* pShader;
-    for(int i=0;i<CACHED_SHADERS.Max();i++){
-        pShader = (Shader*)CACHED_SHADERS.At(i);
-        if(pShader)delete pShader;
+    for(Tuple<char*,Shader*> shader: CACHED_SHADERS){
+        if(shader.value) delete shader.value;
     }
     CACHED_SHADERS.Clear();
 }
 
 void ShaderManager::AddShader(char* name,char* vertex_file,char* fragment_file){
-    if(CACHED_SHADERS.Get(name)!=null)return;
-    Shader* newshader = new Shader(vertex_file,fragment_file);
-    CACHED_SHADERS.Add(cstr::new_copy(name),(byte*)newshader);
+    if(CACHED_SHADERS.Has(name))return;
+    CACHED_SHADERS.Add(name,new Shader(vertex_file,fragment_file));
 }
 
 /*
@@ -158,7 +155,7 @@ Shader* ShaderManager::GetShader(char* name){
 */
 
 Shader* ShaderManager::UseShader(char* name){
-    Shader* ret = (Shader*)CACHED_SHADERS.Get(name);
+    Shader* ret = CACHED_SHADERS.Get(name);
     if(ret== null){
         logger::warn("Shader not found, using default.");
         ret=DEFAULT_SHADER;
@@ -173,7 +170,8 @@ Shader* ShaderManager::UseShader(char* name){
 
 
 void ShaderManager::RemoveShader(char* name){
-    Shader* ret = (Shader*)CACHED_SHADERS.Remove(name);
+    Shader* ret = CACHED_SHADERS.Get(name);
+    CACHED_SHADERS.Remove(name);
     if(ret != null){
         delete ret;
     }   

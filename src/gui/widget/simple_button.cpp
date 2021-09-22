@@ -5,16 +5,16 @@
 #include "button_component.h"
 #include "text_component.h"
 
-using namespace UI;
+//using namespace UI;
 
-Widget* BuildSimpleButton(char* name, char* label, int w, int h, vec4 color, void (*callback)()){
+UI::Widget* UI::BuildSimpleButton(char* name, char* label, float w, float h, vec4 color, void (*callback)()){
     FontID simple_button_font = FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",32);
     Widget* ret = new Widget(name);
-    ret->layout.w=w;
-    ret->layout.h=h;
+    ret->layout.SetSize(w,h);
+    ret->components.Add(new ButtonComponent(callback));
+    ret->components.Add(new RectComponent(color));
+    ret->components.Add(new TextComponent(label,simple_button_font));
 
-    ret->components.Add(RectComponent(color));
-
-
-
+    return ret;
 }
+
