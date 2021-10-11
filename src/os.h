@@ -5,6 +5,11 @@
 long time_ms();
 long long time_nano();
 
+void start_thread(void (*thread_main)() );
+
+bool build_game_folder_path();
+wchar_t* get_games_folder_path();
+
 
 namespace Window{
     extern int width;

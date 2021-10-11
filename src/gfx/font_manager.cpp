@@ -1,4 +1,5 @@
 #include "font_manager.h"
+#include "../asset_manager.h"
 #include "../log.h"
 #include "../struct/list.h"
 #include "drawable.h"
@@ -7,7 +8,7 @@
 
 FT_Library   ft_library;
 FontID       default_font_id,current_font_id;
-TEMP<FontManager::FontCache> cached_fonts;
+List<FontManager::FontCache> cached_fonts;
 
 void FontManager::Init(){
     int err = FT_Init_FreeType(&ft_library);
@@ -16,6 +17,15 @@ void FontManager::Init(){
     }
     current_font_id=-1;
     default_font_id = LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",18);
+}
+void FontManager::Free(){
+    for(FontManager::FontCache* font: cached_fonts){
+        font->ClearDynamicGlyphs();
+        delete font->glyph_atlas;
+        free(font);
+    }
+    cached_fonts.Clear();
+    FT_Done_FreeType(ft_library);
 }
 
 FontID FontManager::LoadFontFace(char* font_name,int font_size){
@@ -46,12 +56,15 @@ Texture FontManager::GetGlyph(int code_point){
 
 FontManager::FontCache::FontCache():glyph_dynamic_textures(8){}
 
-FontManager::FontCache::FontCache(char* font_filename,int font_size):glyph_dynamic_textures(8){
+FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_textures(8){
     font_size=font_size;
     atlas_next_glyph[0]=atlas_next_glyph[1]=atlas_next_glyph[2]=0;
     dynamic_atlas_start[0]=dynamic_atlas_start[1]=dynamic_atlas_start[2]=0;
 
-    int err = FT_New_Face(ft_library,font_filename,0,&fontface);
+    Stream* font_stream = AssetManager::UI_Font(font_uri);
+    ReadStream(font_stream);
+    int err = FT_New_Memory_Face(ft_library,ReadStream(font_stream),font_stream->length,0,&fontface);
+    delete font_stream;
     if (err != 0){
         if (err == FT_Err_Unknown_File_Format){
             logger::warn("Error building Freetype2 font: font type unsupported\n");

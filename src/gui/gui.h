@@ -20,8 +20,8 @@ class GUI{
     static class GUI*   instance;
     public:
     UI::Layout          fullscreen_layout;
-    TEMP<UI::Widget>    debug_widgets;
-    TEMP<UI::Menu>      menus;
+    List<UI::Widget>    debug_widgets;
+    List<UI::Menu>      menus;
 
     //List<Widget>      world_anchored_elements; TODO: things like player nameplates
 

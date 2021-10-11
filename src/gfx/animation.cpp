@@ -6,7 +6,7 @@
 #include <string.h>
 #include "math.h"
 
-TEMP<ClipInfo> managed_clips(8);
+List<ClipInfo> managed_clips(8);
 int active_layer=0;
 bool layer_is_active[ANIMATION_LAYER_COUNT];
 

@@ -8,11 +8,12 @@
 #include <math.h>
 
 bool Game::running = false;
-Client* Game::client;
-//Server* Game::server;
+Client* Game::client=nullptr;
+Server* Game::server=nullptr;
 
 int Game::framerate = 60;
 int Game::drawrate = 60;
+int Game::tickrate = 30;
 
 long last_frame;
 long last_render;
@@ -27,9 +28,16 @@ void Game::Start(){
     running=true;
 }
 
+void Game::StartLocalServer(){
+    if(Game::server != nullptr){
+        logger::exception("A local server is already running. Shut down the existing server before starting a new one!\n");
+        return;
+    }
+    start_thread(ServerMain);
+}
+
 void Game::Update(int frames){
     client->Update(frames);
-    //server->Update(frames);
     Performance::frames.Increment();
 }
 
@@ -60,7 +68,6 @@ void Game::Poll(){
         Update(elapsed_frames);
         last_frame = poll_time - (delta_ms%frame_interval_ms);
     }
-
 }  
 
 void Game::Exit(){

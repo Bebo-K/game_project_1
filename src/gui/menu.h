@@ -17,7 +17,7 @@ namespace UI{
         bool         active;
         bool         visible;
         Layout       layout;
-        TEMP<Widget> widgets;
+        List<Widget> widgets;
 
         Menu(Layout* parent);
         virtual ~Menu();

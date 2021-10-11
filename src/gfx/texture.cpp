@@ -1,4 +1,5 @@
 #include "texture.h"
+#include "../asset_manager.h"
 #include "../log.h"
 #include "../struct/pool.h"
 #include "../struct/map.h"
@@ -73,6 +74,7 @@ return false; //else doesnt fit
 }	
 
 void TextureManager::Init(){
+    logger::debug("Initializing texture manager..\n");
     SubmitImage(CreateAtlas());
 
     unsigned char empty_image[] = {255,255,255,255};
@@ -86,6 +88,10 @@ void TextureManager::Init(){
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,1,1,0,GL_RGBA,GL_UNSIGNED_BYTE,empty_image);
+    int err = glGetError();
+    if(err != 0){
+        logger::warn("TextureManager.Init()-> GL error: %d \n",err);
+    }
 }
 
 void TextureManager::Free(){
@@ -179,11 +185,19 @@ Texture TextureManager::Add(char* texname,Image* texture_image){
 }
 
 Texture TextureManager::Get(char* texname){
+    return Get(texname,false);
+}
+
+Texture TextureManager::Get(char* texname,bool ui_image){
     Texture* cache_pointer = (Texture*)cached_textures.Get(texname);
     if(cache_pointer != null) {
         return *cache_pointer;			
     }
-    Image* texture_image = new Image(texname);
+    Stream* texture_stream = nullptr;
+    if(ui_image){texture_stream = AssetManager::UI_Image(texname);}
+    else{ texture_stream = AssetManager::Texture(texname);}
+    Image* texture_image = new Image(texture_stream);
+    delete texture_stream;
     return Add(texname,texture_image);
 }
 

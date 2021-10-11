@@ -1,14 +1,15 @@
 #include "scene_loader.h"
+#include "../asset_manager.h"
 #include "../log.h"
 #include "../io/gltf.h"
-
 #include "../gui/gui.h"
 #include "../struct/list.h"
 
 
 void SceneLoader::StartLoadDefault(Scene* scene){
     logger::info("loading default scene...\n");
-    JSONParser parser(File("dat/levels/default.lvl"));
+    Stream* level_stream = AssetManager::Level("default");
+    JSONParser parser(level_stream);
     LoadGeometry(scene,parser.Parse());
     if(scene->level.entrance_count <= 0){
         scene->level.entrance_count=1;
@@ -18,23 +19,26 @@ void SceneLoader::StartLoadDefault(Scene* scene){
         scene->level.entrances[0].style=0;
         scene->level.entrances[0].target_pos={0,0,0};
     }
+    delete level_stream;
 }
 
 //Todo: If this gets long, break into a seperate thread process
 void SceneLoader::StartLoadByArea(Scene* scene, int area_id){
     logger::info("loading scene for area id %d...\n",area_id);
-    //TODO get area_id mapping to scene name
     char* scene_name = null;
-    JSONParser parser = JSONParser(File(scene_name));
+    //TODO get area_id mapping to scene name
+    Stream* level_stream = AssetManager::Level(scene_name);
+    JSONParser parser = JSONParser(level_stream);
     LoadGeometry(scene,parser.Parse());
+    delete level_stream;
 }
 
 void SceneLoader::LoadComplete(Scene* scene){}
 
 void SceneLoader::LoadGeometry(Scene* scene,JSONObject* json){
 
-    TEMP<MeshGroup>  collision_mesh_list(1);
-    TEMP<CollisionSurface> collision_surface_list(1);
+    List<MeshGroup>  collision_mesh_list(1);
+    List<CollisionSurface> collision_surface_list(1);
 
     Level* lvl = &scene->level;
 
@@ -46,15 +50,15 @@ void SceneLoader::LoadGeometry(Scene* scene,JSONObject* json){
         
         for(int i=0;i<model_array->count;i++){
             JSONObject* current_model = model_array->At(i)->ObjectValue();
-            
-            File model_file(current_model->GetString("file")->string);
-            if(model_file.error){
+
+            Stream* model_file = AssetManager::Model(current_model->GetString("uri")->string);
+            if(model_file->error){
                 logger::exception("Failed to load level mesh: %s\n",current_model->GetString("file")->string);
                 continue;
             }
             GLTFScene model_loader = GLTFScene(model_file);
             model_loader.LoadIn(&lvl->models[i]);
-            model_file.close();
+            delete model_file;
             
             if(current_model->HasArray("collision_meshes")){
                 JSONArray* collision_mesh_array = current_model->GetArray("collision_meshes");

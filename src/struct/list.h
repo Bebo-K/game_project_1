@@ -1,5 +1,5 @@
-#ifndef TEMP_H
-#define TEMP_H
+#ifndef LIST_H
+#define LIST_H
 
 #include <stdlib.h>
 #include <string.h>
@@ -7,40 +7,40 @@
 
 
 template <typename T>
-class TEMP;
+class List;
 
 template <typename T>
-struct TEMPIterator{
-    TEMP<T>*    parent;
+struct ListIterator{
+    List<T>*    parent;
     int         index;
     T* operator*();
-    TEMPIterator<T> operator++();
-    bool operator==(TEMPIterator<T>& l2);
-    bool operator!=(TEMPIterator<T>& l2);
+    ListIterator<T> operator++();
+    bool operator==(ListIterator<T>& l2);
+    bool operator!=(ListIterator<T>& l2);
 };
 
 //A dynamic array of object pointers. Memory for objects is not managed.
 template <typename T>
-class TEMP{
+class List{
     protected:
     T**     data;
     int     slots;
     int     count;
     
-    friend class TEMPIterator<T>;
+    friend class ListIterator<T>;
     public:
 
-    TEMP(){
+    List(){
         slots=1;
         count=0;
         data=(T**)calloc(slots,sizeof(T*));
     }
-    TEMP(int size){
+    List(int size){
         slots=size;
         count=0;
         data= (T**)calloc(slots,sizeof(T*));
     }
-    ~TEMP(){
+    ~List(){
         free(data); 
     }
     int Add(T* object){
@@ -104,27 +104,27 @@ class TEMP{
     }
 
     //range-for loop iterator methods
-    TEMPIterator<T> begin(){ return {this,NextIndex(-1)};}
-    TEMPIterator<T> end(){ return {this,slots};}
+    ListIterator<T> begin(){ return {this,NextIndex(-1)};}
+    ListIterator<T> end(){ return {this,slots};}
 };
 
 
 template <typename T>
-T* TEMPIterator<T>::operator*(){
+T* ListIterator<T>::operator*(){
     if(index < 0||index >= parent->slots){logger::exception("ListIterator::Operator* -> Index %d is out of range.",index);}
     return parent->data[index];
 }
 template <typename T>
-TEMPIterator<T> TEMPIterator<T>::operator++(){
+ListIterator<T> ListIterator<T>::operator++(){
     index = parent->NextIndex(index);
     return (*this);
 }
 template <typename T>
-bool TEMPIterator<T>::operator==(TEMPIterator<T>& l2){
+bool ListIterator<T>::operator==(ListIterator<T>& l2){
     return index ==l2.index;
 }
 template <typename T>
-bool TEMPIterator<T>::operator!=(TEMPIterator<T>& l2){
+bool ListIterator<T>::operator!=(ListIterator<T>& l2){
     return !(index ==l2.index);
 }
 

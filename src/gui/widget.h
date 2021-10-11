@@ -28,7 +28,7 @@ class Widget{
     char*                   name;
     bool                    active;
     bool                    visible;
-    TEMP<WidgetComponent>   components;
+    List<WidgetComponent>   components;
     //WidgetContainer sub_widgets;
 
     Widget();

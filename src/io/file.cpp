@@ -3,13 +3,13 @@
 #include "../log.h"
 #include <string.h>
 
-File::File(){
+IFile::IFile(){
 	file_handle=nullptr;
 	length=-1;
 	error=true;
 	amount_read=0;
 }
-File::File(const char* filename){
+IFile::IFile(const char* filename){
 	path=filename;
 	file_handle = fopen(filename,"rb");
 	amount_read = 0;
@@ -25,9 +25,7 @@ File::File(const char* filename){
 		fseek(file_handle, 0, SEEK_SET);
 	}
 }
-
-
-char* File::GetPathOf(const char* filename){
+char* IFile::GetPathOf(const char* filename){
 	if(filename==nullptr)return nullptr;
 	int last_seperator=0;
 	int end = strlen(filename);
@@ -40,9 +38,7 @@ char* File::GetPathOf(const char* filename){
 	memcpy(ret,filename,last_seperator);
 	return ret;
 }
-
-
-bool File::Exists(const char* filename){
+bool IFile::Exists(const char* filename){
 	if(filename==nullptr)return false;
     FILE *file = fopen(filename, "r");
     if (file){
@@ -51,42 +47,117 @@ bool File::Exists(const char* filename){
     }
     return false;
 }
-
-
-void File::read(void* dest, int bytes){
+int IFile::read(void* dest, int bytes){
 	if(error){
 		logger::warn("File::read -> File is closed or in an error state.");
-		return;
+		return 0;
 	}
 	int read_amount = fread(dest,1,bytes,file_handle);
 	if(read_amount != bytes){
 		logger::warn("File::read -> Failed to read %d bytes from file.",bytes);
 		error=true;
-		return;
+		return 0;
 	}
 	amount_read += bytes;
+	return amount_read;
 }
-void File::peek(void* dest,int bytes){
-	if(error){
-		logger::warn("File::peek -> File is closed or in an error state.");
-		return;
-	}
+int IFile::peek(void* dest,int bytes){
 	int read_amount = fread(dest,1,bytes,file_handle);
 	fseek(file_handle,-bytes,SEEK_CUR);
 	if(read_amount != bytes){
 		logger::warn("File::peek -> Failed to peek %d bytes from file.",bytes);
 		error=true;
-		return;
+		return 0;
 	}
+	return read_amount;
 }
-
-void File::close(){
+void IFile::close(){
 	fclose(file_handle);
 	amount_read = -1;
 	error=true;//to keep people from reading.
 }
 
-FileBuffer::FileBuffer(const char* filename){
+UserFile::UserFile(const wchar_t* filename,char mode){
+	path=filename;
+	amount_written = 0;
+	amount_read = 0;
+
+	if(mode =='r'){
+		file_handle = _wfopen(filename,L"rb");
+		read_mode=true;
+		if(file_handle){
+			fseek(file_handle, 0, SEEK_END);
+			length = ftell(file_handle);
+			fseek(file_handle, 0, SEEK_SET);
+		}
+	}
+	else if(mode == 'w'){
+		file_handle = _wfopen(filename,L"wb");
+		read_mode=false;
+	}
+	else{
+		logger::exception("UserFile::open -> Invalid mode %c",mode);
+	}
+	error=false;
+	if(file_handle == nullptr){
+		logger::warn("UserFile::open -> Cannot open file %s",filename);
+		error=true;
+	}
+}
+void UserFile::read(void* dest,int bytes){
+	if(!read_mode){
+		logger::exception("UserFile::read -> File is open for write only.");
+		return;
+	}
+	if(error){
+		logger::warn("UserFile::read -> File is closed or in an error state.");
+		return;
+	}
+	int read_amount = fread(dest,1,bytes,file_handle);
+	if(read_amount != bytes){
+		logger::warn("UserFile::read -> Failed to read %d bytes from file.",bytes);
+		error=true;
+		return;
+	}
+	amount_read += bytes;
+}
+void UserFile::peek(void* dest,int bytes){
+	if(!read_mode){
+		logger::exception("UserFile::peek -> File is open for write only.");
+		return;
+	}
+	int read_amount = fread(dest,1,bytes,file_handle);
+	fseek(file_handle,-bytes,SEEK_CUR);
+	if(read_amount != bytes){
+		logger::warn("UserFile::peek -> Failed to peek %d bytes from file.",bytes);
+		error=true;
+		return;
+	}
+}
+void UserFile::write(byte* data,int bytes){
+	if(read_mode){
+		logger::exception("UserFile::write -> File is open for read only.");
+		return;
+	}
+	if(error){
+		logger::warn("UserFile::write -> File is closed or in an error state.");
+		return;
+	}
+	int write_amount = fwrite(data,1,bytes,file_handle);
+	if(write_amount != bytes){
+		logger::warn("UserFile::write -> Failed to write %d bytes to file.",bytes);
+		error=true;
+		return;
+	}
+	amount_written += bytes;
+}
+void UserFile::close(){
+	fclose(file_handle);
+	error=true;
+}
+
+/*
+FileBuffer::FileBuffer(char* filename){
 	source = File(filename);
 	contents=nullptr;
 	if(source.length > 0){
@@ -95,32 +166,30 @@ FileBuffer::FileBuffer(const char* filename){
 		contents[source.length] = 0;
 	}
 };
-
-int FileBuffer::Length(){
-	return (int)source.length;
-}
-
-FileBuffer::~FileBuffer(){
-	free(contents);
-}
-
-
-FileReader::FileReader(const char* filename):source(filename){
+int FileBuffer::Length(){return (int)source.length;}
+FileBuffer::~FileBuffer(){free(contents);}
+*/
+FileReader::FileReader(const char* filename){
 	mark=0;
 	last_line=nullptr;
+	IFile temp_file(filename);
+	length = temp_file.length;
+	contents = (byte*)calloc(length,1);
+	temp_file.read(contents,length);
+	temp_file.close();
 }
 byte* FileReader::ReadLine(){
 	if(last_line != nullptr){free(last_line);}
-	if(mark >= source.source.length){return nullptr;}
+	if(mark >= length){return nullptr;}
 	int newmark = mark+1;
-	byte next_byte = source.contents[newmark];
-	while(next_byte != 0x0D && next_byte != 0x0A && newmark < source.source.length){
+	byte next_byte = contents[newmark];
+	while(next_byte != 0x0D && next_byte != 0x0A && newmark < length){
 		newmark++;
-		next_byte = source.contents[newmark];
+		next_byte = contents[newmark];
 	}
 	int strlen = newmark-mark;
 	byte* ret = (byte*)malloc(strlen+1);
-	memcpy(ret,&source.contents[mark],strlen);
+	memcpy(ret,&contents[mark],strlen);
 	ret[strlen]=0;
 
 	mark= newmark+1;
@@ -131,10 +200,13 @@ byte* FileReader::ReadLine(){
 	return ret;
 }
 byte  FileReader::ReadByte(){
-	return source.contents[mark++];
+	return contents[mark++];
 }
-FileReader::~FileReader(){}
+FileReader::~FileReader(){
+	free(contents);
+}
 
+/*
 byte* GetFile(const char* filename){
     FILE *f = fopen(filename, "rb");
 	byte* data = nullptr;
@@ -180,3 +252,4 @@ byte* GetRelativeFile(const char* filename,const char* reference_file){
 	free(relative_filename);
 	return file;
 }
+*/

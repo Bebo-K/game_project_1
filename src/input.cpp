@@ -67,7 +67,7 @@ void Input::Init(){
         controller_axes[i].dy=0;
     }
     char* en_us_keylayout_filename="dat/misc/en_us_keyids.txt";
-    if(File::Exists(en_us_keylayout_filename)){
+    if(IFile::Exists(en_us_keylayout_filename)){
         LoadKeyLayout(en_us_keylayout_filename);
     }
     

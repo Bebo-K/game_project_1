@@ -485,8 +485,8 @@ char* cstr::append(const char* str1, char seperator, const char* str2){
     char* str = (char*)malloc(str1_len+str2_len+2);
     strcpy(str,str1);
     str[str1_len]=seperator;
-    strcpy(&str[str1_len+1],str1);
-    str[str1_len+str2_len+1]=0;
+    strcpy(&str[str1_len+1],str2);
+    str[str1_len+1+str2_len]=0;
     return str;
 }
 char* cstr::utf16_to_utf8(const wchar_t* longstring){

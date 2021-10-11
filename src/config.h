@@ -50,12 +50,21 @@ namespace config{
     extern char show_console;
     extern char show_fps_counter;
     extern char debug_mode;
+    extern wchar_t* save_directory;
 
     void Init();
     void LoadFile(char* filename);
     void LoadKeyLayout(char* layoutfile);
     void Destroy();
 };
+
+namespace server_config{
+    extern char* save_name;
+    extern int   player_count;
+
+
+
+}
 
 
 #endif

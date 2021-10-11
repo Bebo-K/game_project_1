@@ -1,4 +1,5 @@
 #include "log.h"
+#include "config.h"
 #include <iostream>
 #include <stdarg.h>
 
@@ -19,6 +20,18 @@ void logger::info(const char* text,...){
   fflush(logfile);
   va_end (args);
   fflush(stdout);
+}
+
+void logger::debug(const char* text,...){
+  if(config::debug_mode != 0){
+    va_list args;
+    va_start (args,text);
+    vprintf(text, args);
+    vfprintf(logfile,text,args);
+    fflush(logfile);
+    va_end (args);
+    fflush(stdout);
+  }
 }
 
 void logger::warn(const char* text,...){

@@ -17,14 +17,19 @@
 Client* Client::instance = nullptr;
 
 Client::Client() : scene(), scene_renderer(), ui(){
+    logger::info("Initializing client\n");
     Client::instance = this;
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
-    AnimationManager::Init();
+    AnimationManager::Init();  
+    FontManager::Init();
+    ModelManager::Init();
 }
 
 Client::~Client(){
+    FontManager::Free();
+    ModelManager::Free();
     ShaderManager::Free();
     TextureManager::Free();
     ModelManager::Free();
@@ -34,19 +39,10 @@ Client::~Client(){
 Client* Client::GetClient(){return Client::instance;}
 
 void Client::Start(){
-    logger::info("Initializing client...\n");
-    
-    FontManager::Init();
-        FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",8);
-        int debug_font =FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",12);
+        FontManager::LoadFontFace("Merriweather/Merriweather-Regular",8);
+        int debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
         FontManager::SetActiveFont(debug_font);
-    ModelManager::Init();
-        ModelManager::Register(PLAYER,"dat/models/default_human.glb");
-
-    scene_renderer.Load();
-    scene_renderer.camera.ortho=false;
-    scene_renderer.camera.z = 10.0f;
-    scene_renderer.camera.y = 2.0f;
+        ModelManager::Register(PLAYER,"default_human");
 
     ui.Load();
     ui.main_menu->Open();
@@ -54,6 +50,11 @@ void Client::Start(){
 
 void Client::StartLoadScene(int scene_id){
     SceneLoader::StartLoadDefault(&scene);
+
+    scene_renderer.camera.ortho=false;
+    scene_renderer.camera.z = 10.0f;
+    scene_renderer.camera.y = 2.0f;
+
     scene_renderer.Add(&scene.level);
     scene_renderer.Add(&scene.skybox);
 }

@@ -3,6 +3,8 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <tchar.h>
+#include <shlobj.h>
+#include <knownfolders.h>
 #include "winmain.h"
 #include "os.h"
 #include "gfx/gload.h"
@@ -23,6 +25,9 @@ Performance::Counter polls_per_sec;
 HWND window;
 HDC device_context;
 HGLRC gl_rendering_context;
+
+//Save game storage folder
+PWSTR save_path = NULL;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
@@ -57,6 +62,19 @@ long long time_nano(){//ns elapsed since program start.
     return (sys_time()-start_time)*100;
 }
 
+//Engine thread hooks
+void start_thread(void (*thread_main)() ){
+CreateThread( 
+            NULL,                   // default security attributes
+            0,                      // use default stack size  
+            (LPTHREAD_START_ROUTINE)thread_main,       // thread function name
+            NULL,      // argument to thread function 
+            0,        // use default creation flags 
+            NULL);   // returns the thread identifier 
+
+
+}
+
 int ms_per_second;
 void GetTimerData(){
     polls_per_sec.Increment();
@@ -65,10 +83,12 @@ void GetTimerData(){
         Performance::polls_last_second = polls_per_sec.GetCount();
         Performance::updates_last_second = Performance::frames.GetCount();
         Performance::draws_last_second = Performance::draws.GetCount();
+        Performance::ticks_last_second = Performance::ticks.GetCount();
 
         polls_per_sec.Reset();
         Performance::frames.Reset();
         Performance::draws.Reset();
+        Performance::ticks.Reset();
         ms_per_second=new_ms;
     }
 }
@@ -304,4 +324,46 @@ void DestroyOpenGL(){
 
 void Game::PostRender(){
     SwapBuffers(device_context);
+}
+
+
+PWSTR append_wstrs(PWSTR a,PWSTR b){
+    int strlen_a=wcslen(a);
+    int strlen_b=wcslen(b);
+
+    PWSTR str = (PWSTR)calloc(strlen_a+strlen_b+1,sizeof(wchar_t));
+
+    memcpy(str,a,sizeof(wchar_t)*strlen_a);
+    memcpy(&str[strlen_a],b,sizeof(wchar_t)*strlen_b);
+
+    return str;
+}
+
+bool build_game_folder_path(){
+    if(save_path != null){return true;}//already exists
+    bool result = false;
+    //Windows default save path will be "My Games" under Documents
+    PWSTR my_docs_path = null;
+    HRESULT found_mydocs = SHGetKnownFolderPath(FOLDERID_Documents,0,NULL,&my_docs_path);
+    if(found_mydocs != S_OK){
+        CoTaskMemFree(my_docs_path);
+        return false;
+    }
+
+    PWSTR my_games_path = append_wstrs(my_docs_path,L"\\My Games");
+    PWSTR full_game_path = append_wstrs(my_docs_path,L"\\DemoGame");
+
+    if(CreateDirectoryW(my_games_path,NULL) || GetLastError() == ERROR_ALREADY_EXISTS){
+        result= (CreateDirectoryW(full_game_path,NULL) || GetLastError() == ERROR_ALREADY_EXISTS);
+    }
+
+    if(result == true){ save_path = full_game_path; }
+    else{ free(full_game_path); }
+    free(my_games_path);
+    CoTaskMemFree(my_docs_path);
+    return result;
+}
+
+wchar_t* get_games_folder_path(){
+    return save_path;
 }

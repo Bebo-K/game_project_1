@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "../asset_manager.h"
 #include "../log.h"
 #include "../struct/map.h"
 
@@ -7,22 +8,22 @@ Shader* CURRENT_SHADER=nullptr;
 Map<char*,Shader*> CACHED_SHADERS(2);
 
 
-Shader::Shader(char* vertex_file,char* fragment_file){
-    FileBuffer vertex_program(vertex_file);
-    FileBuffer fragment_program(fragment_file);
+Shader::Shader(char* vertex_uri,char* fragment_uri){
+    byte* vertex_program = ReadStream(AssetManager::VertexShader(vertex_uri));
+    byte* fragment_program = ReadStream(AssetManager::FragmentShader(fragment_uri));
 
-    if(vertex_program.contents == null){
-        logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertex_file);
+    if(vertex_program == null){
+        logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertex_uri);
     }
-    if(fragment_program.contents == null){
-        logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragment_file);
+    if(fragment_program == null){
+        logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragment_uri);
     }
 
     vertex = glCreateShader(GL_VERTEX_SHADER);
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     program = glCreateProgram();
-    glShaderSource(vertex, 1, (GLchar**)&vertex_program.contents,nullptr);
-    glShaderSource(fragment, 1, (GLchar**)&fragment_program.contents,nullptr);
+    glShaderSource(vertex, 1, (GLchar**)&vertex_program,nullptr);
+    glShaderSource(fragment, 1, (GLchar**)&fragment_program,nullptr);
 
     glCompileShader(vertex);
     glCompileShader(fragment);
@@ -96,10 +97,6 @@ Shader::Shader(char* vertex_file,char* fragment_file){
             logger::flush();
             free(error_info_log);
     }
-    int err = glGetError();
-    if(err != 0){
-        logger::warn("Shader.Build-> GL error: %d \n",err);
-    }
 }
 
 Shader::~Shader(){
@@ -117,6 +114,7 @@ void Shader::Use(){
 }
 
 void ShaderManager::Init(){
+    logger::debug("Loading default shader..");
     DEFAULT_SHADER = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
     CACHED_SHADERS.Add("default",DEFAULT_SHADER);
     
@@ -138,9 +136,10 @@ void ShaderManager::Free(){
     CACHED_SHADERS.Clear();
 }
 
-void ShaderManager::AddShader(char* name,char* vertex_file,char* fragment_file){
+void ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri){
     if(CACHED_SHADERS.Has(name))return;
-    CACHED_SHADERS.Add(name,new Shader(vertex_file,fragment_file));
+    logger::debug("Caching shader %s\n",name);
+    CACHED_SHADERS.Add(name,new Shader(vertex_uri,fragment_uri));
 }
 
 /*

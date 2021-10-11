@@ -38,6 +38,7 @@ namespace FontManager{
 
 
     void Init();
+    void Free();
     FontID LoadFontFace(char* font_filename,int font_size);
     void SetActiveFont(FontID font_id);
     FontCache* GetActiveFont();

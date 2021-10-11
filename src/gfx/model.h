@@ -75,7 +75,7 @@ class Model: public Drawable{
 
 struct ModelCacheEntry{
     ModelID     id;
-    const char* filename;
+    char* uri;
     ModelData*  data;
     int         users;
 };
@@ -83,7 +83,7 @@ struct ModelCacheEntry{
 namespace ModelManager{
     void Init();
     void Free();
-    void Register(ModelID id,const char* filename);
+    void Register(ModelID id,char* uri);
     ModelData* Use(ModelID type);
     void Return(ModelID type);
     void Clean();

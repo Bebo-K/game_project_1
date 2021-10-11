@@ -1,14 +1,15 @@
 #include "gltf.h"
+#include "../asset_manager.h"
 #include "../log.h"
 #include "../struct/data_types.h"
 #include "../struct/list.h"
 
-GLTFScene::GLTFScene(File model_file) :binary_buffers(1){
-	if(model_file.error)return;
+GLTFScene::GLTFScene(Stream* model_stream) :binary_buffers(1){
+	if(model_stream->error)return;
 	uint32 magic_number;
-	model_file.peek(&magic_number,4);
-	if(magic_number == GLB_MAGIC_NUMBER){LoadAsGLB(model_file);}
-	else{LoadAsGLTF(model_file);}
+	model_stream->peek(&magic_number,4);
+	if(magic_number == GLB_MAGIC_NUMBER){LoadAsGLB(model_stream);}
+	else{LoadAsGLTF(model_stream);}
 }
 
 GLTFScene::~GLTFScene(){
@@ -16,8 +17,7 @@ GLTFScene::~GLTFScene(){
 	delete gltf_data;
 }
 
-void GLTFScene::LoadAsGLB(File glb_file){
-	filename = File::GetPathOf(glb_file.path);
+void GLTFScene::LoadAsGLB(Stream* glb_stream){
 	uint32 magic_number;
 	uint32 version;
 	uint32 file_length;
@@ -26,15 +26,15 @@ void GLTFScene::LoadAsGLB(File glb_file){
 	uint32 chunk_id;
 	byte* data;
 	
-	glb_file.read(&magic_number,4);
-	glb_file.read(&version,4);
-	glb_file.read(&file_length,4);
+	glb_stream->read(&magic_number,4);
+	glb_stream->read(&version,4);
+	glb_stream->read(&file_length,4);
 
-	while((uint32)glb_file.amount_read < file_length){
-		glb_file.read(&chunk_length,4);
-		glb_file.read(&chunk_id,4);
+	while((uint32)glb_stream->amount_read < file_length){
+		glb_stream->read(&chunk_length,4);
+		glb_stream->read(&chunk_id,4);
 		data = (byte*)malloc(chunk_length);
-		glb_file.read(data,chunk_length);
+		glb_stream->read(data,chunk_length);
 		
 		switch(chunk_id){
 			case JSON_CHUNK:{
@@ -53,20 +53,21 @@ void GLTFScene::LoadAsGLB(File glb_file){
 	}	
 }
 
-void GLTFScene::LoadAsGLTF(File gltf_file){
-	filename = File::GetPathOf(gltf_file.path);
-	byte* gltf_json = (byte*)malloc(gltf_file.length);
-	gltf_file.read(gltf_json,gltf_file.length);
+void GLTFScene::LoadAsGLTF(Stream* gltf_stream){
+	filename = gltf_stream->uri;
+	byte* gltf_json = (byte*)malloc(gltf_stream->length);
+	gltf_stream->read(gltf_json,gltf_stream->length);
 
-	JSONParser parser = JSONParser((char*)gltf_json,gltf_file.length);
+	JSONParser parser = JSONParser((char*)gltf_json,gltf_stream->length);
 	gltf_data = parser.Parse();
 
 	JSONArray* buffers = gltf_data->GetArray("buffers");
 	for(int i=0;i< buffers->count;i++){
 		if(buffers->At(i)->ObjectValue()->HasString("uri")){
-
-			JSONString* bufferURI = buffers->At(i)->ObjectValue()->GetString("uri");
-			binary_buffers.Add(GetRelativeFile(bufferURI->string,gltf_file.path));
+			JSONString* buffer_uri = buffers->At(i)->ObjectValue()->GetString("uri");
+			Stream* buffer_stream = AssetManager::Model(buffer_uri->string);
+			binary_buffers.Add(ReadStream(buffer_stream));
+			delete buffer_stream;
 		}
 	}
 	free(gltf_json);
@@ -331,8 +332,7 @@ Texture GLTFScene::GetTexture(int tex_id){
 	JSONObject* image = images->At(image_id)->ObjectValue();
 
 	if(image->HasString("uri")){
-		char* texture_filename = cstr::append(filename,image->GetString("uri")->string);
-		ret = TextureManager::Get(texture_filename);
+		ret = TextureManager::Get(image->GetString("uri")->string);
 	}
 	else if(image->HasInt("bufferView")){
 		if(image->HasString("mimeType")){

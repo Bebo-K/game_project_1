@@ -45,9 +45,11 @@ namespace Performance
     //TODO: blit this data to screen in some way
     extern Performance::Counter frames;
     extern Performance::Counter draws;
+    extern Performance::Counter ticks;
     extern int polls_last_second;
     extern int draws_last_second;
     extern int updates_last_second;
+    extern int ticks_last_second;
 } 
 
 

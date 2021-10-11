@@ -1,6 +1,8 @@
 #include "model.h"
+#include "../asset_manager.h"
 #include <string.h>
 #include "../log.h"
+#include "../io/stream.h"
 #include "../io/gltf.h"
 #include "../struct/pool.h"
 
@@ -312,7 +314,7 @@ void ModelManager::Init(){
 void ModelManager::Free(){
     for(ModelCacheEntry* entry:model_registry){
         if(entry->data){delete entry->data;entry->data=null;}
-        //if(entry->filename){free(entry->filename);entry->filename=null;}
+        //if(entry->uri){free(entry->uri);entry->uri=null;}
     }
     model_registry.Clear();
 }
@@ -322,14 +324,15 @@ ModelData* ModelManager::Use(ModelID id){
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             if(cache->data==null){
-                if(File::Exists(cache->filename)){
-                    File model_file(cache->filename);
-                    GLTFScene scene(model_file);
+                Stream* model_stream = AssetManager::Model(cache->uri);
+                if(!model_stream->error){
+                    GLTFScene scene(model_stream);
                     cache->data = scene.Load();
-                    model_file.close();
+                    delete model_stream;
                     return cache->data;
                 }
                 else{
+                    delete model_stream;
                     return ErrorModel();
                 }
             }
@@ -361,10 +364,10 @@ void ModelManager::Clean(){//deletes all model data not in use.
     }
 }
 
-void ModelManager::Register(ModelID id, const char* filename){
+void ModelManager::Register(ModelID id, char* uri){
     ModelCacheEntry* cache = model_registry.Add();
     cache->data=null;
-    cache->filename=filename;
+    cache->uri=uri;
     cache->users=0;
     cache->id=id;
 }

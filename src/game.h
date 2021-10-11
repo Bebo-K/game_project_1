@@ -3,16 +3,19 @@
 
 #include "input.h"
 #include "client/client.h"
+#include "server/server.h"
 #include "test/perf.h"
 
 namespace Game{
-    extern int framerate;
-    extern int drawrate;
+    extern int framerate; //client updates/second
+    extern int drawrate; //cient draws/second
+    extern int tickrate;//server updates/second
     extern bool running;
     extern Client* client;
-    //extern Server* server;
+    extern Server* server;
 
     void Start();
+    void StartLocalServer();
     void Paint();
     void Update(int frames);
     void Poll();

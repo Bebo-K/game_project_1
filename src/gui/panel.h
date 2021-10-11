@@ -13,7 +13,7 @@ namespace UI{
         bool         active;
         bool         visible;
         Layout       layout;
-        TEMP<Widget> widgets;
+        List<Widget> widgets;
 
         Panel(Layout* parent);
         ~Panel();

@@ -5,9 +5,11 @@
 
 Performance::Counter Performance::frames;
 Performance::Counter Performance::draws;
+Performance::Counter Performance::ticks;
 int Performance::polls_last_second;
 int Performance::draws_last_second;
 int Performance::updates_last_second;
+int Performance::ticks_last_second;
 
 Performance::Timer::Timer(){
     for(int i=0;i<TRACKING_WINDOW;i++){averages[i]=-1;}

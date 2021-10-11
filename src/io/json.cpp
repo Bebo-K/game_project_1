@@ -263,11 +263,10 @@ void JSONObject::Print(int tabs){
 }
 
 //------------------------------------------------------------------------------JSON PARSER
-JSONParser::JSONParser(File json_file){
-	end =json_file.length;
-	data =(char*)calloc(json_file.length,1);
-	json_file.read(data,json_file.length);
-	json_file.close();
+JSONParser::JSONParser(Stream* json_stream){
+	end =json_stream->length;
+	data =(char*)calloc(json_stream->length,1);
+	json_stream->read(data,end);
 }
 JSONParser::JSONParser(char* JSON,int length){
 	data = JSON;

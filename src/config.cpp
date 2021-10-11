@@ -1,5 +1,6 @@
 #include "config.h"
 #include "io/file.h"
+#include "os.h"
 #include <stdlib.h>
 
 int config_key_count = 7;
@@ -11,6 +12,7 @@ char* config_keys[] = {
     "show_console",
     "show_fps_counter",
     "debug_mode"
+    "save_file_location"
 };
 
 char* boolean_values[] = {"false","true"};
@@ -25,6 +27,11 @@ int config::ui_width = 1280;//640;//
 char config::show_console;
 char config::show_fps_counter;
 char config::debug_mode;
+
+wchar_t* config::save_directory=L"/saves";
+
+char* server_config::save_name="server";
+int server_config::player_count=1;
 
 
 ConfigMap::ConfigMap(){
@@ -119,6 +126,14 @@ StringPair* ConfigMap::begin(){return entries;}
 StringPair* ConfigMap::end(){return &entries[entry_count];}
 
 void config::Init(){
+    if(build_game_folder_path()){
+        save_directory = get_games_folder_path();
+    }
+    else{
+        save_directory = L"/saves";
+    }
+    
+    
     show_console=false;
     show_fps_counter=true;
     debug_mode=false;

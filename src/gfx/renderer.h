@@ -8,13 +8,12 @@
 class Renderer{
 public:
     Camera camera;
-    TEMP<Drawable> primitives;
+    List<Drawable> primitives;
 
     Renderer();
-    void Load();
     void Add(Drawable* p);
     void Remove(Drawable* p);
-    void Unload();
+    void Clear();
 
 
     void Draw();

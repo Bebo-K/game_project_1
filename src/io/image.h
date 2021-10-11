@@ -10,7 +10,7 @@
 #define tRNS 0x74524E53
 #define PNG_LITTLE_ENDIAN true
 
-#include "../io/file.h"
+#include "../io/stream.h"
 
 
 class Image{
@@ -21,7 +21,7 @@ class Image{
 
     Image();
     Image(int width,int height);
-    Image(File image_file);
+    Image(Stream* image_file);
     Image(byte* raw_png);
     ~Image();
 

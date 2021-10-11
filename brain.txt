@@ -13,20 +13,8 @@ On loading levels/scenes.
     Also, they're json files, you probably should just leave their filenames like that.
 
     Step 1.A: Separating game into client-server.
-    >First, we need a MAIN MENU to launch the server thread and connect to it.
-
-        UI framework should be a Stack of Layer objects, we pass a Layer instance pointer to a Menu to handle the events for that Layer.
-
-        Layer: As in 1 Layer of the whole screen. Provides a Layout and passes Events to it's handler.
-        An example of the layer stack:
-            [0] Main Menu - INACTIVE, INVISIBLE;
-            [1] Game GUI - INACTIVE, VISIBLE;
-            [2] Pause menu - INACTIVE, VISIBLE;
-            [3] Options submenu - ACTIVE, VISIBLE;
-
-        Events should propagate UP the stack, starting from the highest member and moving to the lowest.
-
-        Menu: An interface to handle a Layout and it's Events. Menus can contain sub-layouts for Submenus, but handling for submenu events are left as an exercise
-         for the implementing menu.
+    >First, we need a MAIN MENU to launch the server thread and connect to it. (Done)
     >Next, we need our server to load a Level and Layer depending on a Savefile.
+
+
     >Finally, our client needs to connect to the server, and recieve the Levelfile (URL) and each Entity in play.

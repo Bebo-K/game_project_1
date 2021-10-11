@@ -2,7 +2,7 @@
 
 using namespace UI;
 
-SpriteComponent::SpriteComponent(char* filename): sprite(TextureManager::Get(filename)){}
+SpriteComponent::SpriteComponent(char* sprite_uri): sprite(TextureManager::Get(sprite_uri,true)){}
 
 SpriteComponent::SpriteComponent(Texture sprite_tex):sprite(sprite_tex){}
 

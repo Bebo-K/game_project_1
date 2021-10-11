@@ -7,7 +7,7 @@ RESOURCE_ARCH = pe-x86-64
 
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS =  -lgdi32 -lglew32 -lwinmm -lopengl32  -lz -lfreetype.dll
+LIBS =  -lgdi32 -lglew32 -lwinmm -lopengl32  -lz -lfreetype.dll -lole32 -luuid
 
 SRC_PATHS := src;src/io;src/gfx;src/game;src/game/component;src/game/system;src/client;src/server;src/gui;src/gui/menu;src/gui/widget;src/test;src/phys;src/struct;
 VPATH = $(SRC_PATHS)
@@ -15,7 +15,7 @@ VPATH = $(SRC_PATHS)
 
 MAIN_SRC := $(wildcard src/*.cpp)
 CLIENT_SRC := $(wildcard src/client/*.cpp)
-SERVER_SRC := $(wildcard src/client/*.cpp)
+SERVER_SRC := $(wildcard src/server/*.cpp)
 IO_SRC := $(wildcard src/io/*.cpp)
 GFX_SRC := $(wildcard src/gfx/*.cpp)
 GAME_SRC := $(wildcard src/game/*.cpp)

@@ -9,7 +9,7 @@ namespace UI{
 class SpriteComponent: public WidgetComponent{
     Sprite sprite;
     public:
-    SpriteComponent(char* filename);
+    SpriteComponent(char* sprite_uri);
     SpriteComponent(Texture sprite_tex);
     ~SpriteComponent();
 

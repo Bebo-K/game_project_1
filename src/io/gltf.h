@@ -1,8 +1,6 @@
 #ifndef GLTF_H
 #define GLTF_H
 
-#include "file.h"
-
 #define GLB_MAGIC_NUMBER 0x46546C67
 #define JSON_CHUNK 0x4E4F534A
 #define BINARY_CHUNK 0x004E4942
@@ -15,6 +13,7 @@
 #define CTYPE_FLOAT 5126
 
 #include "json.h"
+#include "stream.h"
 #include "../struct/data_types.h"
 #include "../struct/list.h"
 #include "../gfx/model.h"
@@ -22,11 +21,11 @@
 class GLTFScene{
 	private:
 	JSONObject* gltf_data;
-	TEMP<byte> binary_buffers;
+	List<byte> binary_buffers;
 	const char*	filename;
 
-	void LoadAsGLTF(File gltf_file);
-	void LoadAsGLB(File glb_file);
+	void LoadAsGLTF(Stream* gltf_stream);
+	void LoadAsGLB(Stream* gltf_stream);
 
 	char* FindMeshGroupName(int group_id);
 	JSONObject* GetAccessor(int id);
@@ -44,7 +43,7 @@ class GLTFScene{
 
 	public:
 
-	GLTFScene(File model_file);
+	GLTFScene(Stream* model_stream);
 	
 	ModelData* Load();
 	void LoadIn(ModelData* dest);

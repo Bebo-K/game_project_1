@@ -75,17 +75,16 @@ Image::Image(int wid,int hgt){
     height = hgt;
     image_data = (byte*)malloc(width*height*4);
 }
-Image::Image(File image_file){
-    if(!image_file.error){
-        byte* filedata = (byte*)malloc(image_file.length);
-        image_file.read(filedata,image_file.length);
+Image::Image(Stream* image_stream){
+    if(!image_stream->error){
+        byte* filedata = (byte*)malloc(image_stream->length);
+        image_stream->read(filedata,image_stream->length);
         if(!LoadData(filedata)){
-            logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",image_file.path);
+            logger::warn("Image::Image -> Failed to parse file as PNG: %s\n",image_stream->uri);
         }
         free(filedata);
-		image_file.close();
     }else{
-        logger::warn("Image::Image -> Failed to read file %s\n",image_file.path);
+        logger::warn("Image::Image -> Failed to read file %s\n",image_stream->uri);
 		width=0;
 		height=0;
 		image_data=0;

@@ -1,17 +1,21 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-
+#include "../struct/list.h"
 #include "../game/scene.h"
+#include  "../game/savefile.h"
 
 
 class Server{
 
     public:
 
+    bool    exit;
+    bool    ready;
+    int     current_players;
     int     max_players;
-    int     scene_count;
-    Scene*  active_scenes;
+    List<Scene> active_scenes;
+    SaveFile server_save;
 
 
     Server();
@@ -21,9 +25,12 @@ class Server{
     void RemoveEntity(int uuid);
     
     void Update(int ms);
+    void UpdateScene(Scene* scene,int ms);
 
 
 };
+
+void ServerMain();
 
 
 
