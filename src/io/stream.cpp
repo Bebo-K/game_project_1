@@ -19,26 +19,32 @@ char* Stream::parentURI(){
 
 FileStream::FileStream(char* uri_path):Stream(uri_path), backing_file(uri_path){
     error=backing_file.error;
+    length=backing_file.length;
+    amount_read=0;
 }
 
 int FileStream::read(void* dest,int bytes){
-    return backing_file.read(dest,bytes);
+    int read_amount = backing_file.read(dest,bytes);
+    amount_read += read_amount;
+    return read_amount;
 }
 
 int FileStream::peek(void* dest,int bytes){
     return backing_file.peek(dest,bytes);
 }
 
-FileStream::~FileStream(){
-    backing_file.close();
-}
-
-
-byte* ReadStream(Stream* stream){
-    byte* dat = (byte*)malloc(stream->length);
-    if(stream->read(dat,stream->length) == 0){
+byte* FileStream::readAll(){
+    byte* dat = (byte*)malloc(length+1);
+    int bytes_read = backing_file.read(dat,length);
+    if(bytes_read != length){
         free(dat);
         return nullptr;
     }
+    amount_read = bytes_read;
+    dat[length] = 0;
     return dat;
+}
+
+FileStream::~FileStream(){
+    backing_file.close();
 }

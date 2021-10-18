@@ -36,7 +36,12 @@ Server::Server():active_scenes(),server_save(){
 }
 void Server::Start(){
     server_save.Load(server_config::save_name);
+    Sleep(1000);//temp just so I can see the loading screen message
     ready=true;
+    //Let local client know it's safe to connect.
+    if(Game::client != null){
+        Game::client->UpdateNetworkState(ClientNet::LOCAL_SERVER_STARTED);
+    }
 }
 void Server::LoadScene(int scene_id){}
 void Server::AddEntity(int eid){}

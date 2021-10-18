@@ -46,6 +46,7 @@ class Shader{
 namespace ShaderManager{
 	void Init();
 	void Free();
+	void AddShader(char* name);
     void AddShader(char* name,char* vertex_uri,char* fragment_uri);
 	Shader* UseShader(char* name);
     void RemoveShader(char* name);

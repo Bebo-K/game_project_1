@@ -19,6 +19,8 @@ Client* Client::instance = nullptr;
 Client::Client() : scene(), scene_renderer(), ui(){
     logger::info("Initializing client\n");
     Client::instance = this;
+    network_state=ClientNet::NO_CONNECTION;
+    network_substatus=null;
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
@@ -152,6 +154,54 @@ void Client::HandleFrameInput(){
         if(PlayerInput::HandleInput(input)){Input::ClearEvent(input);}
     }
 }
+
+
+//This can get called from server + networking threads. TODO: verify it's thread safe.
+void Client::UpdateNetworkState(ClientNet::State new_state){network_state = new_state;}
+
+void Client::SetNetworkSubstatus(char* status_msg){network_substatus = cstr::new_copy(status_msg);}
+
+void Client::HandleNetworkState(){
+    switch(network_state){
+        case ClientNet::NO_CONNECTION: break;
+        case ClientNet::LOCAL_SERVER_STARTED:{
+            ui.loading_menu->SetStatusMessage("Connecting to local server...");
+            LocalConnect();
+            break;
+        }
+        case ClientNet::CONNECTING:{
+            if(network_substatus != null){
+                ui.loading_menu->SetStatusMessage(network_substatus);
+                free(network_substatus);
+                network_substatus=null;
+            }
+            break;
+        }
+        case ClientNet::CONNECTION_ERROR:{
+            ui.CloseAll();
+            ui.error_menu->Open();
+            scene.Unload();
+            if(network_substatus != null){
+                ui.error_menu->SetStatusMessage(network_substatus);
+                free(network_substatus);
+                network_substatus=null;
+            }
+            break;
+        }
+        case ClientNet::CONNECTED: break;
+    }
+}
+
+void Client::LocalConnect(){
+    UpdateNetworkState(ClientNet::CONNECTING);
+
+
+}
+void Client::Connect(char* full_uri_string){
+    UpdateNetworkState(ClientNet::CONNECTING);
+
+}
+
 
 void Client::Quit(){
     Game::Exit();

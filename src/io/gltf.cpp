@@ -66,7 +66,7 @@ void GLTFScene::LoadAsGLTF(Stream* gltf_stream){
 		if(buffers->At(i)->ObjectValue()->HasString("uri")){
 			JSONString* buffer_uri = buffers->At(i)->ObjectValue()->GetString("uri");
 			Stream* buffer_stream = AssetManager::Model(buffer_uri->string);
-			binary_buffers.Add(ReadStream(buffer_stream));
+			binary_buffers.Add(buffer_stream->readAll());
 			delete buffer_stream;
 		}
 	}

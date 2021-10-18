@@ -25,7 +25,7 @@ void OptionsMenu::OnLoad(){
     background->layout.relative={0,0,1,1};
     background->layout.width_scale=Relative;
     background->layout.height_scale=Relative;
-    background->components.Add(new SpriteComponent("dat/ui/low_effort_banner.png"));
+    background->components.Add(new SpriteComponent("low_effort_banner"));
     AddWidget(background);
     
     Widget* play_sp_button = BuildSimpleButton("options_button","Yes?",312,128,{0.3,0.15,1.0,0.8},LiterallyDoNothingCallback);

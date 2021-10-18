@@ -9,8 +9,12 @@ Map<char*,Shader*> CACHED_SHADERS(2);
 
 
 Shader::Shader(char* vertex_uri,char* fragment_uri){
-    byte* vertex_program = ReadStream(AssetManager::VertexShader(vertex_uri));
-    byte* fragment_program = ReadStream(AssetManager::FragmentShader(fragment_uri));
+    Stream* vertex_shader_stream = AssetManager::VertexShader(vertex_uri);
+    Stream* fragment_shader_stream = AssetManager::FragmentShader(vertex_uri);
+    byte* vertex_program = vertex_shader_stream->readAll();
+    byte* fragment_program = fragment_shader_stream->readAll();
+    delete vertex_shader_stream;
+    delete fragment_shader_stream;
 
     if(vertex_program == null){
         logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertex_uri);
@@ -115,18 +119,18 @@ void Shader::Use(){
 
 void ShaderManager::Init(){
     logger::debug("Loading default shader..");
-    DEFAULT_SHADER = new Shader("dat/gfx/default.vrt","dat/gfx/default.frg");
+    DEFAULT_SHADER = new Shader("default","default");
     CACHED_SHADERS.Add("default",DEFAULT_SHADER);
     
-    AddShader("level_debug","dat/gfx/level_debug.vrt","dat/gfx/level_debug.frg");
-    AddShader("model_dynamic_lighting","dat/gfx/model_dynamic_lighting.vrt","dat/gfx/model_dynamic_lighting.frg");
-    AddShader("model_static_shadeless","dat/gfx/model_static_shadeless.vrt","dat/gfx/model_static_shadeless.frg");
-    AddShader("skybox","dat/gfx/skybox.vrt","dat/gfx/skybox.frg");
-    AddShader("skybox_flat","dat/gfx/skybox_flat.vrt","dat/gfx/skybox_flat.frg");
-    AddShader("ui_default","dat/gfx/ui_default.vrt","dat/gfx/ui_default.frg");
-    AddShader("ui_shape","dat/gfx/ui_shape.vrt","dat/gfx/ui_shape.frg");
-    AddShader("ui_sprite","dat/gfx/ui_sprite.vrt","dat/gfx/ui_sprite.frg");
-    AddShader("ui_text","dat/gfx/ui_text.vrt","dat/gfx/ui_text.frg");
+    AddShader("level_debug");
+    AddShader("model_dynamic_lighting");
+    AddShader("model_static_shadeless");
+    AddShader("skybox");
+    AddShader("skybox_flat");
+    AddShader("ui_default");
+    AddShader("ui_shape");
+    AddShader("ui_sprite");
+    AddShader("ui_text");
 }
 
 void ShaderManager::Free(){
@@ -134,6 +138,12 @@ void ShaderManager::Free(){
         if(shader.value) delete shader.value;
     }
     CACHED_SHADERS.Clear();
+}
+
+void ShaderManager::AddShader(char* name){
+    if(CACHED_SHADERS.Has(name))return;
+    logger::debug("Caching shader %s\n",name);
+    CACHED_SHADERS.Add(name,new Shader(name,name));
 }
 
 void ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri){

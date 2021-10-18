@@ -8,7 +8,7 @@
 //using namespace UI;
 
 UI::Widget* UI::BuildSimpleButton(char* name, char* label, float w, float h, vec4 color, void (*callback)()){
-    FontID simple_button_font = FontManager::LoadFontFace("dat/ui/fonts/SourceSansPro-Regular.ttf",32);
+    FontID simple_button_font = FontManager::LoadFontFace("SourceSansPro-Regular",32);
     Widget* ret = new Widget(name);
     ret->layout.SetSize(w,h);
     ret->components.Add(new ButtonComponent(callback));

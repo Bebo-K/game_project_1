@@ -6,22 +6,18 @@
 #include "../../log.h"
 #include "../../client/client.h"
 #include "../gui.h"
-
+#include "../../game.h"
 
 using namespace UI;
 
 void LaunchSingleplayerButtonCallback(){
     logger::warn("Launching server!");
-    GUI::GetGUI()->loading_menu->Open();
+    LoadingMenu* loading_menu = GUI::GetGUI()->loading_menu;
+    loading_menu->Open();
+    loading_menu->SetStatusMessage("Launching local server...");
     GUI::GetGUI()->main_menu->Close();
 
-    /*
-    Game::client->StartLoadScene(1);
-    Game::client->SpawnPlayer(Game::client->scene.level.entrances[0]);
-
-    Game::client->ui.OpenMenu(MenuType::INGAME);
-    Game::client->ui.CloseMenu(MenuType::LOADING);
-    */
+    Game::StartLocalServer();
 }
 
 void LaunchMultiplayerButtonCallback(){
@@ -47,7 +43,7 @@ void MainMenu::OnLoad(){
     background->layout.SetOffset(0,0);
     background->layout.SetSizeMode(Relative,Relative);
     background->layout.SetSize(1,1);
-    background->components.Add(new SpriteComponent("dat/ui/low_effort_banner.png"));
+    background->components.Add(new SpriteComponent("low_effort_banner"));
     AddWidget(background);
     
     Widget* play_sp_button = BuildSimpleButton("play_sp_button","Play Singleplayer",312,128,{0.3,0.15,1.0,0.8},LaunchSingleplayerButtonCallback);

@@ -19,6 +19,7 @@ void Menu::Open(){
     OnOpen();
 }
 void Menu::Close(){
+    if(!active)return;
     active=false;
     visible=false;
     OnClose();

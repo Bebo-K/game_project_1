@@ -12,7 +12,7 @@ namespace UI{
     //A collection of UI elements managing a single gameplay element. More than one can be displayed at a time.
     class Menu{
         public:
-        const static MenuID MAIN=1,OPTIONS=2,LOADING=3,INGAME=4;
+        const static MenuID MAIN=1,OPTIONS=2,LOADING=3,ERROR_MENU=4,INGAME=5;
         MenuID       id;
         bool         active;
         bool         visible;

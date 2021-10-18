@@ -10,6 +10,7 @@ enum ScaleMode{Absolute, Relative};
 enum HorizontalOrigin{Center_H,Right,Left,To_Right,To_Left};
 enum VerticalOrigin{Center_V,Top,Bottom,Above,Below};
 
+
 //A data packet class that can be sent to the UI for custom event handling
 struct Signal{
     int signal_id;

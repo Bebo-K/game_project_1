@@ -16,7 +16,7 @@ void FontManager::Init(){
         logger::warn("Error during Freetype2 library initialization, code: %d \n",err);
     }
     current_font_id=-1;
-    default_font_id = LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",18);
+    default_font_id = LoadFontFace("Merriweather/Merriweather-Regular",18);
 }
 void FontManager::Free(){
     for(FontManager::FontCache* font: cached_fonts){
@@ -62,8 +62,8 @@ FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_te
     dynamic_atlas_start[0]=dynamic_atlas_start[1]=dynamic_atlas_start[2]=0;
 
     Stream* font_stream = AssetManager::UI_Font(font_uri);
-    ReadStream(font_stream);
-    int err = FT_New_Memory_Face(ft_library,ReadStream(font_stream),font_stream->length,0,&fontface);
+    byte* font_file = font_stream->readAll();
+    int err = FT_New_Memory_Face(ft_library,font_file,font_stream->amount_read,0,&fontface);
     delete font_stream;
     if (err != 0){
         if (err == FT_Err_Unknown_File_Format){

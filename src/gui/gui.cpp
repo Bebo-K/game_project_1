@@ -53,6 +53,13 @@ void GUI::Reload(){
     Load();
 }
 
+void GUI::CloseAll(){
+    main_menu->Close();
+    options_menu->Close();
+    loading_menu->Close();
+    ingame_menu->Close();
+}
+
 GUI* GUI::GetGUI(){return instance;}
 
 Menu* GUI::GetMenu(int id){

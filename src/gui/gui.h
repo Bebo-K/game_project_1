@@ -12,6 +12,7 @@
 #include "menu/options_menu.h"
 #include "menu/loading_menu.h"
 #include "menu/ingame_menu.h"
+#include "menu/error_menu.h"
 
 
 //Manages the screen real estate for menus,text, and other 2D objects
@@ -28,6 +29,7 @@ class GUI{
     MainMenu*            main_menu;
     OptionsMenu*         options_menu;
     LoadingMenu*         loading_menu;
+    ErrorMenu*           error_menu;
     IngameMenu*          ingame_menu;
 
 
@@ -35,6 +37,7 @@ class GUI{
     void Load();
     void Unload();
     void Reload();
+    void CloseAll();
 
     static GUI* GetGUI();
     UI::Menu* GetMenu(int ID);

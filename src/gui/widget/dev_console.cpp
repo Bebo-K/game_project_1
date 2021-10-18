@@ -24,7 +24,7 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
     memset(entry_buffer,0,sizeof(text_char)*MAX_LINE_LENGTH);
     memset(shown_lines,0,sizeof(UI_Text)* SHOWN_LINE_COUNT);
     if(console_font < 0){
-        console_font = FontManager::LoadFontFace("dat/ui/fonts/Merriweather/Merriweather-Regular.ttf",14);
+        console_font = FontManager::LoadFontFace("Merriweather/Merriweather-Regular",14);
     }
 
     //Start inactive by default

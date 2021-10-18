@@ -14,6 +14,7 @@ class Stream{
 	virtual ~Stream();
 	virtual int read(void* dest,int bytes) =0;
 	virtual int peek(void* dest,int bytes) =0;
+	virtual byte* readAll() = 0;
 
 	char* parentURI();
 };
@@ -27,6 +28,7 @@ class FileStream: public Stream{
 
 	int  read(void* dest,int bytes);
 	int peek(void* dest,int bytes);
+	byte* readAll();
 };
 
 /*
