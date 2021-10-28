@@ -1,7 +1,15 @@
 #include "error_menu.h"
 #include "../widget/sprite_component.h"
+#include "../widget/simple_button.h"
+#include "../gui.h"
 
 using namespace UI;
+
+void BackToMainMenuCallback(){
+    GUI* ui = GUI::GetGUI();
+    ui->main_menu->Open();
+    ui->error_menu->Close();
+}
 
 ErrorMenu::ErrorMenu(Layout* parent) : Menu(parent){
     id = Menu::LOADING;
@@ -23,6 +31,11 @@ void ErrorMenu::OnLoad(){
         status_text_widget->components.Add(h_status_text);
         status_text_widget->layout.MoveTo(&layout,Center_V,Center_H,{0,4});
     AddWidget(status_text_widget);
+
+    Widget* main_menu_button = BuildSimpleButton("main_menu_button","Back to main menu",312,128,{0.3,0.15,1.0,0.8},BackToMainMenuCallback);
+    main_menu_button->layout.MoveTo(&layout,Bottom,Center_H,{0,4});
+    AddWidget(main_menu_button);
+    main_menu_button->layout.SetSizeMode(Relative,Relative);
 }
 
 void ErrorMenu::OnUpdate(int frames){}

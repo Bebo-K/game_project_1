@@ -27,8 +27,8 @@ void LaunchMultiplayerButtonCallback(){
 
 void GoToOptionsCallback(){
     GUI* ui = GUI::GetGUI();
-    ui->main_menu->Close();
     ui->options_menu->Open();
+    ui->main_menu->Close();
 }
 
 void ExitGameCallback(){
