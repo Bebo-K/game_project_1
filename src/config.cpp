@@ -1,22 +1,11 @@
 #include "config.h"
+#include "struct/data_types.h"
 #include "io/file.h"
 #include "os.h"
 #include <stdlib.h>
 
-int config_key_count = 7;
-char* config_keys[] = {
-    "window_height",
-    "window_width",
-    "ui_height",
-    "ui_width",
-    "show_console",
-    "show_fps_counter",
-    "debug_mode"
-    "save_file_location"
-};
 
-char* boolean_values[] = {"false","true"};
-
+List<ConfigEntry> global_config_entries(10);
 
 int config::window_height = 720;
 int config::window_width = 1280;
@@ -24,146 +13,72 @@ int config::window_width = 1280;
 int config::ui_height = 720;// 360;//
 int config::ui_width = 1280;//640;//
 
-char config::show_console;
-char config::show_fps_counter;
-char config::debug_mode;
+bool config::show_console=false;
+bool config::show_fps_counter=false;
+bool config::debug_mode=false;
+bool config::debug_net=false;
 
 wchar_t* config::save_directory=L"/saves";
 
 char* server_config::save_name="server";
 int server_config::player_count=1;
+unsigned short server_config::default_port=8380;
 
 
-ConfigMap::ConfigMap(){
-    entry_count=0;
-    entry_slots=1;
-    entries = (StringPair*)calloc(entry_slots,sizeof(StringPair));
+ConfigEntry::ConfigEntry(char* entry_name,config::ConfigEntryType entry_type,void* entry_data){
+    name = cstr::new_copy(entry_name);
+    type = entry_type;
+    primitive = entry_data;
 }
-ConfigMap::~ConfigMap(){
-    for(int i=0;i<entry_count;i++){
-        if(entries[i].key != nullptr){free(entries[i].key);}
-        if(entries[i].value != nullptr){free(entries[i].value);}
-    }
-    free(entries);
+ConfigEntry::~ConfigEntry(){
+    free(name);name=nullptr;
+    primitive=nullptr;
 }
-
-void ConfigMap::Add(char* key, char* value){
-    if(entry_count < entry_slots){
-        entries[entry_count].key= cstr::new_copy(key);
-        entries[entry_count].value= cstr::new_copy(value);
-    }
-    else{
-        StringPair* new_entries = (StringPair*)calloc(entry_slots*2,sizeof(StringPair));
-        memcpy(new_entries,entries,sizeof(StringPair)*entry_slots);
-        free(entries);
-        entries=new_entries;
-        entry_slots*=2;
-        entries[entry_count].key= cstr::new_copy(key);
-        entries[entry_count].value= cstr::new_copy(value);
-    }
-    entry_count++;
-}
-char* ConfigMap::Get(char* key){
-    for(int i=0;i<entry_count;i++){
-        if(entries[i].key != nullptr && cstr::compare(entries[i].key,key)){
-            return entries[i].value;
-        }
-    }
-    return null;
-}
-void ConfigMap::Set(char* key, char* value){
-    for(int i=0;i<entry_count;i++){
-        if(entries[i].key != nullptr && cstr::compare(entries[i].key,key)){
-            if(entries[i].value)free(entries[i].value);
-            entries[i].value=cstr::new_copy(value);
-        }
-    }
-}
-void ConfigMap::Remove(char* key){
-    for(int i=0;i<entry_count;i++){
-        if(entries[i].key != nullptr && cstr::compare(entries[i].key,key)){
-            if(i < entry_count){
-                if(entries[i].key)free(entries[i].key);
-                if(entries[i].value)free(entries[i].value);
-                memcpy(&entries[i],&entries[entry_count-1],sizeof(StringPair));
-                entry_count--;
-            }
-            else if(entry_count>0){
-                entry_count--;
-                if(entries[i].key)free(entries[i].key);
-                if(entries[i].value)free(entries[i].value);
-            }
-        }
-    }
-}
-void ConfigMap::LoadFromFile(char* filename){
-    FileReader layout_file(filename);
-
-    for(byte* line=layout_file.ReadLine();line != null;line=layout_file.ReadLine()){
-        char* key = cstr::substr_before((char*)line,'=');
-        char* value = cstr::substr_after((char*)line,'=');
-        if(key!=nullptr && value!=nullptr && Get(key)==nullptr){
-            Add(key,value);
-        }
-        free(key);
-        free(value);
-    }
-}
-void ConfigMap::LoadFromTextArray(char** lines,int line_count){
-    for(int i=0;i<line_count;i++){
-        char* line = lines[i];
-        char* key = cstr::substr_before((char*)line,'=');
-        char* value = cstr::substr_after((char*)line,'=');
-        if(key!=nullptr && value!=nullptr && Get(key)==nullptr){
-            Add(key,value);
-        }
-        free(key);
-        free(value);
-    }
-}
-
-StringPair* ConfigMap::begin(){return entries;}
-StringPair* ConfigMap::end(){return &entries[entry_count];}
 
 void config::Init(){
-    if(build_game_folder_path()){
-        save_directory = get_games_folder_path();
-    }
-    else{
-        save_directory = L"/saves";
-    }
-    
-    
-    show_console=false;
-    show_fps_counter=true;
-    debug_mode=false;
+    if(build_game_folder_path()){save_directory = get_games_folder_path();}
+
+    global_config_entries.Add(new ConfigEntry("window_height",INT,&window_height));
+    global_config_entries.Add(new ConfigEntry("window_width",INT,&window_width));
+    global_config_entries.Add(new ConfigEntry("ui_height",INT,&ui_height));
+    global_config_entries.Add(new ConfigEntry("ui_width",INT,&ui_width));
+    global_config_entries.Add(new ConfigEntry("show_console",BOOL,&show_console));
+    global_config_entries.Add(new ConfigEntry("show_fps_counter",BOOL,&show_fps_counter));
+    global_config_entries.Add(new ConfigEntry("debug_mode",BOOL,&debug_mode));
+    global_config_entries.Add(new ConfigEntry("debug_net",BOOL,&debug_net));
+    global_config_entries.Add(new ConfigEntry("save_directory",WSTRING,&save_directory));
 }
 
 void config::Destroy(){}
 
-void config::LoadFile(char* filename){
-    ConfigMap configFile;
-    configFile.LoadFromFile(filename);
-
-    int config_key_id=-1;
-    for(StringPair entry:configFile){
-        config_key_id=-1;
-        for(int i=0;i<config_key_count;i++){
-            if(cstr::compare(entry.key,config_keys[i])){config_key_id=i;}
-        }
-        switch (config_key_id)
-        {
-            case config::id_window_height: window_height = cstr::integer_from_string(entry.value);
-            case config::id_window_width: window_width = cstr::integer_from_string(entry.value);
-            case config::id_ui_height: ui_height = cstr::integer_from_string(entry.value);
-            case config::id_ui_width: ui_width = cstr::integer_from_string(entry.value);
-            case config::id_show_console: show_console = cstr::bool_from_string(entry.value);
-            case config::id_show_fps_counter: show_fps_counter = cstr::bool_from_string(entry.value);
-            case config::id_debug_mode: debug_mode = cstr::bool_from_string(entry.value);
+void config::SetConfig(char* name,char* value){
+    for(ConfigEntry* entry :config_entries){
+        if(cstr::compare(entry->name,name)){
+            switch (entry->type)
+            {
+            case INT:*((int*)entry->primitive) = cstr::integer_from_string(value);break;
+            case FLOAT:*((float*)entry->primitive) = cstr::float_from_string(value);break;
+            case BOOL:*((bool*)entry->primitive) = cstr::bool_from_string(value);break;
+            case STRING:*((char**)entry->primitive) = cstr::new_copy(value);break;
+            case WSTRING:*((wchar_t**)entry->primitive) = wstr::from_cstr(value);break;
             default:break;
+            }
         }
     }
 }
+
+void config::LoadFile(char* filename){
+    FileReader config_file(filename);
+
+    for(byte* line=config_file.ReadLine();line != null;line=config_file.ReadLine()){
+        char* key = cstr::substr_before((char*)line,'=');
+        char* value = cstr::substr_after((char*)line,'=');
+        if(key!=nullptr && value!=nullptr){SetConfig(key,value);}
+        free(key);
+        free(value);
+    }
+}
+
 
 
     

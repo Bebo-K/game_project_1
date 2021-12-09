@@ -2,7 +2,7 @@
 #define ERROR_MENU_H
 
 #include "../menu.h"
-#include "widget/text_component.h"
+#include "../widget/text_component.h"
 
 class ErrorMenu: public UI::Menu{
     public:

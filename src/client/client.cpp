@@ -195,11 +195,11 @@ void Client::HandleNetworkState(){
 void Client::LocalConnect(){
     UpdateNetworkState(ClientNet::CONNECTING);
 
-
+    //TODO:
 }
 void Client::Connect(char* full_uri_string){
     UpdateNetworkState(ClientNet::CONNECTING);
-
+    //TODO:
 }
 
 

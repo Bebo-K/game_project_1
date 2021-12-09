@@ -1,58 +1,31 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "struct/data_types.h"
+#include "struct/list.h"
 
 
 
-struct StringPair{
-    char* key;
-    char* value;
-};
 
-class ConfigMap{
-    private:
-    int         entry_slots;
-    public:
-    StringPair* entries;
-    int         entry_count;
-
-    ConfigMap();
-    ~ConfigMap();
-
-    void Add(char* key, char* value);
-    char* Get(char* key);
-    void Set(char* key, char* value);
-    void Remove(char* key);
-    void LoadFromFile(char* filename);
-    void LoadFromTextArray(char** lines,int line_count);
-
-    StringPair* begin();
-    StringPair* end();
-};
 
 namespace config{
-    enum ConfigID{
-        id_window_height=0,
-        id_window_width=1,
-        id_ui_height=2,
-        id_ui_width=3,
-        id_show_console=4,
-        id_show_fps_counter=5,
-        id_debug_mode=6
-    };
+    enum ConfigEntryType{INT,FLOAT,BOOL,STRING,WSTRING};
 
-    extern int window_width;
+
     extern int window_height;
-    extern int ui_width;
+    extern int window_width;
     extern int ui_height;
-    extern int key_binding_count;
-    extern char show_console;
-    extern char show_fps_counter;
-    extern char debug_mode;
+    extern int ui_width;
+    extern bool show_console;
+    extern bool show_fps_counter;
+    extern bool debug_mode;
+    extern bool debug_net;
     extern wchar_t* save_directory;
 
+    extern int key_binding_count;
+
+
     void Init();
+    void SetConfig(char* name,char* value);
     void LoadFile(char* filename);
     void LoadKeyLayout(char* layoutfile);
     void Destroy();
@@ -61,10 +34,21 @@ namespace config{
 namespace server_config{
     extern char* save_name;
     extern int   player_count;
-
-
-
+    extern unsigned short default_port;
 }
 
+
+struct ConfigEntry{
+    char* name;
+    config::ConfigEntryType type;
+    void* primitive;
+
+
+    ConfigEntry(char* entry_name,config::ConfigEntryType entry_type,void* entry_data);
+    ~ConfigEntry();
+};
+
+
+extern List<ConfigEntry> config_entries;
 
 #endif

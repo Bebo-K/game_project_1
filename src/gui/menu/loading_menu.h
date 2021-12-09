@@ -2,7 +2,7 @@
 #define LOADING_MENU_H
 
 #include "../menu.h"
-#include "widget/text_component.h"
+#include "../widget/text_component.h"
 
 class LoadingMenu: public UI::Menu{
     public:

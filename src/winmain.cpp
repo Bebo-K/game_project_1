@@ -5,12 +5,14 @@
 #include <tchar.h>
 #include <shlobj.h>
 #include <knownfolders.h>
+#include <synchapi.h>
 #include "winmain.h"
 #include "os.h"
 #include "gfx/gload.h"
 #include "log.h"
 #include "config.h"
 #include "game.h"
+#include "struct/data_types.h"
 
 const TCHAR window_title[] = _T("Game");
 const TCHAR window_classname[] = _T("Game");
@@ -28,6 +30,9 @@ HGLRC gl_rendering_context;
 
 //Save game storage folder
 PWSTR save_path = NULL;
+
+//Thread mutexes
+Map <void*,HANDLE> active_mutexes;
 
 void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam);
 void DestroyOpenGL();
@@ -62,7 +67,8 @@ long long time_nano(){//ns elapsed since program start.
     return (sys_time()-start_time)*100;
 }
 
-//Engine thread hooks
+///Engine thread hooks
+//void method()
 void start_thread(void (*thread_main)() ){
 CreateThread( 
             NULL,                   // default security attributes
@@ -71,8 +77,32 @@ CreateThread(
             NULL,      // argument to thread function 
             0,        // use default creation flags 
             NULL);   // returns the thread identifier 
+}
+//void method(void* param)
+void start_thread(void (*thread_main)(void*), void* param ){
+CreateThread( 
+            NULL,                   // default security attributes
+            0,                      // use default stack size  
+            (LPTHREAD_START_ROUTINE)thread_main,       // thread function name
+            param,      // argument to thread function 
+            0,        // use default creation flags 
+            NULL);   // returns the thread identifier 
+}
 
+void* get_mutex_lock(void* object,int timeout){
+    wchar_t objname[sizeof(void*)*2 +3];
+    memset(objname,0,(sizeof(void*)*2 +3)*sizeof(wchar_t));
+    wsprintf(objname,L"%p",object);
+    HANDLE os_mtx_lock = CreateMutex(null,true,objname);
+    if(GetLastError()==ERROR_ALREADY_EXISTS){
+        if(WaitForSingleObject(os_mtx_lock,timeout)!= WAIT_OBJECT_0){return nullptr;}
+    }
+    return os_mtx_lock;
+}
 
+bool release_mutex_lock(void* os_mtx_lock){
+    if(os_mtx_lock!=0);
+    ReleaseMutex(os_mtx_lock);
 }
 
 int ms_per_second;
