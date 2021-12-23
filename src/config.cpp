@@ -1,5 +1,6 @@
 #include "config.h"
 #include "struct/data_types.h"
+#include "struct/str.h"
 #include "io/file.h"
 #include "os.h"
 #include <stdlib.h>
@@ -12,6 +13,10 @@ int config::window_width = 1280;
  
 int config::ui_height = 720;// 360;//
 int config::ui_width = 1280;//640;//
+
+int  config::network_timeout = 30000;
+int config::network_resend_interval = 100;
+int config::network_resend_max = 64;
 
 bool config::show_console=false;
 bool config::show_fps_counter=false;
@@ -47,6 +52,12 @@ void config::Init(){
     global_config_entries.Add(new ConfigEntry("debug_mode",BOOL,&debug_mode));
     global_config_entries.Add(new ConfigEntry("debug_net",BOOL,&debug_net));
     global_config_entries.Add(new ConfigEntry("save_directory",WSTRING,&save_directory));
+    global_config_entries.Add(new ConfigEntry("network_timeout",INT,&network_timeout));
+    global_config_entries.Add(new ConfigEntry("network_resend_interval",INT,&network_timeout));
+    global_config_entries.Add(new ConfigEntry("network_resend_max",INT,&network_timeout));
+
+    
+
 }
 
 void config::Destroy(){}

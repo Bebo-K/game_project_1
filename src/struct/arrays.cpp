@@ -23,6 +23,11 @@ BitArray::~BitArray(){
     free(data);
 }
 void BitArray::Resize(int new_bit_count){
+    if(new_bit_count ==0){
+        free(data);data=null;
+        bits=0;
+        return;
+    }
     int old_char_count = bits/8 + (bits % 8 > 0);
     int new_char_count = new_bit_count/8 + (new_bit_count % 8 > 0);
     unsigned char* new_data = (unsigned char*)calloc(new_char_count,1);

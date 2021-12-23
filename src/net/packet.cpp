@@ -1,5 +1,9 @@
 #include "packet.h"
 
+#include "../io/crc.h"
+#include "../log.h"
+#include "../os.h"
+#include "../config.h"
 
 const int reliable_packet_ids[] = {
         PacketID::ACPT,
@@ -10,8 +14,6 @@ const int reliable_packet_ids[] = {
         PacketID::DSPN,
         PacketID::CHAT,
     };
-
-
     const int JOIN = CSTR_TO_PACKETID("JOIN");//   Client join request
     const int ACPT = CSTR_TO_PACKETID("ACPT");//R  Server accepts new client connection
     const int OKAY = CSTR_TO_PACKETID("OKAY");//   (Both sides) Acknowledge reliable packet 
@@ -33,4 +35,51 @@ bool Packet::isReliable(){
 
 bool Packet::isMultipart(){
     return length > MAX_UDP_PACKET_SIZE;
+}
+
+void Packet::runCRC(){
+    crc=0;
+    crc = CRC((byte*)this,this->length);
+}
+
+
+
+byte* payload_buffer=nullptr;
+long  payload_buffer_len=0;
+Payload* payload_buffer_user;
+
+
+Payload::Payload(int id,int len,byte* dat){
+    type=id;
+    length=len;
+    data=dat;
+}
+
+
+bool ReliablePacketEnvelope::should_send(){
+    return (time_ms()-this->last_sent) > config::network_resend_interval;
+}
+
+MultipartPayload::MultipartPayload():packets_recieved(){}
+MultipartPayload::~MultipartPayload(){
+    if(assembled_payload != nullptr){free(assembled_payload);assembled_payload=nullptr;}
+}
+void MultipartPayload::Start(MultipartPacket*p){
+    id = p->id;
+    packets_recieved.Initialize(p->segment_count);
+    assembled_payload = (byte*)calloc(p->length,1);
+}
+
+void MultipartPayload::Add(MultipartPacket*p){
+    memcpy(&assembled_payload[p->segment_offset],p->data,p->segment_length);
+    packets_recieved.Set(p->segment);
+}
+
+void MultipartPayload::Clear(){
+    packets_recieved.Resize(0);
+    if(assembled_payload != nullptr){free(assembled_payload);assembled_payload=nullptr;}
+}
+
+bool MultipartPayload::isFullyAssembled(){
+    return (packets_recieved.CountBitsUnset()==0);
 }

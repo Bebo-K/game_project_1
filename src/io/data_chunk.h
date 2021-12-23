@@ -3,7 +3,7 @@
 
 #include "../struct/data_types.h"
 
-
+/*
 struct DataChunk{
     int header;
     int size;
@@ -17,6 +17,7 @@ struct DataChunk{
     bool VerifyCRC();
     byte* Bytes();
 };
+*/
 
 
 

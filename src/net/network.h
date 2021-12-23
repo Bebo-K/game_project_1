@@ -6,6 +6,8 @@
 #include "../threads.h"
 #include "../struct/arrays.h"
 
+#include <iostream>
+
 //Some notes
 //The largest safe UDP packet size over the internet is 508 bytes
 //When fragmented, UDP packets can combine into a max 67KB payload
@@ -16,23 +18,38 @@ class NetTarget{
     char* hostname;
     unsigned short port;
 
+    void ResizeReliableBuffer(int new_size);
+    void ResizeMultipartBuffer(int new_size);
+
     public:
     Socket os_socket;
+    ReliablePacketEnvelope* outbound_buffer;//for outbound reliable packets
+    int outbound_buffer_len;
+    MultipartPayload* inbound_buffer;//for inbound multipart packets
+    int inbound_buffer_len;
     SynchronousBuffer read_buffer;
     SynchronousBuffer write_buffer;
-    DynamicArray packet_assembly_buffer;//for inbound reliable packets
 
     bool connected;
     int latency;
 
     void SetAddress(char* hostname);
     bool ResolveAddress();
+    
+    void AddToReliableBuffer(Packet* packet);
+    MultipartPayload* GetMultipartPayload(MultipartPacket* packet);
+
     NetTarget();
     ~NetTarget();
 };
 
 
 class Network{
+    private:
+    byte* payload_buffer;
+    long payload_buffer_len;
+
+
     public:
     bool offline;//local communication only
     Socket listener_socket;
@@ -48,7 +65,8 @@ class Network{
 
     void WriteToTarget(int target_id,Payload payload);
     Payload ReadFromTarget(int target_id);
-
+    Payload OpenPayload(int type, int len, byte* source);
+    void ClosePayload();
 };
 
 

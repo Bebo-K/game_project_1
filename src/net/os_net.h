@@ -21,8 +21,8 @@ namespace OSNetwork{
     Socket connect(Packet* connect_packet,wchar* hostname,short port);
     bool disconnect(Socket remote_socket);
 
-    bool send(Packet* packet, Socket dest);
-    bool recv(Socket* bound_socket);
+    bool send_packet(Packet* packet, Socket dest);
+    bool recv_packet(Socket* bound_socket);
 
     void set_msg(wchar* msg);
     wchar* get_msg();

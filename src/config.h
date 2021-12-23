@@ -15,6 +15,9 @@ namespace config{
     extern int window_width;
     extern int ui_height;
     extern int ui_width;
+    extern int network_timeout;
+    extern int network_resend_interval;
+    extern int network_resend_max;
     extern bool show_console;
     extern bool show_fps_counter;
     extern bool debug_mode;

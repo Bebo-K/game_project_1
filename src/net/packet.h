@@ -2,6 +2,8 @@
 #define PACKET_H
 
 #include "../struct/data_types.h"
+#include "../struct/arrays.h"
+
 const int MAX_UDP_PACKET_SIZE=508;
 
 int PacketIDFromCSTR(const char* id);
@@ -20,7 +22,7 @@ namespace PacketID{
     const int SPWN = CSTR_TO_PACKETID("SPWN");//R  Server spawned entity
     const int DSPN = CSTR_TO_PACKETID("DSPN");//R  Server despawned entity
     const int DLTA = CSTR_TO_PACKETID("DLTA");//   Server Entity delta
-    const int DLTA = CSTR_TO_PACKETID("CDLT");//   Client state delta
+    const int CDLT = CSTR_TO_PACKETID("CDLT");//   Client state delta
     const int CHAT = CSTR_TO_PACKETID("CHAT");//R  Client text chat
 };
 
@@ -37,39 +39,49 @@ struct Packet{
     bool isMultipart();//if true, this obect can be cast to a MultipartPacket
 };
 
-//Complete data object recieved from network.
-struct Payload{
-    int type;//from PacketID list
-    int length;//includes these header items
-    byte* data;
-
-    Payload(int type,int size,byte* source);
-    //Payload(int type,int size,byte* source,byte* backing); TODO: we need something so we don't need to use 'new' every recvd packet
-    ~Payload();
-};
-
 //Extended packet objects for multipart data.
 struct MultipartPacket{
     int id;
     int type;
-    int length;//of the entire payload. Packet length
+    int length;//of the entire payload
     int crc;
     short segment;
     short segment_count;
-    int   segment_length;
+    int   segment_length;//data[] length
     int   segment_offset;
     byte data[MAX_UDP_PACKET_SIZE-24];
     void runCRC();
 };
 
+class ReliablePacketEnvelope{
+    Packet dataPacket;
+    long first_send;
+    long last_sent;
+    int  retry_count;
+    bool should_send();
+};
+
+struct Payload{
+    int type;
+    int length;//includes these header items
+    byte* data;
+    Payload(int id,int len,byte* dat);
+};
+
+
 //Inbound assembly object for multipart data
 class MultipartPayload{
+    public:
     int id;
     BitArray packets_recieved;
     byte* assembled_payload;
 
+
+    MultipartPayload();
+    ~MultipartPayload();
     void Start(MultipartPacket*p);
     void Add(MultipartPacket* p);
+    void Clear();
     bool isFullyAssembled();
 };
 

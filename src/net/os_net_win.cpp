@@ -98,15 +98,26 @@ Socket OSNetwork::connect(Packet* connect_packet,wchar_t* hostname,short port){
 	return connect_socket;
 }
 
-bool OSNetwork::disconnect(Socket){
-
+bool OSNetwork::disconnect(Socket dest){
+	closesocket(dest);
 }
 
-bool OSNetwork::send(Packet* packet, Socket dest){
-
-
+bool OSNetwork::send_packet(Packet* packet, Socket dest){
+	int result = send( dest,(char*)packet, packet->length, 0 );
+    if (result == SOCKET_ERROR) {
+		int send_failure = WSAGetLastError();
+		switch(send_failure){//TODO: handling timeout/connection lost disconnects
+			case WSAENOTCONN:		break;
+			default:break;
+		}
+        wprintf(L"send failed with error: %d\n", send_failure);
+        return false;
+    }
+	return true;
 }
-bool OSNetwork::recv(Socket* bound_socket){
+
+bool OSNetwork::recv_packet(Socket* bound_socket){
+
 
 }
     
