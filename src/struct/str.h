@@ -8,6 +8,7 @@ typedef wchar_t wchar;
 
 
 namespace cstr{
+    char* allocf(const char* format, ...);
     int len(const char* str);
     char* from_wstr(const wchar* widestr);
     char* from_wstr_utf16(const wchar* widestr);
@@ -31,6 +32,7 @@ namespace cstr{
 };
 
 namespace wstr{
+    wchar* allocf(const wchar* format, ...);
     int len(wchar* str);
     wchar* from_cstr(char* str);
     wchar* new_copy(const wchar* old_string);

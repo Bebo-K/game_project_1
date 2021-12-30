@@ -1,5 +1,5 @@
 #include "savefile.h"
-#include "../struct/data_types.h"
+#include "../struct/str.h"
 #include "../log.h"
 #include "../config.h"
 
@@ -135,7 +135,7 @@ void SaveFile::New(){
     BuildDemoCampaign(&campaigns[0]);
 }
 void SaveFile::Load(char* save_name){
-    UserFile save_file(GetSaveFilePath(save_name),'w');
+    UserFile save_file(GetSaveFilePath(save_name),'r');
 
     byte* data = (byte*)calloc(save_file.length,1);
     save_file.read(data,save_file.length);
@@ -145,7 +145,7 @@ void SaveFile::Load(char* save_name){
     save_file.close();
 }
 void SaveFile::Save(char* save_name){
-    UserFile save_file(GetSaveFilePath(save_name),'r');
+    UserFile save_file(GetSaveFilePath(save_name),'w ');
 
     byte* data = (byte*)calloc(SerializedLength(),1);
     int data_len = Serialize(data);

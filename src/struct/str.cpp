@@ -1,12 +1,28 @@
 #include "str.h"
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdarg.h>
 
 int cstr::len(const char* str){ 
     int i;
     for(i=0;str[i]!=0;i++);
     return i;
+}
+char* cstr::allocf(const char* format, ...){
+    va_list args;
+    va_start (args,format);
+
+    int guess_length = len(format)+16+1;
+    char* ret= (char*)malloc(guess_length);
+    int real_length = snprintf(ret,guess_length,format,args);
+
+    if(real_length < guess_length)return ret;
+    free(ret);
+    ret = (char*)malloc(real_length+1);
+    sprintf(ret,format,args);
+    va_end (args);
+    return ret;
 }
 char* cstr::from_wstr(wchar* widestr){//truncates high-order bits.
     if(widestr==nullptr)return nullptr;
@@ -248,6 +264,21 @@ int wstr::len(const wchar* str){
     int i;
     for(i=0;str[i]!=0;i++);
     return i;
+}
+wchar* wstr::allocf(const wchar* format, ...){
+    va_list args;
+    va_start (args,format);
+
+    int guess_length = len(format)+16+1;
+    wchar* ret= (wchar*)malloc(sizeof(wchar)*guess_length);
+    int real_length = snwprintf(ret,guess_length,format,args);
+
+    if(real_length < guess_length)return ret;
+    free(ret);
+    ret = (wchar*)malloc(sizeof(wchar)*(real_length+1));
+    swprintf(ret,format,args);
+    va_end (args);
+    return ret;
 }
 wchar* wstr::from_cstr(char* cstr){//truncates high-order bits.
     if(cstr==nullptr)return nullptr;

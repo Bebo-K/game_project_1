@@ -17,8 +17,8 @@
 #include "network.h"
 #include "../log.h"
 
-
 bool winsock_initialized=false;
+void set_socket_state_from_error(Socket dest);
 
 bool OSNetwork::init(){
 	if(winsock_initialized)return true;
@@ -74,26 +74,16 @@ Socket OSNetwork::connect(Packet* connect_packet,wchar_t* hostname,short port){
 
 	//Sendto will internally mark port as "bound", and can be listen from afterwards
 	int send_result = sendto(connect_socket,(const char*)connect_packet,connect_packet->length,0,target_address->ai_addr,target_address->ai_addrlen); 
-	int send_error=0;
 	if(send_result == SOCKET_ERROR){
-		send_error = WSAGetLastError();
-		/*
-		while(target_address->ai_next != nullptr && send_result == SOCKET_ERROR){
-			target_address = target_address->ai_next;
-			send_result = sendto(connect_socket,(const char*)connect_packet,connect_packet->length,0,target_address->ai_addr,target_address->ai_addrlen); 
-			if(send_result != SOCKET_ERROR){
-				return connect_socket
-			}
-		}
-		*/
+		set_socket_state_from_error(SOCKET_ERROR);
+		FreeAddrInfoW(target_address);
 		return SOCKET_ERROR;
+	}
+	else if(send_result != connect_packet->length){
+		set_state_for_socket(connect_socket,OSNetwork::UNKNOWN_ERROR,L"join request packet was not completely sent");
 	}
 	FreeAddrInfoW(target_address);
 
-	/*We might not need client port info but if we do for some reason:
-		_CSADDR_INFO local_addr_info;
-		getsockopt(connect_socket,SOL_SOCKET,SO_BSP_STATE ,(char*)&local_addr_info,(int)sizeof(local_addr_info));
-	*/
 
 	return connect_socket;
 }
@@ -105,6 +95,7 @@ bool OSNetwork::disconnect(Socket dest){
 bool OSNetwork::send_packet(Packet* packet, Socket dest){
 	int result = send( dest,(char*)packet, packet->length, 0 );
     if (result == SOCKET_ERROR) {
+		set_socket_state_from_error(dest);
 		int send_failure = WSAGetLastError();
 		switch(send_failure){//TODO: handling timeout/connection lost disconnects
 			case WSAENOTCONN:		break;
@@ -126,6 +117,60 @@ void OSNetwork::destroy(){
 	WSACleanup();
 }
 
+void OSNetwork::set_state_for_socket(Socket target_socket,SocketState state_code, wchar* msg){
+	//TODO
+}
+
+int OSNetwork::get_state_for_socket(Socket target_socket,wchar* message){
+
+}
+
+void set_socket_state_from_error(Socket dest,wchar* address_str){
+	int error_code = WSAGetLastError();
+	OSNetwork::SocketState state = OSNetwork::CONNECTED;
+	wchar* msg = nullptr;
+	
+	switch(error_code){
+		case 0: break; 
+		case WSAENETDOWN:{
+			state = OSNetwork::NETWORK_UNAVAILABLE;
+			msg = wstr::allocf(L"The network is unavailable");
+			break;}
+		case WSAECONNRESET:{
+			state = OSNetwork::ABORTED;
+			msg = wstr::allocf(L"Connection reset");
+			break;}
+		case WSAETIMEDOUT:{
+			state = OSNetwork::TIMED_OUT;
+			msg = wstr::allocf(L"Connection timed out");
+			break;}
+		case WSAEADDRNOTAVAIL:{
+			state = OSNetwork::INVALID;
+			msg = (address_str != nullptr)? wstr::allocf(L"The remote host %s is not a valid address",address_str)
+			: wstr::allocf(L"The remote address is invalid");
+			break;}
+		case WSAEHOSTUNREACH:{
+			state = OSNetwork::INVALID;
+			msg = (address_str != nullptr)? wstr::allocf(L"Remote host unreachable %s",address_str)
+			: wstr::allocf(L"Remote host is unreachable");
+			break;}
+		case WSAENETUNREACH:{
+			state = OSNetwork::NETWORK_UNAVAILABLE;
+			msg = wstr::allocf(L"Network is unreachable from this host");
+			break;}
+		case WSAEDESTADDRREQ:{
+			state = OSNetwork::INVALID;
+			msg = wstr::allocf(L"No destination address");
+			break;}
+		default: {
+			state = OSNetwork::UNKNOWN_ERROR;
+			msg = wstr::allocf(L"An unknown error has occured (%d)",error_code);
+		}
+	}
+	if(state != OSNetwork::CONNECTED){
+		OSNetwork::set_state_for_socket(dest,state,msg);
+	}
+}
 
 
 
