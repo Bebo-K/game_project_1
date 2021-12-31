@@ -37,6 +37,7 @@ struct Packet{
     void RunCRC();
     bool IsReliable();//if true, return an OKAY acknowledgement packet once recieved.
     bool IsMultipart();//if true, this obect can be cast to a MultipartPacket
+    Payload getPayload();
 };
 
 //Extended packet objects for multipart data.

@@ -3,18 +3,21 @@
 #include "os_net.h"
 #include "../config.h"
 
+using namespace Network;
 NetTarget::NetTarget():
-inbound_buffer(2,MAX_UDP_PACKET_SIZE),
-outbound_buffer(2,MAX_UDP_PACKET_SIZE),
 reliable_buffer(2),
-multipart_buffer(2)
+multipart_buffer(2),
+inbound_buffer(MAX_UDP_PACKET_SIZE,2),
+outbound_buffer(MAX_UDP_PACKET_SIZE,2)
 {
     hostname=nullptr;
     address = {0};
     socket=INVALID_SOCKET;
-    state_id=NetTarget::NOT_CONNECTED;
+    state_id=NOT_CONNECTED;
     state_msg=nullptr;
     last_recv=0;
+    conn_start=0;
+    latency=0;
 }
 NetTarget::~NetTarget(){//:~reliable_buffer(),~inbound_buffer(),~outbound_buffer()
     for(MultipartPayload* multipart: multipart_buffer){multipart->Clear();}
@@ -25,7 +28,7 @@ NetTarget::~NetTarget(){//:~reliable_buffer(),~inbound_buffer(),~outbound_buffer
     if(state_msg !=nullptr){free(state_msg);state_msg=nullptr;}
     address = {0};
     socket=INVALID_SOCKET;
-    state_id=NetTarget::NOT_CONNECTED;
+    SetState(NOT_CONNECTED,nullptr);
 }
 
 void NetTarget::SetAddress(wchar* hostname,unsigned short port){
@@ -52,19 +55,21 @@ void NetTarget::SetAddress(ip_address address){
     address = address;
 }
 void NetTarget::ForLocal(){
-    state_id = CONNECTED_LOCAL;
+    SetState(CONNECTED_LOCAL,nullptr);
     address = {0};
     address.SetLocalhost(true);
     address.SetValid(true);
+    latency=0;
 }
 void NetTarget::Clear(){
     if(hostname != nullptr){free(hostname);hostname=nullptr;}
     if(state_msg != nullptr){free(state_msg);state_msg=nullptr;}
+    SetState(NOT_CONNECTED,nullptr);
     address= {0};
     socket=INVALID_SOCKET;
-    state_id=NetTarget::NOT_CONNECTED;
     last_recv=0;
     conn_start=0;
+    latency=0;
     Packet msg_dump;
     while(inbound_buffer.Read((byte*)&msg_dump));
     while(outbound_buffer.Read((byte*)&msg_dump));
@@ -72,42 +77,29 @@ void NetTarget::Clear(){
     for(MultipartPayload* payload: multipart_buffer){
         payload->Clear();
     }
+    memset(&buffer_packet,0,sizeof(Packet));
 }
 
-bool NetTarget::IsConnected(){
-    if(state_id == NetTarget::CONNECTED_LOCAL){return true;}
-    if(state_id == NetTarget::CONNECTED){
-        if(last_recv - time_ms() < config::network_timeout){
-            return true;
-        }
-        else{
-            state_id = NetTarget::TIMED_OUT;
-            SetStateMsg(wstr::allocf(L"Host %s timed out due to no data recieved",hostname));
-        }
+bool NetTarget::IsConnected(){return (state_id > 0);}
+
+void NetTarget::SetState(NetTargetState state,wchar* msg){
+    if(state_id != state){
+        state_id = state;
+        //run state change callback
     }
-    if(state_id == NetTarget::DISCONNECTING){return true;}
-    return false;
-}
-void NetTarget::SetStateMsg(wchar* msg){
     if(state_msg !=nullptr){free(state_msg);state_msg=nullptr;}
     state_msg=msg;
 }
 
 void NetTarget::Update(){
-    if(IsConnected() || state_id == CONNECTING){
+    if(IsConnected()){
         //Timeout check
-        if(IsConnected()){
-            if(time_ms() - last_recv > config::network_timeout){
-                SetStateMsg(wstr::allocf(L"Lost connection: remote host timed out"));
-                state_id = DISCONNECTING;
-            }
+        if(state_id == CONNECTING && time_ms() - conn_start > config::network_timeout){
+            SetState(TIMED_OUT,wstr::allocf(L"Failed to connect: remote host timed out"));
         }
-        else if(state_id == CONNECTING){
-            if(time_ms() - conn_start > config::network_timeout){
-                SetStateMsg(wstr::allocf(L"Failed to connect: remote host timed out"));
-                state_id = DISCONNECTING;
-            }
-        }//--
+        if(state_id == CONNECTED && time_ms() - last_recv > config::network_timeout){
+            SetState(TIMED_OUT,wstr::allocf(L"Lost connection: remote host timed out"));
+        }
 
         //Reliable resends
         for(ReliablePacketEnvelope *reliable: reliable_buffer){
@@ -124,23 +116,12 @@ void NetTarget::Update(){
             }
         }//--
     }
-    else{
-        switch(state_id){
-            case NETWORK_UNAVAILABLE:   state_id = DISCONNECTING;;break;
-            case INVALID:               state_id = DISCONNECTING;;break;
-            case UNKNOWN_ERROR:         state_id = DISCONNECTING;;break;
-            case DISCONNECTING:break;
-            case NOT_CONNECTED:break;
-            default:break;
-        }
-    }
 }
 
 void NetTarget::Disconnect(wchar* reason){
     Packet NOPE = BuildPacket_NOPE(reason);
     Send(&NOPE);
-    state_id = NetTarget::DISCONNECTING;
-    SetStateMsg(reason);
+    SetState(DISCONNECTING,reason);
 }
 
 void NetTarget::Send(Packet* packet){
@@ -191,9 +172,32 @@ Payload NetTarget::Recieve(){
             RemoveFromReliableBuffer(reliable);
             continue;
         }
+        if(packet.id == PacketID::ACPT){
+            int reliable = ReadPacket_ACPT_ackID(&packet);
+            RemoveFromReliableBuffer(reliable);
+        }
         if(packet.id == PacketID::NOPE){
-            state_id = NetTarget::DISCONNECTING;
-            SetStateMsg(wstr::new_copy(ReadPacket_NOPE_reason(&packet)));
+            SetState(DISCONNECTING,wstr::new_copy(ReadPacket_NOPE_reason(&packet)));
+        }
+        if(packet.id == PacketID::PING){
+            int ts_1,ts_2,ts_3;
+            ts_1 = ReadPacket_PING_timestamp(&packet,0);
+            ts_2 = ReadPacket_PING_timestamp(&packet,1);
+            ts_3 = ReadPacket_PING_timestamp(&packet,2);
+
+            if(ts_2 == 0){
+                Packet ping_2  = BuildPacket_PING(ts_1,time_ms(),0);
+                Send(&ping_2);
+            }
+            else if(ts_3 == 0){
+                latency= time_ms() - ts_1;
+                Packet ping_3  = BuildPacket_PING(ts_1,ts_2,time_ms());
+                Send(&ping_3);
+            }
+            else{
+                latency= time_ms() - ts_2;
+            }
+            continue;
         }
         if(packet.IsMultipart()){
             MultipartPayload* payload = AddToMultipartPayload((MultipartPacket*)&packet);
@@ -208,7 +212,6 @@ Payload NetTarget::Recieve(){
     }
     return Payload(0,0,nullptr);
 }
-
 
 
 void NetTarget::AddToReliableBuffer(Packet* packet){
@@ -251,7 +254,8 @@ Payload NetTarget::FinishMultipartPayload(int packet_id){
             Payload ret(payload->type,payload->len,payload->assembled_payload);
             payload->assembled_payload=nullptr;//ret now owns pointer;
             multipart_buffer.Delete(multipart_buffer.IndexOf(payload));
-            break;
+            return ret;
         }
     }
+    return Payload(0,0,nullptr);
 }

@@ -5,6 +5,7 @@
 #include "../game/scene.h"
 #include "../gui/ui_types.h"
 #include "../net/network.h"
+#include "client_signal.h"
 
 class Client{
     private:
@@ -22,14 +23,12 @@ class Client{
     ~Client();
 
     static Client* GetClient();
+    static void Signal(EventSignal val);
 
     void Start();
     void StartLoadScene(int scene_id);
     //void OnLoadSceneFinish();
     void SetMenu(int menu_id);
-
-    void Connect(char* full_uri_string);
-    void LocalConnect();
 
     void AddEntity(int eid);
     void RemoveEntity(int uuid);
@@ -37,14 +36,11 @@ class Client{
 
     void Paint();
     void Update(int frames);
-    void LoadingUpdate();
-
     void UpdatePositions();
+    void HandleSignals();
+
     void HandleUIInput();
     void HandleFrameInput();
-
-    void HandleNetworkState();
-    void SignalLocalServerReady();
 
     void Quit();
 };
