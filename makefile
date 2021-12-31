@@ -7,9 +7,9 @@ RESOURCE_ARCH = pe-x86-64
 
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS =  -lgdi32 -lglew32 -lwinmm -lopengl32  -lz -lfreetype.dll -lole32 -luuid
+LIBS =  -lgdi32 -lglew32 -lWs2_32 -lwinmm -lopengl32  -lz -lfreetype.dll -lole32 -luuid
 
-SRC_PATHS := src;src/io;src/gfx;src/game;src/game/component;src/game/system;src/client;src/server;src/gui;src/gui/menu;src/gui/widget;src/test;src/phys;src/struct;
+SRC_PATHS := src;src/io;src/net;src/gfx;src/game;src/game/component;src/game/system;src/client;src/server;src/gui;src/gui/menu;src/gui/widget;src/test;src/phys;src/struct;
 VPATH = $(SRC_PATHS)
 
 
@@ -17,6 +17,7 @@ MAIN_SRC := $(wildcard src/*.cpp)
 CLIENT_SRC := $(wildcard src/client/*.cpp)
 SERVER_SRC := $(wildcard src/server/*.cpp)
 IO_SRC := $(wildcard src/io/*.cpp)
+NET_SRC := $(wildcard src/net/*.cpp)
 GFX_SRC := $(wildcard src/gfx/*.cpp)
 GAME_SRC := $(wildcard src/game/*.cpp)
 PHYS_SRC := $(wildcard src/phys/*.cpp)
@@ -28,7 +29,7 @@ COMPONENT_SRC := $(wildcard src/game/component/*.cpp)
 SYSTEM_SRC := $(wildcard src/game/system/*.cpp)
 TEST_SRC := $(wildcard src/test/*.cpp)
 
-SRC := $(MAIN_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(GFX_SRC) $(GAME_SRC) $(COMPONENT_SRC) $(SYSTEM_SRC) $(UI_SRC) $(MENU_SRC) $(WIDGET_SRC) $(TEST_SRC) $(PHYS_SRC) $(STRUCT_SRC)
+SRC := $(MAIN_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(NET_SRC) $(GFX_SRC) $(GAME_SRC) $(COMPONENT_SRC) $(SYSTEM_SRC) $(UI_SRC) $(MENU_SRC) $(WIDGET_SRC) $(TEST_SRC) $(PHYS_SRC) $(STRUCT_SRC)
 
 OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
 

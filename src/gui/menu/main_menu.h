@@ -16,7 +16,7 @@ class MainMenu: public UI::Menu {
     void OnPaint();
     bool OnInput(Input::Event event_type);
     void OnResize();
-    bool OnSignal(UI::Signal signal);
+    bool OnSignal(EventSignal signal);
 };
 
 

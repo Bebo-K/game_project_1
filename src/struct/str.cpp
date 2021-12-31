@@ -24,7 +24,7 @@ char* cstr::allocf(const char* format, ...){
     va_end (args);
     return ret;
 }
-char* cstr::from_wstr(wchar* widestr){//truncates high-order bits.
+char* cstr::from_wstr(const wchar* widestr){//truncates high-order bits.
     if(widestr==nullptr)return nullptr;
     int str_len = wstr::len(widestr);
     char* str = (char*)malloc(str_len+1);
@@ -32,7 +32,7 @@ char* cstr::from_wstr(wchar* widestr){//truncates high-order bits.
     str[str_len]=0;
     return str;
 }
-char* cstr::from_wstr_utf16(wchar* widestr){
+char* cstr::from_wstr_utf16(const wchar* widestr){
     if(widestr==nullptr){return nullptr;}
     int utf_8_len=1;
     //loop through twice, first to get length of code points
@@ -137,13 +137,13 @@ bool cstr::contains(const char* str, const char* substr){
     }
     return false;
 }
-char* cstr::substr(char* str,int start,int length){
+char* cstr::substr(const char* str,int start,int length){
     char* ret = (char*)malloc(length+1);
-    memcpy(&str[start],ret,length);
+    memcpy(ret,&str[start],length);
     ret[length]=0;
     return ret;
 }
-char* substring_before(char* str,char separator,bool last){
+char* substring_before(const char* str,char separator,bool last){
     int sep_pos =0;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;if(!last)break;}}
     int new_strlen = sep_pos-1;
@@ -155,7 +155,7 @@ char* substring_before(char* str,char separator,bool last){
     result[new_strlen]=0;
     return result;
 }
-char* substring_after(char* str,char separator,bool last){
+char* substring_after(const char* str,char separator,bool last){
     int old_strlen=cstr::len(str);
     int sep_pos = old_strlen;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;if(!last)break;}}
@@ -168,19 +168,19 @@ char* substring_after(char* str,char separator,bool last){
     result[new_strlen]=0;
     return result;
 }
-char* cstr::substr_before(char* str,char separator){
+char* cstr::substr_before(const char* str,char separator){
 return substring_before(str,separator,false);
 }
-char* cstr::substr_after(char* str,char separator){
+char* cstr::substr_after(const char* str,char separator){
     return substring_after(str,separator,false);
 }
-char* cstr::substr_before_last(char* str,char separator){
+char* cstr::substr_before_last(const char* str,char separator){
     return substring_before(str,separator,true);
 }
-char* cstr::substr_after_last(char* str,char separator){
+char* cstr::substr_after_last(const char* str,char separator){
     return substring_after(str,separator,true);
 }
-int cstr::integer_from_string(char* str){
+int cstr::integer_from_string(const char* str){
     int value=0;
     for(int index=0;str[index]!=0;index++){
         if(str[index] >= '0' && str[index] <= '9'){
@@ -208,7 +208,7 @@ char* cstr::write_integer_string(int a){
     ret[len]=0;
     return ret;
 }
-float cstr::float_from_string(char* str){
+float cstr::float_from_string(const char* str){
     return (float)atof(str);
 }
 char* cstr::write_float_string(float a){
@@ -240,7 +240,7 @@ char* cstr::write_float_string(float a){
     str[mark]=0;
     return str;
 }
-bool cstr::bool_from_string(char* str){
+bool cstr::bool_from_string(const char* str){
     if(cstr::compare(str,"true"))return true;
     if(cstr::compare(str,"false"))return false;
     return false;
@@ -286,7 +286,7 @@ wchar* wstr::allocf(const wchar* format, ...){
     va_end (args);
     return ret;
 }
-wchar* wstr::from_cstr(char* cstr){//truncates high-order bits.
+wchar* wstr::from_cstr(const char* cstr){//truncates high-order bits.
     if(cstr==nullptr)return nullptr;
     int str_len = cstr::len(cstr);
     wchar* str = (wchar*)malloc((str_len+1)*sizeof(wchar));
@@ -355,7 +355,7 @@ wchar* wstr::substr(const wchar* str,int start,int length){
     ret[length]=0;
     return ret;
 }
-wchar* substring_before(wchar* str,wchar separator,bool last){
+wchar* substring_before(const wchar* str,wchar separator,bool last){
     int sep_pos =0;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;if(!last)break;}}
     int new_strlen = sep_pos-1;
@@ -367,7 +367,7 @@ wchar* substring_before(wchar* str,wchar separator,bool last){
     result[new_strlen]=0;
     return result;
 }
-wchar* substring_after(wchar* str,wchar separator,bool last){
+wchar* substring_after(const wchar* str,wchar separator,bool last){
     int old_strlen=wstr::len(str);
     int sep_pos = old_strlen;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;if(!last)break;}}
@@ -380,19 +380,19 @@ wchar* substring_after(wchar* str,wchar separator,bool last){
     result[new_strlen]=0;
     return result;
 }
-wchar* wstr::substr_before(wchar* str,wchar separator){
+wchar* wstr::substr_before(const wchar* str,wchar separator){
 return substring_before(str,separator,false);
 }
-wchar* wstr::substr_after(wchar* str,wchar separator){
+wchar* wstr::substr_after(const wchar* str,wchar separator){
     return substring_after(str,separator,false);
 }
-wchar* wstr::substr_before_last(wchar* str,wchar separator){
+wchar* wstr::substr_before_last(const wchar* str,wchar separator){
     return substring_before(str,separator,true);
 }
-wchar* wstr::substr_after_last(wchar* str,wchar separator){
+wchar* wstr::substr_after_last(const wchar* str,wchar separator){
     return substring_after(str,separator,true);
 }
-int wstr::integer_from_string(wchar* str){
+int wstr::integer_from_string(const wchar* str){
     int value=0;
     for(int index=0;str[index]!=0;index++){
         if(str[index] >= '0' && str[index] <= '9'){
@@ -420,7 +420,7 @@ wchar* wstr::write_integer_string(int a){
     ret[len]=0;
     return ret;
 }
-float wstr::float_from_string(wchar* str){
+float wstr::float_from_string(const wchar* str){
     return (float)_wtof(str);
 }
 wchar* wstr::write_float_string(float a){
@@ -452,7 +452,7 @@ wchar* wstr::write_float_string(float a){
     str[mark]=0;
     return str;
 }
-bool wstr::bool_from_string(wchar* str){
+bool wstr::bool_from_string(const wchar* str){
     if(wstr::compare(str,L"true"))return true;
     if(wstr::compare(str,L"false"))return false;
     return false;

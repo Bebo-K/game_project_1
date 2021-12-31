@@ -111,16 +111,22 @@ class Array{
     }
 
     T* operator[](int index){
-        if(index < 0 || index >= size){logger::exception("Array::[]] -> Index %d is out of range.",index);return nullptr;}
-        return data[index];
+        if(index < 0 || index >= length){logger::exception("Array::[] -> Index %d is out of range.",index);return nullptr;}
+        return &data[index];
     }
 
     void Resize(int new_size){
-        T* new_dat = calloc(new_size,sizeof(T));
-        memcpy(new_dat,data,(new_size > length)? length*sizeof(T),new_size*sizeof(T));
+        T* new_dat = (T*)calloc(new_size,sizeof(T));
+        memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
         free(data);
         data = new_dat;
         length = new_size;
+    }
+
+    int IndexOf(T* obj){
+        int index = obj-data;
+        if(index < 0 || index >= length){logger::exception("Array::Index of -> Index %d is out of range.",index);return 0;}
+        return index;
     }
     
     ArrayIterator<T> begin(){ return {this,0};}

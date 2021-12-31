@@ -18,8 +18,8 @@ class DeveloperConsole: public UI::Widget{
     static FontID console_font;
 
     int last_line_indx;
-    text_char line_buffers[CACHED_LINE_COUNT*MAX_LINE_LENGTH];
-    text_char entry_buffer[MAX_LINE_LENGTH];
+    wchar line_buffers[CACHED_LINE_COUNT*MAX_LINE_LENGTH];
+    wchar entry_buffer[MAX_LINE_LENGTH];
     
     public:
     int  start_timer;//hack to get the character that spawned the console from being immediately printed.

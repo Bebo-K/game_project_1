@@ -21,9 +21,6 @@ void BuildGlyphPrimitive(){
         logger::warn("Error building text glyph primitive, code: %d \n",err);
     }
 }
-
-
-
 UI_Text::UI_Text(){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
@@ -35,18 +32,21 @@ UI_Text::UI_Text(){
 UI_Text::UI_Text(char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
+    string=nullptr;
     x=y=w=h=0;
     SetString(wstr::from_cstr(str),-1);
 }
 UI_Text::UI_Text(wchar* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
+    string=nullptr;
     x=y=w=h=0;
     SetString(str,-1);
 }
 UI_Text::UI_Text(wchar* str,FontID font_id){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
+    string=nullptr;
     x=y=w=h=0;
     SetString(str,font_id);
 }

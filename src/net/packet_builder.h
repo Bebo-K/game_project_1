@@ -14,7 +14,7 @@ Packet BuildPacket_NOPE(wchar* reason);
 Packet BuildPacket_SPRQ();
 Packet BuildPacket_PLYR();
 Packet BuildPacket_PLDC();
-Packet BuildPacket_PING();
+Packet BuildPacket_PING(long timestamp1,long timestamp2,long timestamp3);
 Packet BuildPacket_SPWN();
 Packet BuildPacket_DSPN();
 Packet BuildPacket_DLTA();
@@ -23,7 +23,9 @@ Packet BuildPacket_CHAT();
 
 wchar* ReadPacket_JOIN_name(Packet* JOIN);
 wchar* ReadPacket_NOPE_reason(Packet* NOPE);
+int ReadPacket_ACPT_ackID(Packet* OKAY);
+int ReadPacket_ACPT_playerID(Packet* OKAY);
 int ReadPacket_OKAY_ackID(Packet* OKAY);
-
+int ReadPacket_PING_timestamp(Packet* OKAY,int timestamp_num);
 
 #endif

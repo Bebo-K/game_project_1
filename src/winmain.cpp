@@ -97,8 +97,8 @@ void sleep_thread(int ms){
 void* get_mutex_lock(void* object,int timeout){
     wchar_t objname[sizeof(void*)*2 +3];
     memset(objname,0,(sizeof(void*)*2 +3)*sizeof(wchar_t));
-    wsprintf(objname,L"%p",object);
-    HANDLE os_mtx_lock = CreateMutex(null,true,objname);
+    swprintf(objname,L"%p",object);
+    HANDLE os_mtx_lock = CreateMutexW(null,true,objname);
     if(GetLastError()==ERROR_ALREADY_EXISTS){
         if(WaitForSingleObject(os_mtx_lock,timeout)!= WAIT_OBJECT_0){return nullptr;}
     }
@@ -107,7 +107,7 @@ void* get_mutex_lock(void* object,int timeout){
 
 bool release_mutex_lock(void* os_mtx_lock){
     if(os_mtx_lock!=0);
-    ReleaseMutex(os_mtx_lock);
+    return ReleaseMutex(os_mtx_lock);
 }
 
 int ms_per_second;

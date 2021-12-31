@@ -33,7 +33,7 @@ namespace UI{
         void Paint();
         bool HandleInput(Input::Event event_type);
         void HandleResize();
-        bool HandleSignal(Signal signal);
+        bool HandleSignal(EventSignal signal);
 
         virtual void OnLoad();
         virtual void OnUnload();
@@ -43,7 +43,7 @@ namespace UI{
         virtual void OnPaint();
         virtual bool OnInput(Input::Event event_type);
         virtual void OnResize();
-        virtual bool OnSignal(Signal signal);
+        virtual bool OnSignal(EventSignal signal);
 
         void AddWidget(Widget* w);
         void RemoveWidget(Widget* w);

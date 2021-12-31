@@ -3,14 +3,22 @@
 #include "../log.h"
 #include "../config.h"
 
-wchar_t* GetSaveFilePath(char* save_name){
+
+const char* SaveFile::savefile_extension = ".save";
+
+wchar_t* SaveFile::GetSaveFilePath(char* save_name){
     int save_directory_len = wcslen(config::save_directory);
     int save_name_len = cstr::len(save_name);
-    wchar_t* save_file_path = (wchar_t*)calloc(save_directory_len+save_name_len+1,sizeof(wchar_t));
+    int save_extension_len = cstr::len(savefile_extension);
+    wchar_t* save_file_path = (wchar_t*)calloc(save_directory_len+1+save_name_len+save_extension_len+1,sizeof(wchar_t));
 
     memcpy(save_file_path,config::save_directory,save_directory_len*sizeof(wchar_t));
+    save_file_path[save_directory_len]=OS_PATH_SEPERATOR;
     for(int i=0;i<save_name_len;i++){
-        save_file_path[save_directory_len+i] = (wchar_t)save_name[i];
+        save_file_path[save_directory_len+1+i] = (wchar_t)save_name[i];
+    }
+    for(int i=0;i<save_extension_len;i++){
+        save_file_path[save_directory_len+1+save_name_len+i] = (wchar_t)savefile_extension[i];
     }
     return save_file_path;
 }
@@ -134,6 +142,9 @@ void SaveFile::New(){
     campaigns = (SaveCampaign*)calloc(CAMPAIGN_COUNT,sizeof(SaveCampaign));
     BuildDemoCampaign(&campaigns[0]);
 }
+bool SaveFile::Exists(char* save_name){
+    return UserFile::Exists(GetSaveFilePath(save_name));
+}
 void SaveFile::Load(char* save_name){
     UserFile save_file(GetSaveFilePath(save_name),'r');
 
@@ -145,7 +156,7 @@ void SaveFile::Load(char* save_name){
     save_file.close();
 }
 void SaveFile::Save(char* save_name){
-    UserFile save_file(GetSaveFilePath(save_name),'w ');
+    UserFile save_file(GetSaveFilePath(save_name),'w');
 
     byte* data = (byte*)calloc(SerializedLength(),1);
     int data_len = Serialize(data);

@@ -3,6 +3,8 @@
 
 #define MAX_CONTROLLERS 4
 #define MAX_CONTROLLER_AXES 4
+
+#include <winsock2.h>
 #include <windows.h>
 #include <dinput.h>
 #include <winuser.h>

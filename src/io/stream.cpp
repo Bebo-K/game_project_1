@@ -1,6 +1,6 @@
 #include "stream.h"
 
-#include "../struct/data_types.h"
+#include "../struct/str.h"
 
 Stream::Stream(char* uri_path){uri = cstr::new_copy(uri_path);}
 Stream::~Stream(){

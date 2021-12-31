@@ -58,7 +58,7 @@ void Widget::HandleResize(){
     for(WidgetComponent* c: components){c->OnResize(this);}
 }
 
-bool Widget::HandleSignal(Signal signal){
+bool Widget::HandleSignal(EventSignal signal){
     if(!active)return false;
     for(WidgetComponent* c: components){if(c->OnSignal(this,signal))return true;}
     return false;

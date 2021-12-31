@@ -48,7 +48,7 @@ class GUI{
 
     //UI interaction events
     bool OnInput(Input::Event event_type);
-    void OnSignal(UI::Signal signal);
+    void OnSignal(EventSignal signal);
     void OnResize(int screen_w,int screen_h);
 };
 

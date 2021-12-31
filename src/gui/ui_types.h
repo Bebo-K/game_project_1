@@ -3,20 +3,13 @@
 
 #include "../struct/2d_types.h"
 #include "../struct/data_types.h"
+#include "../signal.h"
 
 namespace UI{
 
 enum ScaleMode{Absolute, Relative};
 enum HorizontalOrigin{Center_H,Right,Left,To_Right,To_Left};
 enum VerticalOrigin{Center_V,Top,Bottom,Above,Below};
-
-
-//A data packet class that can be sent to the UI for custom event handling
-struct Signal{
-    int signal_id;
-    int metadata_len;
-    byte* metadata;
-};
 
 //A general struct for self-sizing rectangles to position menus/panels/widgets
 class Layout{

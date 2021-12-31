@@ -17,7 +17,7 @@ class WidgetComponent{
     virtual void OnPaint(Widget* w){}
     virtual bool OnInput(Widget* w,Input::Event event_type){return false;}
     virtual void OnResize(Widget* w){}
-    virtual bool OnSignal(Widget* w,Signal signal){return false;}
+    virtual bool OnSignal(Widget* w,EventSignal signal){return false;}
 
     virtual ~WidgetComponent();
 };
@@ -40,7 +40,7 @@ class Widget{
     void Paint();
     bool HandleInput(Input::Event event_type);
     void HandleResize();
-    bool HandleSignal(Signal signal);
+    bool HandleSignal(EventSignal signal);
 };
 
 }

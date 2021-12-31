@@ -42,7 +42,9 @@ class SaveCampaign{
 };
 
 class SaveFile{
-
+    private:
+    static const char* savefile_extension;//=".save"
+    static wchar_t* GetSaveFilePath(char* save_name);
     public:
     int           saved_players;
     SavePlayer*   players;
@@ -52,6 +54,7 @@ class SaveFile{
     SaveFile();
     ~SaveFile();
     void New();
+    static bool Exists(char* save_name);
     void Load(char* save_name);
     void Save(char* save_name);
     int Serialize(byte* bytes);

@@ -82,7 +82,7 @@ bool GUI::OnInput(Input::Event event_type){
     for(Menu* m: menus){if(m->HandleInput(event_type))return true;}
     return false;
 }
-void GUI::OnSignal(UI::Signal signal){
+void GUI::OnSignal(EventSignal signal){
     for(Widget* w: debug_widgets){if(w->HandleSignal(signal))return;}
     for(Menu* m: menus){if(m->HandleSignal(signal))return;}
 }

@@ -14,8 +14,11 @@
 #include "../game/system/state_manager.h"
 #include "../gfx/ui_text.h"
 #include "../net/packet_builder.h"
+#include "../threads.h"
 
 Client* Client::instance = nullptr;
+
+SynchronousBuffer client_signals(sizeof(EventSignal),4);
 
 Client::Client() : scene(), scene_renderer(), ui(){
     logger::info("Initializing client\n");
@@ -38,6 +41,7 @@ Client::~Client(){
 }
 
 Client* Client::GetClient(){return Client::instance;}
+void Client::Signal(EventSignal val){client_signals.Write((byte*)&val);}
 
 void Client::Start(){
         FontManager::LoadFontFace("Merriweather/Merriweather-Regular",8);
@@ -142,6 +146,7 @@ void Client::Update(int frames){
     }
     Input::Update();
     network.Update();
+    HandleSignals();
 }
 
 void Client::HandleUIInput(){
@@ -156,41 +161,50 @@ void Client::HandleFrameInput(){
     }
 }
 
-void Client::HandleNetworkState(){
-    switch(network.network_state){
-        case ClientNetwork::NO_CONNECTION: break;
-        case ClientNetwork::LOCAL_SERVER_STARTED:{
-            ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
-            LocalConnect();
-            break;
+void Client::HandleSignals(){
+    EventSignal signal = {0};
+    while(client_signals.Read((byte*)&signal)){
+        switch(signal.type){
+            case ClientSignalID::CONNECTED_TO_SERVER:{
+                    //LOTS:
+                    ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connected to server!"));
+
+
+                    //ui.CloseAll();
+                    //ui.ingame_menu->Open();
+                
+                break;}
+            case ClientSignalID::DISCONNECTED_FROM_SERVER:{
+                int disconnect_code = signal.params[0].ival;
+                wchar* disconnect_reason = signal.params[1].strval;
+                if(disconnect_code < 0){
+                    ui.CloseAll();
+                    ui.error_menu->Open();
+                    scene.Unload();
+                    if(disconnect_reason != null){
+                        ui.error_menu->SetStatusMessage(wstr::allocf(L"Disconnected from server: %s",disconnect_reason));
+                        free(disconnect_reason);
+                    }
+                    else{
+                        ui.error_menu->SetStatusMessage(wstr::new_copy(L"Disconnected from server (No reason given)"));
+                    }
+                }
+                else{
+                    ui.CloseAll();
+                    ui.main_menu->Open();
+                    scene.Unload();
+                }
+                break;}
+            case ClientSignalID::LOCAL_SERVER_READY:{
+                    ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
+                    Packet join_request = BuildPacket_JOIN(L"Chowzang");
+                    network.LocalConnect(&join_request);
+                break;}
+            default:break;
         }
-        case ClientNetwork::CONNECTING:{
-            if(network.network_substatus != null){
-                ui.loading_menu->SetStatusMessage(wstr::new_copy(network.network_substatus));
-                free(network.network_substatus);
-                network.network_substatus=null;
-            }
-            break;
-        }
-        case ClientNetwork::CONNECTION_ERROR:{
-            ui.CloseAll();
-            ui.error_menu->Open();
-            scene.Unload();
-            if(network.network_substatus != null){
-                ui.error_menu->SetStatusMessage(wstr::new_copy(network.network_substatus));
-                free(network.network_substatus);
-                network.network_substatus=null;
-            }
-            break;
-        }
-        case ClientNetwork::CONNECTED: break;
     }
 }
 
-void Client::SignalLocalServerReady(){
-    Packet join_request = BuildPacket_JOIN(L"Chowzang");
-    network.LocalConnect(&join_request);
-}
 
 void Client::Quit(){
     Game::Exit();

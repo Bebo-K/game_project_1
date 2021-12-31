@@ -15,6 +15,7 @@ class Server{
     bool    ready;
     int     current_players;
     int     max_players;
+    long long active_frames;
     List<Scene> active_scenes;
     SaveFile server_save;
     ServerNetwork network;
@@ -25,10 +26,12 @@ class Server{
     void AddEntity(int eid);
     void RemoveEntity(int uuid);
     
-    void Update(int ms);
+    void Update(int frames);
     void UpdateScene(Scene* scene,int ms);
-
-
+    void UpdateNetwork(int frames);
+    
+    void HandleSignals();
+    static void Signal(EventSignal val);
 };
 
 void ServerMain();

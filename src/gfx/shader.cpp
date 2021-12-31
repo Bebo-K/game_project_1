@@ -16,10 +16,10 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
     delete vertex_shader_stream;
     delete fragment_shader_stream;
 
-    if(vertex_program == null){
+    if(vertex_program == nullptr){
         logger::exception("Shader::Shader -> Vertex shader not found: %s\n",vertex_uri);
     }
-    if(fragment_program == null){
+    if(fragment_program == nullptr){
         logger::exception("Shader::Shader -> Fragment shader not found: %s\n",fragment_uri);
     }
 
@@ -165,7 +165,7 @@ Shader* ShaderManager::GetShader(char* name){
 
 Shader* ShaderManager::UseShader(char* name){
     Shader* ret = CACHED_SHADERS.Get(name);
-    if(ret== null){
+    if(ret== nullptr){
         logger::warn("Shader not found, using default.");
         ret=DEFAULT_SHADER;
     }
@@ -181,7 +181,7 @@ Shader* ShaderManager::UseShader(char* name){
 void ShaderManager::RemoveShader(char* name){
     Shader* ret = CACHED_SHADERS.Get(name);
     CACHED_SHADERS.Remove(name);
-    if(ret != null){
+    if(ret != nullptr){
         delete ret;
     }   
 }

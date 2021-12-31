@@ -8,18 +8,17 @@
 #endif
 
 #include <string.h>
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <ws2tcpip.h>
-#pragma comment(lib, "Ws2_32.lib") 
+//#pragma comment(lib, "Ws2_32.lib") 
 
 #include "os_net.h"
 #include "network.h"
 #include "../log.h"
 #include "../config.h"
 
-void set_state_from_error(NetTarget* target);
-void handle_listen_error(ServerNetwork* server_net);
+void set_state_from_error(Network::NetTarget* target);
 
 bool OSNetwork::Init(){
 	WSADATA wsaData;//has specifics like max datagram size and max connections, but otherwise unneeded.
@@ -35,8 +34,8 @@ void OSNetwork::Destroy(){
 	WSACleanup();
 }
 
-ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
-	ip_address ret = {0};
+Network::ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
+	Network::ip_address ret = {0};
 	addrinfoW*	target_address;
 
 	addrinfoW	dns_hints = {0};
@@ -52,8 +51,8 @@ ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
 
 	if(target_address->ai_family == AF_INET6){
 		sockaddr_in6* ipv6 = (sockaddr_in6*)target_address->ai_addr;
-		ret.set_ipv6(true);
-		ret.set_valid(true);
+		ret.SetIpv6(true);
+		ret.SetValid(true);
 		
 		memcpy(ret.ipv6,&ipv6->sin6_addr,16);
 		ret.ipv6_flowinfo = ipv6->sin6_flowinfo;
@@ -63,8 +62,8 @@ ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
 	}
 	else if(target_address->ai_family == AF_INET){
 		sockaddr_in* ip = (sockaddr_in*)target_address->ai_addr;
-		ret.set_ipv6(false);
-		ret.set_valid(true);
+		ret.SetIpv6(false);
+		ret.SetValid(true);
 		
 		memcpy(ret.ipv4,&ip->sin_addr,4);
 		ret.port=ip->sin_port;
@@ -73,23 +72,28 @@ ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
 	//TODO: handle target_address->ai_next + multiple attempts
 
 	FreeAddrInfoW(target_address);
+	return ret;
 }
 
-bool OSNetwork::connect(Packet* connect_packet,NetTarget* target){
+bool OSNetwork::connect(Packet* connect_packet,Network::NetTarget* target){
 	int send_result;
 
-	if(target->address.is_localhost()){
-		target->state_id=NetTarget::CONNECTED_LOCAL;
+	if(target->address.IsLocalhost()){
+		target->SetState(Network::CONNECTED_LOCAL,nullptr);
+		target->conn_start=time_ms();
+		target->Send(connect_packet);
 		return true;
 	}
 	
-	target->socket = socket(target->address.is_ipv6()? AF_INET6 : AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+	target->socket = socket(target->address.IsIpv6()? AF_INET6 : AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if (target->socket == INVALID_SOCKET) {
-		logger::exception("Failed to create a local socket on connect. WinSock2 socket() error code: %d",WSAGetLastError());
+		wchar* error_string = wstr::allocf(L"Failed to create a local socket on connect. WinSock2 socket() error code: %d",WSAGetLastError());
+		logger::exceptionW(error_string);
+		target->SetState(Network::NETWORK_UNAVAILABLE,error_string);
 		return false;
 	}
 
-	if(target->address.is_ipv6()){
+	if(target->address.IsIpv6()){
 		sockaddr_in6 addr = {0};
 		memcpy(&addr.sin6_addr,target->address.ipv6,16);
 		addr.sin6_family = AF_INET6;
@@ -116,21 +120,22 @@ bool OSNetwork::connect(Packet* connect_packet,NetTarget* target){
 		return false;
 	}
 	else if(send_result != connect_packet->length){
-		target->state_id = NetTarget::UNKNOWN_ERROR;
-		target->SetStateMsg(wstr::allocf(L"Connect packet was not completely sent"));
+		target->SetState(Network::UNKNOWN_ERROR,wstr::new_copy(L"Connect packet was not completely sent"));
 		target->socket = INVALID_SOCKET;
 		return false;
 	}
 	
+	target->conn_start=time_ms();
 	return true;
 }
 
-void OSNetwork::disconnect(NetTarget* target){
+void OSNetwork::disconnect(Network::NetTarget* target){
 	closesocket(target->socket);
 	target->socket = INVALID_SOCKET;
+	target->SetState(Network::NOT_CONNECTED,nullptr);
 }
 
-bool OSNetwork::send_packet(Packet* packet,NetTarget* target){
+bool OSNetwork::send_packet(Packet* packet,Network::NetTarget* target){
 	int result = send(target->socket,(char*)packet, packet->length, 0 );
     if (result == SOCKET_ERROR) {
 		set_state_from_error(target);
@@ -139,9 +144,12 @@ bool OSNetwork::send_packet(Packet* packet,NetTarget* target){
 	return true;
 }
 
-bool OSNetwork::recv_packet(Packet* packet,NetTarget* target){
+bool OSNetwork::recv_packet(Packet* packet,Network::NetTarget* target){
 	unsigned long available;
-	int sockstat =ioctlsocket(target->socket,FIONREAD,&available);
+	if(ioctlsocket(target->socket,FIONREAD,&available) != 0){
+		target->SetState(Network::UNKNOWN_ERROR,wstr::allocf(L"Failed to get listener socket status, error code %x",WSAGetLastError()));
+        return false;
+	}
 	if(available > 0){return false;}
 
 	int result = recv(target->socket,(char*)packet, packet->length, 0 );
@@ -153,11 +161,10 @@ bool OSNetwork::recv_packet(Packet* packet,NetTarget* target){
 }
 
 
-
-Socket OSNetwork::bind_to_port(short port){
+Socket OSNetwork::bind_to_port(unsigned short port){
 	Socket result = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if (result == INVALID_SOCKET){
-		logger::exception(wstr::allocf("Failed to create a local socket. WinSock2 socket() error code: %d",WSAGetLastError()));
+		logger::exception("Failed to create a local socket. WinSock2 socket() error code: %d",WSAGetLastError());
 		return INVALID_SOCKET;
 	}
 	sockaddr_in6 bind_address;
@@ -166,7 +173,7 @@ Socket OSNetwork::bind_to_port(short port){
 	bind_address.sin6_addr = in6addr_any;
 	int bind_result = bind(result, (SOCKADDR *) &bind_address, sizeof (bind_address));
 	if(bind_result != 0){
-		logger::exception(wstr::allocf("Failed to bind to port. WinSock2 bind() error result: %d",bind_result));
+		logger::exception("Failed to bind to port. WinSock2 bind() error result: %d",bind_result);
 		return INVALID_SOCKET;
 	}
 	return true;
@@ -177,17 +184,20 @@ void OSNetwork::unbind(Socket* listen_socket){
 	*listen_socket = INVALID_SOCKET;
 }
 
-int OSNetwork::listen(Packet* packet, Socket socket,ip_address* source_addr){
+int OSNetwork::listen(Packet* packet, Socket socket,Network::ip_address* source_addr){
 	unsigned long available;
-	int sockstat =ioctlsocket(server->socket,FIONREAD,&available);
-	if(available > 0){return 0;}
+	if(ioctlsocket(socket,FIONREAD,&available) != 0){
+		logger::exception("Failed to get listener socket status, error code %x",WSAGetLastError());
+        return -1;
+	}
+	if(available <= 0){return 0;}
 
 	sockaddr_storage remote_addr;
 	int remote_addr_size = sizeof(sockaddr_storage);
 
-	int result = recvfrom(server->socket,(char*)packet, sizeof(Packet), 0 ,(sockaddr*)&remote_addr,&remote_addr_size);
+	int result = recvfrom(socket,(char*)packet, sizeof(Packet), 0 ,(sockaddr*)&remote_addr,&remote_addr_size);
     if (result == SOCKET_ERROR) {
-		logger::exception(wstr::allocf("Failed to listen on server socket %x",WSAGetLastError()));
+		logger::exception("Failed to listen on server socket, error code %x",WSAGetLastError());
         return -1;
     }
 	
@@ -215,46 +225,38 @@ int OSNetwork::listen(Packet* packet, Socket socket,ip_address* source_addr){
 }
 
 
-void set_state_from_error(NetTarget* target){
+void set_state_from_error(Network::NetTarget* target){
 	int error_code = WSAGetLastError();
 
 	switch(error_code){
 		case 0: break; 
 		case WSAENETDOWN:{
-			target->state_id = NetTarget::NETWORK_UNAVAILABLE;
-			target->SetStateMsg(wstr::allocf(L"The network is unavailable"));
+			target->SetState(Network::NETWORK_UNAVAILABLE,wstr::allocf(L"The network is unavailable"));
 			break;}
 		case WSAECONNRESET:{
-			target->state_id = NetTarget::ABORTED;
-			target->SetStateMsg(wstr::allocf(L"Connection reset"));
+			target->SetState(Network::ABORTED,wstr::allocf(L"Connection reset"));
 			break;}
 		case WSAETIMEDOUT:{
-			target->state_id = NetTarget::TIMED_OUT;
-			target->SetStateMsg(wstr::allocf(L"Connection timed out"));
+			target->SetState(Network::TIMED_OUT,wstr::allocf(L"Connection timed out"));
 			break;}
 		case WSAEADDRNOTAVAIL:{
-			target->state_id = NetTarget::INVALID;
-			target->SetStateMsg(
+			target->SetState(Network::INVALID,
 				(target->hostname != nullptr)? wstr::allocf(L"The remote host %s is not a valid address",target->hostname)
-					: wstr::allocf(L"The remote address is invalid"));
+											: wstr::allocf(L"The remote address is invalid"));
 			break;}
 		case WSAEHOSTUNREACH:{
-			target->state_id = NetTarget::INVALID;
-			target->SetStateMsg(
+			target->SetState(Network::INVALID,
 				(target->hostname != nullptr)? wstr::allocf(L"Remote host unreachable %s",target->hostname)
-					: wstr::allocf(L"Remote host is unreachable"));
+											: wstr::allocf(L"Remote host is unreachable"));
 			break;}
 		case WSAENETUNREACH:{
-			target->state_id = NetTarget::NETWORK_UNAVAILABLE;
-			target->SetStateMsg(wstr::allocf(L"Network is unreachable from this host"));
+			target->SetState(Network::NETWORK_UNAVAILABLE,wstr::allocf(L"Network is unreachable from this host"));
 			break;}
 		case WSAEDESTADDRREQ:{
-			target->state_id = NetTarget::INVALID;
-			target->SetStateMsg(wstr::allocf(L"No destination address"));
+			target->SetState(Network::INVALID,wstr::allocf(L"No destination address"));
 			break;}
 		default: {
-			target->state_id = NetTarget::UNKNOWN_ERROR;
-			target->SetStateMsg(wstr::allocf(L"An unknown error has occured (%d)",error_code));
+			target->SetState(Network::UNKNOWN_ERROR,wstr::allocf(L"An unknown error has occured (%d)",error_code));
 			break;
 		}
 	}

@@ -50,6 +50,7 @@ bool Packet::IsMultipart(){
     return length > MAX_UDP_PACKET_SIZE;
 }
 
+Payload Packet::getPayload(){return Payload(this->type,this->length-HEADER_SIZE,this->data);}
 
 
 void MultipartPacket::ClearData(){

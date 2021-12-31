@@ -20,8 +20,8 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
     entry_rect.color = {0,0,0,0.8};
 
     last_line_indx=0;
-    memset(line_buffers,0,sizeof(text_char)*CACHED_LINE_COUNT*MAX_LINE_LENGTH);
-    memset(entry_buffer,0,sizeof(text_char)*MAX_LINE_LENGTH);
+    memset(line_buffers,0,sizeof(wchar)*CACHED_LINE_COUNT*MAX_LINE_LENGTH);
+    memset(entry_buffer,0,sizeof(wchar)*MAX_LINE_LENGTH);
     memset(shown_lines,0,sizeof(UI_Text)* SHOWN_LINE_COUNT);
     if(console_font < 0){
         console_font = FontManager::LoadFontFace("Merriweather/Merriweather-Regular",14);
@@ -76,7 +76,7 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
     if(!active)return false;
     if(event_type == Input::PC_Text && start_timer == 0){
         int cursor;
-        text_char* input = Controller::GetTextInput();
+        wchar* input = Controller::GetTextInput();
         for(cursor=0;entry_buffer[cursor]!=0;cursor++);
 
         for(int i=0;input[i] != 0;i++){
@@ -87,8 +87,8 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
             }
             else if(input[i] == 0x0D && cursor > 0){
                 memcpy(&line_buffers[DeveloperConsole::MAX_LINE_LENGTH*last_line_indx],
-                    entry_buffer,sizeof(text_char)*DeveloperConsole::MAX_LINE_LENGTH);
-                memset(entry_buffer,0,sizeof(text_char)*DeveloperConsole::MAX_LINE_LENGTH);
+                    entry_buffer,sizeof(wchar)*DeveloperConsole::MAX_LINE_LENGTH);
+                memset(entry_buffer,0,sizeof(wchar)*DeveloperConsole::MAX_LINE_LENGTH);
                 cursor=0;
                 last_line_indx++;
                 if(last_line_indx >= DeveloperConsole::CACHED_LINE_COUNT){
@@ -113,7 +113,9 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
 void DeveloperConsole::Write(char* str){
     if(instance != null){
         if(cstr::len(str) < MAX_LINE_LENGTH){
-            TextString::write(str,&instance->line_buffers[instance->last_line_indx*MAX_LINE_LENGTH]);
+            wchar* wide_str = wstr::from_cstr(str);
+            memcpy(&instance->line_buffers[instance->last_line_indx*MAX_LINE_LENGTH],wide_str,sizeof(wchar)*(wstr::len(wide_str)+1));
+            free(wide_str);
             instance->last_line_indx++;
             if(instance->last_line_indx > CACHED_LINE_COUNT){instance->last_line_indx=0;}
         }
@@ -126,7 +128,7 @@ void DeveloperConsole::UpdateShownLines(){
     int retrieved_line_count=0;
     for(int line_index = last_line_indx-1; retrieved_line_count < SHOWN_LINE_COUNT && line_index != last_line_indx;line_index--){
         if(line_index < 0){line_index = CACHED_LINE_COUNT-1;}
-        text_char* line = &line_buffers[line_index*MAX_LINE_LENGTH];
+        wchar* line = &line_buffers[line_index*MAX_LINE_LENGTH];
         if(line[0] != 0){
             shown_lines[retrieved_line_count].SetString(line,console_font);
             retrieved_line_count++;

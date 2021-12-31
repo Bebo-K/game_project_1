@@ -36,7 +36,7 @@ void Panel::OnResize(){
     layout.Resize();
     for(Widget* w: widgets){w->HandleResize();}
 }
-bool Panel::OnSignal(Signal signal){
+bool Panel::OnSignal(EventSignal signal){
     if(!active)return false;
     for(Widget* w: widgets){if(w->HandleSignal(signal))return true;}
     return false;

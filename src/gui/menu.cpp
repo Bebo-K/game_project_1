@@ -54,7 +54,7 @@ void Menu::HandleResize(){
     OnResize();
     for(Widget* w: widgets){w->HandleResize();}
 }
-bool Menu::HandleSignal(Signal signal){
+bool Menu::HandleSignal(EventSignal signal){
     if(!active)return false;
     for(Widget* w: widgets){if(w->HandleSignal(signal))return true;}
     if(OnSignal(signal))return true;
@@ -69,7 +69,7 @@ void Menu::OnUpdate(int frames){}
 void Menu::OnPaint(){}
 bool Menu::OnInput(Input::Event event_type){return false;}
 void Menu::OnResize(){}
-bool Menu::OnSignal(Signal signal){return false;}
+bool Menu::OnSignal(EventSignal signal){return false;}
 
 void Menu::AddWidget(Widget* w){
     w->layout.SetParent(&layout);

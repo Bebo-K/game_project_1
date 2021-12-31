@@ -22,7 +22,7 @@ inline bool CompareKey(char* k1, char* k2){return cstr::compare(k1,k2);}
 
 template <typename K>
 bool KeyNull(K k){return k==0;}
-inline bool KeyNull(char* k){return k==null;}
+inline bool KeyNull(char* k){return k==nullptr;}
 
 template <typename K>
 K Map_SetValue(K k){return k;}
@@ -80,17 +80,17 @@ class Map{
         for(int i=0;i< slots;i++){
             UnsetKey(i);
         }
-        free(keys);keys=null;
-        free(values);values=null;
+        free(keys);keys=nullptr;
+        free(values);values=nullptr;
     }
     V Get(K key){
         for(int i=0;i< slots;i++){
             if(KeyNull(keys[i]))continue;
             if(CompareKey(key,keys[i])){return values[i];}
         }
-        return null;
+        return nullptr;
     }
-    bool Has(K key){return Get(key)!=null;}
+    bool Has(K key){return Get(key)!=nullptr;}
     bool Add(K key,V value){
         if(Has(key))return false;
         int slot_to_add=0;
@@ -103,7 +103,7 @@ class Map{
     }
     void Remove(K key){
         for(int i=0;i< slots;i++){
-            if(keys[i]==null)continue;
+            if(keys[i]==nullptr)continue;
             if(cstr::compare(key,keys[i])){
                 UnsetKey(i);
                 memset(&values[i],0,sizeof(V));

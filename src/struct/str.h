@@ -34,8 +34,8 @@ namespace cstr{
 
 namespace wstr{
     wchar* allocf(const wchar* format, ...);
-    int len(wchar* str);
-    wchar* from_cstr(char* str);
+    int len(const wchar* str);
+    wchar* from_cstr(const char* str);
     wchar* new_copy(const wchar* old_string);
     wchar* lowercase_copy(const wchar* old_string);
     wchar* append(const wchar* str1, const wchar* str2);
@@ -44,15 +44,15 @@ namespace wstr{
     bool starts_with(const wchar* str, const wchar* start);
     bool contains(const wchar* str, const wchar* substr);
     wchar* substr(const wchar* str,int start,int len);
-    wchar* substr_after(wchar* str,wchar separator);
-    wchar* substr_before(wchar* str,wchar separator);
-    wchar* substr_after_last(wchar* str,wchar separator);
-    wchar* substr_before_last(wchar* str,wchar separator);
-    int integer_from_string(wchar* str);
+    wchar* substr_after(const wchar* str,wchar separator);
+    wchar* substr_before(const wchar* str,wchar separator);
+    wchar* substr_after_last(const wchar* str,wchar separator);
+    wchar* substr_before_last(const wchar* str,wchar separator);
+    int integer_from_string(const wchar* str);
     wchar* write_integer_string(int a);
-    float float_from_string(wchar* str);
+    float float_from_string(const wchar* str);
     wchar* write_float_string(float a);
-    bool bool_from_string(wchar* str);
+    bool bool_from_string(const wchar* str);
     wchar* write_bool_string(bool a); 
 };
 

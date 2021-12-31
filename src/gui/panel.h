@@ -24,7 +24,7 @@ namespace UI{
         void Paint();
         bool OnInput(Input::Event event_type);
         void OnResize();
-        bool OnSignal(Signal signal);
+        bool OnSignal(EventSignal signal);
 
         void AddWidget(Widget* w);
         void RemoveWidget(Widget* w);

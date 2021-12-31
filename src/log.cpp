@@ -21,6 +21,15 @@ void logger::info(const char* text,...){
   va_end (args);
   fflush(stdout);
 }
+void logger::infoW(const wchar* text,...){
+  va_list args;
+  va_start (args,text);
+  vwprintf(text, args);
+  vfwprintf(logfile,text,args);
+  fflush(logfile);
+  va_end (args);
+  fflush(stdout);
+}
 
 void logger::debug(const char* text,...){
   if(config::debug_mode != 0){
@@ -51,6 +60,16 @@ void logger::warn(const char* text,...){
   va_start (args,text);
   vprintf (text, args);
   vfprintf(logfile,text,args);
+  fflush(stderr);
+  fflush(logfile);
+  //Raise warning flag
+  va_end (args);
+}
+void logger::warnW(const wchar* text,...){
+  va_list args;
+  va_start (args,text);
+  vwprintf (text, args);
+  vfwprintf(logfile,text,args);
   fflush(stderr);
   fflush(logfile);
   //Raise warning flag

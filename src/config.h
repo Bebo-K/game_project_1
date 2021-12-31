@@ -53,6 +53,6 @@ struct ConfigEntry{
 };
 
 
-extern List<ConfigEntry> config_entries;
+extern List<ConfigEntry> global_config_entries;
 
 #endif

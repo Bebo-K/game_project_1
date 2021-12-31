@@ -8,7 +8,7 @@
 struct Mutex{
     void* obj_ptr;
     void* os_mtx_ptr;
-    Mutex(void* object){obj_ptr=obj_ptr;os_mtx_ptr=nullptr;}
+    Mutex(void* object){obj_ptr=object;os_mtx_ptr=nullptr;}
     inline bool getSync(int timeout){
         os_mtx_ptr = get_mutex_lock(obj_ptr,timeout);
         return os_mtx_ptr != nullptr;
@@ -27,7 +27,6 @@ struct Mutex{
 
 
 class SynchronousBuffer{
-    const static int BLOCK_EMPTY=0,BLOCK_FULL=1,BLOCK_IN_USE=2;
 
     int block_length;
     int blocks;

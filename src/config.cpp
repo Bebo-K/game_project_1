@@ -64,7 +64,7 @@ void config::Init(){
 void config::Destroy(){}
 
 void config::SetConfig(char* name,char* value){
-    for(ConfigEntry* entry :config_entries){
+    for(ConfigEntry* entry :global_config_entries){
         if(cstr::compare(entry->name,name)){
             switch (entry->type)
             {

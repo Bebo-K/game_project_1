@@ -1,6 +1,5 @@
 #include "level_collision.h"	
 #include "../../phys/collision_response.h"
-#include "../../game.h"
 
 
 const int MAX_FRAME_COLLISIONS=16;

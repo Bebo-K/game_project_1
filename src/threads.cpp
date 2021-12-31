@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+const int BLOCK_EMPTY=0,BLOCK_FULL=1,BLOCK_IN_USE=2;
+
 SynchronousBuffer::SynchronousBuffer(int block_size,int block_count){
     if(block_size <= 0 || block_count <= 0)return;
     occupancy = (byte*)calloc(block_count,1);

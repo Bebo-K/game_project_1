@@ -100,10 +100,19 @@ UserFile::UserFile(const wchar_t* filename,char mode){
 	}
 	error=false;
 	if(file_handle == nullptr){
-		logger::warn("UserFile::open -> Cannot open file %s",filename);
+		logger::warnW(L"UserFile::open -> Cannot open file %S",filename);
 		error=true;
 	}
 }
+
+
+bool UserFile::Exists(const wchar_t* filename){
+	FILE* file_handle = _wfopen(filename,L"rb");
+	bool exists = (file_handle != nullptr);
+	if(exists){fclose(file_handle);}
+	return exists;
+}
+
 void UserFile::read(void* dest,int bytes){
 	if(!read_mode){
 		logger::exception("UserFile::read -> File is open for write only.");

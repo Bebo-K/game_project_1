@@ -4,6 +4,13 @@
 #include <fstream>
 #include <stdio.h>
 
+const char OS_PATH_SEPERATOR =
+#ifdef _WIN32
+		'\\';
+#else
+		'/';
+#endif
+
 typedef unsigned int uint32;
 typedef unsigned char byte;
 
@@ -38,6 +45,7 @@ class UserFile{
 	bool read_mode;
 
 	UserFile(const wchar_t* filename,char mode);
+	static bool Exists(const wchar_t* filename);
 	void write(byte* data,int bytes);
 	void read(void* dest,int bytes);
 	void peek(void* dest,int bytes);

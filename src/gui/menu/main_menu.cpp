@@ -11,17 +11,17 @@
 using namespace UI;
 
 void LaunchSingleplayerButtonCallback(){
-    logger::warn("Launching server!");
+    logger::debug("Launching server!");
     LoadingMenu* loading_menu = GUI::GetGUI()->loading_menu;
     loading_menu->Open();
-    loading_menu->SetStatusMessage("Launching local server...");
+    loading_menu->SetStatusMessage(wstr::new_copy(L"Launching local server..."));
     GUI::GetGUI()->main_menu->Close();
 
     Game::StartLocalServer();
 }
 
 void LaunchMultiplayerButtonCallback(){
-    logger::warn("Launching mp server!");
+    logger::debug("Launching mp server!");
 
 }
 
@@ -75,4 +75,4 @@ void  MainMenu::OnPaint(){}
 
 bool  MainMenu::OnInput(Input::Event event_type){return false;}
 void  MainMenu::OnResize(){}
-bool  MainMenu::OnSignal(Signal signal){return false;}
+bool  MainMenu::OnSignal(EventSignal signal){return false;}

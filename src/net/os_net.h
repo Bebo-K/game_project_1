@@ -1,20 +1,16 @@
 #ifndef OS_NET_H
 #define OS_NET_H
 
+
+
 #include "packet.h"
 #include "net_target.h"
 #include "../threads.h"
 #include "../struct/str.h"
 
-
 #ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-//typedef SOCKET Socket;
-//#elif
-//typedef int Socket;
+    #include "os_net_win.h"
 #endif
-
 
 
 
@@ -23,16 +19,16 @@ namespace OSNetwork{
     bool Init();
     void Destroy();
     
-    ip_address DNS_lookup(wchar* hostname, unsigned short port);
-    bool connect(Packet* connect_packet,NetTarget* target);
-    void disconnect(NetTarget* target);
+    Network::ip_address DNS_lookup(wchar* hostname, unsigned short port);
+    bool connect(Packet* connect_packet,Network::NetTarget* target);
+    void disconnect(Network::NetTarget* target);
 
-    bool send_packet(Packet* packet, NetTarget* target);
-    bool recv_packet(Packet* packet, NetTarget* target);
+    bool send_packet(Packet* packet, Network::NetTarget* target);
+    bool recv_packet(Packet* packet, Network::NetTarget* target);
 
-    Socket bind_to_port(int port);
+    Socket bind_to_port(unsigned short port);
     void unbind(Socket* listen_socket);
-    int listen(Packet* packet, Socket socket,ip_address* source_addr);
+    int listen(Packet* packet, Socket socket,Network::ip_address* source_addr);
 };
 
 

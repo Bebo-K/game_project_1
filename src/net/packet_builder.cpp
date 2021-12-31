@@ -82,14 +82,15 @@ Packet BuildPacket_PLDC(){//TODO: stub
     ret.RunCRC();
     return ret;    
 }
-Packet BuildPacket_PING(){//TODO: stub
+Packet BuildPacket_PING(long timestamp1,long timestamp2,long timestamp3){//TODO: stub
     Packet ret; 
     ret.type = PacketID::ACPT;
     ret.ClearData();
-    long timestamp = time_ms();
-    memcpy(ret.data,&timestamp,sizeof(long));
+    ((long*)ret.data)[0] = timestamp1;
+    ((long*)ret.data)[1] = timestamp1;
+    ((long*)ret.data)[2] = timestamp1;
     ret.CreateID();
-    ret.SetDataLength(sizeof(int));
+    ret.SetDataLength(sizeof(long)*3);
     ret.RunCRC();
     return ret;    
 }
@@ -148,4 +149,14 @@ wchar* ReadPacket_NOPE_reason(Packet* NOPE){
 }
 int ReadPacket_OKAY_ackID(Packet* OKAY){
     return (*(int*)OKAY->data);
+}
+int ReadPacket_ACPT_ackID(Packet* OKAY){
+    return (*(int*)OKAY->data);
+}
+int ReadPacket_ACPT_playerID(Packet* OKAY){
+    return ((int*)OKAY->data)[1];
+}
+int ReadPacket_PING_timestamp(Packet* OKAY,int timestamp_num){
+    if(timestamp_num > 2 || timestamp_num < 0)return 0;
+    return ((long*)OKAY->data)[timestamp_num];
 }
