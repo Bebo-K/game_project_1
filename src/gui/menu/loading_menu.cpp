@@ -27,6 +27,6 @@ void LoadingMenu::OnLoad(){
 
 void LoadingMenu::OnUpdate(int frames){}
 
-void LoadingMenu::SetStatusMessage(char* status){
+void LoadingMenu::SetStatusMessage(wchar* status){
     h_status_text->SetString(status);
 }

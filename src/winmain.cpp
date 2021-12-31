@@ -13,6 +13,7 @@
 #include "config.h"
 #include "game.h"
 #include "struct/data_types.h"
+#include "net/os_net.h"
 
 const TCHAR window_title[] = _T("Game");
 const TCHAR window_classname[] = _T("Game");
@@ -88,6 +89,10 @@ CreateThread(
             0,        // use default creation flags 
             NULL);   // returns the thread identifier 
 }
+ 
+void sleep_thread(int ms){
+    Sleep(ms);
+}
 
 void* get_mutex_lock(void* object,int timeout){
     wchar_t objname[sizeof(void*)*2 +3];
@@ -132,7 +137,7 @@ int LoopMain(){
     do {
         Sleep(4);  
         Game::Poll();
-        PollJoypads();
+        OSInput::PollJoypads();
         GetTimerData();
         if (PeekMessage(&window_message,0,0,0,PM_REMOVE)){
             TranslateMessage(&window_message);
@@ -152,7 +157,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     logger::start("log.txt");
     config::Init();
     Input::Init();
-    SetupOSInput();
+    OSInput::Init();
+    OSNetwork::Init();
 
     WNDCLASSEX window_class;
         window_class.cbSize=sizeof(WNDCLASSEX);
@@ -199,6 +205,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     }
 
 
+    OSNetwork::Destroy();
     Input::Destroy();
     config::Destroy();
     return 1;
@@ -208,7 +215,7 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
     switch(msg){
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
-            SetupDirectInput(window_handle);
+            OSInput::SetupDirectInput(window_handle);
             logger::info("Initializing engine...\n");
             Game::Start();
             break;

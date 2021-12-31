@@ -13,14 +13,13 @@
 //#include "../game/system/animation_controller.h"
 #include "../game/system/state_manager.h"
 #include "../gfx/ui_text.h"
+#include "../net/packet_builder.h"
 
 Client* Client::instance = nullptr;
 
 Client::Client() : scene(), scene_renderer(), ui(){
     logger::info("Initializing client\n");
     Client::instance = this;
-    network_state=ClientNet::NO_CONNECTION;
-    network_substatus=null;
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
@@ -138,9 +137,11 @@ void Client::Update(int frames){
             
             PlayerInput::UpdateCamera(&scene,frame_interval);
         }
+        
         //Network::RunSync(scene);
     }
     Input::Update();
+    network.Update();
 }
 
 void Client::HandleUIInput(){
@@ -155,53 +156,41 @@ void Client::HandleFrameInput(){
     }
 }
 
-
-//This can get called from server + networking threads. TODO: verify it's thread safe.
-void Client::UpdateNetworkState(ClientNet::State new_state){network_state = new_state;}
-
-void Client::SetNetworkSubstatus(char* status_msg){network_substatus = cstr::new_copy(status_msg);}
-
 void Client::HandleNetworkState(){
-    switch(network_state){
-        case ClientNet::NO_CONNECTION: break;
-        case ClientNet::LOCAL_SERVER_STARTED:{
-            ui.loading_menu->SetStatusMessage("Connecting to local server...");
+    switch(network.network_state){
+        case ClientNetwork::NO_CONNECTION: break;
+        case ClientNetwork::LOCAL_SERVER_STARTED:{
+            ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
             LocalConnect();
             break;
         }
-        case ClientNet::CONNECTING:{
-            if(network_substatus != null){
-                ui.loading_menu->SetStatusMessage(network_substatus);
-                free(network_substatus);
-                network_substatus=null;
+        case ClientNetwork::CONNECTING:{
+            if(network.network_substatus != null){
+                ui.loading_menu->SetStatusMessage(wstr::new_copy(network.network_substatus));
+                free(network.network_substatus);
+                network.network_substatus=null;
             }
             break;
         }
-        case ClientNet::CONNECTION_ERROR:{
+        case ClientNetwork::CONNECTION_ERROR:{
             ui.CloseAll();
             ui.error_menu->Open();
             scene.Unload();
-            if(network_substatus != null){
-                ui.error_menu->SetStatusMessage(network_substatus);
-                free(network_substatus);
-                network_substatus=null;
+            if(network.network_substatus != null){
+                ui.error_menu->SetStatusMessage(wstr::new_copy(network.network_substatus));
+                free(network.network_substatus);
+                network.network_substatus=null;
             }
             break;
         }
-        case ClientNet::CONNECTED: break;
+        case ClientNetwork::CONNECTED: break;
     }
 }
 
-void Client::LocalConnect(){
-    UpdateNetworkState(ClientNet::CONNECTING);
-
-    //TODO:
+void Client::SignalLocalServerReady(){
+    Packet join_request = BuildPacket_JOIN(L"Chowzang");
+    network.LocalConnect(&join_request);
 }
-void Client::Connect(char* full_uri_string){
-    UpdateNetworkState(ClientNet::CONNECTING);
-    //TODO:
-}
-
 
 void Client::Quit(){
     Game::Exit();

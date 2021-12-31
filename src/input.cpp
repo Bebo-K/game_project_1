@@ -1,5 +1,6 @@
 #include "input.h"
 #include <math.h>
+#include "struct/data_types.h"
 #include "struct/pool.h"
 #include "struct/map.h"
 #include "io/file.h"
@@ -39,8 +40,8 @@ Controller::Button toggle_console;
 Controller::Button any_button;
 
 
-text_char* input_text=null;            
-text_char  character_code[2]  = {0,0};
+wchar* input_text=null;            
+wchar  character_code[2]  = {0,0};
 
 Map<int,char*> physical_input_map= Map<int,char*>(8);
 
@@ -154,8 +155,8 @@ void Input::OnPCScroll(int dx, int dy){
     mouse_scroll.y = dy;
     SET_BIT(input_state,Input::PC_Scroll-1);
 }
-void Input::OnText(text_char* text){
-    input_text = TextString::copy(text);
+void Input::OnText(wchar* text){
+    input_text = wstr::new_copy(text);
     SET_BIT(input_state,Input::PC_Text-1);
 }
 void Input::OnCharacter(int code_point){
@@ -200,7 +201,7 @@ Controller::Button  Controller::GetPCCenterMouse(){return mouse_c;}
 vec2                Controller::GetPCScroll(){return mouse_scroll;}
 Controller::Button  Controller::GetAnyButton(){return any_button;}
 Controller::Button  Controller::GetToggleConsole(){return toggle_console;}
-text_char*          Controller::GetTextInput(){return input_text;}
+wchar*              Controller::GetTextInput(){return input_text;}
 
 //////////////////////
 //    Key binding management
@@ -407,31 +408,31 @@ void Input::LoadDefaultKeyBindings(){
         "joy_9=menu",
         "joy_10=pause"
     };
-    ConfigMap* map = new ConfigMap();
-    map->LoadFromTextArray(keybinds,26);
-    LoadKeyBindings(map);
+    LoadKeyBindings(keybinds,26);
 }
 
-void Input::LoadKeyBindings(ConfigMap* bindings){
-    
-    for(StringPair pair: *bindings){
-        int physical_input_id = GetKeyID(pair.key);
+void Input::LoadKeyBindings(char** lines,int line_count){
+    for(int i=0;i<line_count;i++){
+        char* key = cstr::substr_before(lines[i],'=');
+        char* value = cstr::substr_after(lines[i],'=');
+
+        int physical_input_id = GetKeyID(key);
         
-        for(int i=0;i<BUTTON_COUNT;i++){
-            if(cstr::compare(button_names[i],pair.value)){
-                AddKeyButtonBind((ButtonID)i,physical_input_id);
+        for(int j=0;j<BUTTON_COUNT;j++){
+            if(cstr::compare(button_names[j],value)){
+                AddKeyButtonBind((ButtonID)j,physical_input_id);
             }
         }
-        for(int i=0;i<AXIS_COUNT;i++){
-            if(cstr::compare(axis_names[i],pair.value)){
-                AddAxisBind((AxisID)i,physical_input_id);
+        for(int j=0;j<AXIS_COUNT;j++){
+            if(cstr::compare(axis_names[j],value)){
+                AddAxisBind((AxisID)j,physical_input_id);
             }
-            else if(cstr::starts_with(pair.value,axis_names[i])){
-                char* direction_name = cstr::substr_after(pair.value,'.');
+            else if(cstr::starts_with(value,axis_names[j])){
+                char* direction_name = cstr::substr_after(value,'.');
                 int direction_id=-1;
-                for(int j=0;j<4;j++){
-                    if(cstr::compare(direction_name,axis_directions[j])){
-                        direction_id = j;
+                for(int k=0;k<4;k++){
+                    if(cstr::compare(direction_name,axis_directions[k])){
+                        direction_id = k;
                     }
                 }
                 AddKeyAxisBind((AxisID)i,physical_input_id,direction_id);

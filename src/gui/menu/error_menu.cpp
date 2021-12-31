@@ -40,6 +40,6 @@ void ErrorMenu::OnLoad(){
 
 void ErrorMenu::OnUpdate(int frames){}
 
-void ErrorMenu::SetStatusMessage(char* status){
+void ErrorMenu::SetStatusMessage(wchar* status){
     h_status_text->SetString(status);
 }

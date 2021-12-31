@@ -3,10 +3,6 @@
 #include "../log.h"
 #include <string.h>
 
-bool GET_BIT(int x,int bit){return ((x & (1 << bit)) != 0);}
-
-
-
 //////////////////////////
 //////***BitArray***/////
 ////////////////////////

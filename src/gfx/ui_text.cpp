@@ -36,15 +36,15 @@ UI_Text::UI_Text(char* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=w=h=0;
-    SetString(TextString::from_cstr(str),-1);
+    SetString(wstr::from_cstr(str),-1);
 }
-UI_Text::UI_Text(text_char* str){
+UI_Text::UI_Text(wchar* str){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=w=h=0;
     SetString(str,-1);
 }
-UI_Text::UI_Text(text_char* str,FontID font_id){
+UI_Text::UI_Text(wchar* str,FontID font_id){
     if(!glyph_vertices.Valid()){BuildGlyphPrimitive();}
     glyphs=nullptr;
     x=y=w=h=0;
@@ -52,16 +52,17 @@ UI_Text::UI_Text(text_char* str,FontID font_id){
 }
 
 void UI_Text::SetString(char* str){
-    SetString(TextString::from_cstr(str),-1);
+    SetString(wstr::from_cstr(str),-1);
 }
 void UI_Text::SetString(char* str,FontID font_id){
-    SetString(TextString::from_cstr(str),font_id);
+    SetString(wstr::from_cstr(str),font_id);
 }
-void UI_Text::SetString(text_char* str){
+void UI_Text::SetString(wchar* str){
     SetString(str,-1);
 }
-void UI_Text::SetString(text_char* str,FontID font_id){
+void UI_Text::SetString(wchar* str,FontID font_id){
     if(str ==null)return;
+    if(string != null){free(string);string=null;}
     string=str;
     if(font_id >= 0){FontManager::SetActiveFont(font_id);}
     font=font_id;

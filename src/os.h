@@ -8,6 +8,7 @@ long long time_nano();
 // OS specific threading 
 void start_thread(void (*thread_main)() );
 void start_thread(void (*thread_main)(void*), void* param);
+void sleep_thread(int ms);
 void* get_mutex_lock(void* object,int timeout);
 bool release_mutex_lock(void* lock);
 

@@ -28,7 +28,7 @@ void ServerMain(){
 }
 
 
-Server::Server():active_scenes(),server_save(){
+Server::Server():active_scenes(),server_save(),network(){
     exit = false;
     ready = false;
     current_players=0;
@@ -38,9 +38,14 @@ void Server::Start(){
     server_save.Load(server_config::save_name);
     Sleep(1000);//temp just so I can see the loading screen message
     ready=true;
-    //Let local client know it's safe to connect.
+    //It's safe to connect.
     if(Game::client != null){
-        Game::client->UpdateNetworkState(ClientNet::LOCAL_SERVER_STARTED);
+        if(max_players==1){network.StartLocalOnly();}
+        else{network.StartListener(max_players-1,server_config::default_port);}
+        Game::client->SignalLocalServerReady();
+    }
+    else{
+        network.StartListener(max_players,server_config::default_port);
     }
 }
 void Server::LoadScene(int scene_id){}

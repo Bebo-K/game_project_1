@@ -8,15 +8,19 @@
 #ifdef _WINDOWS_
 //Windows input hooks
 
+using namespace OSInput;
 //DIRECTINPUT (For generic USB controllers)
 JoystickStateInfo joy_states[MAX_CONTROLLERS];
 UINT        current_device_count;
 
-void SetupOSInput(){
+
+
+
+void OSInput::Init(){
     SetupJoypads();
 }
 
-void SetupJoypads(){
+void OSInput::SetupJoypads(){
     for(int i=0;i<MAX_CONTROLLERS;i++){
         memset(&joy_states[i].info,0,sizeof(JOYCAPS));
         memset(&joy_states[i].state,0,sizeof(JOYINFOEX));
@@ -62,18 +66,18 @@ void SetupJoypads(){
 }
 
 
-void FlipJoyAxis(int joy_id, bool flip_horizontal,bool flip_vertical){
+void OSInput::FlipJoyAxis(int joy_id, bool flip_horizontal,bool flip_vertical){
     joy_states[joy_id].x_axis_multiplier *= (flip_horizontal)?-1:1;
     joy_states[joy_id].y_axis_multiplier *= (flip_vertical)?-1:1;
 }
 
-void SetupDirectInput(HWND window_handle){
+void OSInput::SetupDirectInput(HWND window_handle){
     for(int i=0;i<MAX_CONTROLLERS;i++){
         if(joySetCapture(window_handle, JOYSTICKID1+i, 0, false) != JOYERR_NOERROR ) { /*We'll deal with this if I make couch co-op*/} 
     }
 }
 
-void PollJoypads(){
+void OSInput::PollJoypads(){
     for(int i=0;i < MAX_CONTROLLERS;i++){
         DWORD err=joyGetPosEx(JOYSTICKID1+i,&joy_states[i].state);
         if(err == JOYERR_NOERROR){
@@ -103,9 +107,9 @@ void PollJoypads(){
     }
 }
 
-void OnDirectInputJoyEvent(WPARAM wparam, bool down){}
+void OSInput::OnDirectInputJoyEvent(WPARAM wparam, bool down){}
 
-void OnDirectInputButtonEvent(WPARAM wparam, bool down){
+void OSInput::OnDirectInputButtonEvent(WPARAM wparam, bool down){
     DWORD changed_buttons = joy_states[0].state.dwButtons ^ joy_states[0].prev_button_state;
     if(changed_buttons!= 0){
         int button_id=1;

@@ -1,24 +1,19 @@
 #ifndef PACKET_H
 #define PACKET_H
 
-#include "../struct/data_types.h"
 #include "../struct/arrays.h"
 
-const int MAX_UDP_PACKET_SIZE=508;
-
-int PacketIDFromCSTR(const char* id);
-
 #define CSTR_TO_PACKETID(str) (int)str[0]<<24 | (int)str[1]<<16 | (int)str[2]<<8 | (int)str[3]
-
+const int MAX_UDP_PACKET_SIZE=508;
 namespace PacketID{
     const int JOIN = CSTR_TO_PACKETID("JOIN");//   Client join request
     const int ACPT = CSTR_TO_PACKETID("ACPT");//R  Server accepts new client connection
     const int OKAY = CSTR_TO_PACKETID("OKAY");//   (Both sides) Acknowledge reliable packet 
+    const int NOPE = CSTR_TO_PACKETID("NOPE");//   Disconnect (Either side)
     const int SPRQ = CSTR_TO_PACKETID("SPRQ");//R  Client spawn request
     const int PLYR = CSTR_TO_PACKETID("PLYR");//R  Server notification of a new player
     const int PLDC = CSTR_TO_PACKETID("PLDC");//R  Server notification of a player disconnecting
     const int PING = CSTR_TO_PACKETID("PING");//   Latency loopback
-    const int NOPE = CSTR_TO_PACKETID("NOPE");//   Disconnect (Either side)
     const int SPWN = CSTR_TO_PACKETID("SPWN");//R  Server spawned entity
     const int DSPN = CSTR_TO_PACKETID("DSPN");//R  Server despawned entity
     const int DLTA = CSTR_TO_PACKETID("DLTA");//   Server Entity delta
@@ -29,42 +24,54 @@ namespace PacketID{
 
 //Base packet object for UDP datagrams
 struct Packet{
+    const static int  HEADER_SIZE = 16;
+    const static int MAX_DATA_LENGTH = MAX_UDP_PACKET_SIZE-HEADER_SIZE;
     int id;//unique random ID
     int type;//from PacketID list
     int length;//includes these header items
     int crc;
-    byte data[MAX_UDP_PACKET_SIZE-16];
-    void runCRC();
-    bool isReliable();//if true, return an OKAY acknowledgement packet once recieved.
-    bool isMultipart();//if true, this obect can be cast to a MultipartPacket
+    byte data[MAX_DATA_LENGTH];
+    void ClearData();
+    void CreateID();
+    void SetDataLength(int data_len);
+    void RunCRC();
+    bool IsReliable();//if true, return an OKAY acknowledgement packet once recieved.
+    bool IsMultipart();//if true, this obect can be cast to a MultipartPacket
 };
 
 //Extended packet objects for multipart data.
 struct MultipartPacket{
+    const static int  HEADER_SIZE = 28;
+    const static int MAX_DATA_LENGTH = MAX_UDP_PACKET_SIZE-HEADER_SIZE;
     int id;
     int type;
-    int length;//of the entire payload
+    int length;
     int crc;
     short segment;
     short segment_count;
-    int   segment_length;//data[] length
-    int   segment_offset;
-    byte data[MAX_UDP_PACKET_SIZE-24];
-    void runCRC();
+    int   payload_length;
+    int   payload_offset;
+    byte data[MAX_DATA_LENGTH];
+    void ClearData();
+    void CreateID();
+    void SetDataLength(int data_len);
+    void RunCRC();
+    bool IsReliable();//if true, return an OKAY acknowledgement packet once recieved.
 };
 
 class ReliablePacketEnvelope{
+    public:
     Packet dataPacket;
-    long first_send;
     long last_sent;
     int  retry_count;
-    bool should_send();
+    bool ShouldSend();
 };
 
 struct Payload{
     int type;
     int length;//includes these header items
     byte* data;
+    bool free_after_use;
     Payload(int id,int len,byte* dat);
 };
 
@@ -72,7 +79,10 @@ struct Payload{
 //Inbound assembly object for multipart data
 class MultipartPayload{
     public:
+    int type;
+    int len;
     int id;
+    int last_recv;//for non-reliable packet expiry
     BitArray packets_recieved;
     byte* assembled_payload;
 
@@ -82,7 +92,8 @@ class MultipartPayload{
     void Start(MultipartPacket*p);
     void Add(MultipartPacket* p);
     void Clear();
-    bool isFullyAssembled();
+    bool IsFullyAssembled();
+    bool IsExpired();
 };
 
 

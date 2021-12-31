@@ -4,36 +4,17 @@
 #include "../gui/gui.h"
 #include "../game/scene.h"
 #include "../gui/ui_types.h"
-
-namespace ClientNet{
-    enum State{
-        NO_CONNECTION,
-        LOCAL_SERVER_STARTED,
-        CONNECTING,
-        CONNECTION_ERROR,
-        CONNECTED
-    };
-
-};
-
-struct ClientState{
-
-
-
-
-};
+#include "../net/network.h"
 
 class Client{
     private:
     static class Client* instance;
-    ClientNet::State network_state;
-    char*   network_substatus;
-
     public:
 
     Scene       scene;
     Renderer    scene_renderer;
     GUI         ui;
+    ClientNetwork network;
 
     const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 
@@ -61,8 +42,7 @@ class Client{
     void UpdatePositions();
     void HandleUIInput();
     void HandleFrameInput();
-    void UpdateNetworkState(ClientNet::State new_state);
-    void SetNetworkSubstatus(char* status_msg);
+
     void HandleNetworkState();
     void SignalLocalServerReady();
 

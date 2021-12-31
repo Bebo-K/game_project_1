@@ -19,6 +19,7 @@ namespace cstr{
     bool compare(const char* str1, const char* str2);
     bool starts_with(const char* str, const char* start);
     bool contains(const char* str, const char* substr);
+    char* substr(const char* str,int start,int len);
     char* substr_after(const char* str,char separator);//returns the substring after the first occurance of the separator char
     char* substr_before(const char* str,char separator);//returns the substring after the first occurance of the separator char
     char* substr_after_last(const char* str,char separator);//returns the substring after the last occurance of the separator char
@@ -42,6 +43,7 @@ namespace wstr{
     bool compare(const wchar* str1, const wchar* str2);
     bool starts_with(const wchar* str, const wchar* start);
     bool contains(const wchar* str, const wchar* substr);
+    wchar* substr(const wchar* str,int start,int len);
     wchar* substr_after(wchar* str,wchar separator);
     wchar* substr_before(wchar* str,wchar separator);
     wchar* substr_after_last(wchar* str,wchar separator);

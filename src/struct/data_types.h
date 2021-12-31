@@ -8,6 +8,8 @@
 #define SET_BIT(x,bit) x |= (1<<(bit))
 #define CLEAR_BIT(x, bit) x &= ~(1<<(bit))
 
+inline bool GET_BIT(int x,int bit){return ((x & (1 << bit)) != 0);}
+
 typedef unsigned int uint32;
 typedef unsigned char byte;
 

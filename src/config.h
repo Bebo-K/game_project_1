@@ -10,14 +10,15 @@
 namespace config{
     enum ConfigEntryType{INT,FLOAT,BOOL,STRING,WSTRING};
 
-
     extern int window_height;
     extern int window_width;
     extern int ui_height;
     extern int ui_width;
-    extern int network_timeout;
-    extern int network_resend_interval;
     extern int network_resend_max;
+    extern int network_resend_interval;
+    extern int network_ping_interval;
+    extern int network_packet_expiry;
+    extern int network_timeout;
     extern bool show_console;
     extern bool show_fps_counter;
     extern bool debug_mode;

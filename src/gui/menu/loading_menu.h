@@ -13,7 +13,7 @@ class LoadingMenu: public UI::Menu{
     
     void OnLoad();
     void OnUpdate(int frames);
-    void SetStatusMessage(char* status);
+    void SetStatusMessage(wchar* status);
 };
 
 

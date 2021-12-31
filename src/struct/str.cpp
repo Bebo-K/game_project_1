@@ -137,6 +137,12 @@ bool cstr::contains(const char* str, const char* substr){
     }
     return false;
 }
+char* cstr::substr(char* str,int start,int length){
+    char* ret = (char*)malloc(length+1);
+    memcpy(&str[start],ret,length);
+    ret[length]=0;
+    return ret;
+}
 char* substring_before(char* str,char separator,bool last){
     int sep_pos =0;
     for(int i=0;str[i]!=0;i++){if(str[i]==separator){sep_pos=i+1;if(!last)break;}}
@@ -342,6 +348,12 @@ bool wstr::contains(const wchar* str, const wchar* substr){
         }
     }
     return false;
+}
+wchar* wstr::substr(const wchar* str,int start,int length){
+    wchar* ret = (wchar*)malloc((length+1)*sizeof(wchar));
+    memcpy((char*)&str[start],ret,length*sizeof(wchar));
+    ret[length]=0;
+    return ret;
 }
 wchar* substring_before(wchar* str,wchar separator,bool last){
     int sep_pos =0;

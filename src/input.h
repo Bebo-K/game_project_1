@@ -2,6 +2,7 @@
 #define INPUT_H
 
 #include "struct/data_types.h"
+#include "struct/str.h"
 #include "struct/3d_types.h"
 #include "struct/2d_types.h"
 #include "config.h"
@@ -84,7 +85,7 @@ namespace Controller{
     Button      GetAnyButton();
     Button      GetToggleConsole();
     vec2        GetPCScroll();
-    text_char*  GetTextInput();
+    wchar*      GetTextInput();
 };
 
 namespace Input{
@@ -144,7 +145,7 @@ namespace Input{
     void OnPCClick(bool down, bool left);
     void OnPCScroll(int dx, int dy);
 
-    void OnText(text_char* text);
+    void OnText(wchar* text);
     void OnCharacter(int code_point);
 
     //Event flag management
@@ -156,7 +157,7 @@ namespace Input{
     //Key binding management
     void LoadKeyLayout(char* layout_filename);
     void LoadDefaultKeyBindings();
-    void LoadKeyBindings(ConfigMap* bindings);
+    void LoadKeyBindings(char** lines,int line_count);
     void AddKeyButtonBind(ButtonID button, int key_id);
     void RemoveKeyButtonBind(ButtonID button, int key_id);
     void AddKeyAxisBind(AxisID axis, int key_id, int direction_id);

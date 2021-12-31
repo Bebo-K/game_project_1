@@ -13,12 +13,12 @@ class TextComponent: public WidgetComponent{
     TextComponent();
     TextComponent(char* str);
     TextComponent(char* str,FontID font);
-    TextComponent(text_char* str);
-    TextComponent(text_char* str,FontID font);
+    TextComponent(wchar* str);
+    TextComponent(wchar* str,FontID font);
     ~TextComponent();
 
-    void SetString(char* str);
-    void SetString(text_char* str,FontID font);
+    void SetString(wchar* str);
+    void SetString(wchar* str,FontID font);
     void OnPaint(Widget* w);
     void OnResize(Widget* w);
 };
@@ -30,7 +30,7 @@ class TextBoxComponent: public WidgetComponent{
     int max_line_length;
     bool wrap_lines;
     int font_size;
-    text_char** lines;
+    wchar** lines;
     UI_Text* shown_lines;
 
     TextBoxComponent(int lines);
@@ -40,8 +40,8 @@ class TextBoxComponent: public WidgetComponent{
     void OnPaint(Widget* w);
     void OnResize(Widget* w);
 
-    void AddLine(text_char* newline);
-    void SetLine(text_char* line,int line_num);
+    void AddLine(wchar* newline);
+    void SetLine(wchar* line,int line_num);
     void FormatLines();
 };
 
@@ -52,12 +52,12 @@ class TextEntryComponent:public Widget{
     bool player_edited;//
     //bool acceptable;//
     int font_size;
-    text_char* line;
+    wchar* line;
     UI_Text* shown_line;
     //TODO: sanitize() callback for length requirements, acceptable characters/words 
 
     TextEntryComponent(int max_length);
-    TextEntryComponent(int max_length, text_char* prompt);
+    TextEntryComponent(int max_length, wchar* prompt);
     ~TextEntryComponent();
 
     void OnPaint(Widget* w);

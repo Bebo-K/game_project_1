@@ -24,6 +24,8 @@ struct Mutex{
 };
 
 //Thread-safe buffer that allows concurrent write/read, but will guarantee data blocks can only be in use by one thread at a time.
+
+
 class SynchronousBuffer{
     const static int BLOCK_EMPTY=0,BLOCK_FULL=1,BLOCK_IN_USE=2;
 

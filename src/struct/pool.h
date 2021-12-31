@@ -116,7 +116,6 @@ class Pool{
     PoolIterator<T> end(){return {this,data.slots};}
 };
 
-
 template <typename T>
 T* PoolIterator<T>::operator*(){
     if(index < 0){

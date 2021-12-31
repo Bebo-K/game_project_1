@@ -4,6 +4,7 @@
 #include "../struct/list.h"
 #include "../game/scene.h"
 #include  "../game/savefile.h"
+#include  "../net/network.h"
 
 
 class Server{
@@ -16,7 +17,7 @@ class Server{
     int     max_players;
     List<Scene> active_scenes;
     SaveFile server_save;
-
+    ServerNetwork network;
 
     Server();
     void Start();

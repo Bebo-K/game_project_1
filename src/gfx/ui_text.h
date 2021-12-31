@@ -18,7 +18,7 @@ class UI_Text{
     public:
     int x,y;
     int w,h;
-    text_char* string;
+    wchar* string;
     FontID font;
     int    glyph_count;
     Glyph* glyphs;
@@ -26,13 +26,13 @@ class UI_Text{
     
     UI_Text();
     UI_Text(char* str);
-    UI_Text(text_char* str);
-    UI_Text(text_char* str,FontID font);
+    UI_Text(wchar* str);
+    UI_Text(wchar* str,FontID font);
     
     void SetString(char* str);
     void SetString(char* str,FontID font);
-    void SetString(text_char* str);
-    void SetString(text_char* str,FontID font);
+    void SetString(wchar* str);
+    void SetString(wchar* str,FontID font);
     void Draw();
     ~UI_Text();
 };

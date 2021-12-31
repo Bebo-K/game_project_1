@@ -1,8 +1,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "net_target.h"
 #include "packet.h"
-#include "os_net.h"
 #include "../threads.h"
 #include "../struct/arrays.h"
 
@@ -12,61 +12,64 @@
 //The largest safe UDP packet size over the internet is 508 bytes
 //When fragmented, UDP packets can combine into a max 67KB payload
 
-
-class NetTarget{
-    private:
-    char* hostname;
-    unsigned short port;
-
-    void ResizeReliableBuffer(int new_size);
-    void ResizeMultipartBuffer(int new_size);
-
+class ClientNetwork{
     public:
-    Socket os_socket;
-    ReliablePacketEnvelope* outbound_buffer;//for outbound reliable packets
-    int outbound_buffer_len;
-    MultipartPayload* inbound_buffer;//for inbound multipart packets
-    int inbound_buffer_len;
-    SynchronousBuffer read_buffer;
-    SynchronousBuffer write_buffer;
 
-    bool connected;
-    int latency;
+    const static int
+        CONNECTION_ERROR=-1,
+        NO_CONNECTION=0,
+        CONNECTING=1,
+        CONNECTED=2,
+        LOCAL_SERVER_STARTED=4;
 
-    void SetAddress(char* hostname);
-    bool ResolveAddress();
+    bool running;
+    bool local_only;
+    NetTarget server_target;
     
-    void AddToReliableBuffer(Packet* packet);
-    MultipartPayload* GetMultipartPayload(MultipartPacket* packet);
+    int      network_state;
+    wchar*   network_substatus;
+    long     connection_start;
+    long     last_ping;
 
-    NetTarget();
-    ~NetTarget();
+    ClientNetwork();
+    ~ClientNetwork();
+
+    void StartConnect(wchar* host_string,Packet* join_request);
+    void LocalConnect(Packet* join_request);
+    void Disconnect(wchar* reason);
+
+    void Update();
+    void SetNetworkState(int state,wchar* status);
+
+    void Send(Payload dat);
+    void Send(Packet* dat);
+    Payload Recieve();
 };
 
-
-class Network{
-    private:
-    byte* payload_buffer;
-    long payload_buffer_len;
-
-
+class ServerNetwork{
     public:
-    bool offline;//local communication only
-    Socket listener_socket;
-    bool listener_enabled;
-    int listener_port;
-    int target_count;
-    NetTarget* targets;
+    bool running;
 
-    void Initialize(int max_targets);//OS initialization code, starts networking thead
-    void Destroy();//OS deinitialization, disconnection and cleanup
-    void StartListener(short port);//enables listener on net thread
-    int AddTarget(char* address);//initializes a new target for network thead. Returns target id(index)
+    bool listener_enabled;
+    Socket listener_socket;
+    unsigned short listener_port;
+
+    Array<NetTarget> targets;
+    NetTarget local_client_target;
+
+    ServerNetwork();  
+    ~ServerNetwork();
+    
+    void StartLocalOnly();
+    void StartListener(int target_slots,unsigned short port);
+    void Update();
+    void ShutdownListener();
 
     void WriteToTarget(int target_id,Payload payload);
     Payload ReadFromTarget(int target_id);
-    Payload OpenPayload(int type, int len, byte* source);
-    void ClosePayload();
+
+    void HandleNewTarget(Packet* request_packet,ip_address remote_address);
+    void DisconnectTarget(int target_id,wchar* reason);
 };
 
 
