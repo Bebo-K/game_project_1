@@ -50,6 +50,9 @@ class GUI{
     bool OnInput(Input::Event event_type);
     void OnSignal(EventSignal signal);
     void OnResize(int screen_w,int screen_h);
+
+    //Debug
+    void DebugLog(wchar* str);
 };
 
 

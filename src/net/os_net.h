@@ -19,16 +19,16 @@ namespace OSNetwork{
     bool Init();
     void Destroy();
     
-    Network::ip_address DNS_lookup(wchar* hostname, unsigned short port);
-    bool connect(Packet* connect_packet,Network::NetTarget* target);
-    void disconnect(Network::NetTarget* target);
+    ip_address DNS_lookup(wchar* hostname, unsigned short port);
+    bool connect(Packet* connect_packet,NetTarget* target);
+    void disconnect(NetTarget* target);
 
-    bool send_packet(Packet* packet, Network::NetTarget* target);
-    bool recv_packet(Packet* packet, Network::NetTarget* target);
+    bool send_packet(Packet* packet, NetTarget* target);
+    bool recv_packet(Packet* packet, NetTarget* target);
 
     Socket bind_to_port(unsigned short port);
     void unbind(Socket* listen_socket);
-    int listen(Packet* packet, Socket socket,Network::ip_address* source_addr);
+    int listen(Packet* packet, Socket socket,ip_address* source_addr);
 };
 
 

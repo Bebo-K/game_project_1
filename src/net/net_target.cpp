@@ -3,7 +3,8 @@
 #include "os_net.h"
 #include "../config.h"
 
-using namespace Network;
+using namespace NetTargetState;
+
 NetTarget::NetTarget():
 reliable_buffer(2),
 multipart_buffer(2),
@@ -55,7 +56,6 @@ void NetTarget::SetAddress(ip_address address){
     address = address;
 }
 void NetTarget::ForLocal(){
-    SetState(CONNECTED_LOCAL,nullptr);
     address = {0};
     address.SetLocalhost(true);
     address.SetValid(true);
@@ -82,7 +82,7 @@ void NetTarget::Clear(){
 
 bool NetTarget::IsConnected(){return (state_id > 0);}
 
-void NetTarget::SetState(NetTargetState state,wchar* msg){
+void NetTarget::SetState(NetTargetState::ID state,wchar* msg){
     if(state_id != state){
         state_id = state;
         //run state change callback
@@ -95,10 +95,10 @@ void NetTarget::Update(){
     if(IsConnected()){
         //Timeout check
         if(state_id == CONNECTING && time_ms() - conn_start > config::network_timeout){
-            SetState(TIMED_OUT,wstr::allocf(L"Failed to connect: remote host timed out"));
+            SetState(TIMED_OUT,wstr::new_copy(L"Failed to connect: remote host timed out"));
         }
-        if(state_id == CONNECTED && time_ms() - last_recv > config::network_timeout){
-            SetState(TIMED_OUT,wstr::allocf(L"Lost connection: remote host timed out"));
+        if((state_id == CONNECTED || state_id == CONNECTED_LOCAL) && time_ms() - last_recv > config::network_timeout){
+            SetState(TIMED_OUT,wstr::new_copy(L"Lost connection: remote host timed out"));
         }
 
         //Reliable resends
@@ -119,7 +119,10 @@ void NetTarget::Update(){
 }
 
 void NetTarget::Disconnect(wchar* reason){
-    Packet NOPE = BuildPacket_NOPE(reason);
+    Packet NOPE;
+    PacketData::NOPE disconnect_data(&NOPE);
+        disconnect_data.SetReason(reason);
+        disconnect_data.WritePacket();
     Send(&NOPE);
     SetState(DISCONNECTING,reason);
 }
@@ -154,7 +157,7 @@ void NetTarget::Send(Payload payload){
         packet.type = payload.type;
         packet.CreateID();
         packet.ClearData();
-        packet.length = payload.length;
+        packet.SetDataLength(payload.length);
         memcpy(&packet.data,payload.data,packet.length);
         packet.RunCRC();
         outbound_buffer.Write((byte*)&packet);
@@ -164,38 +167,45 @@ Payload NetTarget::Recieve(){
     Packet packet;
     while(inbound_buffer.Read((byte*)&packet)){
         if(packet.IsReliable()){
-            Packet ack = BuildPacket_OKAY(packet.id);
+            Packet ack;
+                PacketData::OKAY ack_data(&ack);
+                ack_data.SetAckID(packet.id);
+                ack_data.WritePacket();
             Send(&ack);
         }
-        if(packet.id == PacketID::OKAY){
-            int reliable = ReadPacket_OKAY_ackID(&packet);
-            RemoveFromReliableBuffer(reliable);
+        if(packet.type == PacketID::OKAY){
+            PacketData::OKAY ack_data(&packet);
+            RemoveFromReliableBuffer(ack_data.GetAckID());
             continue;
         }
-        if(packet.id == PacketID::ACPT){
-            int reliable = ReadPacket_ACPT_ackID(&packet);
-            RemoveFromReliableBuffer(reliable);
+        if(packet.type == PacketID::ACPT){
+            PacketData::ACPT accept_data(&packet);
+            RemoveFromReliableBuffer(accept_data.GetAckID());
         }
-        if(packet.id == PacketID::NOPE){
-            SetState(DISCONNECTING,wstr::new_copy(ReadPacket_NOPE_reason(&packet)));
+        if(packet.type == PacketID::NOPE){
+            PacketData::NOPE disconnect_data(&packet);
+            SetState(DISCONNECTING,wstr::new_copy(disconnect_data.GetReason()));
         }
-        if(packet.id == PacketID::PING){
-            int ts_1,ts_2,ts_3;
-            ts_1 = ReadPacket_PING_timestamp(&packet,0);
-            ts_2 = ReadPacket_PING_timestamp(&packet,1);
-            ts_3 = ReadPacket_PING_timestamp(&packet,2);
+        if(packet.type == PacketID::PING){
+            PacketData::PING ping_data(&packet);
 
-            if(ts_2 == 0){
-                Packet ping_2  = BuildPacket_PING(ts_1,time_ms(),0);
-                Send(&ping_2);
+            if(ping_data.GetTimestamp2() == 0){
+                Packet response_ping;
+                PacketData::PING response_ping_data(&response_ping);
+                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),time_ms(),0);
+                response_ping_data.WritePacket();
+                Send(&response_ping);
             }
-            else if(ts_3 == 0){
-                latency= time_ms() - ts_1;
-                Packet ping_3  = BuildPacket_PING(ts_1,ts_2,time_ms());
-                Send(&ping_3);
+            else if(ping_data.GetTimestamp3() == 0){
+                latency= time_ms() - ping_data.GetTimestamp1();
+                Packet response_ping;
+                PacketData::PING response_ping_data(&response_ping);
+                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),ping_data.GetTimestamp2(),time_ms());
+                response_ping_data.WritePacket();
+                Send(&response_ping);
             }
             else{
-                latency= time_ms() - ts_2;
+                latency= time_ms() - ping_data.GetTimestamp2();
             }
             continue;
         }
@@ -213,13 +223,13 @@ Payload NetTarget::Recieve(){
     return Payload(0,0,nullptr);
 }
 
-
 void NetTarget::AddToReliableBuffer(Packet* packet){
     ReliablePacketEnvelope* reliable = reliable_buffer.Add();
     reliable->last_sent=0;
     reliable->retry_count=0;
     memcpy(&reliable->dataPacket,packet,sizeof(Packet));
 }
+
 void NetTarget::RemoveFromReliableBuffer(int packet_id){
     for(ReliablePacketEnvelope* reliable: reliable_buffer){
         if(reliable->dataPacket.id == packet_id){

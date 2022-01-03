@@ -1,5 +1,8 @@
-#include "../signal.h"
+#ifndef CLIENT_SIGNAL_HANDLER_H
+#define CLIENT_SIGNAL_HANDLER_H
 
+#include "../signal.h"
+#include "client.h"
 
 namespace ClientSignalID{
     const int CONNECTED_TO_SERVER=102;
@@ -8,6 +11,22 @@ namespace ClientSignalID{
 
 
 
+};
 
 
-}
+namespace ClientSignalHandler{
+    extern Client* client;
+
+    void Init(Client* c);
+    void Update(int frames);
+    void Signal(EventSignal signal);
+    void Free();
+
+
+
+
+
+
+};
+
+#endif

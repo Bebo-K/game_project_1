@@ -12,7 +12,7 @@ void BackToMainMenuCallback(){
 }
 
 ErrorMenu::ErrorMenu(Layout* parent) : Menu(parent){
-    id = Menu::LOADING;
+    id = Menu::ERROR_MENU;
     h_status_text = nullptr;
 }
 
@@ -24,6 +24,7 @@ void ErrorMenu::OnLoad(){
         background->layout.SetSize(1,1);
         background->components.Add(new SpriteComponent("low_effort_banner"));
         AddWidget(background);
+        
     FontID loading_font = FontManager::LoadFontFace("SourceSansPro-Regular",32);
     Widget* status_text_widget = new Widget("status_text");
         status_text_widget->layout.SetSize(1024,64);

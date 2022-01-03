@@ -55,6 +55,7 @@ class SaveFile{
     ~SaveFile();
     void New();
     static bool Exists(char* save_name);
+    void LoadOrNew(char* save_name);
     void Load(char* save_name);
     void Save(char* save_name);
     int Serialize(byte* bytes);

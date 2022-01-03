@@ -5,6 +5,8 @@
 
 #define CSTR_TO_PACKETID(str) (int)str[0]<<24 | (int)str[1]<<16 | (int)str[2]<<8 | (int)str[3]
 const int MAX_UDP_PACKET_SIZE=508;
+struct Payload;
+
 namespace PacketID{
     const int JOIN = CSTR_TO_PACKETID("JOIN");//   Client join request
     const int ACPT = CSTR_TO_PACKETID("ACPT");//R  Server accepts new client connection
@@ -12,6 +14,7 @@ namespace PacketID{
     const int NOPE = CSTR_TO_PACKETID("NOPE");//   Disconnect (Either side)
     const int SPRQ = CSTR_TO_PACKETID("SPRQ");//R  Client spawn request
     const int PLYR = CSTR_TO_PACKETID("PLYR");//R  Server notification of a new player
+    const int PINF = CSTR_TO_PACKETID("PINF");//R  Player info. Sent to new players to catch them up on who's who.
     const int PLDC = CSTR_TO_PACKETID("PLDC");//R  Server notification of a player disconnecting
     const int PING = CSTR_TO_PACKETID("PING");//   Latency loopback
     const int SPWN = CSTR_TO_PACKETID("SPWN");//R  Server spawned entity

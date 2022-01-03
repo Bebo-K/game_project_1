@@ -41,7 +41,7 @@ class DeveloperConsole: public UI::Widget{
 
     void UpdateShownLines();
     
-    static void Write(char* str);
+    static void Write(wchar* str);
 };
 
 

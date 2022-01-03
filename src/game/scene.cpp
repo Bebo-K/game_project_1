@@ -2,7 +2,7 @@
 #include "../log.h"
 
 Scene::Scene() :entities(){
-    id=-1;
+    area_id=-1;
     loaded=false;
     global_timer=0;
 }

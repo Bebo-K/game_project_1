@@ -12,13 +12,16 @@
 #include "../game/system/transition_manager.h"
 //#include "../game/system/animation_controller.h"
 #include "../game/system/state_manager.h"
+
+#include "../net/network.h"
+#include "client_signal.h"
+#include "client_net_handler.h"
+
 #include "../gfx/ui_text.h"
-#include "../net/packet_builder.h"
 #include "../threads.h"
 
 Client* Client::instance = nullptr;
 
-SynchronousBuffer client_signals(sizeof(EventSignal),4);
 
 Client::Client() : scene(), scene_renderer(), ui(){
     logger::info("Initializing client\n");
@@ -29,6 +32,13 @@ Client::Client() : scene(), scene_renderer(), ui(){
     AnimationManager::Init();  
     FontManager::Init();
     ModelManager::Init();
+    ClientNetwork::Init();
+    ClientNetHandler::Init(this);
+    ClientSignalHandler::Init(this);
+    my_player_id=-1;
+    player_count=0;
+    max_players=0;
+    players=nullptr;
 }
 
 Client::~Client(){
@@ -38,17 +48,19 @@ Client::~Client(){
     TextureManager::Free();
     ModelManager::Free();
     AnimationManager::Free();
+    ClientNetwork::Free();
+    ClientNetHandler::Free();
+    ClientSignalHandler::Free();
 }
 
 Client* Client::GetClient(){return Client::instance;}
-void Client::Signal(EventSignal val){client_signals.Write((byte*)&val);}
+void Client::Signal(EventSignal val){ClientSignalHandler::Signal(val);}
 
 void Client::Start(){
         FontManager::LoadFontFace("Merriweather/Merriweather-Regular",8);
         int debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
         FontManager::SetActiveFont(debug_font);
         ModelManager::Register(PLAYER,"default_human");
-
     ui.Load();
     ui.main_menu->Open();
 }
@@ -78,7 +90,7 @@ void Client::RemoveEntity(int eid){
 void Client::SpawnPlayer(Entrance eid){
     Entity* my_player = scene.AddEntity(0);
     my_player->type = 1;
-    my_player->name= cstr::new_copy("Chowzang");
+    my_player->SetName(players[my_player_id].character_name);
     my_player->state = new State();
         my_player->state->Set(IDLE);
     my_player->anim_state = new AnimationState(GROUND_UNIT);
@@ -141,12 +153,11 @@ void Client::Update(int frames){
             
             PlayerInput::UpdateCamera(&scene,frame_interval);
         }
-        
-        //Network::RunSync(scene);
     }
     Input::Update();
-    network.Update();
-    HandleSignals();
+    ClientNetwork::Update();
+    ClientNetHandler::Update(frames);
+    ClientSignalHandler::Update(frames);
 }
 
 void Client::HandleUIInput(){
@@ -160,51 +171,6 @@ void Client::HandleFrameInput(){
         if(PlayerInput::HandleInput(input)){Input::ClearEvent(input);}
     }
 }
-
-void Client::HandleSignals(){
-    EventSignal signal = {0};
-    while(client_signals.Read((byte*)&signal)){
-        switch(signal.type){
-            case ClientSignalID::CONNECTED_TO_SERVER:{
-                    //LOTS:
-                    ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connected to server!"));
-
-
-                    //ui.CloseAll();
-                    //ui.ingame_menu->Open();
-                
-                break;}
-            case ClientSignalID::DISCONNECTED_FROM_SERVER:{
-                int disconnect_code = signal.params[0].ival;
-                wchar* disconnect_reason = signal.params[1].strval;
-                if(disconnect_code < 0){
-                    ui.CloseAll();
-                    ui.error_menu->Open();
-                    scene.Unload();
-                    if(disconnect_reason != null){
-                        ui.error_menu->SetStatusMessage(wstr::allocf(L"Disconnected from server: %s",disconnect_reason));
-                        free(disconnect_reason);
-                    }
-                    else{
-                        ui.error_menu->SetStatusMessage(wstr::new_copy(L"Disconnected from server (No reason given)"));
-                    }
-                }
-                else{
-                    ui.CloseAll();
-                    ui.main_menu->Open();
-                    scene.Unload();
-                }
-                break;}
-            case ClientSignalID::LOCAL_SERVER_READY:{
-                    ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
-                    Packet join_request = BuildPacket_JOIN(L"Chowzang");
-                    network.LocalConnect(&join_request);
-                break;}
-            default:break;
-        }
-    }
-}
-
 
 void Client::Quit(){
     Game::Exit();

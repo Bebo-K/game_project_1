@@ -12,7 +12,7 @@
 struct Entity{
     int     eid;
     int     type;
-    char*   name;
+    wchar*   name;
     float   x,y,z;
     float   turn;//euler y rotation.
     vec3    velocity;
@@ -33,7 +33,7 @@ struct Entity{
     NPCData*        npc_data;
 
     Entity();
-    void SetName(char* name);
+    void SetName(wchar* name);
     vec3 GetPos(int ms);
 
     ~Entity();

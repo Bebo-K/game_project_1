@@ -73,9 +73,13 @@ void Game::Poll(){
 void Game::Exit(){
     running=false;
     if(client != nullptr){
-        //client->Unload();
         delete client;
         client=nullptr;
     }
+    if(server != nullptr){
+        server->StartShutdown();
+    }
+    
+    logger::info("Exiting.\n");
     exit(0);
 }

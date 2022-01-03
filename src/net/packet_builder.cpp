@@ -1,8 +1,172 @@
 #include "packet_builder.h"
 #include "../os.h"
 
+
+using namespace PacketData;
+
+const int MAX_PLAYER_NAME_LEN=64;
+const int MAX_REASON_LENGTH = 180;
+
+
+PacketAccessor::PacketAccessor(Packet* p){
+    type=0;
+    data_length=0;
+    data_backing = p->data;
+    raw_packet_backing = p;
+}
+PacketAccessor::PacketAccessor(Payload p){
+    type=p.type;
+    data_length=p.length;
+    data_backing = p.data;
+    raw_packet_backing = nullptr;
+}
+void PacketAccessor::AddDataLength(int len){
+    data_length += len;
+}
+void PacketAccessor::WritePacket(){
+    if(raw_packet_backing == nullptr){logger::exception("Unsupported operation: PacketAccessor is read-only for payloads");}
+    raw_packet_backing->type = type;
+    raw_packet_backing->CreateID();
+    raw_packet_backing->SetDataLength(data_length);
+    raw_packet_backing->RunCRC();
+}
+
+
+JOIN::JOIN(Packet* p):PacketAccessor(p){type = PacketID::JOIN;}
+wchar* JOIN::GetPlayerName(){return ((wchar*)data_backing);}
+void   JOIN::SetPlayerName(wchar* name){
+    int name_len = wstr::len(name);
+    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(data_backing,name,name_len*sizeof(wchar));
+    ((wchar*)data_backing)[name_len]=0;
+    AddDataLength(sizeof(wchar)*(name_len+1));
+}
+
+OKAY::OKAY(Packet* p):PacketAccessor(p){type = PacketID::OKAY;data_length=sizeof(int);}
+int OKAY::GetAckID(){return ((int*)data_backing)[0];}
+void OKAY::SetAckID(int ack){((int*)data_backing)[0] = ack;}
+
+ACPT::ACPT(Packet* p):PacketAccessor(p){type = PacketID::ACPT;data_length=sizeof(int)*4;}
+ACPT::ACPT(Payload p):PacketAccessor(p){}
+int ACPT::GetAckID(){return ((int*)data_backing)[0];}
+void ACPT::SetAckID(int ack){((int*)data_backing)[0] = ack;}
+int ACPT::GetPlayerID(){return ((int*)data_backing)[1];}
+void ACPT::SetPlayerID(int player_id){((int*)data_backing)[1] = player_id;}
+int ACPT::GetPlayerCount(){return ((int*)data_backing)[2];}
+void ACPT::SetPlayerCount(int player_count){((int*)data_backing)[2] = player_count;}
+int ACPT::GetPlayerMax(){return ((int*)data_backing)[3];}
+void ACPT::SetPlayerMax(int player_max){((int*)data_backing)[3] = player_max;}
+
+NOPE::NOPE(Packet* p):PacketAccessor(p){type = PacketID::NOPE;}
+wchar* NOPE::GetReason(){return ((wchar*)data_backing);}
+void NOPE::SetReason(wchar* reason){
+    int reason_len = wstr::len(reason);
+    if(reason_len > MAX_REASON_LENGTH){ reason_len = MAX_REASON_LENGTH;}
+    memcpy(data_backing,reason,reason_len*sizeof(wchar));
+    ((wchar*)data_backing)[reason_len]=0;
+    AddDataLength(sizeof(wchar)*(reason_len+1));
+}
+
+PING::PING(Packet* p):PacketAccessor(p){type = PacketID::PING;data_length = sizeof(long)*3;}
+long PING::GetTimestamp1(){return ((long*)data_backing)[0];}
+long PING::GetTimestamp2(){return ((long*)data_backing)[1];}
+long PING::GetTimestamp3(){return ((long*)data_backing)[2];}
+void PING::SetTimestamps(long ts_1,long ts_2,long ts_3){
+    ((long*)data_backing)[0]=ts_1;
+    ((long*)data_backing)[1]=ts_2;
+    ((long*)data_backing)[2]=ts_3;
+}
+
+PLYR::PLYR(Packet* p):PacketAccessor(p){type = PacketID::PLYR;data_length = sizeof(int);}
+PLYR::PLYR(Payload p):PacketAccessor(p){}
+int PLYR::GetPlayerID(){return ((int*)data_backing)[0];}
+void PLYR::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
+wchar* PLYR::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
+void   PLYR::SetPlayerName(wchar* name){
+    int name_len = wstr::len(name);
+    if(name_len > MAX_PLAYER_NAME_LEN){name_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(&data_backing[sizeof(int)],name,name_len*sizeof(wchar));
+    ((wchar*)(&data_backing[sizeof(int)]))[name_len]=0;
+    AddDataLength(sizeof(wchar)*(name_len+1));
+}
+
+PINF::PINF(Packet* p):PacketAccessor(p){type = PacketID::PINF;data_length = sizeof(int)*2;}
+PINF::PINF(Payload p):PacketAccessor(p){}
+int PINF::GetPlayerID(){return ((int*)data_backing)[0];}
+void PINF::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
+int PINF::GetPlayerEntityID(){return ((int*)data_backing)[1];}
+void PINF::SetPlayerEntityID(int entity_id){((int*)data_backing)[1] = entity_id;}
+wchar* PINF::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)*2]);}
+void   PINF::SetPlayerName(wchar* name){
+    int name_len = wstr::len(name);
+    int offset = sizeof(int)*2;
+    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(&data_backing[offset],name,name_len*sizeof(wchar));
+    ((wchar*)(&data_backing[offset]))[name_len]=0;
+    AddDataLength(sizeof(wchar)*(name_len+1));
+}
+wchar* PINF::GetCharacterName(){
+    int name_len = wstr::len(GetPlayerName());
+    int offset = sizeof(int)*2 + sizeof(wchar)*(name_len+1);
+    return (wchar*)(&data_backing[offset]);}
+void   PINF::SetCharacterName(wchar* character){
+    int name_len = wstr::len(GetPlayerName());
+    int offset = sizeof(int)*2 + sizeof(wchar)*(name_len+1);
+    int character_len = wstr::len(character);
+    if(character_len > MAX_PLAYER_NAME_LEN){ character_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(&data_backing[offset],character,character_len*sizeof(wchar));
+    ((wchar*)(&data_backing[offset]))[character_len]=0;
+    AddDataLength(sizeof(wchar)*(character_len+1));
+}
+
+
+PLDC::PLDC(Packet* p):PacketAccessor(p){type = PacketID::PLDC;data_length = sizeof(int);}
+PLDC::PLDC(Payload p):PacketAccessor(p){}
+int PLDC::GetPlayerID(){return ((int*)data_backing)[0];}
+void PLDC::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
+wchar* PLDC::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
+void   PLDC::SetPlayerName(wchar* name){
+    int name_len = wstr::len(name);
+    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(&data_backing[sizeof(int)],name,name_len*sizeof(wchar));
+    ((wchar*)(&data_backing[sizeof(int)]))[name_len]=0;
+    AddDataLength(sizeof(wchar)*(name_len+1));
+}
+wchar* PLDC::GetReason(){
+    int name_len = wstr::len(GetPlayerName());
+    int offset = sizeof(int)+sizeof(wchar)*(name_len+1);
+    return (wchar*)(&data_backing[offset]);}
+void   PLDC::SetReason(wchar* reason){
+    int name_len = wstr::len(GetPlayerName());
+    int offset = sizeof(int)+sizeof(wchar)*(name_len+1);
+    int reason_len = wstr::len(reason);
+    if(reason_len > MAX_REASON_LENGTH){ reason_len = MAX_REASON_LENGTH;}
+    memcpy(&data_backing[offset],reason,reason_len*sizeof(wchar));
+    ((wchar*)(&data_backing[offset]))[reason_len]=0;
+    AddDataLength(sizeof(wchar)*(reason_len+1));
+}
+
+
+CHAT::CHAT(Packet* p):PacketAccessor(p){type = PacketID::CHAT;}
+CHAT::CHAT(Payload p):PacketAccessor(p){}
+int CHAT::GetPlayerID(){return ((int*)data_backing)[0];}
+void CHAT::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
+wchar* CHAT::GetChatText(){return (wchar*)(&data_backing[sizeof(int)]);}
+void   CHAT::SetChatText(wchar* text){
+    const int MAX_CHAT_LENGTH = (Packet::MAX_DATA_LENGTH - sizeof(wchar)) / sizeof(wchar);
+    int text_len = wstr::len(text);
+    if(text_len > MAX_CHAT_LENGTH){ text_len = MAX_CHAT_LENGTH;}
+    memcpy(&data_backing[sizeof(int)],text,text_len*sizeof(wchar));
+    ((wchar*)(&data_backing[sizeof(int)]))[text_len]=0;
+    AddDataLength(sizeof(wchar)*(text_len+1));
+}
+
+
+
+/*
+
 Packet BuildPacket_JOIN(wchar* name){//TODO: stub
-    const int MAX_NAME_LENGTH = (Packet::MAX_DATA_LENGTH - (sizeof(int) + sizeof(wchar))) / sizeof(wchar);
+    
     Packet ret;
     ret.type = PacketID::JOIN;
     ret.ClearData();
@@ -160,3 +324,5 @@ int ReadPacket_PING_timestamp(Packet* OKAY,int timestamp_num){
     if(timestamp_num > 2 || timestamp_num < 0)return 0;
     return ((long*)OKAY->data)[timestamp_num];
 }
+
+*/

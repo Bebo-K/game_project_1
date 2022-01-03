@@ -14,6 +14,7 @@
 #include "widget/dev_console.h"
 
 GUI* GUI::instance = nullptr;
+UI::Widget* developer_console=nullptr;
 
 using namespace UI;
 
@@ -23,26 +24,30 @@ GUI::GUI(): fullscreen_layout(),debug_widgets(),menus(){
     main_menu = new MainMenu(&fullscreen_layout);
     options_menu = new OptionsMenu(&fullscreen_layout);
     loading_menu = new LoadingMenu(&fullscreen_layout);
+    error_menu = new ErrorMenu(&fullscreen_layout);
     ingame_menu = new IngameMenu(&fullscreen_layout);
     menus.Add(main_menu);
     menus.Add(options_menu);
     menus.Add(loading_menu);
+    menus.Add(error_menu);
     menus.Add(ingame_menu);
 }
 
 void GUI::Load(){
-    logger::info("loading ui...\n");
+    logger::info("Loading GUI...");
 
     main_menu->Load();
     options_menu->Load();
     loading_menu->Load();
     ingame_menu->Load();
-    Widget* developer_console = new DeveloperConsole();
+    error_menu->Load();
+    developer_console = new DeveloperConsole();
     debug_widgets.Add(developer_console);
     
-    DeveloperConsole::Write("Hello World! GUI Initialized.");
+    DeveloperConsole::Write(L"Hello World! GUI Initialized.");
 
     OnResize(Window::width,Window::height);
+    logger::info("done\n");
 }
 
 void GUI::Unload(){
@@ -58,6 +63,7 @@ void GUI::CloseAll(){
     options_menu->Close();
     loading_menu->Close();
     ingame_menu->Close();
+    error_menu->Close();
 }
 
 GUI* GUI::GetGUI(){return instance;}
@@ -93,4 +99,8 @@ void GUI::OnResize(int screen_w,int screen_h){
     fullscreen_layout.center.y=fullscreen_layout.h/2;
     for(Menu* m: menus){m->HandleResize();}
     for(Widget* w: debug_widgets){w->HandleResize();}
+}
+
+void GUI::DebugLog(wchar* str){
+    DeveloperConsole::Write(str);
 }

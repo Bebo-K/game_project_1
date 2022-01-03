@@ -15,8 +15,6 @@ void LaunchSingleplayerButtonCallback(){
     LoadingMenu* loading_menu = GUI::GetGUI()->loading_menu;
     loading_menu->Open();
     loading_menu->SetStatusMessage(wstr::new_copy(L"Launching local server..."));
-    GUI::GetGUI()->main_menu->Close();
-
     Game::StartLocalServer();
 }
 

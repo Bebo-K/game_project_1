@@ -25,8 +25,8 @@ Entity::Entity(){
     npc_data=null;
 }
 
-void Entity::SetName(char* name){
-    name = cstr::new_copy(name);
+void Entity::SetName(wchar* name){
+    name = wstr::new_copy(name);
 }
 
 

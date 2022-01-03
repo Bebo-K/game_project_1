@@ -28,8 +28,8 @@ DeveloperConsole::DeveloperConsole() : entry_line(),background_rect(256,512),ent
     }
 
     //Start inactive by default
-    visible = false;
-    active = false;
+    visible = true;
+    active = true;
 }
 DeveloperConsole::~DeveloperConsole(){
     if(DeveloperConsole::instance == this){DeveloperConsole::instance = null;}
@@ -110,12 +110,10 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
 
 
 
-void DeveloperConsole::Write(char* str){
+void DeveloperConsole::Write(wchar* str){
     if(instance != null){
-        if(cstr::len(str) < MAX_LINE_LENGTH){
-            wchar* wide_str = wstr::from_cstr(str);
-            memcpy(&instance->line_buffers[instance->last_line_indx*MAX_LINE_LENGTH],wide_str,sizeof(wchar)*(wstr::len(wide_str)+1));
-            free(wide_str);
+        if(wstr::len(str) < MAX_LINE_LENGTH){
+            memcpy(&instance->line_buffers[instance->last_line_indx*MAX_LINE_LENGTH],str,sizeof(wchar)*(wstr::len(str)+1));
             instance->last_line_indx++;
             if(instance->last_line_indx > CACHED_LINE_COUNT){instance->last_line_indx=0;}
         }

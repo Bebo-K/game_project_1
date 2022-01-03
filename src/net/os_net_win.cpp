@@ -18,7 +18,7 @@
 #include "../log.h"
 #include "../config.h"
 
-void set_state_from_error(Network::NetTarget* target);
+void set_state_from_error(NetTarget* target);
 
 bool OSNetwork::Init(){
 	WSADATA wsaData;//has specifics like max datagram size and max connections, but otherwise unneeded.
@@ -34,8 +34,8 @@ void OSNetwork::Destroy(){
 	WSACleanup();
 }
 
-Network::ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
-	Network::ip_address ret = {0};
+ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
+	ip_address ret = {0};
 	addrinfoW*	target_address;
 
 	addrinfoW	dns_hints = {0};
@@ -75,11 +75,10 @@ Network::ip_address OSNetwork::DNS_lookup(wchar* hostname, unsigned short port){
 	return ret;
 }
 
-bool OSNetwork::connect(Packet* connect_packet,Network::NetTarget* target){
+bool OSNetwork::connect(Packet* connect_packet,NetTarget* target){
 	int send_result;
 
 	if(target->address.IsLocalhost()){
-		target->SetState(Network::CONNECTED_LOCAL,nullptr);
 		target->conn_start=time_ms();
 		target->Send(connect_packet);
 		return true;
@@ -89,7 +88,7 @@ bool OSNetwork::connect(Packet* connect_packet,Network::NetTarget* target){
 	if (target->socket == INVALID_SOCKET) {
 		wchar* error_string = wstr::allocf(L"Failed to create a local socket on connect. WinSock2 socket() error code: %d",WSAGetLastError());
 		logger::exceptionW(error_string);
-		target->SetState(Network::NETWORK_UNAVAILABLE,error_string);
+		target->SetState(NetTargetState::ID::NETWORK_UNAVAILABLE,error_string);
 		return false;
 	}
 
@@ -120,7 +119,7 @@ bool OSNetwork::connect(Packet* connect_packet,Network::NetTarget* target){
 		return false;
 	}
 	else if(send_result != connect_packet->length){
-		target->SetState(Network::UNKNOWN_ERROR,wstr::new_copy(L"Connect packet was not completely sent"));
+		target->SetState(NetTargetState::ID::UNKNOWN_ERROR,wstr::new_copy(L"Connect packet was not completely sent"));
 		target->socket = INVALID_SOCKET;
 		return false;
 	}
@@ -129,13 +128,13 @@ bool OSNetwork::connect(Packet* connect_packet,Network::NetTarget* target){
 	return true;
 }
 
-void OSNetwork::disconnect(Network::NetTarget* target){
+void OSNetwork::disconnect(NetTarget* target){
 	closesocket(target->socket);
 	target->socket = INVALID_SOCKET;
-	target->SetState(Network::NOT_CONNECTED,nullptr);
+	target->SetState(NetTargetState::ID::NOT_CONNECTED,nullptr);
 }
 
-bool OSNetwork::send_packet(Packet* packet,Network::NetTarget* target){
+bool OSNetwork::send_packet(Packet* packet,NetTarget* target){
 	int result = send(target->socket,(char*)packet, packet->length, 0 );
     if (result == SOCKET_ERROR) {
 		set_state_from_error(target);
@@ -144,10 +143,10 @@ bool OSNetwork::send_packet(Packet* packet,Network::NetTarget* target){
 	return true;
 }
 
-bool OSNetwork::recv_packet(Packet* packet,Network::NetTarget* target){
+bool OSNetwork::recv_packet(Packet* packet,NetTarget* target){
 	unsigned long available;
 	if(ioctlsocket(target->socket,FIONREAD,&available) != 0){
-		target->SetState(Network::UNKNOWN_ERROR,wstr::allocf(L"Failed to get listener socket status, error code %x",WSAGetLastError()));
+		target->SetState(NetTargetState::ID::UNKNOWN_ERROR,wstr::allocf(L"Failed to get listener socket status, error code %x",WSAGetLastError()));
         return false;
 	}
 	if(available > 0){return false;}
@@ -184,7 +183,7 @@ void OSNetwork::unbind(Socket* listen_socket){
 	*listen_socket = INVALID_SOCKET;
 }
 
-int OSNetwork::listen(Packet* packet, Socket socket,Network::ip_address* source_addr){
+int OSNetwork::listen(Packet* packet, Socket socket,ip_address* source_addr){
 	unsigned long available;
 	if(ioctlsocket(socket,FIONREAD,&available) != 0){
 		logger::exception("Failed to get listener socket status, error code %x",WSAGetLastError());
@@ -225,38 +224,38 @@ int OSNetwork::listen(Packet* packet, Socket socket,Network::ip_address* source_
 }
 
 
-void set_state_from_error(Network::NetTarget* target){
+void set_state_from_error(NetTarget* target){
 	int error_code = WSAGetLastError();
 
 	switch(error_code){
 		case 0: break; 
 		case WSAENETDOWN:{
-			target->SetState(Network::NETWORK_UNAVAILABLE,wstr::allocf(L"The network is unavailable"));
+			target->SetState(NetTargetState::ID::NETWORK_UNAVAILABLE,wstr::allocf(L"The network is unavailable"));
 			break;}
 		case WSAECONNRESET:{
-			target->SetState(Network::ABORTED,wstr::allocf(L"Connection reset"));
+			target->SetState(NetTargetState::ID::ABORTED,wstr::allocf(L"Connection reset"));
 			break;}
 		case WSAETIMEDOUT:{
-			target->SetState(Network::TIMED_OUT,wstr::allocf(L"Connection timed out"));
+			target->SetState(NetTargetState::ID::TIMED_OUT,wstr::allocf(L"Connection timed out"));
 			break;}
 		case WSAEADDRNOTAVAIL:{
-			target->SetState(Network::INVALID,
-				(target->hostname != nullptr)? wstr::allocf(L"The remote host %s is not a valid address",target->hostname)
+			target->SetState(NetTargetState::ID::INVALID,
+				(target->hostname != nullptr)? wstr::allocf(L"The remote host %S is not a valid address",target->hostname)
 											: wstr::allocf(L"The remote address is invalid"));
 			break;}
 		case WSAEHOSTUNREACH:{
-			target->SetState(Network::INVALID,
-				(target->hostname != nullptr)? wstr::allocf(L"Remote host unreachable %s",target->hostname)
+			target->SetState(NetTargetState::ID::INVALID,
+				(target->hostname != nullptr)? wstr::allocf(L"Remote host unreachable %S",target->hostname)
 											: wstr::allocf(L"Remote host is unreachable"));
 			break;}
 		case WSAENETUNREACH:{
-			target->SetState(Network::NETWORK_UNAVAILABLE,wstr::allocf(L"Network is unreachable from this host"));
+			target->SetState(NetTargetState::ID::NETWORK_UNAVAILABLE,wstr::allocf(L"Network is unreachable from this host"));
 			break;}
 		case WSAEDESTADDRREQ:{
-			target->SetState(Network::INVALID,wstr::allocf(L"No destination address"));
+			target->SetState(NetTargetState::ID::INVALID,wstr::allocf(L"No destination address"));
 			break;}
 		default: {
-			target->SetState(Network::UNKNOWN_ERROR,wstr::allocf(L"An unknown error has occured (%d)",error_code));
+			target->SetState(NetTargetState::ID::UNKNOWN_ERROR,wstr::allocf(L"An unknown error has occured (%d)",error_code));
 			break;
 		}
 	}

@@ -16,14 +16,14 @@ int config::ui_width = 1280;//640;//
 
 int config::network_resend_max = 64;
 int config::network_resend_interval = 100;
-int config::network_ping_interval   = 1000;
+int config::network_ping_interval   = 2000;
 int config::network_packet_expiry   = 10000;//10 s
 int config::network_timeout         = 30000;
 
 bool config::show_console=false;
 bool config::show_fps_counter=false;
 bool config::debug_mode=false;
-bool config::debug_net=false;
+bool config::debug_net=true;
 
 wchar_t* config::save_directory=L"/saves";
 

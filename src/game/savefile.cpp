@@ -109,7 +109,7 @@ void SaveCampaign::SetStoryBit(int bit,bool value){
 
 
 void BuildDemoCampaign(SaveCampaign* campaign){
-    campaign->campaign_id=-1;
+    campaign->campaign_id=1;
     campaign->bitflag_len=32;
     campaign->story_bits=(byte*)calloc(4,sizeof(byte));
 }
@@ -145,6 +145,17 @@ void SaveFile::New(){
 bool SaveFile::Exists(char* save_name){
     return UserFile::Exists(GetSaveFilePath(save_name));
 }
+void SaveFile::LoadOrNew(char* save_name){
+    if(SaveFile::Exists(save_name)){
+        logger::info("Loading savefile '%s'...",save_name);
+        Load(server_config::save_name);
+        logger::info("done\n");
+    }
+    else{
+        logger::info("No save file found for save '%s', starting a new one.\n",save_name);
+        New();
+    }
+}
 void SaveFile::Load(char* save_name){
     UserFile save_file(GetSaveFilePath(save_name),'r');
 
@@ -164,6 +175,7 @@ void SaveFile::Save(char* save_name){
 
     free(data);
     save_file.close();
+    logger::info("Savefile '%s' saved.\n",save_name);
 }
 int SaveFile::Serialize(byte* data){
     Serializer dat(data,SerializedLength());
@@ -196,11 +208,11 @@ void SaveFile::Deserialize(byte* src){
 
 int SaveFile::SerializedLength(){
     int size=0;
-    size+=4;//saved_players
+    size+=sizeof(int);//saved_players
     for(int i=0;i<saved_players;i++){
         size+=players[i].SerializedLength();
     }
-    size+=4;//saved_campaigns
+    size+=sizeof(int);//saved_campaigns
     for(int i=0;i<saved_campaigns;i++){
        size+=campaigns[i].SerializedLength();
     }

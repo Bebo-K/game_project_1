@@ -216,12 +216,11 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
         case WM_CREATE:
             SetupOpenGL(window_handle,wparam,lparam);
             OSInput::SetupDirectInput(window_handle);
-            logger::info("Initializing engine...\n");
+            logger::info("Starting.\n");
             Game::Start();
             break;
         case WM_DESTROY:
             DestroyOpenGL();
-            logger::info("Exiting.\n");
             Game::Exit();
             PostQuitMessage(0);
             break;
@@ -388,16 +387,23 @@ bool build_game_folder_path(){
     }
 
     PWSTR my_games_path = append_wstrs(my_docs_path,L"\\My Games");
-    PWSTR full_game_path = append_wstrs(my_docs_path,L"\\DemoGame");
+    PWSTR full_game_path = append_wstrs(my_games_path,L"\\DemoGame");
 
     if(CreateDirectoryW(my_games_path,NULL) || GetLastError() == ERROR_ALREADY_EXISTS){
-        result= (CreateDirectoryW(full_game_path,NULL) || GetLastError() == ERROR_ALREADY_EXISTS);
+        if(CreateDirectoryW(full_game_path,NULL)){
+            logger::info("First time initialization: created savegame folder '%S'\n",full_game_path);
+            result=true;
+        }
+        else if(GetLastError() == ERROR_ALREADY_EXISTS){
+            result=true;
+        }
     }
 
-    if(result == true){ save_path = full_game_path; }
+    if(result == true){ save_path = full_game_path;}
     else{ free(full_game_path); }
     free(my_games_path);
     CoTaskMemFree(my_docs_path);
+    
     return result;
 }
 

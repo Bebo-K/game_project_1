@@ -8,7 +8,7 @@
 
 class Scene{
     public:
-    int  id;//for client/server sync purposes
+    int  area_id;//for client/server sync purposes
     bool loaded;
     long long global_timer;//Frame count since the scene has been loaded.
 

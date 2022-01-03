@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <wchar.h>
 
 int cstr::len(const char* str){ 
     int i;
@@ -85,6 +86,7 @@ char* cstr::from_wstr_utf16(const wchar* widestr){
 char* cstr::new_copy(const char* str){
     if(str==nullptr)return nullptr;
     int str_len = len(str);
+    if(str_len==0)return nullptr;
     char* s = (char*)malloc(str_len+1);
     strcpy(s,str);
     s[str_len]=0;
@@ -277,12 +279,14 @@ wchar* wstr::allocf(const wchar* format, ...){
 
     int guess_length = len(format)+16+1;
     wchar* ret= (wchar*)malloc(sizeof(wchar)*guess_length);
-    int real_length = snwprintf(ret,guess_length,format,args);
+    int real_length = vsnwprintf(ret,guess_length,format,args);
 
     if(real_length < guess_length)return ret;
     free(ret);
     ret = (wchar*)malloc(sizeof(wchar)*(real_length+1));
-    swprintf(ret,format,args);
+    vswprintf(ret,format,args);
+    
+
     va_end (args);
     return ret;
 }
@@ -297,6 +301,7 @@ wchar* wstr::from_cstr(const char* cstr){//truncates high-order bits.
 wchar* wstr::new_copy(const wchar* str){
     if(str==nullptr)return nullptr;
     int str_len = len(str);
+    if(str_len==0)return nullptr;
     wchar* s = (wchar*)malloc((str_len+1)*sizeof(wchar));
     wcscpy(s,str);
     s[str_len]=0;

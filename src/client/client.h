@@ -4,8 +4,8 @@
 #include "../gui/gui.h"
 #include "../game/scene.h"
 #include "../gui/ui_types.h"
-#include "../net/network.h"
-#include "client_signal.h"
+#include "../signal.h"
+#include "../game/player_info.h"
 
 class Client{
     private:
@@ -15,7 +15,11 @@ class Client{
     Scene       scene;
     Renderer    scene_renderer;
     GUI         ui;
-    ClientNetwork network;
+
+    PlayerInfo*  players;
+    int          max_players;
+    int          player_count;
+    int          my_player_id;
 
     const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 

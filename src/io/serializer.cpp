@@ -21,7 +21,7 @@ Serializer::Serializer(byte* existing_bytestream,int len){
     raw_data=existing_bytestream;
 }
 Serializer::~Serializer(){
-    if(raw_data != nullptr){
+    if(raw_data != nullptr && allocated){
         free(raw_data);
     }
 }
@@ -31,18 +31,18 @@ void Serializer::Allocate(int size){
     data_length = size;
 }
 void Serializer::PutInt(int i){
-    if(place + 4 > data_length){
+    if( (int)(place + sizeof(int)) > data_length){
         logger::exception("Serializer.PutInt(%d) writes past the end of the data buffer (pos:%d,len%d)",i,place,data_length);}
     int* ptr = (int*)&raw_data[place];
     *ptr =  i;
-    place += 4;
+    place += sizeof(int);
 }
 void Serializer::PutFloat(float f){
-    if(place + 4 > data_length){
+    if((int)(place + sizeof(float)) > data_length){
         logger::exception("Serializer.PutFloat(%f) writes past the end of the data buffer (pos:%d,len%d)",f,place,data_length);}
     float* ptr = (float*)&raw_data[place];
     *ptr =  f;
-    place += 4;
+    place += sizeof(float);
 }
 void Serializer::PutString(char* str){
     char* ptr = (char*)&raw_data[place];
@@ -66,12 +66,12 @@ Deserializer::Deserializer(byte* source){
 }
 int Deserializer::GetInt(){
     int* ret = (int*)&raw_data[place];
-    place += 4;
+    place += sizeof(int);
     return *ret;
 }
 float Deserializer::GetFloat(){
     float* ret = (float*)&raw_data[place];
-    place += 4;
+    place += sizeof(float);
     return *ret;
 }
 char* Deserializer::GetString(){

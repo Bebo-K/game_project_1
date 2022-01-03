@@ -11,15 +11,14 @@
 //Some notes
 //The largest safe UDP packet size over the internet is 508 bytes
 //When fragmented, UDP packets can combine into a max 67KB payload
-using namespace Network;
-class ClientNetwork{
-    public:
-    bool running;
-    long last_ping;
-    NetTarget server_target;
+namespace ClientNetwork{
+    extern bool running;
+    extern long last_ping;
+    extern NetTarget server_target;
 
-    ClientNetwork();
-    ~ClientNetwork();
+    void Init();
+    void Free();
+    bool IsRunning();
 
     void StartConnect(wchar* host_string,Packet* join_request);
     void LocalConnect(Packet* join_request);
@@ -30,33 +29,42 @@ class ClientNetwork{
     void Send(Payload dat);
     void Send(Packet* dat);
     Payload Recieve();
+
+    NetTarget* GetNetTargetForLocal();
 };
 
-class ServerNetwork{
-    public:
-    bool running;
+namespace ServerNetwork{
+    extern bool running;
+    extern bool listener_enabled;
+    extern Socket listener_socket;
+    extern unsigned short listener_port;
+    extern NetTarget *targets;
+    extern NetTarget *local_client_target; //will be targets[0] if allowing local connections, otherwise null
+    extern int target_count;
+    extern int connected_targets;
 
-    bool listener_enabled;
-    Socket listener_socket;
-    unsigned short listener_port;
-
-    Array<NetTarget> targets;
-    NetTarget local_client_target;
-
-    ServerNetwork();  
-    ~ServerNetwork();
+    void Init();  
+    void Free();
+    bool IsRunning();
+    NetTarget* GetNetTargetForLocal();
     
     void StartLocalOnly();
-    void StartListener(int target_slots,unsigned short port);
+    void StartListener(int target_slots,bool allow_local,unsigned short port);
     void Update();
     void ShutdownListener();
 
     bool TargetConnected(int target_id);
-    void WriteToTarget(int target_id,Payload payload);
-    void WriteToAllTargets(Payload payload);
-    Payload ReadFromTarget(int target_id);
+    void SendToTarget(int target_id,Payload payload);
+    void SendToTarget(int target_id,Packet* packet);
+    void SendToAllTargets(Packet* packet);
+    void SendToAllTargets(Payload payload);
+    void SendToOtherTargets(Payload payload,int excluded_target);
+    void SendToOtherTargets(Packet* packet,int excluded_target);
+
+    Payload RecvFromTarget(int target_id);
 
     void HandleNewTarget(Packet* request_packet,ip_address remote_address);
+    void HandleNewLocalTarget(Packet* request_packet);
     void DisconnectTarget(int target_id,wchar* reason);
 };
 
