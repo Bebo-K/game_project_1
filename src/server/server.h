@@ -32,6 +32,9 @@ class Server{
     void Update(int frames);
     void UpdateScene(Scene* scene,int ms);
     void UpdateNetwork(int frames);
+    void UpdatePlayers();
+
+    
     
     void HandleSignals();
     static void Signal(EventSignal val);

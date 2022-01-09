@@ -14,9 +14,6 @@ bool ClientNetwork::running=false;
 long ClientNetwork::last_ping=0;
 NetTarget ClientNetwork::server_target=NetTarget();
 
-void ClientSignalConnect(){
-    Client::Signal({ClientSignalID::CONNECTED_TO_SERVER,0,0,0});
-}
 void ClientSignalDisconnect(int code,wchar* reason){
     EventSignal signal;
         signal.type= ClientSignalID::DISCONNECTED_FROM_SERVER;
@@ -40,13 +37,13 @@ void ClientNetworkThreadEntryPoint(){
                  while(local_server_target->outbound_buffer.Read((byte*)&transfer_packet)){
                     server_target.inbound_buffer.Write((byte*)&transfer_packet);
                     server_target.last_recv = time_ms();
-                    if(server_target.state_id != NetTargetState::ID::CONNECTED_LOCAL){
+                    if(server_target.state_id == NetTargetState::ID::CONNECTING){
                         server_target.SetState(NetTargetState::ID::CONNECTED_LOCAL,nullptr);
-                        ClientSignalConnect();
                     }
                 }
             }
             else{cleanup=true;}
+            if(server_target.state_id==NetTargetState::DISCONNECTING){cleanup=true;}
         }
         else if(server_target.IsConnected()){
            while(server_target.outbound_buffer.Read((byte*)&transfer_packet)){
@@ -55,9 +52,8 @@ void ClientNetworkThreadEntryPoint(){
             while(OSNetwork::recv_packet(&transfer_packet,&server_target)){
                 server_target.inbound_buffer.Write((byte*)&transfer_packet);
                 server_target.last_recv = time_ms();
-                if(server_target.state_id != NetTargetState::ID::CONNECTED){
+                if(server_target.state_id == NetTargetState::ID::CONNECTING){
                     server_target.SetState(NetTargetState::ID::CONNECTED,nullptr);
-                    ClientSignalConnect();
                 }
             }
         }
@@ -74,7 +70,7 @@ void ClientNetworkThreadEntryPoint(){
             running=false;
         }
         loop_delta = time_ms()-loop_start;
-        if(loop_delta > 10)sleep_thread(10-loop_delta);
+        if(loop_delta < 10 && loop_delta >= 0)sleep_thread(10-loop_delta);
     }
 }
 

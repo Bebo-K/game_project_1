@@ -2,6 +2,7 @@
 #define SERIALIZER_H
 
 #include "../struct/data_types.h"
+#include "../struct/str.h"
 
 class Serializer{
     bool allocated;
@@ -20,6 +21,7 @@ class Serializer{
     void PutInt(int i);
     void PutFloat(float f);
     void PutString(char* str);
+    void PutWString(wchar* str);
     void WriteBytes(byte* dat,int len);
     byte* Bytes();
 };
@@ -34,6 +36,7 @@ class Deserializer{
     int GetInt();
     float GetFloat();
     char* GetString();
+    wchar* GetWString();
     byte* CopyBytes(int bytes);
     int  AmountRead();
 

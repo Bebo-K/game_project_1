@@ -11,8 +11,8 @@
 
 class SavePlayer{
     public:
-    int   player_id;
-    char* player_name;
+    int   save_id;
+    wchar* player_name;
     int   player_scene;
     int   player_scene_entrance;
     //game stats
@@ -63,9 +63,12 @@ class SaveFile{
     void  Deserialize(byte* src);
 
     SaveCampaign* GetCampaign(int campaign_id);
-    SavePlayer* GetPlayer(int player_id);
-    SavePlayer* GetPlayer(char* player_name);
-    SavePlayer* NewPlayer(int player_id,char* player_name);
+    SavePlayer* GetOrNewPlayer(wchar* player_name);
+    SavePlayer* GetPlayer(wchar* player_name);
+    int GetPlayerSaveID(wchar* player_name);
+    SavePlayer* GetPlayerByID(int save_id);
+    SavePlayer* NewPlayer(wchar* player_name);
+
 
 };
 

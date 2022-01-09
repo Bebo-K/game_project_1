@@ -6,6 +6,7 @@
 #include <shlobj.h>
 #include <knownfolders.h>
 #include <synchapi.h>
+#include <shellapi.h>
 #include "winmain.h"
 #include "os.h"
 #include "gfx/gload.h"
@@ -150,7 +151,7 @@ int LoopMain(){
 //********************************************//
 //                 Entry Point                //
 //********************************************//
-int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int show_hint){
+int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int nCmdShow){
     start_time = sys_time();
     ms_per_second = time_ms();
     second.interval=1000;
@@ -159,6 +160,24 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
     Input::Init();
     OSInput::Init();
     OSNetwork::Init();
+
+    
+    int argc=0;
+    LPWSTR* args = CommandLineToArgvW(GetCommandLineW(),&argc);
+    wchar* arg=nullptr;
+    for(int i=0;i<argc;i++){
+        arg = wstr::lowercase_copy(args[i]);
+        if(wstr::compare(arg,L"-serveronly")){
+            ServerMain();
+            OSNetwork::Destroy();
+            Input::Destroy();
+            config::Destroy();
+            return 0;
+        }
+        free(arg);
+    }
+
+
 
     WNDCLASSEX window_class;
         window_class.cbSize=sizeof(WNDCLASSEX);
@@ -185,7 +204,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
             NULL,NULL,
             instance,NULL);
         if(window){ 
-            ShowWindow(window,show_hint);
+            ShowWindow(window,nCmdShow);
             UpdateWindow(window);
             glClearColor(0,0,0,1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

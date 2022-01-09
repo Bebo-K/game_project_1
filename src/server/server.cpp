@@ -112,6 +112,7 @@ void Server::UpdateScene(Scene* scene,int frames){
 }
 
 void Server::Update(int frames){
+    UpdatePlayers();
     for(Scene* scene:active_scenes){
         UpdateScene(scene,frames);
     }
@@ -121,3 +122,19 @@ void Server::Update(int frames){
 }
 
 
+void Server::UpdatePlayers(){
+    for(int i=0;i<max_players;i++){
+        //Player disconnects
+        if(!players[i].connected && players[i].character_name != nullptr){//Player disconnected in network thread. Cleanup entity+state
+            if(players[i].player_entity_scene >= 0 && players[i].player_entity_id >= 0){
+                active_scenes[players[i].player_entity_scene]->RemoveEntity(players[i].player_entity_id);
+            }
+            current_players--;
+            players[i].Clear();
+        }
+        
+        //Player scene transitions
+
+
+    }
+}

@@ -46,16 +46,18 @@ OKAY::OKAY(Packet* p):PacketAccessor(p){type = PacketID::OKAY;data_length=sizeof
 int OKAY::GetAckID(){return ((int*)data_backing)[0];}
 void OKAY::SetAckID(int ack){((int*)data_backing)[0] = ack;}
 
-ACPT::ACPT(Packet* p):PacketAccessor(p){type = PacketID::ACPT;data_length=sizeof(int)*4;}
+ACPT::ACPT(Packet* p):PacketAccessor(p){type = PacketID::ACPT;data_length=sizeof(int)*5;}
 ACPT::ACPT(Payload p):PacketAccessor(p){}
 int ACPT::GetAckID(){return ((int*)data_backing)[0];}
 void ACPT::SetAckID(int ack){((int*)data_backing)[0] = ack;}
 int ACPT::GetPlayerID(){return ((int*)data_backing)[1];}
 void ACPT::SetPlayerID(int player_id){((int*)data_backing)[1] = player_id;}
-int ACPT::GetPlayerCount(){return ((int*)data_backing)[2];}
-void ACPT::SetPlayerCount(int player_count){((int*)data_backing)[2] = player_count;}
-int ACPT::GetPlayerMax(){return ((int*)data_backing)[3];}
-void ACPT::SetPlayerMax(int player_max){((int*)data_backing)[3] = player_max;}
+int ACPT::GetPlayerSaveID(){return ((int*)data_backing)[2];}
+void ACPT::SetPlayerSaveID(int player_save_id){((int*)data_backing)[2] = player_save_id;}
+int ACPT::GetPlayerCount(){return ((int*)data_backing)[3];}
+void ACPT::SetPlayerCount(int player_count){((int*)data_backing)[3] = player_count;}
+int ACPT::GetPlayerMax(){return ((int*)data_backing)[4];}
+void ACPT::SetPlayerMax(int player_max){((int*)data_backing)[4] = player_max;}
 
 NOPE::NOPE(Packet* p):PacketAccessor(p){type = PacketID::NOPE;}
 wchar* NOPE::GetReason(){return ((wchar*)data_backing);}
@@ -77,12 +79,12 @@ void PING::SetTimestamps(long ts_1,long ts_2,long ts_3){
     ((long*)data_backing)[2]=ts_3;
 }
 
-PLYR::PLYR(Packet* p):PacketAccessor(p){type = PacketID::PLYR;data_length = sizeof(int);}
-PLYR::PLYR(Payload p):PacketAccessor(p){}
-int PLYR::GetPlayerID(){return ((int*)data_backing)[0];}
-void PLYR::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
-wchar* PLYR::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
-void   PLYR::SetPlayerName(wchar* name){
+NPLR::NPLR(Packet* p):PacketAccessor(p){type = PacketID::NPLR;data_length = sizeof(int);}
+NPLR::NPLR(Payload p):PacketAccessor(p){}
+int NPLR::GetPlayerID(){return ((int*)data_backing)[0];}
+void NPLR::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
+wchar* NPLR::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
+void   NPLR::SetPlayerName(wchar* name){
     int name_len = wstr::len(name);
     if(name_len > MAX_PLAYER_NAME_LEN){name_len = MAX_PLAYER_NAME_LEN;}
     memcpy(&data_backing[sizeof(int)],name,name_len*sizeof(wchar));

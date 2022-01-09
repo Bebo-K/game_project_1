@@ -68,7 +68,10 @@ void BitArray::Set(int index){
 }
 void BitArray::Unset(int index){
     if(index < 0 || index >= bits){logger::exception("BitArray::unset -> Index is out of range: %d",index);}
-    data[index/8] = (data[index/8] &  ~(1 << (index%8)));
+    byte dat = data[index/8];
+    byte mask = ~(1 << (index%8));
+    dat = dat & mask;
+    data[index/8] = dat;
 }
 bool BitArray::Toggle(int index){
     if(index < 0 || index >= bits){logger::exception("BitArray::toggle -> Index is out of range: %d",index);}

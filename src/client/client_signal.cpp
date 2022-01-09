@@ -17,11 +17,6 @@ void ClientSignalHandler::Update(int frames){
     EventSignal signal = {0};
     while(client_signals.Read((byte*)&signal)){
         switch(signal.type){
-            case ClientSignalID::CONNECTED_TO_SERVER:{
-                    //LOTS:
-                    logger::info("Connected to server.\n");
-                    client->ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connected to server!"));
-                break;}
             case ClientSignalID::DISCONNECTED_FROM_SERVER:{
                 int disconnect_code = signal.params[0].ival;
                 wchar* disconnect_reason = signal.params[1].strval;

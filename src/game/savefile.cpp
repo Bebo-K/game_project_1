@@ -25,35 +25,35 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 
 
 SavePlayer::SavePlayer(){
-    player_id=0;
+    save_id=0;
     player_name=nullptr;
     player_scene=0;
     player_scene_entrance=0;
 }
 
 SavePlayer::~SavePlayer(){
-    player_id=0;
+    save_id=0;
     player_scene=0;
     player_scene_entrance=0;
     if(player_name != nullptr){free(player_name);player_name=nullptr;}
 }
 
 void SavePlayer::Read(Deserializer& dat){
-    player_id = dat.GetInt();
-    player_name = dat.GetString();
+    save_id = dat.GetInt();
+    player_name = dat.GetWString();
     player_scene = dat.GetInt();
     player_scene_entrance = dat.GetInt();
 }
 void SavePlayer::Write(Serializer& dat){
-    dat.PutInt(player_id);
-    dat.PutString(player_name);
+    dat.PutInt(save_id);
+    dat.PutWString(player_name);
     dat.PutInt(player_scene);
     dat.PutInt(player_scene_entrance);
 }
 int SavePlayer::SerializedLength(){
     int size = 0;
     size += sizeof(int);
-    size += cstr::len(player_name)+1;
+    size += sizeof(wchar) * (wstr::len(player_name)+1);
     size += sizeof(int);
     size += sizeof(int);
 
@@ -223,17 +223,30 @@ SaveCampaign* SaveFile::GetCampaign(int campaign_id){
     for(int i=0;i<saved_campaigns;i++){if(campaigns[i].campaign_id==campaign_id)return &campaigns[i];}
     return nullptr;
 }
-SavePlayer* SaveFile::GetPlayer(int player_id){
-    for(int i=0;i<saved_campaigns;i++){if(players[i].player_id==player_id)return &players[i];}
-    return nullptr;
-}
-SavePlayer* SaveFile::GetPlayer(char* player_name){
-    for(int i=0;i<saved_campaigns;i++){
-        if(cstr::compare(player_name,players[i].player_name))return &players[i];
+SavePlayer* SaveFile::GetPlayer(wchar* player_name){
+    for(int i=0;i<saved_players;i++){
+        if(wstr::compare(player_name,players[i].player_name))return &players[i];
     }
     return nullptr;
 }
-SavePlayer* SaveFile::NewPlayer(int player_id,char* player_name){
+int SaveFile::GetPlayerSaveID(wchar* player_name){
+    for(int i=0;i<saved_players;i++){
+        if(wstr::compare(player_name,players[i].player_name))return i;
+    }
+    return -1;
+}
+SavePlayer* SaveFile::GetPlayerByID(int save_id){
+    for(int i=0;i<saved_players;i++){
+        if(players[i].save_id == save_id){return &players[i];}
+    }
+    return nullptr;
+}
+SavePlayer* SaveFile::GetOrNewPlayer(wchar* player_name){
+    SavePlayer* ret = GetPlayer(player_name);
+    if(ret == nullptr){ret = NewPlayer(player_name);}
+    return ret;
+}
+SavePlayer* SaveFile::NewPlayer(wchar* player_name){
     byte* newPlayerSave = (byte*)calloc(saved_players+1,sizeof(SavePlayer));
     
     if(saved_players> 0){
@@ -243,8 +256,9 @@ SavePlayer* SaveFile::NewPlayer(int player_id,char* player_name){
     players = (SavePlayer*)newPlayerSave;
     saved_players++;
     SavePlayer* ret = &players[saved_players-1];
-    ret->player_name = cstr::new_copy(player_name);
-    ret->player_id = player_id;
+    ret->player_name = wstr::new_copy(player_name);
+    while(ret->save_id <= 0){ret->save_id = rand();}
     SpawnPlayerInitialDemo(ret);
     return ret;
 }
+

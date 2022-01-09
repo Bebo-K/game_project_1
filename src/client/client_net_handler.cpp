@@ -16,21 +16,29 @@ void ClientNetHandler::Update(int frames){
         while(payload.type != 0){
             switch (payload.type){
                 case PacketID::ACPT:{
+                    logger::info("Connected to server.\n");
                     PacketData::ACPT accept_data(payload);
                         client->player_count = accept_data.GetPlayerCount();
                         client->max_players = accept_data.GetPlayerMax();
                         client->my_player_id = accept_data.GetPlayerID();
                         client->players = (PlayerInfo*)calloc(client->max_players,sizeof(PlayerInfo));
-
                         client->players[client->my_player_id].player_name=wstr::new_copy(L"Chowzang");
+
+                        client->ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connected to server!"));
+
+                        
+                        if(accept_data.GetPlayerSaveID() > 0){
+
+                        }
+
                     break;
                 }
                 case PacketID::CHAT:{
                     client->ui.DebugLog((wchar*)payload.data);
                     break;
                 }
-                case PacketID::PLYR:{
-                    PacketData::PLYR new_player_data(payload);
+                case PacketID::NPLR:{
+                    PacketData::NPLR new_player_data(payload);
                         int player_id = new_player_data.GetPlayerID();
                         wchar* player_name = new_player_data.GetPlayerName();
 

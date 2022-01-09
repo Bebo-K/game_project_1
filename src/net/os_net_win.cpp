@@ -175,7 +175,7 @@ Socket OSNetwork::bind_to_port(unsigned short port){
 		logger::exception("Failed to bind to port. WinSock2 bind() error result: %d",bind_result);
 		return INVALID_SOCKET;
 	}
-	return true;
+	return result;
 }
 
 void OSNetwork::unbind(Socket* listen_socket){
@@ -186,7 +186,7 @@ void OSNetwork::unbind(Socket* listen_socket){
 int OSNetwork::listen(Packet* packet, Socket socket,ip_address* source_addr){
 	unsigned long available;
 	if(ioctlsocket(socket,FIONREAD,&available) != 0){
-		logger::exception("Failed to get listener socket status, error code %x",WSAGetLastError());
+		logger::exception("Failed to get listener socket status, error code %d\n",WSAGetLastError());
         return -1;
 	}
 	if(available <= 0){return 0;}
@@ -196,7 +196,7 @@ int OSNetwork::listen(Packet* packet, Socket socket,ip_address* source_addr){
 
 	int result = recvfrom(socket,(char*)packet, sizeof(Packet), 0 ,(sockaddr*)&remote_addr,&remote_addr_size);
     if (result == SOCKET_ERROR) {
-		logger::exception("Failed to listen on server socket, error code %x",WSAGetLastError());
+		logger::exception("Failed to listen on server socket, error code %d",WSAGetLastError());
         return -1;
     }
 	

@@ -12,16 +12,18 @@ namespace PacketID{
     const int ACPT = CSTR_TO_PACKETID("ACPT");//R  Server accepts new client connection
     const int OKAY = CSTR_TO_PACKETID("OKAY");//   (Both sides) Acknowledge reliable packet 
     const int NOPE = CSTR_TO_PACKETID("NOPE");//   Disconnect (Either side)
-    const int SPRQ = CSTR_TO_PACKETID("SPRQ");//R  Client spawn request
-    const int PLYR = CSTR_TO_PACKETID("PLYR");//R  Server notification of a new player
-    const int PINF = CSTR_TO_PACKETID("PINF");//R  Player info. Sent to new players to catch them up on who's who.
-    const int PLDC = CSTR_TO_PACKETID("PLDC");//R  Server notification of a player disconnecting
-    const int PING = CSTR_TO_PACKETID("PING");//   Latency loopback
+    const int PINF = CSTR_TO_PACKETID("PINF");//R  Player Info-- Sent to new players to catch them up
+    const int NPLR = CSTR_TO_PACKETID("NPLR");//R  New Player-- Server notification of a new player
+    const int PLDC = CSTR_TO_PACKETID("PLDC");//R  Player Disconnect-- Server notification of a player disconnecting
+    const int PING = CSTR_TO_PACKETID("PING");//   Ping loopback-- finds latency and keeps connection fresh
+    const int SNPS = CSTR_TO_PACKETID("SNPS");//R  Start New Player Save 
+    const int CONT = CSTR_TO_PACKETID("CONT");//R  Continue Player Save
+    const int SCNE = CSTR_TO_PACKETID("SCNE");//R  Scene Info (Server prompt for client to load scene)
     const int SPWN = CSTR_TO_PACKETID("SPWN");//R  Server spawned entity
     const int DSPN = CSTR_TO_PACKETID("DSPN");//R  Server despawned entity
     const int DLTA = CSTR_TO_PACKETID("DLTA");//   Server Entity delta
     const int CDLT = CSTR_TO_PACKETID("CDLT");//   Client state delta
-    const int CHAT = CSTR_TO_PACKETID("CHAT");//R  Client text chat
+    const int CHAT = CSTR_TO_PACKETID("CHAT");//R  Text Chat
 };
 
 
