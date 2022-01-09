@@ -36,6 +36,9 @@ struct Entity{
     void SetName(wchar* name);
     vec3 GetPos(int ms);
 
+    int SerializedLength();
+    void Serialize(void* data);
+
     ~Entity();
 };
 
