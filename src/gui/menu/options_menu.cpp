@@ -1,7 +1,7 @@
 #include "options_menu.h"
 
 #include "../widget.h"
-#include "../widget/simple_button.h"
+#include "../widget/standard_widgets.h"
 #include "../widget/sprite_component.h"
 #include "../gui.h"
 

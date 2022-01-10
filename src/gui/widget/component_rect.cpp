@@ -1,4 +1,4 @@
-#include "rect_component.h"
+#include "component_rect.h"
 
 using namespace UI;
 

@@ -1,5 +1,5 @@
-#ifndef SHAPE_VIEW_H
-#define SHAPE_VIEW_H
+#ifndef COMPONENT_RECT_H
+#define COMPONENT_RECT_H
 
 #include "../widget.h"
 #include "../../gfx/ui_shape.h"

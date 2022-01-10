@@ -1,6 +1,6 @@
 #include "error_menu.h"
 #include "../widget/sprite_component.h"
-#include "../widget/simple_button.h"
+#include "../widget/standard_widgets.h"
 #include "../gui.h"
 
 using namespace UI;

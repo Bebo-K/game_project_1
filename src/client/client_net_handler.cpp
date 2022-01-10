@@ -28,7 +28,16 @@ void ClientNetHandler::Update(int frames){
 
                         
                         if(accept_data.GetPlayerSaveID() > 0){
-
+                            Packet continue_save;
+                            continue_save.type = PacketID::CONT;
+                            continue_save.SetDataLength(0);
+                            continue_save.CreateID();
+                            continue_save.RunCRC();
+                            ClientNetwork::Send(&continue_save);
+                        }
+                        else{
+                            client->ui.character_create_menu->Open();
+                            client->ui.loading_menu->Close();
                         }
 
                     break;

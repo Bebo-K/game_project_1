@@ -1,4 +1,4 @@
-#include "text_component.h"
+#include "component_text.h"
 
 using namespace UI;
 

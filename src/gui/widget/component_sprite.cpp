@@ -1,4 +1,4 @@
-#include "sprite_component.h"
+#include "component_sprite.h"
 
 using namespace UI;
 

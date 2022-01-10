@@ -372,6 +372,20 @@ vec2 Controller::Axis::GetNormalized(){
 }
 
 
+bool Controller::Axis::IsLeft(){
+    return( x*x > y*y && x < 0);
+}
+bool Controller::Axis::IsRight(){
+    return( x*x > y*y && x > 0);
+}
+bool Controller::Axis::IsUp(){
+    return( x*x < y*y && y > 0);
+}
+bool Controller::Axis::IsDown(){
+    return( x*x < y*y && y < 0);
+}
+
+
 //////////////////////
 //    Loading
 ////////////////////

@@ -46,6 +46,12 @@ namespace Controller{
         void SetTilt(vec2 tilt);
         void SetDirection(int direction_id,bool down);
         vec2 GetNormalized();
+
+        //One of these are 
+        bool IsLeft();
+        bool IsRight();
+        bool IsUp();
+        bool IsDown();
     };
 
     struct Button{

@@ -1,5 +1,5 @@
-#ifndef SPRITE_WIDGET_H
-#define SPRITE_WIDGET_H
+#ifndef COMPONENT_SPRITE_H
+#define COMPONENT_SPRITE_H
 
 #include "../widget.h"
 #include "../../gfx/ui_sprite.h"

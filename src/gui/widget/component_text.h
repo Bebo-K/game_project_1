@@ -1,5 +1,5 @@
-#ifndef TEXT_COMPONENT_H
-#define TEXT_COMPONENT_H
+#ifndef COMPONENT_TEXT_H
+#define COMPONENT_TEXT_H
 
 #include "../widget.h"
 #include "../../gfx/ui_text.h"

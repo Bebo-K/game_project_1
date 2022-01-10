@@ -1,35 +1,25 @@
-#include "main_menu.h"
+#include "character_create_menu.h"
 
-#include "../widget/standard_widgets.h"
+#include "../widget/simple_button.h"
 #include "../widget/sprite_component.h"
 
-#include "../../log.h"
-#include "../../client/client.h"
 #include "../gui.h"
-#include "../../game.h"
+#include "../../client/client.h"
 
 using namespace UI;
 
-void LaunchSingleplayerButtonCallback(){
-    logger::debug("Launching server!");
+void StartCampaignCallback(){
+    
+
+
     LoadingMenu* loading_menu = GUI::GetGUI()->loading_menu;
     loading_menu->Open();
-    loading_menu->SetStatusMessage(wstr::new_copy(L"Launching local server..."));
-    Game::StartLocalServer();
-}
+    loading_menu->SetStatusMessage(wstr::new_copy(L"Loading..."));
 
-void LaunchMultiplayerButtonCallback(){
-    logger::debug("Launching mp server!");
 
 }
 
-void GoToOptionsCallback(){
-    GUI* ui = GUI::GetGUI();
-    ui->options_menu->Open();
-    ui->main_menu->Close();
-}
-
-void ExitGameCallback(){
+void ExitServerCallback(){
     Client::GetClient()->Quit();
 }
               

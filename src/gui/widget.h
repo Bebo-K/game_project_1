@@ -33,7 +33,7 @@ class Widget{
 
     Widget();
     Widget(char* widget_name);
-    ~Widget();
+    virtual ~Widget();
     void Activate();
     void Deactivate();
     void Update(int frames);
