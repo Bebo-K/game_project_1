@@ -24,44 +24,50 @@ template <typename T>
 class List{
     protected:
     T**     data;
-    int     slots;
     int     count;
     
     friend class ListIterator<T>;
     public:
+    int     length;
 
     List(){
-        slots=1;
+        length=1;
         count=0;
-        data=(T**)calloc(slots,sizeof(T*));
+        data=(T**)calloc(length,sizeof(T*));
     }
     List(int size){
-        slots=size;
+        length=size;
         count=0;
-        data= (T**)calloc(slots,sizeof(T*));
+        if(size > 0){
+            data= (T**)calloc(length,sizeof(T*));
+        }
+        else{data = nullptr;}
     }
     ~List(){
-        free(data); 
+        length=0;
+        count=0;
+        free(data);
+        data=nullptr; 
     }
     int Add(T* object){
         int slot_to_add=0;
-        while(slot_to_add < slots && data[slot_to_add] != nullptr){slot_to_add++;}
-        if(slot_to_add == slots){
-            Resize(slots*2);
+        while(slot_to_add < length && data[slot_to_add] != nullptr){slot_to_add++;}
+        if(slot_to_add == length){
+            Resize((length > 0)? length*2 : 1);
         }
         data[slot_to_add] = object;
         count++;
         return slot_to_add;
     }
     T* Remove(int index){
-        if(index < 0 || index >= slots){logger::exception("List::Remove -> Index %d is out of range.",index);}
+        if(index < 0 || index >= length){logger::exception("List::Remove -> Index %d is out of range.",index);}
         T* ret = data[index];
         data[index] = nullptr;
         count--;
         return ret;
     }
     int Remove(T* object){
-        for(int i=0;i<slots;i++){
+        for(int i=0;i<length;i++){
             if(data[i] == object){
                 data[i] = nullptr;
                 count--;
@@ -70,28 +76,35 @@ class List{
         }
         return -1;
     }
+    void Set(int index,T* dat){
+        if(index < 0 || index >= length){logger::exception("PArray::Set -> Index %d is out of range.",index);return;}
+        data[index]=dat;
+    }
     T* operator[](int index){
-        if(index < 0 || index >= slots){logger::exception("List::operator[] -> Index %d is out of range.",index);}
+        if(index < 0 || index >= length){logger::exception("List::operator[] -> Index %d is out of range.",index);}
         return data[index];
     }
     int GetIndex(T* object){
-        for(int i=0;i<slots;i++){
+        for(int i=0;i<length;i++){
             if(data[i] == object){return i;}
         }
+        return -1;
     }
     int NextIndex(int start_index){
         int next=start_index;
-        while( ++next < slots && data[next]== nullptr);
+        while( ++next < length && data[next]== nullptr);
         return next;
     }
-    int Count(){return count;}
+    int Count(){
+        return count;
+    }
     void Resize(int newsize){
         if(newsize == 0){Clear();return;}
         T** newdata = (T**)calloc(newsize,sizeof(T*));
-        int slots_to_copy = (slots < newsize)?slots:newsize;
-        for(int i=0;i<slots_to_copy;i++){newdata[i] = data[i];}
+        int length_to_copy = (length < newsize)?length:newsize;
+        for(int i=0;i<length_to_copy;i++){newdata[i] = data[i];}
         free(data);
-        slots=newsize;
+        length=newsize;
         data=newdata;
     }
     void Clear(){
@@ -99,19 +112,19 @@ class List{
             free(data); 
             data=nullptr;
         }
-        slots=0;
+        length=0;
         count=0;
     }
 
     //range-for loop iterator methods
     ListIterator<T> begin(){ return {this,NextIndex(-1)};}
-    ListIterator<T> end(){ return {this,slots};}
+    ListIterator<T> end(){ return {this,length};}
 };
 
 
 template <typename T>
 T* ListIterator<T>::operator*(){
-    if(index < 0||index >= parent->slots){logger::exception("ListIterator::Operator* -> Index %d is out of range.",index);}
+    if(index < 0||index >= parent->length){logger::exception("ListIterator::Operator* -> Index %d is out of range.",index);}
     return parent->data[index];
 }
 template <typename T>

@@ -186,8 +186,9 @@ Texture TextureManager::Add(char* texname,Image* texture_image){
 
 Texture TextureManager::Get(char* texname){
     return Get(texname,false);
+}Texture TextureManager::GetUI(char* texname){
+    return Get(texname,true);
 }
-
 Texture TextureManager::Get(char* texname,bool ui_image){
     Texture* cache_pointer = (Texture*)cached_textures.Get(texname);
     if(cache_pointer != null) {

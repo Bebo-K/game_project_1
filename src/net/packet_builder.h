@@ -107,10 +107,6 @@ namespace PacketData{
         void SetStyle3(int style1);
         ColorCode GetColor1();
         void SetColor1(ColorCode c);
-        int GetRaceID();
-        void SetRaceID(int id);
-        int GetRaceID();
-        void SetRaceID(int id);
         wchar* GetCharacterName();
         void SetCharacterName(wchar* name);
         SNPS(Packet* p);

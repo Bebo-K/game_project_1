@@ -19,21 +19,26 @@ namespace FontManager{
     const int DEFAULT_FONT_SIZE= 12;
 
     class FontCache{
-        public:
-        FT_Face fontface;
-        int     font_size;
-        GLuint  atlas_gl_id;
-        Image*  glyph_atlas;
+        private:
         int     dynamic_atlas_start[3];
         int     atlas_next_glyph[3];
+
+        public:
+        char*   font_name;
+        int     font_size;
+        FT_Face fontface;
+        GLuint  atlas_gl_id;
+        Image*  glyph_atlas;
         Texture glyph_static_textures[FontManager::precached_codepoints_range_hi-FontManager::precached_codepoints_range_lo];
         Map<int,Texture*>   glyph_dynamic_textures;
 
         FontCache();
         FontCache(char* font_filename,int font_size);
+        ~FontCache();
         void BuildAtlas();
         Texture AddDynamicGlyph(int codepoint);
         void ClearDynamicGlyphs();//Only method of glyph cleanup.
+        bool operator==(FontCache* f2);
     };
 
 

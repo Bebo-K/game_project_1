@@ -17,6 +17,7 @@ class Sprite{
     float       rotation;
     vec2        scale;
     
+    Sprite(char* ui_texturename);
     Sprite(Texture spritesheet);
     Sprite(Texture spritesheet,int frames,int strips);
     Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_center);

@@ -42,6 +42,7 @@ Client::Client() : scene(), scene_renderer(), ui(){
 }
 
 Client::~Client(){
+    ui.Unload();
     FontManager::Free();
     ModelManager::Free();
     ShaderManager::Free();

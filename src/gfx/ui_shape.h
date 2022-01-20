@@ -5,6 +5,8 @@
 #include "drawable.h"
 #include "../struct/2d_types.h"
 
+
+//UI_Rect: A UI primitive for drawing a colored rectangle to the screen
 class UI_Rect{
     public:
     rect_i      rect;

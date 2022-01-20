@@ -32,6 +32,19 @@ void BuildSpritePrimitive(){
     if(gl_err != 0){logger::warn("GL error initializing sprite primitive: %d",&gl_err);}
 }
 
+Sprite::Sprite(char* ui_texturename){
+    if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
+    texture = TextureManager::GetUI(ui_texturename);
+    width = texture.width_px;
+    height = texture.height_px;
+    max_frames=max_strips=1;
+    frame=strip=0;
+    x=y=0;
+    center_x=center_y=0;
+    rotation=0;
+    scale={1,1};
+}
+
 Sprite::Sprite(Texture spritesheet){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = spritesheet;

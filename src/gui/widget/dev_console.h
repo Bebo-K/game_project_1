@@ -15,24 +15,21 @@ class DeveloperConsole: public UI::Widget{
     static const int MAX_LINE_LENGTH = 256;
 
     static DeveloperConsole* instance;
-    static FontID console_font;
 
     int last_line_indx;
     wchar line_buffers[CACHED_LINE_COUNT*MAX_LINE_LENGTH];
     wchar entry_buffer[MAX_LINE_LENGTH];
     
     public:
-    int  start_timer;//hack to get the character that spawned the console from being immediately printed.
+    FontID console_font;
     int font_size =12;
     int line_wrap = 80;
-    UI_Text shown_lines[SHOWN_LINE_COUNT];
-    UI_Text entry_line;
-    UI_Rect background_rect;
-    UI_Rect entry_rect;
+    bool text_selected=false;
 
     DeveloperConsole();
     ~DeveloperConsole();
 
+    void Load();
     void OnPaint();
     void OnUpdate(int frames);
     bool OnInput(Input::Event event_type);

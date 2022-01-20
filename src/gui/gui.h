@@ -7,13 +7,14 @@
 #include "../struct/pool.h"
 #include "ui_types.h"
 #include "widget.h"
+#include "widget/dev_console.h"
 #include "menu.h"
 #include "menu/main_menu.h"
 #include "menu/options_menu.h"
 #include "menu/loading_menu.h"
 #include "menu/ingame_menu.h"
 #include "menu/error_menu.h"
-
+#include "menu/character_create_menu.h"
 
 //Manages the screen real estate for menus,text, and other 2D objects
 class GUI{
@@ -21,8 +22,8 @@ class GUI{
     static class GUI*   instance;
     public:
     UI::Layout          fullscreen_layout;
-    List<UI::Widget>    debug_widgets;
     List<UI::Menu>      menus;
+    DeveloperConsole    developer_console;
 
     //List<Widget>      world_anchored_elements; TODO: things like player nameplates
 
@@ -31,6 +32,7 @@ class GUI{
     LoadingMenu*         loading_menu;
     ErrorMenu*           error_menu;
     IngameMenu*          ingame_menu;
+    CharacterCreateMenu* character_create_menu;
 
 
     GUI();

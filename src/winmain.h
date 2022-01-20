@@ -22,8 +22,9 @@ namespace OSInput{
         JOYINFOEX   state;
         DWORD       x_axis_max,x_axis_min;
         DWORD       y_axis_max,y_axis_min;
-        float       x_axis_multiplier;
-        float       y_axis_multiplier;
+        double      x_axis_range;
+        double      y_axis_range;
+        bool        flip_x,flip_y;
         DWORD       prev_button_state;
         DWORD       prev_x_axis;//[MAX_CONTROLLER_AXES]
         DWORD       prev_y_axis;//[MAX_CONTROLLER_AXES]
@@ -33,8 +34,8 @@ namespace OSInput{
     void Init();
     void SetupOSInput();
     void SetupJoypads();
-    void FlipJoyAxis(int joy_id, bool flip_horizontal,bool flip_vertical);
     void PollJoypads();
+    void PollForJoyDevices();
     void SetupDirectInput(HWND window_handle);
     void OnDirectInputJoyEvent(WPARAM wparam, bool down);
     void OnDirectInputButtonEvent(WPARAM wparam, bool down);

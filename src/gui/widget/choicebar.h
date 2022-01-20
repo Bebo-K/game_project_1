@@ -2,8 +2,6 @@
 #define CHOICEBAR_H
 
 #include "../widget.h"
-#include "component_clickable.h"
-#include "component_selectable.h"
 
 class ChoiceBar: public  UI::Widget{
 
@@ -17,9 +15,8 @@ class ChoiceBar: public  UI::Widget{
     ~ChoiceBar();
 
     void SetChoiceList(wchar** choice_list,int choice_count); 
-    SelectableComponent* GetSelectionInfo();
-    ClickableComponent* GetClickInfo();
-
+    void NextChoice();
+    void PrevChoice();
 };
 
 

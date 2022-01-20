@@ -10,8 +10,10 @@
 
 using namespace OSInput;
 //DIRECTINPUT (For generic USB controllers)
-JoystickStateInfo joy_states[MAX_CONTROLLERS];
-UINT        current_device_count;
+JoystickStateInfo   joy_states[MAX_CONTROLLERS];
+UINT                device_count;
+bool                plugged_in[MAX_CONTROLLERS];
+int                 controller_ids[MAX_CONTROLLERS];
 
 
 
@@ -28,47 +30,40 @@ void OSInput::SetupJoypads(){
         joy_states[i].state.dwFlags = JOY_RETURNALL;
         memset(&joy_states[i].prev_button_state,0,sizeof(DWORD));
     }
-    current_device_count = joyGetNumDevs();
-    bool plugged_in[MAX_CONTROLLERS];
-    int  controller_ids[MAX_CONTROLLERS];
-    int current_controller_num =0;
-    for(int i=0;i<MAX_CONTROLLERS;i++){plugged_in[i]=false;controller_ids[i]=0;}
-    for(int i=0;i<(int)current_device_count;i++){
+    for(int i=0;i<MAX_CONTROLLERS;i++){plugged_in[i]=false;controller_ids[i]=-1;}
+    device_count=0;
+    PollForJoyDevices();
+}
+
+void OSInput::PollForJoyDevices(){
+    UINT current_device_count = joyGetNumDevs();
+    if(device_count == current_device_count)return;
+    device_count = current_device_count;
+    int ccn =0;//current controller number, but that would be a tad long
+    for(int i=0; i<(int)current_device_count && ccn < MAX_CONTROLLERS;i++){
         JOYINFOEX temp_device_state;
         temp_device_state.dwSize = sizeof(JOYINFOEX);
         temp_device_state.dwFlags = JOY_RETURNALL;
         MMRESULT device_plugged_in = joyGetPosEx(JOYSTICKID1+i,&temp_device_state);
-        if(device_plugged_in == JOYERR_NOERROR && current_controller_num < MAX_CONTROLLERS){
-            plugged_in[current_controller_num]=true;
-            controller_ids[current_controller_num]=i;
-            joy_states[current_controller_num].prev_x_axis=temp_device_state.dwXpos;
-            joy_states[current_controller_num].prev_y_axis=temp_device_state.dwYpos;
-
-            MMRESULT getCapsResult = joyGetDevCaps(JOYSTICKID1+i,&joy_states[i].info,sizeof(JOYCAPS));
+        if(device_plugged_in == JOYERR_NOERROR && ccn < MAX_CONTROLLERS){
+            MMRESULT getCapsResult = joyGetDevCaps(JOYSTICKID1+i,&joy_states[ccn].info,sizeof(JOYCAPS));
             if(getCapsResult != JOYERR_NOERROR ){
                 logger::exception("Failed to retrieve joystick capabilities for Joy ID %d: error code %d",JOYSTICKID1+i,getCapsResult);
             }
-            current_controller_num++;
+
+
+            plugged_in[ccn]=true;
+            controller_ids[ccn]=i;
+            joy_states[ccn].prev_x_axis=temp_device_state.dwXpos;
+            joy_states[ccn].prev_y_axis=temp_device_state.dwYpos;
+
+            joy_states[ccn].x_axis_range = (double)(joy_states[ccn].info.wXmax -  joy_states[ccn].info.wXmin);
+            joy_states[ccn].y_axis_range = (double)(joy_states[ccn].info.wYmax -  joy_states[ccn].info.wYmin);
+            joy_states[ccn].flip_x=false;
+            joy_states[ccn].flip_y=true;
+            ccn++;
         }
-
     }
-
-    for(int i=0;i<current_controller_num;i++){
-        if(!plugged_in[i])continue;
-        int id = controller_ids[i];//controller device ID;
-        //Set joystick to range {-1,1};
-        UINT joy_x_range = joy_states[id].info.wXmax -  joy_states[id].info.wXmin;
-        UINT joy_y_range = joy_states[id].info.wYmax -  joy_states[id].info.wYmin;
-        joy_states[i].x_axis_multiplier = (1.0f/joy_x_range);
-        joy_states[i].y_axis_multiplier = (1.0f/joy_y_range);
-        FlipJoyAxis(i,false,true);
-    }
-}
-
-
-void OSInput::FlipJoyAxis(int joy_id, bool flip_horizontal,bool flip_vertical){
-    joy_states[joy_id].x_axis_multiplier *= (flip_horizontal)?-1:1;
-    joy_states[joy_id].y_axis_multiplier *= (flip_vertical)?-1:1;
 }
 
 void OSInput::SetupDirectInput(HWND window_handle){
@@ -78,8 +73,9 @@ void OSInput::SetupDirectInput(HWND window_handle){
 }
 
 void OSInput::PollJoypads(){
+    PollForJoyDevices();
     for(int i=0;i < MAX_CONTROLLERS;i++){
-        DWORD err=joyGetPosEx(JOYSTICKID1+i,&joy_states[i].state);
+        DWORD err=joyGetPosEx(controller_ids[i],&joy_states[i].state);
         if(err == JOYERR_NOERROR){
             DWORD changed_buttons = joy_states[i].state.dwButtons ^ joy_states[i].prev_button_state;
             if(changed_buttons!= 0){
@@ -94,9 +90,14 @@ void OSInput::PollJoypads(){
 
             if(joy_states[i].state.dwXpos != joy_states[i].prev_x_axis || 
                 joy_states[i].state.dwYpos != joy_states[i].prev_y_axis){
-                    
-                float axis_x = (joy_states[i].state.dwXpos - joy_states[i].info.wXmin)*joy_states[i].x_axis_multiplier;
-                float axis_y = (joy_states[i].state.dwYpos - joy_states[i].info.wYmin)*joy_states[i].y_axis_multiplier;
+
+                //Set joystick to range {-1,1};
+                double axis_x = (joy_states[i].state.dwXpos - joy_states[i].info.wXmin)/joy_states[i].x_axis_range;
+                double axis_y = (joy_states[i].state.dwYpos - joy_states[i].info.wYmin)/joy_states[i].y_axis_range;
+                
+                axis_x -= 0.5f;axis_x *= 2.0f;if(joy_states[i].flip_x){axis_x*=-1;}
+                axis_y -= 0.5f;axis_y *= 2.0f;if(joy_states[i].flip_y){axis_y*=-1;}
+
                 Input::OnAxis(PhysicalInput::JOY1_AXIS_1,axis_x,axis_y);
             }
 

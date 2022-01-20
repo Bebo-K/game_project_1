@@ -2,12 +2,11 @@
 #define ERROR_MENU_H
 
 #include "../menu.h"
-#include "../widget/text_component.h"
 
 class ErrorMenu: public UI::Menu{
     public:
 
-    UI::TextComponent* h_status_text;
+    UI::Widget* status_text_widget;
 
     ErrorMenu(UI::Layout* parent);
     

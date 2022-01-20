@@ -117,8 +117,10 @@ class Array{
 
     void Resize(int new_size){
         T* new_dat = (T*)calloc(new_size,sizeof(T));
-        memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
-        free(data);
+        if(data != nullptr){
+            memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
+            free(data);
+        }
         data = new_dat;
         length = new_size;
     }
@@ -152,9 +154,5 @@ template <typename T>
 bool ArrayIterator<T>::operator!=(ArrayIterator<T>& l2){
     return !(index ==l2.index);
 }
-
-
-
-
 
 #endif

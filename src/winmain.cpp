@@ -239,8 +239,8 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             Game::Start();
             break;
         case WM_DESTROY:
-            DestroyOpenGL();
             Game::Exit();
+            DestroyOpenGL();
             PostQuitMessage(0);
             break;
         case WM_KEYDOWN:

@@ -2,12 +2,11 @@
 #define LOADING_MENU_H
 
 #include "../menu.h"
-#include "../widget/text_component.h"
 
 class LoadingMenu: public UI::Menu{
     public:
 
-    UI::TextComponent* h_status_text;
+    UI::Widget* status_text_widget;
 
     LoadingMenu(UI::Layout* parent);
     

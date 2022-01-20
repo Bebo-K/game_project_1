@@ -1,33 +1,65 @@
 #include "standard_widgets.h"
-
 #include "../../gfx/font_manager.h"
-#include "component_rect.h"
-#include "component_text.h"
 
 using namespace UI;
 
 
-SimpleButton::SimpleButton(char* name, char* label, float w, float h, vec4 color, void (*callback)()):Widget(name){
+void SimpleButtonHighlightEffect(Widget* w){
+    SimpleButton* button = (SimpleButton*)w;
+    vec4 old_color = button->rects[0]->color;
+    old_color.x += 0.1f;
+    old_color.y += 0.1f;
+    old_color.z += 0.1f;
+    old_color.w += 0.1f;
+    button->rects[0]->color = old_color;
+}
+void SimpleButtonUnhighlightEffect(Widget* w){
+    SimpleButton* button = (SimpleButton*)w;
+    vec4 old_color = button->rects[0]->color;
+    old_color.x -= 0.1f;
+    old_color.y -= 0.1f;
+    old_color.z -= 0.1f;
+    old_color.w -= 0.1f;
+    button->rects[0]->color = old_color;
+}
+bool SimpleButtonSelectedInputCallback(Widget* w, Input::Event event_type){
+    SimpleButton* button = (SimpleButton*)w;
+    if(event_type == Input::A && Controller::GetButton(Controller::A).IsJustPressed()){
+        button->select_callback();
+        return true;
+    }
+    return false;
+}
+void SimpleButtonOnClickCallback(Widget* w){
+    SimpleButton* button = (SimpleButton*)w;
+    button->select_callback();
+}
+
+SimpleButton::SimpleButton(char* name, wchar* label, float w, float h, vec4 color, void (*callback)()):Widget(name){
     FontID simple_button_font = FontManager::LoadFontFace("SourceSansPro-Regular",32);
     layout.SetSize(w,h);
-    components.Add(new RectComponent(color));
-    components.Add(new TextComponent(label,simple_button_font));
 
-    ClickableComponent* clickable = new ClickableComponent();
-        clickable->onClickAction = callback;
+    rect_f l = layout.GetRect();
 
-    SelectableComponent* selectable = new SelectableComponent();
-        selectable->onSelectAction = callback;
+    rects.Resize(1);
+    rects.Set(0,new UI_Rect());
+        rects[0]->color = color;
+        rects[0]->rect = {(int)l.x, (int)l.y, (int)l.w, (int)l.h};
+        
+    texts.Resize(1);
+    texts.Set(0,new UI_Text(label,simple_button_font));
+        texts[0]->x = layout.center.x - (texts[0]->w/2);
+        texts[0]->y = layout.center.y - (h_errno/2);
 
-    components.Add(clickable);
-    components.Add(selectable);
+    clickable = new WidgetClickInfo();
+        clickable->onClickAction = SimpleButtonOnClickCallback;
+
+    selectable = new WidgetSelectInfo();
+        selectable->onHighlightEffect = SimpleButtonHighlightEffect;
+        selectable->onStopHighlightEffect = SimpleButtonUnhighlightEffect;
+        selectable->onSelectedInput = SimpleButtonSelectedInputCallback;
+    
+    select_callback = callback;
 }
 
 SimpleButton::~SimpleButton(){}
-
-SelectableComponent* SimpleButton::GetSelectionInfo(){
-    return (SelectableComponent*)components[2];
-}
-ClickableComponent* SimpleButton::GetClickInfo(){
-    return (ClickableComponent*)components[3];
-}

@@ -47,11 +47,16 @@ namespace Controller{
         void SetDirection(int direction_id,bool down);
         vec2 GetNormalized();
 
-        //One of these are 
+       
         bool IsLeft();
         bool IsRight();
         bool IsUp();
         bool IsDown();
+
+        bool IsJustLeft();
+        bool IsJustRight();
+        bool IsJustUp();
+        bool IsJustDown();
     };
 
     struct Button{

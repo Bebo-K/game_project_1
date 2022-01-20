@@ -29,6 +29,9 @@ void FontManager::Free(){
 }
 
 FontID FontManager::LoadFontFace(char* font_name,int font_size){
+    for(FontCache* font: cached_fonts){
+        if(cstr::compare(font->font_name,font_name) && font->font_size==font_size){return cached_fonts.GetIndex(font);}
+    }
     FontCache* fc = new FontCache(font_name,font_size);
     int newid = cached_fonts.Add(fc);
     return (FontID)newid;
@@ -54,9 +57,10 @@ Texture FontManager::GetGlyph(int code_point){
 }
 
 
-FontManager::FontCache::FontCache():glyph_dynamic_textures(8){}
+FontManager::FontCache::FontCache():glyph_dynamic_textures(8){font_name=nullptr;font_size=8;}
 
 FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_textures(8){
+    font_name=cstr::new_copy(font_uri);
     font_size=font_size;
     atlas_next_glyph[0]=atlas_next_glyph[1]=atlas_next_glyph[2]=0;
     dynamic_atlas_start[0]=dynamic_atlas_start[1]=dynamic_atlas_start[2]=0;
@@ -87,6 +91,10 @@ FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_te
     dynamic_atlas_start[0] = atlas_next_glyph[0];
     dynamic_atlas_start[1] = atlas_next_glyph[1];
     dynamic_atlas_start[2] = atlas_next_glyph[2];
+}
+
+FontManager::FontCache::~FontCache(){
+    if(font_name!=nullptr){free(font_name);font_name=nullptr;}
 }
 
 TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]){
@@ -186,4 +194,9 @@ void FontManager::FontCache::ClearDynamicGlyphs(){
         if(t.value != nullptr){free(t.value);}
     }
     glyph_dynamic_textures.Clear();
+}
+
+
+bool FontManager::FontCache::operator==(FontCache* f2){
+    return (cstr::compare(font_name,f2->font_name) && font_size == f2->font_size);
 }

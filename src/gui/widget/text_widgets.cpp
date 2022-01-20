@@ -1,30 +1,10 @@
-#include "component_text.h"
+#include "text_widgets.h"
+#include "../widget.h"
 
 using namespace UI;
 
-TextComponent::TextComponent() :text(){}
-TextComponent::TextComponent(char* str):text(str){}
-TextComponent::TextComponent(char* str,FontID font_id):text(wstr::from_cstr(str),font_id){}
-TextComponent::TextComponent(wchar* str):text(str){}
-TextComponent::TextComponent(wchar* str,FontID font_id):text(str,font_id){}
-TextComponent::~TextComponent(){}
 
-void TextComponent::OnPaint(Widget* w){
-    text.Draw();
-}
-void TextComponent::OnResize(Widget* w){
-    text.x = w->layout.center.x - (text.w/2);
-    text.y = w->layout.center.y - (text.h/2);
-}
-void TextComponent::SetString(wchar* str){
-    text.SetString(str);
-}
-void TextComponent::SetString(wchar* str,FontID font){
-    text.SetString(str,font);
-}
-
-
-TextBoxComponent::TextBoxComponent(int num_lines){
+TextBox::TextBox(char* name,int num_lines):Widget(name){
     line_count=num_lines;
     max_line_length=256;
     wrap_lines=false;
@@ -32,7 +12,7 @@ TextBoxComponent::TextBoxComponent(int num_lines){
     lines = (wchar**)calloc(line_count,sizeof(wchar*));
     shown_lines = new UI_Text[line_count];
 }
-TextBoxComponent::TextBoxComponent(int num_lines,int line_length){
+TextBox::TextBox(char* name,int num_lines,int line_length):Widget(name){
     line_count=num_lines;
     max_line_length=line_length;
     wrap_lines=false;
@@ -41,7 +21,7 @@ TextBoxComponent::TextBoxComponent(int num_lines,int line_length){
     shown_lines = new UI_Text[line_count];
 }
 
-TextBoxComponent::~TextBoxComponent(){
+TextBox::~TextBox(){
     if(lines != null){
         for(int i=0;i<line_count;i++){free(lines[i]);}
         free(lines);
@@ -53,13 +33,13 @@ TextBoxComponent::~TextBoxComponent(){
     }
 }
 
-void TextBoxComponent::OnPaint(Widget* w){
+void TextBox::OnPaint(Widget* w){
     for(int i=0;i<line_count;i++){
         shown_lines[i].Draw();
     }
 }
 
-void TextBoxComponent::OnResize(Widget* w){
+void TextBox::OnResize(Widget* w){
     for(int i=0;i<line_count;i++){
         shown_lines[i].x = w->layout.center.x;
         shown_lines[i].y = w->layout.center.y + (w->layout.h/2) - (i * (font_size + 2));
@@ -67,15 +47,15 @@ void TextBoxComponent::OnResize(Widget* w){
         shown_lines[i].h = font_size;
     }
 }
-void TextBoxComponent::AddLine(wchar* new_line){
+void TextBox::AddLine(wchar* new_line){
 
 }
-void TextBoxComponent::SetLine(wchar* new_line,int line_num){
+void TextBox::SetLine(wchar* new_line,int line_num){
 
 }
 
 //Chops entries to fit line size and displays as many as possible, prioritizing last entries
-void TextBoxComponent::FormatLines(){
+void TextBox::FormatLines(){
     int shown_line_index=line_count-1;
     UI_Text shown_line = shown_lines[shown_line_index];
     for(int i=line_count; i>= 0 && shown_line_index >= 0;i--){
@@ -102,24 +82,24 @@ void TextBoxComponent::FormatLines(){
 }
 
 
-TextEntryComponent::TextEntryComponent(int max_length){
+TextEntryField::TextEntryField(char* name,int max_length):Widget(name){
     focused=false;
     player_edited=false;
     font_size=12;
     line = (wchar*)calloc(max_length,sizeof(wchar));
     shown_line = new UI_Text();
 }
-TextEntryComponent::TextEntryComponent(int max_length, wchar* prompt){
+TextEntryField::TextEntryField(char* name,int max_length, wchar* prompt):Widget(name){
     focused=false;
     player_edited=false;
     font_size=12;
     line = (wchar*)calloc(max_length,sizeof(wchar));
     shown_line = new UI_Text(prompt);
 }
-TextEntryComponent::~TextEntryComponent(){
+TextEntryField::~TextEntryField(){
     if(line != null){free(line);line=null;}
 }
 
-void TextEntryComponent::OnPaint(Widget* w){
+void TextEntryField::OnPaint(Widget* w){
     shown_line->Draw();
 }

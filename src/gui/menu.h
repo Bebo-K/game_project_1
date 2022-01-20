@@ -12,12 +12,13 @@ namespace UI{
     //A collection of UI elements managing a single gameplay element. More than one can be displayed at a time.
     class Menu{
         public:
-        const static MenuID MAIN=1,OPTIONS=2,LOADING=3,ERROR_MENU=4,INGAME=5;
+        const static MenuID MAIN=1,OPTIONS=2,LOADING=3,ERROR_MENU=4,INGAME=5,CHARACTER_CREATE=6;
         MenuID       id;
         bool         active;
         bool         visible;
         Layout       layout;
         List<Widget> widgets;
+        Widget*      selected;
 
         Menu(Layout* parent);
         virtual ~Menu();
@@ -32,6 +33,8 @@ namespace UI{
         void Update(int frames);
         void Paint();
         bool HandleInput(Input::Event event_type);
+        bool HandleSelectionInput(Input::Event event_type);
+        bool HandleClickInput(Input::Event event_type);
         void HandleResize();
         bool HandleSignal(EventSignal signal);
 
@@ -47,6 +50,8 @@ namespace UI{
 
         void AddWidget(Widget* w);
         void RemoveWidget(Widget* w);
+
+        void SetSelected(Widget* w);
     };
 }
 

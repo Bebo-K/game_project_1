@@ -3,66 +3,138 @@
 
 using namespace UI;
 
-Widget::Widget() : layout(), components(){
+Widget::Widget() : layout(){
     name=nullptr;
     active=true;
     visible=true;
+    selectable = nullptr;
     layout.x_pos_scale=Relative;
     layout.y_pos_scale=Relative;
 }
 
-Widget::Widget(char* widget_name) : layout(), components(){
+Widget::Widget(char* widget_name) : layout(), sprites(),rects(),texts(){
     name=cstr::new_copy(widget_name);
     active=true;
     visible=true;
+    selectable = nullptr;
+    clickable = nullptr;
     layout.x_pos_scale=Relative;
     layout.y_pos_scale=Relative;
 }
 
 Widget::~Widget(){
     if(name != nullptr){free(name);}
-    for(WidgetComponent* c: components){delete c;}
-}
+    if(selectable == nullptr){delete selectable;selectable=nullptr;}
+    if(clickable == nullptr){delete clickable;clickable=nullptr;}
 
-WidgetComponent::~WidgetComponent(){}
+    for(int i=0;i<sprites.length;i++){
+        if(sprites[i] != nullptr){delete sprites[i];sprites.Set(i,nullptr);}
+    }
+    for(int i=0;i<rects.length;i++){
+        if(rects[i] != nullptr){delete rects[i];rects.Set(i,nullptr);}
+    }
+    for(int i=0;i<texts.length;i++){
+        if(texts[i] != nullptr){delete texts[i];texts.Set(i,nullptr);}
+    }
+}
 
 void Widget::Activate(){
     visible=true;
     active=true;
-   for(WidgetComponent* c: components){c->OnActivate(this);}
 }
 
 void Widget::Deactivate(){
     visible=false;
     active=false;
-    for(WidgetComponent* c: components){c->OnDeactivate(this);}
 }
 
 void Widget::Update(int frames){
     if(!active)return;
-    for(WidgetComponent* c: components){c->OnUpdate(this,frames);}
 }
 void Widget::Paint(){
     if(!visible)return;
-    for(WidgetComponent* c: components){
-        c->OnPaint(this);}
+    for(UI_Rect* rect: rects){
+        if(rect == nullptr)continue;
+        rect->Draw();
+    }
+    for(Sprite* sprite: sprites){
+        if(sprite == nullptr)continue;
+        sprite->Draw();
+    }
+    for(UI_Text* text: texts){
+        if(text == nullptr)continue;
+        text->Draw();
+    }
 }
 
 bool Widget::HandleInput(Input::Event event_type){
     if(!active)return false;
-    for(WidgetComponent* c: components){if(c->OnInput(this,event_type))return true;}
-    return false;
+    return OnInput(event_type);
 }
 void Widget::HandleResize(){
     layout.Resize();
-    for(WidgetComponent* c: components){c->OnResize(this);}
+    rect_f l = layout.GetRect();
+    for(Sprite* sprite: sprites){
+        if(sprite == nullptr)continue;
+        sprite->x = l.x;
+        sprite->y = l.y;
+        sprite->scale = {l.w/sprite->width, l.h/sprite->height};
+    }
+    for(UI_Rect* rect: rects){
+        if(rect == nullptr)continue;
+        rect->rect = {(int)l.x, (int)l.y, (int)l.w, (int)l.h};
+    }
+    for(UI_Text* text: texts){
+        if(text == nullptr)continue;
+        text->x = layout.center.x - (text->w/2);
+        text->y = layout.center.y - (text->h/2);
+    }
+    OnResize();
 }
 
 bool Widget::HandleSignal(EventSignal signal){
     if(!active)return false;
-    for(WidgetComponent* c: components){if(c->OnSignal(this,signal))return true;}
-    return false;
+    return OnSignal(signal);
 }
+
+bool Widget::IsSelectable(){
+    return (selectable != nullptr);
+}
+
+void Widget::OnUpdate(){}
+bool Widget::OnInput(Input::Event event_type){return false;}
+void Widget::OnResize(){}
+bool Widget::OnSignal(EventSignal signal){return false;}
+
+
+void Action_NO_OP(Widget* w){}
+void Effect_NO_OP(Widget* w){}
+bool Input_NO_OP(Widget* w, Input::Event event_type){return false;}
+
+WidgetSelectInfo::WidgetSelectInfo(){
+    locked=false;
+    next_up=nullptr;
+    next_down=nullptr;
+    next_left=nullptr;
+    next_right=nullptr;
+    onHighlightEffect=Effect_NO_OP;
+    onStopHighlightEffect=Effect_NO_OP;
+    onSelectedInput=Input_NO_OP;
+}
+
+WidgetSelectInfo::~WidgetSelectInfo(){}
+
+
+WidgetClickInfo::WidgetClickInfo(){
+    state=PressedState::Not_Pressed;
+    onHoverEffect=Effect_NO_OP;
+    onStopHoverEffect=Effect_NO_OP;
+    onClickEffect=Effect_NO_OP;
+    onClickReleaseEffect=Effect_NO_OP;
+    onClickAction=Action_NO_OP;
+}
+
+WidgetClickInfo::~WidgetClickInfo(){}
 
 
 /*************************

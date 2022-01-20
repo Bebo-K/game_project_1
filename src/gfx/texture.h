@@ -30,8 +30,9 @@ namespace TextureManager{
     Texture Add(char* texname,Image* textureImage);
     Texture MapToAtlas(Image* textureImage);
     Texture Get(char* texname);
-    Texture Get(char* texname,bool gui_image);
-    void Remove(char* texname);//how?
+    Texture GetUI(char* texname);
+    Texture Get(char* texname,bool ui_image);
+    void Remove(char* texname);
     Texture DefaultTexture();
 };
 

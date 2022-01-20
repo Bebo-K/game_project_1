@@ -9,11 +9,12 @@
 struct Glyph{
     float x,y;
     Texture glyph_texture;
-    //float rotation;
-    //float color[4];
-    //vec2  offset;
+    float rotation;
+    float color[4];
+    vec2  offset;
 };
 
+//UI_Text: A UI primitive for drawing text to the screen
 class UI_Text{
     public:
     int x,y;

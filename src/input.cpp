@@ -49,6 +49,8 @@ Pool<Input::Key_Button_Bind> button_binds;
 Pool<Input::Key_Axis_Bind> key_axis_binds;
 Pool<Input::Axis_Bind> axis_binds;
 
+int toggle_console_key_id=0;
+
 
 //////////////////////
 //    Engine events
@@ -125,6 +127,10 @@ void Input::OnKey(int key_id,bool down){
             controller_axes[keybind->axis].SetDirection(keybind->direction_id,down);
             SET_BIT(input_state,AXIS_EVENT_BASE+keybind->axis);
         }
+    }
+    if(key_id == toggle_console_key_id){
+        toggle_console.state=(down)?3:2; 
+        SET_BIT(input_state,Event::ToggleConsole-1);
     }
 }
 void Input::OnAxis(int axis_id,float x,float y){
@@ -373,16 +379,30 @@ vec2 Controller::Axis::GetNormalized(){
 
 
 bool Controller::Axis::IsLeft(){
-    return( x*x > y*y && x < 0);
+    return( x*x > y*y && x < -0.5);
 }
 bool Controller::Axis::IsRight(){
-    return( x*x > y*y && x > 0);
+    return( x*x > y*y && x > 0.5);
 }
 bool Controller::Axis::IsUp(){
-    return( x*x < y*y && y > 0);
+    return( x*x < y*y && y > 0.5);
 }
 bool Controller::Axis::IsDown(){
-    return( x*x < y*y && y < 0);
+    return( x*x < y*y && y < -0.5);
+}
+
+
+bool Controller::Axis::IsJustLeft(){
+    return( x*x > y*y && x < -0.9 && dx < -0.1);
+}
+bool Controller::Axis::IsJustRight(){
+    return( x*x > y*y && x > 0.9 && dx > 0.1);
+}
+bool Controller::Axis::IsJustUp(){
+    return( x*x < y*y && y > 0.9 && dy > 0.1);
+}
+bool Controller::Axis::IsJustDown(){
+    return( x*x < y*y && y < -0.9 && dy < -0.1);
 }
 
 
@@ -423,6 +443,7 @@ void Input::LoadDefaultKeyBindings(){
         "joy_10=pause"
     };
     LoadKeyBindings(keybinds,26);
+    toggle_console_key_id = GetKeyID("tilde");
 }
 
 void Input::LoadKeyBindings(char** lines,int line_count){

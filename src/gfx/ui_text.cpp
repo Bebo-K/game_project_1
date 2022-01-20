@@ -61,9 +61,17 @@ void UI_Text::SetString(wchar* str){
     SetString(str,-1);
 }
 void UI_Text::SetString(wchar* str,FontID font_id){
-    if(str ==null)return;
-    if(string != null){free(string);string=null;}
-    string=str;
+    if(string != null){
+        free(string);
+        string=null;
+    }
+    if(glyphs != nullptr){
+        free(glyphs);
+        glyphs=nullptr;
+        glyph_count = 0;
+    }
+    if(str ==null || wstr::len(str) == 0)return;
+    string=wstr::new_copy(str);
     if(font_id >= 0){FontManager::SetActiveFont(font_id);}
     font=font_id;
     FT_Face fontface = FontManager::GetActiveFont()->fontface;
@@ -71,7 +79,6 @@ void UI_Text::SetString(wchar* str,FontID font_id){
     int strlen=0;
     for(int i=0;str[i] != 0;i++){strlen++;}
     glyph_count = strlen;
-    if(glyphs != nullptr){free(glyphs);glyphs=nullptr;}
     glyphs = (Glyph*)calloc(glyph_count,sizeof(Glyph));
 
     int pen_x=0,pen_y=0;
