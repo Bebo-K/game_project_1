@@ -3,9 +3,7 @@
 
 using namespace UI;
 
-Panel::Panel(Layout* parent):layout(parent), widgets(){
-    layout.width_scale=Relative;
-    layout.height_scale=Relative;
+Panel::Panel(int w,int h):layout(w,h), widgets(){
     active=false;
     visible=false;
 }
@@ -32,18 +30,12 @@ bool Panel::OnInput(Input::Event event_type){
     for(Widget* w: widgets){if(w->HandleInput(event_type))return true;}
     return false;
 }
-void Panel::OnResize(){
-    layout.Resize();
-    for(Widget* w: widgets){w->HandleResize();}
-}
 bool Panel::OnSignal(EventSignal signal){
     if(!active)return false;
     for(Widget* w: widgets){if(w->HandleSignal(signal))return true;}
     return false;
 }
-
 void Panel::AddWidget(Widget* w){
-    w->layout.SetParent(&layout);
     widgets.Add(w);
 }
 void Panel::RemoveWidget(Widget* w){

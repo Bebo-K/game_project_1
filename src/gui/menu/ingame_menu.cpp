@@ -2,7 +2,7 @@
 
 using namespace UI;
 
-IngameMenu::IngameMenu(Layout* parent) : Menu(parent){id = Menu::INGAME;}
+IngameMenu::IngameMenu(): Menu(){id = Menu::INGAME;}
 
 void IngameMenu::OnLoad(){
 

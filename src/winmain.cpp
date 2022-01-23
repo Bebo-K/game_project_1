@@ -232,69 +232,63 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_s
 
 LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM  lparam){
     switch(msg){
-        case WM_CREATE:
+        case WM_CREATE:{
             SetupOpenGL(window_handle,wparam,lparam);
             OSInput::SetupDirectInput(window_handle);
             logger::info("Starting.\n");
             Game::Start();
-            break;
-        case WM_DESTROY:
+            break;}
+        case WM_DESTROY:{
             Game::Exit();
             DestroyOpenGL();
             PostQuitMessage(0);
-            break;
-        case WM_KEYDOWN:
+            break;}
+        case WM_KEYDOWN:{
             Input::OnKey(wparam,true);
-            break;
-        case WM_KEYUP:
+            break;}
+        case WM_KEYUP:{
              Input::OnKey(wparam,false);
-            break;
-        case WM_CHAR:
+            break;}
+        case WM_CHAR:{
              Input::OnCharacter(wparam);
-            break;
-        case WM_MOUSEMOVE:
+            break;}
+        case WM_MOUSEMOVE:{
             Input::OnPCCursor(LOWORD(lparam),HIWORD(lparam));
-            break;
-        case WM_MOUSEWHEEL:
+            break;}
+        case WM_MOUSEWHEEL:{
             Input::OnPCScroll(0,HIWORD(wparam));
-            break;
-        case WM_LBUTTONDOWN:
+            break;}
+        case WM_LBUTTONDOWN:{
             Input::OnPCClick(true,true);
-            break;
-        case WM_LBUTTONUP:
+            break;}
+        case WM_LBUTTONUP:{
             Input::OnPCClick(false,true);
-            break;
-        case WM_RBUTTONDOWN:
+            break;}
+        case WM_RBUTTONDOWN:{
             Input::OnPCClick(true,false);
-            break;
-        case WM_RBUTTONUP:
+            break;}
+        case WM_RBUTTONUP:{
             Input::OnPCClick(false,false);
-            break; 
-        // DirectInput
-        /*
-            case MM_JOY1MOVE:
+            break;}
+        /* DirectInput
+        case MM_JOY1MOVE:
             OnDirectInputJoyEvent();
-            break; 
+            break;} 
         case MM_JOY1BUTTONDOWN :
             OnDirectInputJoyEvent(wparam,true);
-            break; 
+            break;} 
         case MM_JOY1BUTTONUP :
             OnDirectInputJoyEvent(wparam,false);
-            break; 
-            */
-        case WM_SIZE:
+            break;} */
+        case WM_SIZE:{
             RECT new_client_area;
             if(GetClientRect(window_handle,&new_client_area)){
                 Window::width = new_client_area.right;
                 Window::height = new_client_area.bottom;
                 glViewport(0, 0,Window::width, Window::height);
+                Game::client->Resize(Window::width, Window::height);
             }
-            if(Game::client != null){
-                Game::client->ui.OnResize(Window::width, Window::height);
-            }
-            
-            break;
-            
+            break;} 
         case WM_DPICHANGED:{
             Window::DPI = HIWORD(wparam);
             //UpdateDpiDependentFontsAndResources();
@@ -307,8 +301,7 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
                 prcNewWindow->right - prcNewWindow->left,
                 prcNewWindow->bottom - prcNewWindow->top,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-        break;
-        }
+            break;}
         default:
             return DefWindowProc(window_handle,msg,wparam,lparam);
             break;

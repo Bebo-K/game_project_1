@@ -8,12 +8,8 @@
 
 List<ConfigEntry> global_config_entries(10);
 
-int config::window_height = 720;
 int config::window_width = 1280;
- 
-int config::ui_height = 720;// 360;//
-int config::ui_width = 1280;//640;//
-
+int config::window_height = 720;
 int config::network_resend_max = 64;
 int config::network_resend_interval = 100;
 int config::network_ping_interval   = 2000;
@@ -44,11 +40,8 @@ ConfigEntry::~ConfigEntry(){
 
 void config::Init(){
     if(build_game_folder_path()){save_directory = get_games_folder_path();}
-
-    global_config_entries.Add(new ConfigEntry("window_height",INT,&window_height));
     global_config_entries.Add(new ConfigEntry("window_width",INT,&window_width));
-    global_config_entries.Add(new ConfigEntry("ui_height",INT,&ui_height));
-    global_config_entries.Add(new ConfigEntry("ui_width",INT,&ui_width));
+    global_config_entries.Add(new ConfigEntry("window_height",INT,&window_height));
     global_config_entries.Add(new ConfigEntry("show_console",BOOL,&show_console));
     global_config_entries.Add(new ConfigEntry("show_fps_counter",BOOL,&show_fps_counter));
     global_config_entries.Add(new ConfigEntry("debug_mode",BOOL,&debug_mode));

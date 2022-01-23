@@ -8,7 +8,7 @@ class ErrorMenu: public UI::Menu{
 
     UI::Widget* status_text_widget;
 
-    ErrorMenu(UI::Layout* parent);
+    ErrorMenu();
     
     void OnLoad();
     void OnUpdate(int frames);

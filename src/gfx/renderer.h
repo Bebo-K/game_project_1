@@ -11,6 +11,7 @@ public:
     List<Drawable> primitives;
 
     Renderer();
+    void Resize(int w,int h);
     void Add(Drawable* p);
     void Remove(Drawable* p);
     void Clear();

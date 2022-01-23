@@ -2,6 +2,8 @@
 #include "../log.h"
 #include "../os.h"
 
+#include "../gui/layout.h"
+
 //Renders on one big triangle instead of 2 in a quad, to prevent diagonal seams.
 float sprite_vert_data[] =       {0,2,0,  0,0,0,  2,0,0};//   0,0,0,  0,1,0,  1,1,0};
 float sprite_texcoord_data[] =   {0,-1,    0,1,    2,1};//   0,1,  0,0,  1,0};
@@ -35,53 +37,45 @@ void BuildSpritePrimitive(){
 Sprite::Sprite(char* ui_texturename){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = TextureManager::GetUI(ui_texturename);
-    width = texture.width_px;
-    height = texture.height_px;
     max_frames=max_strips=1;
+    img_width = texture.width_px;
+    img_height =  texture.height_px;
     frame=strip=0;
     x=y=0;
-    center_x=center_y=0;
+    width=img_width;
+    height=img_height;
+    color={1.0f,1.0f,1.0f,1.0f};
+    rotate_center = {0.5,0.5f};
     rotation=0;
-    scale={1,1};
 }
-
 Sprite::Sprite(Texture spritesheet){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = spritesheet;
-    width = spritesheet.width_px;
-    height = spritesheet.height_px;
     max_frames=max_strips=1;
+    img_width = texture.width_px;
+    img_height =  texture.height_px;
     frame=strip=0;
     x=y=0;
-    center_x=center_y=0;
+    width=img_width;
+    height=img_height;
+    color={1.0f,1.0f,1.0f,1.0f};
+    rotate_center = {0.5,0.5f};
     rotation=0;
-    scale={1,1};
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips){
     if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = spritesheet;
     max_frames=frames;if(max_frames < 1)max_frames=1;
     max_strips=strips;if(max_strips < 1)max_strips=1;
-    width = spritesheet.width_px/max_frames;
-    height = spritesheet.height_px/max_strips;
+    img_width = texture.width_px;
+    img_height =  texture.height_px;
     frame=strip=0;
     x=y=0;
-    center_x=center_y=0;
+    width=img_width/max_frames;
+    height=img_height/max_strips;
+    color={1.0f,1.0f,1.0f,1.0f};
+    rotate_center = {0.5,0.5f};
     rotation=0;
-    scale={1,1};
-}
-Sprite::Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_center){
-    if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
-    texture = spritesheet;
-    max_frames=frames;if(max_frames < 1)max_frames=1;
-    max_strips=strips;if(max_strips < 1)max_strips=1;
-    width = spritesheet.width_px/max_frames;
-    height = spritesheet.height_px/max_strips;
-    frame=strip=0;
-    x=y=0;
-    center_x=center_y=0;
-    rotation=0;
-    scale={1,1};
 }
 Sprite::~Sprite(){
     //remove one from texture user count?
@@ -93,7 +87,10 @@ void Sprite::Draw(){
     int abs_frame = (frame < 0)?(-frame)-1:frame; 
     int abs_strip = (strip < 0)?(-strip)-1:strip;
 
-    TextureRectangle frame_rect = texture.GetSubTexture(width*abs_frame,height*abs_strip, width, height);
+    int frame_w = img_width/max_frames;
+    int frame_h = img_height/max_strips;
+
+    TextureRectangle frame_rect = texture.GetSubTexture(frame_w*abs_frame,frame_h*abs_strip, frame_w, frame_h);
 
     glBindVertexArray(sprite_vertex_array_id);  
     int gl_err = glGetError();
@@ -101,17 +98,20 @@ void Sprite::Draw(){
 
     mat4 modelview;
         modelview.identity();
-        //modelview.translate(-center_x/(float)width,-center_y/(float)height,0);
+        //modelview.translate(-rotate_center.x,-rotate_center.y,0);
         modelview.rotate_z(rotation);
-        modelview.scale(scale.x,scale.y,1);
+        //modelview.translate(rotate_center.x,rotate_center.y,0);
+        //modelview.scale(width,height,1);
         if(x_flip != (frame < 0))modelview.scale(-1,1,1);
         if(y_flip != (strip < 0))modelview.scale(1,-1,1);
 
+    int xpos = x; if(x_flip){xpos += frame_w;}
+    int ypos = y; if(y_flip){ypos += frame_h;}
 
     glActiveTexture(GL_TEXTURE0);
-    glUniform2f(sprite_shader->IMAGE_POS,x,y);
+    glUniform2f(sprite_shader->IMAGE_POS,xpos,ypos);
     glUniform2f(sprite_shader->IMAGE_SIZE,(float)width,(float)height);
-    glUniform2f(sprite_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
+    glUniform2f(sprite_shader->WINDOW_SIZE,(float)UI::UI_WIDTH,(float)UI::UI_HEIGHT);
     glUniform4fv(sprite_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(sprite_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
     glBindTexture(GL_TEXTURE_2D,texture.atlas_id);

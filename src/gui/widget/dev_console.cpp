@@ -9,10 +9,9 @@ DeveloperConsole* DeveloperConsole::instance = null;
 
 DeveloperConsole::DeveloperConsole() : Widget("developer_console") {
     DeveloperConsole::instance = this;
-    layout.width_scale=Absolute;
-    layout.height_scale=Absolute;
-    layout.h=200;
-    layout.w=512;
+    layout.center={258,102};
+    layout.width=512;
+    layout.height=200;
     
     last_line_indx=0;
     console_font=-1;
@@ -32,10 +31,9 @@ DeveloperConsole::~DeveloperConsole(){
 void DeveloperConsole::Load(){
     console_font = FontManager::LoadFontFace("Merriweather/Merriweather-Regular",14);
     texts.Resize(1+SHOWN_LINE_COUNT);
-        for(int i=0;i< (1+SHOWN_LINE_COUNT);i++){
-            texts.Set(i,new UI_Text());
-            texts[i]->SetString(L"",console_font);
-        }
+    for(int i=0;i< (1+SHOWN_LINE_COUNT);i++){
+        texts.Set(i,new UI_Text(L"",console_font));
+    }
 
     rects.Resize(2);
         rects.Set(0,new UI_Rect(256,512));
@@ -46,8 +44,8 @@ void DeveloperConsole::Load(){
 
 void DeveloperConsole::OnPaint(){}
 
-void DeveloperConsole::OnResize(){
-    rect_i layoutrect = layout.GetRect().to_integers();
+void DeveloperConsole::OnMove(){
+    rect_i layoutrect = layout.Rect();
     rects[0]->rect = {layoutrect.x,layoutrect.y+(font_size+8),
                             layoutrect.w,layoutrect.h-(font_size+8)};
                                 
@@ -105,7 +103,7 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
                 cursor++;
             }
         }
-        texts[0]->SetString(entry_buffer,console_font);
+        texts[0]->SetString(entry_buffer);
         return true;
     }
     
@@ -136,9 +134,9 @@ void DeveloperConsole::UpdateShownLines(){
         if(line_index < 0){line_index = CACHED_LINE_COUNT-1;}
         wchar* line = &line_buffers[line_index*MAX_LINE_LENGTH];
         if(line[0] != 0){
-            texts[1+retrieved_line_count]->SetString(line,console_font);
+            texts[1+retrieved_line_count]->SetString(line);
             retrieved_line_count++;
         }
     }
-    texts[0]->SetString(entry_buffer,console_font);
+    texts[0]->SetString(entry_buffer);
 }

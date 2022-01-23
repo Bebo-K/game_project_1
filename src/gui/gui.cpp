@@ -14,17 +14,18 @@
 
 GUI* GUI::instance = nullptr;
 
+
 using namespace UI;
 
-GUI::GUI(): fullscreen_layout(),menus(),developer_console(){
+GUI::GUI():menus(),developer_console(){
     GUI::instance=this;
 
-    main_menu = new MainMenu(&fullscreen_layout);
-    options_menu = new OptionsMenu(&fullscreen_layout);
-    loading_menu = new LoadingMenu(&fullscreen_layout);
-    error_menu = new ErrorMenu(&fullscreen_layout);
-    ingame_menu = new IngameMenu(&fullscreen_layout);
-    character_create_menu = new CharacterCreateMenu(&fullscreen_layout);
+    main_menu = new MainMenu();
+    options_menu = new OptionsMenu();
+    loading_menu = new LoadingMenu();
+    error_menu = new ErrorMenu();
+    ingame_menu = new IngameMenu();
+    character_create_menu = new CharacterCreateMenu();
 
     menus.Add(main_menu);
     menus.Add(options_menu);
@@ -44,6 +45,9 @@ void GUI::Load(){
     ingame_menu->Load();
     error_menu->Load();
     character_create_menu->Load();
+
+    developer_console.MoveTo(nullptr,Top,Left,{2,2});
+    
     
     DeveloperConsole::Write(L"Hello World! GUI Initialized.");
 
@@ -95,14 +99,9 @@ void GUI::OnSignal(EventSignal signal){
     if(developer_console.HandleSignal(signal))return;
     for(Menu* m: menus){if(m->HandleSignal(signal))return;}
 }
-void GUI::OnResize(int screen_w,int screen_h){
-    fullscreen_layout.w=(float)screen_w;
-    fullscreen_layout.h=(float)screen_h;
-    fullscreen_layout.center.x=fullscreen_layout.w/2;
-    fullscreen_layout.center.y=fullscreen_layout.h/2;
 
-    developer_console.layout.MoveTo(&fullscreen_layout,Top,Left,{2,2});
-    developer_console.OnResize();
+void GUI::OnResize(int screen_w,int screen_h){
+    developer_console.HandleResize();
     for(Menu* m: menus){m->HandleResize();}
 }
 

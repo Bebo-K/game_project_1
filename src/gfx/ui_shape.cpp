@@ -2,6 +2,8 @@
 #include "../log.h"
 #include "../os.h"
 
+#include "../gui/layout.h"
+
 float rect_vert_data[] =       {0,1,0,  0,0,0,  1,0,0,  1,0,0,  1,1,0,  0,1,0};
 float rect_texcoord_data[] =   {0,0,    0,1,    1,1,   1,1,    1,0,    0,0};
 GLuint rect_vertex_array_id= -1;
@@ -72,7 +74,8 @@ void UI_Rect::Draw(){
 
     glUniform2f(shape_shader->IMAGE_POS,rect.x,rect.y);
     glUniform2f(shape_shader->IMAGE_SIZE,(float)rect.w,(float)rect.h);
-    glUniform2f(shape_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
+    //glUniform2f(shape_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
+    glUniform2f(shape_shader->WINDOW_SIZE,(float)UI::UI_WIDTH,(float)UI::UI_HEIGHT);
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
     glUniform4fv(shape_shader->TEXTURE_LOCATION,1,(GLfloat*)&no_tex.tex_coords);

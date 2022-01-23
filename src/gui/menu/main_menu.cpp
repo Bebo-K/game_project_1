@@ -10,9 +10,10 @@ using namespace UI;
 
 void LaunchSingleplayerButtonCallback(){
     logger::debug("Launching server!");
-    LoadingMenu* loading_menu = GUI::GetGUI()->loading_menu;
-    loading_menu->Open();
-    loading_menu->SetStatusMessage(wstr::new_copy(L"Launching local server..."));
+    GUI* gui = GUI::GetGUI();
+    gui->loading_menu->Open();
+    gui->main_menu->Close();
+    gui->loading_menu->SetStatusMessage(wstr::new_copy(L"Launching local server..."));
     Game::StartLocalServer();
 }
 
@@ -31,36 +32,23 @@ void ExitGameCallback(){
     Client::GetClient()->Quit();
 }
               
-MainMenu::MainMenu(Layout* parent) : Menu(parent){id = Menu::MAIN;}
+MainMenu::MainMenu() : Menu(){id = Menu::MAIN;}
 
 void MainMenu::OnLoad(){
-    Widget* background = new Widget("background");
-    background->layout.SetOffsetMode(Relative,Relative);
-    background->layout.SetOffset(0,0);
-    background->layout.SetSizeMode(Relative,Relative);
-    background->layout.SetSize(1,1);
-    background->sprites.Resize(1);
-        background->sprites.Set(0,new Sprite("low_effort_banner"));
-    AddWidget(background);
+    AddWidget(new MenuBackground());
     
     Widget* play_sp_button = new SimpleButton("play_sp_button",L"Play Singleplayer",312,128,{0.3,0.15,1.0,0.8},LaunchSingleplayerButtonCallback);
-    play_sp_button->layout.MoveTo(&layout,Top,Center_H,{0,4});
-    
-    play_sp_button->layout.SetSizeMode(Relative,Relative);
+    play_sp_button->MoveTo(nullptr,Top,Center_H,{0,4});
 
     Widget* play_mp_button = new SimpleButton("play_mp_button",L"Play Multiplayer",312,128,{0.3,0.15,1.0,0.8},LaunchMultiplayerButtonCallback);
-    play_mp_button->layout.MoveTo(&play_sp_button->layout,Below,Center_H,{0,10});
-    play_mp_button->layout.SetSizeMode(Relative,Relative);
+    play_mp_button->MoveTo(play_sp_button,Below,Center_H,{0,10});
 
     Widget* options_button = new SimpleButton("options_button",L"Options",312,128,{0.3,0.15,1.0,0.8},GoToOptionsCallback);
-    options_button->layout.MoveTo(&play_mp_button->layout,Below,Center_H,{0,10});
-    options_button->layout.SetSizeMode(Relative,Relative);
+    options_button->MoveTo(play_mp_button,Below,Center_H,{0,10});
 
     Widget* exit_button = new SimpleButton("exit_button",L"Exit",312,128,{0.3,0.15,1.0,0.8},ExitGameCallback);
-    exit_button->layout.MoveTo(&options_button->layout,Below,Center_H,{0,10});
-    exit_button->layout.SetSizeMode(Relative,Relative);
+    exit_button->MoveTo(options_button,Below,Center_H,{0,10});
 
-    
     play_sp_button->selectable->next_down = play_mp_button;
     play_mp_button->selectable->next_up = play_sp_button;
     play_mp_button->selectable->next_down = options_button;

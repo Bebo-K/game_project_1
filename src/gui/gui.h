@@ -5,7 +5,7 @@
 #include "../input.h"
 #include "../struct/list.h"
 #include "../struct/pool.h"
-#include "ui_types.h"
+#include "layout.h"
 #include "widget.h"
 #include "widget/dev_console.h"
 #include "menu.h"
@@ -21,7 +21,7 @@ class GUI{
     private:
     static class GUI*   instance;
     public:
-    UI::Layout          fullscreen_layout;
+
     List<UI::Menu>      menus;
     DeveloperConsole    developer_console;
 

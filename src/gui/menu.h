@@ -4,7 +4,7 @@
 #include "../input.h"
 #include "../struct/data_types.h"
 #include "../struct/list.h"
-#include "ui_types.h"
+#include "layout.h"
 #include "widget.h"
 
 namespace UI{
@@ -16,11 +16,10 @@ namespace UI{
         MenuID       id;
         bool         active;
         bool         visible;
-        Layout       layout;
         List<Widget> widgets;
         Widget*      selected;
 
-        Menu(Layout* parent);
+        Menu();
         virtual ~Menu();
 
         //Open/Close are triggered when a menu transitions from one to another.
@@ -50,6 +49,7 @@ namespace UI{
 
         void AddWidget(Widget* w);
         void RemoveWidget(Widget* w);
+        Widget* GetWidget(char* name);
 
         void SetSelected(Widget* w);
     };

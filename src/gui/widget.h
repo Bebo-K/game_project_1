@@ -1,7 +1,8 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include "ui_types.h"
+#include "layout.h"
+#include "../signal.h"
 #include "../input.h"
 #include "../struct/list.h"
 #include "../gfx/ui_shape.h"
@@ -11,7 +12,6 @@
 namespace UI{
 class Widget;
 enum PressedState{Not_Pressed,Hovering,Pressed,Released};
-
 
 //Struct containing callbacks for when a widget highlighted by the controller
 class WidgetSelectInfo{
@@ -47,8 +47,8 @@ class WidgetClickInfo{
 
 class Widget{
     public:
-    Layout                  layout;
     char*                   name;
+    Layout                  layout;
     bool                    active;
     bool                    visible;
     WidgetSelectInfo*       selectable;
@@ -68,10 +68,14 @@ class Widget{
     void HandleResize();
     bool HandleSignal(EventSignal signal);
 
+    void MoveTo(Widget* parent,VerticalOrigin vmode,HorizontalOrigin hmode, point_i offset);
+
     bool IsSelectable();
 
     virtual void OnUpdate();
     virtual bool OnInput(Input::Event event_type);
+    virtual void OnMove();
+    virtual void OnPaint();
     virtual void OnResize();
     virtual bool OnSignal(EventSignal signal);
     virtual ~Widget();

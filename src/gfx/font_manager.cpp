@@ -30,9 +30,13 @@ void FontManager::Free(){
 
 FontID FontManager::LoadFontFace(char* font_name,int font_size){
     for(FontCache* font: cached_fonts){
-        if(cstr::compare(font->font_name,font_name) && font->font_size==font_size){return cached_fonts.GetIndex(font);}
+        if(cstr::compare(font->font_name,font_name) && font->font_size==font_size){
+            font->users++;
+            return cached_fonts.GetIndex(font);
+        }
     }
     FontCache* fc = new FontCache(font_name,font_size);
+    fc->users=1;
     int newid = cached_fonts.Add(fc);
     return (FontID)newid;
 }
@@ -40,9 +44,52 @@ FontID FontManager::LoadFontFace(char* font_name,int font_size){
 void FontManager::SetActiveFont(FontID font){current_font_id = font;}
 
 FontManager::FontCache* FontManager::GetActiveFont(){
+    if(current_font_id < 0){return cached_fonts[default_font_id];}
     FontCache* cache_entry = cached_fonts[current_font_id];
     if(cache_entry == null){return cached_fonts[default_font_id];}
     return cache_entry;
+}
+
+FontManager::FontCache* FontManager::GetFontInfo(FontID id){
+    return cached_fonts[id];
+}
+
+//returns either the existing or a new font ID with the newly scaled fontface
+FontID FontManager::RescaleFontID(FontID font_id,int new_font_size){
+    if(font_id < 0){
+        return -1;
+    }
+    FontManager::FontCache* font = cached_fonts[font_id];
+    if(font==nullptr || font->font_size == new_font_size)return font_id;
+
+    if(font->users > 1){//Don't alter fontfaces if others might be using it
+        font->users -=1;
+        return LoadFontFace(font->font_name,new_font_size);
+    }
+
+    for(FontCache* cached_font: cached_fonts){//First look to see if there's a scaled font to re-use
+        if(cstr::compare(font->font_name,cached_font->font_name) && font->font_size==cached_font->font_size){
+            cached_fonts.Remove(font);
+            
+            
+            font->ClearDynamicGlyphs();
+            delete font->glyph_atlas;
+            //free(font);
+
+            cached_font->users++;
+            return cached_fonts.GetIndex(cached_font);
+        }
+    }
+
+    //Finally replace this fontface with scaled one and delete old fontface.
+    cached_fonts.Remove(font);
+    cached_fonts.Set(font_id,new FontManager::FontCache(font->font_name,new_font_size));
+
+    font->ClearDynamicGlyphs();
+    delete font->glyph_atlas;
+    //free(font);
+
+    return font_id;
 }
 
 Texture FontManager::GetGlyph(int code_point){
@@ -57,18 +104,20 @@ Texture FontManager::GetGlyph(int code_point){
 }
 
 
-FontManager::FontCache::FontCache():glyph_dynamic_textures(8){font_name=nullptr;font_size=8;}
+FontManager::FontCache::FontCache():glyph_dynamic_textures(8){
+    font_name=nullptr;font_size=8;
+}
 
-FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_textures(8){
+FontManager::FontCache::FontCache(char* font_uri,int font_point):glyph_dynamic_textures(8){
+    users=0;
     font_name=cstr::new_copy(font_uri);
-    font_size=font_size;
+    font_size=font_point;
     atlas_next_glyph[0]=atlas_next_glyph[1]=atlas_next_glyph[2]=0;
     dynamic_atlas_start[0]=dynamic_atlas_start[1]=dynamic_atlas_start[2]=0;
 
     Stream* font_stream = AssetManager::UI_Font(font_uri);
     byte* font_file = font_stream->readAll();
     int err = FT_New_Memory_Face(ft_library,font_file,font_stream->amount_read,0,&fontface);
-    delete font_stream;
     if (err != 0){
         if (err == FT_Err_Unknown_File_Format){
             logger::warn("Error building Freetype2 font: font type unsupported\n");
@@ -91,9 +140,15 @@ FontManager::FontCache::FontCache(char* font_uri,int font_size):glyph_dynamic_te
     dynamic_atlas_start[0] = atlas_next_glyph[0];
     dynamic_atlas_start[1] = atlas_next_glyph[1];
     dynamic_atlas_start[2] = atlas_next_glyph[2];
+    
+    //free(font_file); Freetype segfault: "you cannot free the backing data for a fontface before calling FT_Done_Face:
+    delete font_stream;
 }
 
 FontManager::FontCache::~FontCache(){
+    FT_Done_Face(fontface);
+    glDeleteTextures(1,&atlas_gl_id);
+    delete glyph_atlas;
     if(font_name!=nullptr){free(font_name);font_name=nullptr;}
 }
 

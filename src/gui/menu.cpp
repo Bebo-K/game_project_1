@@ -3,16 +3,13 @@
 
 using namespace UI;
 
-Menu::Menu(Layout* parent):layout(parent), widgets(){
+Menu::Menu():widgets(){
     id=0;
-    layout.width_scale=Relative;
-    layout.height_scale=Relative;
     active=false;
     visible=false;
     selected=nullptr;
 }
 Menu::~Menu(){}
-
 
 void Menu::Open(){
     active=true;
@@ -27,7 +24,6 @@ void Menu::Close(){
 }
 void Menu::Load(){
     OnLoad();
-    //for(Widget* w:widgets){w->OnLoad();}
 }
 void Menu::Unload(){
     OnUnload();
@@ -41,10 +37,8 @@ void Menu::Update(int frames){
 void Menu::Paint(){
     if(!visible)return;
     OnPaint();
-    for(Widget* w: widgets){
-        w->Paint();}
+    for(Widget* w: widgets){w->Paint();}
 }
-
 
 bool Menu::HandleSelectionInput(Input::Event event_type){
     if(selected != nullptr){
@@ -67,9 +61,7 @@ bool Menu::HandleSelectionInput(Input::Event event_type){
                 return true;
             }
         }
-        else{
-            return selected->selectable->onSelectedInput(selected,event_type);
-        }
+        return selected->selectable->onSelectedInput(selected,event_type);
     }
     return false;
 }
@@ -77,13 +69,12 @@ bool Menu::HandleSelectionInput(Input::Event event_type){
 bool Menu::HandleClickInput(Input::Event event_type){
     bool handled = false;
     if(event_type== Input::PC_Cursor || event_type== Input::PC_LClick){
-        point_i cursor_pos = Controller::GetPCCursor();
+        point_i cursor_pos = ScreenToClientSpace(Controller::GetPCCursor());
         Controller::Button cursor_lbutton = Controller::GetPCLeftMouse();
         //Controller::Button cursor_rbutton = Controller::GetPCLeftMouse();
         for(Widget* w: widgets){
             if(w == nullptr || w->clickable == nullptr)continue;
-            rect_i layout_rect = w->layout.GetRect().to_integers();
-            if(layout_rect.contains(cursor_pos)){
+            if(w->layout.Rect().contains(cursor_pos)){
                 if(cursor_lbutton.IsDown()){
                     if(cursor_lbutton.IsJustPressed()){
                         w->clickable->onClickEffect(w);
@@ -124,8 +115,8 @@ bool Menu::HandleInput(Input::Event event_type){
     for(Widget* w: widgets){if(w->HandleInput(event_type))return true;}
     return OnInput(event_type);
 }
+
 void Menu::HandleResize(){
-    layout.Resize();
     OnResize();
     for(Widget* w: widgets){w->HandleResize();}
 }
@@ -135,12 +126,18 @@ bool Menu::HandleSignal(EventSignal signal){
     return OnSignal(signal);
 }
 void Menu::AddWidget(Widget* w){
-    w->layout.SetParent(&layout);
     widgets.Add(w);
 }
 void Menu::RemoveWidget(Widget* w){
     widgets.Remove(w);
     delete w;
+}
+
+Widget* Menu::GetWidget(char* name){
+    for(Widget* w:widgets){
+        if(cstr::compare(w->name,name)){return w;}
+    }
+    return nullptr;
 }
 
 void Menu::SetSelected(Widget* w){

@@ -8,7 +8,7 @@ class LoadingMenu: public UI::Menu{
 
     UI::Widget* status_text_widget;
 
-    LoadingMenu(UI::Layout* parent);
+    LoadingMenu();
     
     void OnLoad();
     void OnUpdate(int frames);

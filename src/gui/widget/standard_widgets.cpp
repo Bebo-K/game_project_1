@@ -4,6 +4,18 @@
 using namespace UI;
 
 
+MenuBackground::MenuBackground():Widget("background"){
+    layout.center = {UI_WIDTH/2,UI_HEIGHT/2};
+    layout.width = UI_WIDTH;
+    layout.height = UI_HEIGHT;
+    sprites.Resize(1);
+        sprites.Set(0,new Sprite("low_effort_banner"));
+        sprites[0]->width = UI_WIDTH;
+        sprites[0]->height = UI_HEIGHT;
+}
+
+MenuBackground::~MenuBackground(){}
+
 void SimpleButtonHighlightEffect(Widget* w){
     SimpleButton* button = (SimpleButton*)w;
     vec4 old_color = button->rects[0]->color;
@@ -37,19 +49,18 @@ void SimpleButtonOnClickCallback(Widget* w){
 
 SimpleButton::SimpleButton(char* name, wchar* label, float w, float h, vec4 color, void (*callback)()):Widget(name){
     FontID simple_button_font = FontManager::LoadFontFace("SourceSansPro-Regular",32);
-    layout.SetSize(w,h);
-
-    rect_f l = layout.GetRect();
+    layout.width = w;
+    layout.height = h;
 
     rects.Resize(1);
     rects.Set(0,new UI_Rect());
         rects[0]->color = color;
-        rects[0]->rect = {(int)l.x, (int)l.y, (int)l.w, (int)l.h};
+        rects[0]->rect = layout.Rect();
         
     texts.Resize(1);
     texts.Set(0,new UI_Text(label,simple_button_font));
         texts[0]->x = layout.center.x - (texts[0]->w/2);
-        texts[0]->y = layout.center.y - (h_errno/2);
+        texts[0]->y = layout.center.y - (texts[0]->h/2);
 
     clickable = new WidgetClickInfo();
         clickable->onClickAction = SimpleButtonOnClickCallback;

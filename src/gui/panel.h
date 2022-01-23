@@ -2,7 +2,7 @@
 #define PANEL_H
 
 #include "widget.h"
-#include "ui_types.h"
+#include "layout.h"
 #include "../struct/list.h"
 
 namespace UI{
@@ -15,7 +15,7 @@ namespace UI{
         Layout       layout;
         List<Widget> widgets;
 
-        Panel(Layout* parent);
+        Panel(int w,int h);
         ~Panel();
 
         void Show();
@@ -23,7 +23,6 @@ namespace UI{
         void Update(int frames);
         void Paint();
         bool OnInput(Input::Event event_type);
-        void OnResize();
         bool OnSignal(EventSignal signal);
 
         void AddWidget(Widget* w);

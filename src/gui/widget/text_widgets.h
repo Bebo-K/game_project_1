@@ -10,23 +10,23 @@ namespace UI{
 //Statically shown multi-line text. 
 class TextBox: public Widget{
     public:
+    FontID font;
+    int font_size;
     int line_count;
     int max_line_length;
-    bool wrap_lines;
-    int font_size;
-    wchar** lines;
+    wchar** line_buffers;
     UI_Text* shown_lines;
+    bool wrap_lines;
 
-    TextBox(char* name,int lines);
-    TextBox(char* name,int lines,int line_length);
+    TextBox(char* name,FontID font,int line_count,int line_length,int width,int height);
     ~TextBox();
     
-    void OnPaint(Widget* w);
-    void OnResize(Widget* w);
+    void OnPaint();
+    void OnMove();
 
-    void AddLine(wchar* newline);
-    void SetLine(wchar* line,int line_num);
-    void FormatLines();
+    //void AddLine(wchar* newline);
+    //void SetLine(wchar* line,int line_num);
+    //void FormatLines();
 };
 
 //Player-input text. Chatboxes, naming screens, etc.

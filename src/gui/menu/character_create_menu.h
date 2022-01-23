@@ -2,13 +2,15 @@
 #define CHRACTER_CREATE_MENU_H
 
 #include "../menu.h"
-#include "../ui_types.h"
-
+#include "../../game/savefile.h"
 
 class CharacterCreateMenu: public UI::Menu {
     public:
+    wchar* player_name;
+    PlayerAppearance player_appearance;
+    int class_id;
 
-    CharacterCreateMenu(UI::Layout* parent);
+    CharacterCreateMenu();
 
     void OnLoad();
     void OnUnload();

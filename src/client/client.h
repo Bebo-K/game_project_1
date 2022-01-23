@@ -3,7 +3,6 @@
 
 #include "../gui/gui.h"
 #include "../game/scene.h"
-#include "../gui/ui_types.h"
 #include "../signal.h"
 #include "../game/player_info.h"
 
@@ -30,15 +29,14 @@ class Client{
     static void Signal(EventSignal val);
 
     void Start();
-    void StartLoadScene(int scene_id);
-    //void OnLoadSceneFinish();
-    void SetMenu(int menu_id);
+    void LoadScene(int scene_id);
 
     void AddEntity(int eid);
     void RemoveEntity(int uuid);
     void SpawnPlayer(Entrance entrance);
 
     void Paint();
+    void Resize(int screen_w,int screen_h);
     void Update(int frames);
     void UpdatePositions();
     void HandleSignals();

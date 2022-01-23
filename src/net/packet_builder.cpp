@@ -177,15 +177,15 @@ int SNPS::GetStyle2(){return ((int*)data_backing)[3];}
 void SNPS::SetStyle2(int style1){((int*)data_backing)[3] = style1;}
 int SNPS::GetStyle3(){return ((int*)data_backing)[4];}
 void SNPS::SetStyle3(int style1){((int*)data_backing)[4] = style1;}
-ColorCode SNPS::GetColor1(){return ((ColorCode*)(&data_backing[sizeof(int)*5]))[0];}
-void SNPS::SetColor1(ColorCode c){((ColorCode*)(&data_backing[sizeof(int)*5]))[0] = c;}
+byte* SNPS::GetColor1(){return (byte*)(&data_backing[sizeof(int)*5]);}
+void SNPS::SetColor1(byte* color){memcpy(&data_backing[sizeof(int)*5],color,sizeof(byte)*4);}
 wchar* SNPS::GetCharacterName(){
-    int place = (sizeof(int)*5) + sizeof(ColorCode);
+    int place = (sizeof(int)*5) + sizeof(byte)*4;
     return ((wchar*)(&data_backing[place]));
 }
 void SNPS::SetCharacterName(wchar* name){
     int text_len = wstr::len(name);
-    int place = (sizeof(int)*5) + sizeof(ColorCode);
+    int place = (sizeof(int)*5) + sizeof(byte)*4;
     if(text_len > MAX_PLAYER_NAME_LEN){ text_len = MAX_PLAYER_NAME_LEN;}
     memcpy(&data_backing[place],name,text_len*sizeof(wchar));
     ((wchar*)(&data_backing[place]))[text_len]=0;

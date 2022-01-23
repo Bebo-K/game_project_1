@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "../log.h"
+#include "gui.h"
 
 using namespace UI;
 
@@ -8,8 +9,6 @@ Widget::Widget() : layout(){
     active=true;
     visible=true;
     selectable = nullptr;
-    layout.x_pos_scale=Relative;
-    layout.y_pos_scale=Relative;
 }
 
 Widget::Widget(char* widget_name) : layout(), sprites(),rects(),texts(){
@@ -18,8 +17,6 @@ Widget::Widget(char* widget_name) : layout(), sprites(),rects(),texts(){
     visible=true;
     selectable = nullptr;
     clickable = nullptr;
-    layout.x_pos_scale=Relative;
-    layout.y_pos_scale=Relative;
 }
 
 Widget::~Widget(){
@@ -65,31 +62,47 @@ void Widget::Paint(){
         if(text == nullptr)continue;
         text->Draw();
     }
+    OnPaint();
 }
 
 bool Widget::HandleInput(Input::Event event_type){
     if(!active)return false;
     return OnInput(event_type);
 }
+
+
 void Widget::HandleResize(){
-    layout.Resize();
-    rect_f l = layout.GetRect();
-    for(Sprite* sprite: sprites){
-        if(sprite == nullptr)continue;
-        sprite->x = l.x;
-        sprite->y = l.y;
-        sprite->scale = {l.w/sprite->width, l.h/sprite->height};
+    /* TODO: UI font rescaling when you feel scrappy
+    for(UI_Text* text: texts){//Rescale fonts
+        if(text == nullptr || text->string == nullptr || wstr::len(text->string) == 0)continue;
+        text->font = FontManager::RescaleFontID(text->font,(int)(text->default_font_size * GUI::scale_factor));
+        text->BuildString();
     }
-    for(UI_Rect* rect: rects){
-        if(rect == nullptr)continue;
-        rect->rect = {(int)l.x, (int)l.y, (int)l.w, (int)l.h};
-    }
-    for(UI_Text* text: texts){
-        if(text == nullptr)continue;
-        text->x = layout.center.x - (text->w/2);
-        text->y = layout.center.y - (text->h/2);
-    }
+    */
     OnResize();
+}
+
+
+void Widget::MoveTo(Widget* parent,VerticalOrigin vmode,HorizontalOrigin hmode, point_i offset){
+    if(parent != null){layout.MoveTo(&parent->layout,vmode,hmode,offset);}
+    
+    else{
+        Layout fullscreen_layout(UI_WIDTH,UI_HEIGHT);
+        layout.MoveTo(&fullscreen_layout,vmode,hmode,offset);
+    }
+    
+    for(Sprite* s:sprites){
+        s->x = layout.center.x - (s->width/2);
+        s->y = layout.center.y - (s->height/2);
+    }
+    for(UI_Rect* r:rects){
+        r->rect = layout.Rect();
+    }
+    for(UI_Text* t:texts){
+        t->x = layout.center.x - (t->w/2);
+        t->y = layout.center.y - (t->h/2);
+    }
+    OnMove();
 }
 
 bool Widget::HandleSignal(EventSignal signal){
@@ -103,6 +116,8 @@ bool Widget::IsSelectable(){
 
 void Widget::OnUpdate(){}
 bool Widget::OnInput(Input::Event event_type){return false;}
+void Widget::OnMove(){}
+void Widget::OnPaint(){}
 void Widget::OnResize(){}
 bool Widget::OnSignal(EventSignal signal){return false;}
 

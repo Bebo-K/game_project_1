@@ -2,13 +2,12 @@
 #define MAIN_MENU_H
 
 #include "../menu.h"
-#include "../ui_types.h"
 
 
 class MainMenu: public UI::Menu {
     public:
 
-    MainMenu(UI::Layout* parent);
+    MainMenu();
 
     void OnLoad();
     void OnUnload();

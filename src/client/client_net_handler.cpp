@@ -90,6 +90,26 @@ void ClientNetHandler::Update(int frames){
     }
 }
 
+
+void ClientNetHandler::CreatePlayer(wchar* playername, PlayerAppearance appearance,int player_class){
+    Packet packet_backing;
+    PacketData::SNPS start_new_player_save(&packet_backing);
+
+        start_new_player_save.SetCharacterName(playername);
+        start_new_player_save.SetClassID(player_class);
+        start_new_player_save.SetRaceID(appearance.race);
+        start_new_player_save.SetColor1(appearance.color);
+        start_new_player_save.SetStyle1(appearance.style1);
+        start_new_player_save.SetStyle2(appearance.style2);
+        start_new_player_save.SetStyle3(appearance.style3);
+
+        start_new_player_save.WritePacket();
+
+    ClientNetwork::Send(&packet_backing);
+    client->ui.ingame_menu->Open();
+    client->ui.character_create_menu->Close();
+}
+
 void ClientNetHandler::Free(){
     client=nullptr;
 }

@@ -10,10 +10,9 @@
 namespace config{
     enum ConfigEntryType{INT,FLOAT,BOOL,STRING,WSTRING};
 
-    extern int window_height;
+
     extern int window_width;
-    extern int ui_height;
-    extern int ui_width;
+    extern int window_height;
     extern int network_resend_max;
     extern int network_resend_interval;
     extern int network_ping_interval;

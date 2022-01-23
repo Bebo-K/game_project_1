@@ -4,28 +4,27 @@
 using namespace UI;
 
 
-TextBox::TextBox(char* name,int num_lines):Widget(name){
-    line_count=num_lines;
-    max_line_length=256;
-    wrap_lines=false;
-    font_size=12;
-    lines = (wchar**)calloc(line_count,sizeof(wchar*));
+TextBox::TextBox(char* name,FontID font,int num_lines,int line_length,int width,int height):Widget(name){
+    font_size = FontManager::GetFontInfo(font)->font_size;
+    line_count = num_lines;
+    max_line_length = line_length;
+    layout.width = width;
+    layout.height= height;
+    
+    line_buffers = (wchar**)calloc(line_count,sizeof(wchar*));
+    for(int i=0;i<num_lines;i++){
+        line_buffers[i] = (wchar*)calloc(line_length,sizeof(wchar*));
+    }
     shown_lines = new UI_Text[line_count];
-}
-TextBox::TextBox(char* name,int num_lines,int line_length):Widget(name){
-    line_count=num_lines;
-    max_line_length=line_length;
+
     wrap_lines=false;
-    font_size=12;
-    lines = (wchar**)calloc(line_count,sizeof(wchar*));
-    shown_lines = new UI_Text[line_count];
 }
 
 TextBox::~TextBox(){
-    if(lines != null){
-        for(int i=0;i<line_count;i++){free(lines[i]);}
-        free(lines);
-        lines=null;
+    if(line_buffers != null){
+        for(int i=0;i<line_count;i++){free(line_buffers[i]);}
+        free(line_buffers);
+        line_buffers=null;
     }
     if(shown_lines != null){
         delete[] shown_lines;
@@ -33,20 +32,22 @@ TextBox::~TextBox(){
     }
 }
 
-void TextBox::OnPaint(Widget* w){
+void TextBox::OnPaint(){
     for(int i=0;i<line_count;i++){
         shown_lines[i].Draw();
     }
 }
 
-void TextBox::OnResize(Widget* w){
+void TextBox::OnMove(){
     for(int i=0;i<line_count;i++){
-        shown_lines[i].x = w->layout.center.x;
-        shown_lines[i].y = w->layout.center.y + (w->layout.h/2) - (i * (font_size + 2));
-        shown_lines[i].w = w->layout.w;
+        shown_lines[i].x = layout.center.x;
+        shown_lines[i].y = layout.center.y + (layout.height/2) - (i * (font_size + 2));
+        shown_lines[i].w = layout.width;
         shown_lines[i].h = font_size;
     }
 }
+
+/*
 void TextBox::AddLine(wchar* new_line){
 
 }
@@ -80,6 +81,7 @@ void TextBox::FormatLines(){
         }
     }
 }
+*/
 
 
 TextEntryField::TextEntryField(char* name,int max_length):Widget(name){

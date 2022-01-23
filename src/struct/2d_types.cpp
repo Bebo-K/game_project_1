@@ -1,6 +1,7 @@
 #include "2d_types.h"
 
 
+point_i point_f::to_point_i(){return {(int)x,(int)y};}
 
 rect_i::rect_i(){x=y=w=h=0;}
 rect_i::rect_i(int ix, int iy,int iw, int ih){x=ix;y=iy;w=iw;h=ih;}

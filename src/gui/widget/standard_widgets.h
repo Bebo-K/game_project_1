@@ -14,6 +14,12 @@ class SimpleButton:public Widget{
 
 };
 
+class MenuBackground: public Widget{
+    public:
+    MenuBackground();
+    ~MenuBackground();
+};
+
 }
 
 #endif

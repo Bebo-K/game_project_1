@@ -7,11 +7,11 @@ Renderer::Renderer():camera(),primitives(8){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-    
-    camera.width= config::ui_width;
-    camera.height= config::ui_height;
 }
-
+void Renderer::Resize(int w,int h){
+    camera.width=w;
+    camera.height=h;
+}
 void Renderer::Clear(){
     primitives.Clear();
 }

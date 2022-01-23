@@ -1,5 +1,5 @@
 #ifndef SAVEFILE_H
-#define SAVEFILE_CPP
+#define SAVEFILE_H
 
 #include "../io/file.h"
 #include "../io/serializer.h"
@@ -9,10 +9,20 @@
 
 #define CAMPAIGN_DEMO 0
 
+
+struct PlayerAppearance{
+    int race;
+    int style1;
+    int style2;
+    int style3;
+    byte color[4];
+};
+
 class SavePlayer{
     public:
     int   save_id;
     wchar* player_name;
+    PlayerAppearance player_appearance;
     int   player_scene;
     int   player_scene_entrance;
     //game stats

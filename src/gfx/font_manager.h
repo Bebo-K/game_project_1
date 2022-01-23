@@ -24,6 +24,7 @@ namespace FontManager{
         int     atlas_next_glyph[3];
 
         public:
+        int     users;
         char*   font_name;
         int     font_size;
         FT_Face fontface;
@@ -47,6 +48,8 @@ namespace FontManager{
     FontID LoadFontFace(char* font_filename,int font_size);
     void SetActiveFont(FontID font_id);
     FontCache* GetActiveFont();
+    FontCache* GetFontInfo(FontID font_id);
+    FontID RescaleFontID(FontID font_id,int new_font_size); 
     Texture GetGlyph(int code_point);
     //TODO: Text texture atlas cleanup
 }

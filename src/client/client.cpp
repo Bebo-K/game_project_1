@@ -66,7 +66,7 @@ void Client::Start(){
     ui.main_menu->Open();
 }
 
-void Client::StartLoadScene(int scene_id){
+void Client::LoadScene(int scene_id){
     SceneLoader::StartLoadDefault(&scene);
 
     scene_renderer.camera.ortho=false;
@@ -116,6 +116,11 @@ void Client::Paint(){
     CameraManager::Update(&scene,0);
     scene_renderer.Draw();
     ui.Paint();
+}
+
+void Client::Resize(int screen_w,int screen_h){
+    scene_renderer.Resize(screen_w,screen_h);
+    ui.OnResize(screen_w,screen_h);
 }
 
 void Client::UpdatePositions(){

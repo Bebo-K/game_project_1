@@ -2,6 +2,7 @@
 #define CLIENT_NET_HANDLER_H
 
 #include "client.h"
+#include "../game/savefile.h"
 
 
 namespace ClientNetHandler{
@@ -9,6 +10,7 @@ namespace ClientNetHandler{
 
     void Init(Client* c);
     void Update(int frames);
+    void CreatePlayer(wchar* playername, PlayerAppearance appearance,int player_class);
     void Free();
 
 };

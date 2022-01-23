@@ -9,18 +9,17 @@ class Sprite{
     Texture     texture;
 	
     int         x,y,width,height;
-    int         frame,strip,max_frames,max_strips;
+    int         img_width,img_height;
+    int         frame,strip;
+    int         max_frames,max_strips;
 	bool		x_flip=false,y_flip=false;
-	float		center_x;//offset from image's top left for the center of rotation.
-	float		center_y;
-    vec4        color={1.0f,1.0f,1.0f,1.0f};
+	vec2		rotate_center;//offset from image's top left for the center of rotation.
+    vec4        color;
     float       rotation;
-    vec2        scale;
     
     Sprite(char* ui_texturename);
     Sprite(Texture spritesheet);
     Sprite(Texture spritesheet,int frames,int strips);
-    Sprite(Texture spritesheet,int frames,int strips,float x_center,float y_center);
     ~Sprite();
  
     void Draw();

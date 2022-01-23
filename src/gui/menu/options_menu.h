@@ -2,13 +2,11 @@
 #define OPTIONS_MENU_H
 
 #include "../menu.h"
-#include "../ui_types.h"
 
 class OptionsMenu: public UI::Menu{
     public:
 
-    OptionsMenu(UI::Layout* parent);
-
+    OptionsMenu();
     void OnLoad();
 };
 

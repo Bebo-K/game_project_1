@@ -21,19 +21,20 @@ class UI_Text{
     int w,h;
     wchar* string;
     FontID font;
+    int    default_font_size;
     int    glyph_count;
     Glyph* glyphs;
 
     
     UI_Text();
-    UI_Text(char* str);
     UI_Text(wchar* str);
     UI_Text(wchar* str,FontID font);
     
-    void SetString(char* str);
-    void SetString(char* str,FontID font);
     void SetString(wchar* str);
-    void SetString(wchar* str,FontID font);
+    void BuildString();
+
+    void SetFontSize(int point);
+
     void Draw();
     ~UI_Text();
 };

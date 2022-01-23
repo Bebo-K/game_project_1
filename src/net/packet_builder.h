@@ -92,8 +92,6 @@ namespace PacketData{
         CHAT(Payload p);
     };
 
-    struct ColorCode{byte r,g,b,a;};
-
     struct SNPS: PacketAccessor{
         int GetRaceID();
         void SetRaceID(int id);
@@ -105,8 +103,8 @@ namespace PacketData{
         void SetStyle2(int style1);
         int GetStyle3();
         void SetStyle3(int style1);
-        ColorCode GetColor1();
-        void SetColor1(ColorCode c);
+        byte* GetColor1();
+        void SetColor1(byte* c);
         wchar* GetCharacterName();
         void SetCharacterName(wchar* name);
         SNPS(Packet* p);

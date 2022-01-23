@@ -33,7 +33,7 @@ class DeveloperConsole: public UI::Widget{
     void OnPaint();
     void OnUpdate(int frames);
     bool OnInput(Input::Event event_type);
-    void OnResize();
+    void OnMove();
     void OnDestroy();
 
     void UpdateShownLines();
