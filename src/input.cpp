@@ -13,10 +13,6 @@ const float AXIS_CUTOFF = 0.01;
 const int AXIS_EVENT_BASE=0;
 const int BUTTON_EVENT_BASE=2;
 
-const int EVENT_CONSOLE = 22;
-const int EVENT_ANYBUTTON = 23;
-const int EVENT_COUNT=24;
-
 const char* button_names[BUTTON_COUNT] = 
 {   "a","b","c","d",
     "d_up","d_down","d_left","d_right",
@@ -51,10 +47,18 @@ Pool<Input::Axis_Bind> axis_binds;
 
 int toggle_console_key_id=0;
 
+bool keyboard_type_only=false;
+int enter_physical_key;//these two keys are still enabled as inputs in typing mode
+int escape_physical_key;
+
 
 //////////////////////
 //    Engine events
 ////////////////////
+
+void SetEvent(Input::Event event_id){
+    SET_BIT(input_state,(event_id-1));
+}
 
 void Input::Init(){
     for(int i=0;i<BUTTON_COUNT;i++){controller_buttons[i].state=0;}
@@ -100,8 +104,6 @@ void Input::Update(){
             input_text = nullptr;
         }
     ClearAllEvents();
-
-
 }
 void Input::Destroy(){
     for(Tuple<int,char*> t: physical_input_map){if(t.value)free(t.value);}
@@ -115,6 +117,16 @@ void Input::Destroy(){
 //////////////////////
 //    Input event handlers
 ////////////////////
+
+void Input::OnKeyboardKey(int key_id,bool down){
+    if(keyboard_type_only && key_id != enter_physical_key && key_id != escape_physical_key){return;}
+
+    if(key_id == enter_physical_key && down){SetEvent(Event::PC_Return);}
+    if(key_id == escape_physical_key && down){SetEvent(Event::PC_Escape);}
+
+    OnKey(key_id,down);
+}
+
 void Input::OnKey(int key_id,bool down){
     for(Key_Button_Bind* keybind:button_binds){
         if(key_id == keybind->physical_key_id){
@@ -130,7 +142,7 @@ void Input::OnKey(int key_id,bool down){
     }
     if(key_id == toggle_console_key_id){
         toggle_console.state=(down)?3:2; 
-        SET_BIT(input_state,Event::ToggleConsole-1);
+        SetEvent(Event::ToggleConsole);
     }
 }
 void Input::OnAxis(int axis_id,float x,float y){
@@ -144,51 +156,53 @@ void Input::OnAxis(int axis_id,float x,float y){
 void Input::OnPCCursor(int x,int y){
     mouse_cursor.x=x;
     mouse_cursor.y=Window::height-y;
-    SET_BIT(input_state,Input::PC_Cursor-1);
+    
+    SetEvent(Input::PC_Cursor);
 }
 void Input::OnPCClick(bool down, bool left){
     if(left){
         mouse_l.state=(down)?3:2; 
-        SET_BIT(input_state,Input::PC_LClick-1);
+        SetEvent(Input::PC_LClick);
     }
     else {
         mouse_r.state=(down)?3:2; 
-        SET_BIT(input_state,Input::PC_RClick-1);
+        SetEvent(Input::PC_RClick);
     }
 }
 void Input::OnPCScroll(int dx, int dy){
     mouse_scroll.x = dx;
     mouse_scroll.y = dy;
-    SET_BIT(input_state,Input::PC_Scroll-1);
+    SetEvent(Input::PC_Scroll);
 }
 void Input::OnText(wchar* text){
     input_text = wstr::new_copy(text);
-    SET_BIT(input_state,Input::PC_Text-1);
+    SetEvent(Input::PC_Text);
 }
 void Input::OnCharacter(int code_point){
     character_code[0]=code_point;
+    character_code[1]=0;
     input_text = character_code;
-    SET_BIT(input_state,Input::PC_Text-1);
+    SetEvent(Input::PC_Text);
 }
 
 //////////////////////
 //    Event flag management
 ////////////////////
 Input::Event Input::NextEvent(){
-    for(int i=0; i<EVENT_COUNT;i++){
-        if(GET_BIT(input_state,i)){return (Event)(i+1);}
+    for(int i=0; i<Input::Event::COUNT;i++){
+        if(GET_BIT(input_state,i)){return (Input::Event)(i+1);}
     }
-    return Event::None;
+    return Input::Event::None;
 }
 Input::Event Input::NextEvent(Input::Event start){
-    if(start < 0 || (start + 1) >= EVENT_COUNT)return Event::None;
-    for(int i=start; i<EVENT_COUNT;i++){
-        if(GET_BIT(input_state,(i-1))){return (Event)(i+1);}
+    if(start < 0 || (start + 1) >= Input::Event::COUNT)return Input::Event::None;
+    for(int i=start; i<Input::Event::COUNT;i++){
+        if(GET_BIT(input_state,(i-1))){return (Input::Event)(i+1);}
     }
-    return Event::None;
+    return Input::Event::None;
 }
 void Input::ClearEvent(Input::Event event){
-    if(event <= 0 || event >= EVENT_COUNT)return;
+    if(event <= 0 || event >= Input::Event::COUNT)return;
     CLEAR_BIT(input_state,(int)(event-1));
 }
 void Input::ClearAllEvents(){
@@ -287,6 +301,10 @@ void Input::UnbindAxis(AxisID axis){
             i=0;
         }
     }
+}
+
+void Input::SetKeyboardTypingOnly(bool enabled){
+    keyboard_type_only=enabled;
 }
 
 //////////////////////
@@ -421,6 +439,8 @@ void Input::LoadKeyLayout(char* layout_filename){
             if(key_id > 0){
                 physical_input_map.Add(key_id,cstr::new_copy(key));
             }
+            if(cstr::compare("enter",key)){enter_physical_key=key_id;}
+            if(cstr::compare("escape",key)){escape_physical_key=key_id;}
         }
         if(key)free(key);
         if(value)free(value);

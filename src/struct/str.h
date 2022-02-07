@@ -16,6 +16,7 @@ namespace cstr{
     char* lowercase_copy(const char* str);
     char* append(const char* str1, const char* str2);
     char* append(const char* str1, char seperator, const char* str2);
+    char* append(const char* str1, char char1);
     bool compare(const char* str1, const char* str2);
     bool starts_with(const char* str, const char* start);
     bool contains(const char* str, const char* substr);
@@ -40,6 +41,7 @@ namespace wstr{
     wchar* lowercase_copy(const wchar* old_string);
     wchar* append(const wchar* str1, const wchar* str2);
     wchar* append(const wchar* str1, wchar seperator, const wchar* str2);
+    wchar* append(const wchar* str1,wchar char1);
     bool compare(const wchar* str1, const wchar* str2);
     bool starts_with(const wchar* str, const wchar* start);
     bool contains(const wchar* str, const wchar* substr);

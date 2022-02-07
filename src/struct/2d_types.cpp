@@ -1,6 +1,10 @@
 #include "2d_types.h"
 
 
+point_i point_i::operator+(point_i b){return {x+b.x,y+b.y};}
+point_i point_i::operator-(point_i b){return {x-b.x,y-b.y};}
+bool point_i::operator ==(point_i b){return x==b.x && y==b.y;}
+
 point_i point_f::to_point_i(){return {(int)x,(int)y};}
 
 rect_i::rect_i(){x=y=w=h=0;}

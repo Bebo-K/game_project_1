@@ -58,7 +58,7 @@ void Widget::Paint(){
         if(sprite == nullptr)continue;
         sprite->Draw();
     }
-    for(UI_Text* text: texts){
+    for(DrawableText* text: texts){
         if(text == nullptr)continue;
         text->Draw();
     }
@@ -98,7 +98,7 @@ void Widget::MoveTo(Widget* parent,VerticalOrigin vmode,HorizontalOrigin hmode, 
     for(UI_Rect* r:rects){
         r->rect = layout.Rect();
     }
-    for(UI_Text* t:texts){
+    for(DrawableText* t:texts){
         t->x = layout.center.x - (t->w/2);
         t->y = layout.center.y - (t->h/2);
     }

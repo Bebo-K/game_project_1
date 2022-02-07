@@ -14,7 +14,7 @@ DeveloperConsole::DeveloperConsole() : Widget("developer_console") {
     layout.height=200;
     
     last_line_indx=0;
-    console_font=-1;
+    console_font={-1,18};
     memset(line_buffers,0,sizeof(wchar)*CACHED_LINE_COUNT*MAX_LINE_LENGTH);
     memset(entry_buffer,0,sizeof(wchar)*MAX_LINE_LENGTH);
 
@@ -32,7 +32,7 @@ void DeveloperConsole::Load(){
     console_font = FontManager::LoadFontFace("Merriweather/Merriweather-Regular",14);
     texts.Resize(1+SHOWN_LINE_COUNT);
     for(int i=0;i< (1+SHOWN_LINE_COUNT);i++){
-        texts.Set(i,new UI_Text(L"",console_font));
+        texts.Set(i,new DrawableText(L"",console_font));
     }
 
     rects.Resize(2);

@@ -65,3 +65,5 @@ rect_i Layout::ScreenRect(){
 }
 
 
+point_i Layout::LowerLeft(){return {center.x-(width/2),center.y-(height/2)};}
+

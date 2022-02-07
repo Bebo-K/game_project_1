@@ -2,6 +2,7 @@
 #define UI_TEXT_H
 
 #include "../struct/3d_types.h"
+#include "../struct/2d_types.h"
 #include "../struct/math_types.h"
 #include "font_manager.h"
 
@@ -10,12 +11,15 @@ struct Glyph{
     float x,y;
     Texture glyph_texture;
     float rotation;
-    float color[4];
-    vec2  offset;
+    vec4  color;
+    vec2  offset;//individual letter offset to center it.
+    int   codepoint;
+
+    point_i Set(int codepoint);//Sets this letter, texture, and offset. Returns pen offset to next letter.
+    void Draw(point_i offset);
 };
 
-//UI_Text: A UI primitive for drawing text to the screen
-class UI_Text{
+class DrawableText{
     public:
     int x,y;
     int w,h;
@@ -26,9 +30,9 @@ class UI_Text{
     Glyph* glyphs;
 
     
-    UI_Text();
-    UI_Text(wchar* str);
-    UI_Text(wchar* str,FontID font);
+    DrawableText();
+    DrawableText(wchar* str);
+    DrawableText(wchar* str,FontID font);
     
     void SetString(wchar* str);
     void BuildString();
@@ -36,7 +40,7 @@ class UI_Text{
     void SetFontSize(int point);
 
     void Draw();
-    ~UI_Text();
+    ~DrawableText();
 };
 
 

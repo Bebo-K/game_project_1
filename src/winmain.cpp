@@ -136,7 +136,7 @@ void GetTimerData(){
 int LoopMain(){
     MSG window_message;
     do {
-        Sleep(4);  
+        Sleep(1);  
         Game::Poll();
         OSInput::PollJoypads();
         GetTimerData();
@@ -244,10 +244,10 @@ LRESULT CALLBACK WindowCallback(HWND window_handle,UINT msg,WPARAM wparam,LPARAM
             PostQuitMessage(0);
             break;}
         case WM_KEYDOWN:{
-            Input::OnKey(wparam,true);
+            Input::OnKeyboardKey(wparam,true);
             break;}
         case WM_KEYUP:{
-             Input::OnKey(wparam,false);
+             Input::OnKeyboardKey(wparam,false);
             break;}
         case WM_CHAR:{
              Input::OnCharacter(wparam);

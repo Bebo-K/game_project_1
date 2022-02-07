@@ -17,7 +17,7 @@
 #include "client_signal.h"
 #include "client_net_handler.h"
 
-#include "../gfx/ui_text.h"
+#include "../gfx/text.h"
 #include "../threads.h"
 
 Client* Client::instance = nullptr;
@@ -59,7 +59,7 @@ void Client::Signal(EventSignal val){ClientSignalHandler::Signal(val);}
 
 void Client::Start(){
         FontManager::LoadFontFace("Merriweather/Merriweather-Regular",8);
-        int debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
+        FontID debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
         FontManager::SetActiveFont(debug_font);
         ModelManager::Register(PLAYER,"default_human");
     ui.Load();

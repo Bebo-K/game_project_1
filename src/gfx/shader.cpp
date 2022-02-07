@@ -2,6 +2,7 @@
 #include "../asset_manager.h"
 #include "../log.h"
 #include "../struct/map.h"
+#include "../struct/data_types.h"
 
 Shader* DEFAULT_SHADER=nullptr;
 Shader* CURRENT_SHADER=nullptr;
@@ -26,6 +27,8 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
     vertex = glCreateShader(GL_VERTEX_SHADER);
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     program = glCreateProgram();
+    enabled_attribs_mask=0;
+    feature_flags=0;
     glShaderSource(vertex, 1, (GLchar**)&vertex_program,nullptr);
     glShaderSource(fragment, 1, (GLchar**)&fragment_program,nullptr);
 
@@ -41,13 +44,20 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
     if(vtx_compile_status != 0 && frg_compile_status != 0){
         glAttachShader(program,vertex);
         glAttachShader(program,fragment);
+
+        const char* vertex_attrib = "a_vertex";
+        const char* texcoord_attrib = "a_tex_coord";
+        const char* normal_attrib = "a_normal";
+        const char* bone_index_attrib = "a_bone_index";
+        const char* bone_weight_attrib = "a_bone_weight";
+        const char* color_attrib = "a_color";
         
-        glBindAttribLocation(program,ATTRIB_VERTEX,"a_vertex");
-        glBindAttribLocation(program,ATTRIB_TEXCOORD,"a_tex_coord");
-        glBindAttribLocation(program,ATTRIB_NORMAL,"a_normal");
-        glBindAttribLocation(program,ATTRIB_BONE_INDEX,"a_bone_index");
-        glBindAttribLocation(program,ATTRIB_BONE_WEIGHT,"a_bone_weight");
-        glBindAttribLocation(program,ATTRIB_COLOR,"a_color");
+        glBindAttribLocation(program,ATTRIB_VERTEX,vertex_attrib);
+        glBindAttribLocation(program,ATTRIB_TEXCOORD,texcoord_attrib);
+        glBindAttribLocation(program,ATTRIB_NORMAL,normal_attrib);
+        glBindAttribLocation(program,ATTRIB_BONE_INDEX,bone_index_attrib);
+        glBindAttribLocation(program,ATTRIB_BONE_WEIGHT,bone_weight_attrib);
+        glBindAttribLocation(program,ATTRIB_COLOR,color_attrib);
 
         glLinkProgram(program);
         glGetProgramiv(program,GL_LINK_STATUS,&link_status);
@@ -68,9 +78,18 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
             POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices");
 
             int err = glGetError();
-            if(err !=0){
-                logger::warn("Shader::Shader -> got GLError %d binding shader.\n",err);
-            }
+            if(err !=0){logger::warn("Shader::Shader -> got GLError %d setting shader uniforms.\n",err);}
+            
+
+            if(glGetAttribLocation(program,vertex_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_VERTEX);}
+            if(glGetAttribLocation(program,texcoord_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_TEXCOORD);}
+            if(glGetAttribLocation(program,normal_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_NORMAL);}
+            if(glGetAttribLocation(program,bone_index_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_BONE_INDEX);}
+            if(glGetAttribLocation(program,bone_weight_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_BONE_WEIGHT);}
+            if(glGetAttribLocation(program,color_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_COLOR);}
+
+            err = glGetError();
+            if(err !=0){logger::warn("Shader::Shader -> got GLError %d enabling shader attribs.\n",err);}
         }
         else{//Linker error
             char* error_info_log = (char*)malloc(MAX_INFO_LOG_LENGTH);
@@ -113,8 +132,48 @@ Shader::~Shader(){
 
 void Shader::Use(){
     glUseProgram(program);
+
     int err = glGetError();
-     if(err != 0){logger::warn("Shader.Use-> GL error: %d \n",err);}
+    if(err != 0){logger::warn("Shader::Use-> GL error: %d \n",err);}
+}
+
+void Shader::OnStartUse(){
+    if(GET_BIT(feature_flags,FEATURE_DISABLE_DEPTH_TEST)){
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    for(int i=0;i<MAX_ATTRIBS;i++){
+        if(GET_BIT(enabled_attribs_mask,i)){
+            glEnableVertexAttribArray(i);
+        }
+    }
+    int err = glGetError();
+    if(err !=0){logger::warn("Shader::Use -> got GLError %d enabling shader features\n",err);}
+}
+
+void Shader::OnFinishUse(){
+    glBindVertexArray(0);
+    if(GET_BIT(feature_flags,FEATURE_DISABLE_DEPTH_TEST)){
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    for(int i=0;i<MAX_ATTRIBS;i++){
+        if(GET_BIT(enabled_attribs_mask,i)){
+            glDisableVertexAttribArray(i);
+        }
+    }
+
+    int err = glGetError();
+    if(err !=0){logger::warn("Shader::Use -> got GLError %d disabling shader\n",err);}
+}
+
+void Shader::SetFeature(unsigned int feature_id,bool enabled){
+    if(enabled){
+        SET_BIT(feature_flags,feature_id);
+    }
+    else{
+        CLEAR_BIT(feature_flags,feature_id);
+    }
 }
 
 void ShaderManager::Init(){
@@ -127,10 +186,8 @@ void ShaderManager::Init(){
     AddShader("model_static_shadeless");
     AddShader("skybox");
     AddShader("skybox_flat");
-    AddShader("ui_default");
-    AddShader("ui_shape");
-    AddShader("ui_sprite");
-    AddShader("ui_text");
+    AddShader("ui_2d_quad")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
+    AddShader("ui_shape")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
 }
 
 void ShaderManager::Free(){
@@ -140,28 +197,23 @@ void ShaderManager::Free(){
     CACHED_SHADERS.Clear();
 }
 
-void ShaderManager::AddShader(char* name){
-    if(CACHED_SHADERS.Has(name))return;
+Shader* ShaderManager::AddShader(char* name){
+    Shader* ret = CACHED_SHADERS.Get(name);
+    if(ret != nullptr)return ret;
     logger::debug("Caching shader %s\n",name);
-    CACHED_SHADERS.Add(name,new Shader(name,name));
-}
-
-void ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri){
-    if(CACHED_SHADERS.Has(name))return;
-    logger::debug("Caching shader %s\n",name);
-    CACHED_SHADERS.Add(name,new Shader(vertex_uri,fragment_uri));
-}
-
-/*
-Shader* ShaderManager::GetShader(char* name){
-    Shader* ret = (Shader*)CACHED_SHADERS.Get(name);
-    if(ret== null){
-        logger::warn("Shader not found, using default.");
-        ret=DEFAULT_SHADER;
-    }
+    ret = new Shader(name,name);
+    CACHED_SHADERS.Add(name,ret);
     return ret;
 }
-*/
+
+Shader* ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri){
+    Shader* ret = CACHED_SHADERS.Get(name);
+    if(ret != nullptr)return ret;
+    logger::debug("Caching shader %s\n",name);
+    ret = new Shader(vertex_uri,fragment_uri);
+    CACHED_SHADERS.Add(name,ret);
+    return ret;
+}
 
 Shader* ShaderManager::UseShader(char* name){
     Shader* ret = CACHED_SHADERS.Get(name);
@@ -170,13 +222,13 @@ Shader* ShaderManager::UseShader(char* name){
         ret=DEFAULT_SHADER;
     }
     if(ret != CURRENT_SHADER){
+        if(CURRENT_SHADER !=nullptr)CURRENT_SHADER->OnFinishUse();
         ret->Use();
         CURRENT_SHADER=ret;
     }
+    ret->OnStartUse();
     return ret;
 }
-
-
 
 void ShaderManager::RemoveShader(char* name){
     Shader* ret = CACHED_SHADERS.Get(name);
@@ -185,8 +237,12 @@ void ShaderManager::RemoveShader(char* name){
         delete ret;
     }   
 }
-/*
-Shader* ShaderManager::DefaultShader(){
-    return defaultShader;
+
+bool ShaderManager::IsCurrentShader(char* name){
+    if(CURRENT_SHADER==nullptr){return false;}
+    Shader* ret = CACHED_SHADERS.Get(name);
+    if(CURRENT_SHADER == ret){return true;}
+    return false;
 }
-*/
+
+Shader* ShaderManager::CurrentShader(){return CURRENT_SHADER;}

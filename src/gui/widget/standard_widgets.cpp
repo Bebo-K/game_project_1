@@ -58,7 +58,7 @@ SimpleButton::SimpleButton(char* name, wchar* label, float w, float h, vec4 colo
         rects[0]->rect = layout.Rect();
         
     texts.Resize(1);
-    texts.Set(0,new UI_Text(label,simple_button_font));
+    texts.Set(0,new DrawableText(label,simple_button_font));
         texts[0]->x = layout.center.x - (texts[0]->w/2);
         texts[0]->y = layout.center.y - (texts[0]->h/2);
 

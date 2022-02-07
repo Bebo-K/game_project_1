@@ -3,7 +3,14 @@
 
 
 
-struct point_i{int x,y;};
+struct point_i{
+    int x,y;
+
+    point_i operator +(point_i b);
+    point_i operator -(point_i b);
+    bool operator ==(point_i b);
+    
+};
 struct point_f{float x,y;
     point_i to_point_i();
 };

@@ -2,10 +2,9 @@
 #define DEV_CONSOLE_H
 
 #include "../widget.h"
-#include "../../gfx/ui_text.h"
 #include "../../gfx/ui_shape.h"
 #include "../../gfx/font_manager.h"
-#include "../../gfx/ui_text.h"
+#include "../../gfx/text.h"
 
 
 class DeveloperConsole: public UI::Widget{

@@ -6,6 +6,7 @@
 #include <wchar.h>
 
 int cstr::len(const char* str){ 
+    if(str==nullptr)return 0;
     int i;
     for(i=0;str[i]!=0;i++);
     return i;
@@ -116,6 +117,14 @@ char* cstr::append(const char* str1, char seperator, const char* str2){
     str[str1_len]=seperator;
     strcpy(&str[str1_len+1],str2);
     str[str1_len+1+str2_len]=0;
+    return str;
+}
+char* cstr::append(const char* str1,char char1){
+    int strlen = len(str1);
+    char* str = (char*)malloc((strlen+2)*sizeof(char));
+    if(str != nullptr){strcpy(str,str1);}
+    str[strlen]=char1;
+    str[strlen+1]=0;
     return str;
 }
 bool cstr::compare(const char* str1,const char* str2){
@@ -269,6 +278,7 @@ char* cstr::write_bool_string(bool val){
 
 
 int wstr::len(const wchar* str){ 
+    if(str==nullptr)return 0;
     int i;
     for(i=0;str[i]!=0;i++);
     return i;
@@ -333,6 +343,14 @@ wchar* wstr::append(const wchar* str1, wchar seperator, const wchar* str2){
     str[str1_len+1+str2_len]=0;
     return str;
 }
+wchar* wstr::append(const wchar* str1,wchar char1){
+    int strlen = len(str1);
+    wchar* str = (wchar*)malloc((strlen+2)*sizeof(wchar));
+    if(str1 != nullptr){wcscpy(str,str1);}
+    str[strlen]=char1;
+    str[strlen+1]=0;
+    return str;
+}
 bool wstr::compare(const wchar* str1,const wchar* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
     return wcscmp(str1,str2)==0;
@@ -356,7 +374,7 @@ bool wstr::contains(const wchar* str, const wchar* substr){
 }
 wchar* wstr::substr(const wchar* str,int start,int length){
     wchar* ret = (wchar*)malloc((length+1)*sizeof(wchar));
-    memcpy((char*)&str[start],ret,length*sizeof(wchar));
+    memcpy(ret,&str[start],length*sizeof(wchar));
     ret[length]=0;
     return ret;
 }

@@ -15,7 +15,7 @@ TextBox::TextBox(char* name,FontID font,int num_lines,int line_length,int width,
     for(int i=0;i<num_lines;i++){
         line_buffers[i] = (wchar*)calloc(line_length,sizeof(wchar*));
     }
-    shown_lines = new UI_Text[line_count];
+    shown_lines = new DrawableText[line_count];
 
     wrap_lines=false;
 }
@@ -89,14 +89,14 @@ TextEntryField::TextEntryField(char* name,int max_length):Widget(name){
     player_edited=false;
     font_size=12;
     line = (wchar*)calloc(max_length,sizeof(wchar));
-    shown_line = new UI_Text();
+    shown_line = new DrawableText();
 }
 TextEntryField::TextEntryField(char* name,int max_length, wchar* prompt):Widget(name){
     focused=false;
     player_edited=false;
     font_size=12;
     line = (wchar*)calloc(max_length,sizeof(wchar));
-    shown_line = new UI_Text(prompt);
+    shown_line = new DrawableText(prompt);
 }
 TextEntryField::~TextEntryField(){
     if(line != null){free(line);line=null;}

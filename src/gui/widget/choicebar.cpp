@@ -5,7 +5,7 @@
 
 using namespace UI;
 
-FontID TextChoiceBar::choice_font=-1;
+FontID TextChoiceBar::choice_font={-1,18};
 
 bool ChoiceBarSelectedInputCallback(Widget* w, Input::Event event_type){
     TextChoiceBar* choice = (TextChoiceBar*)w;
@@ -63,20 +63,20 @@ TextChoiceBar::TextChoiceBar(char* name,wchar* label):Widget(name){
     choice_change_callback = ChoiceChangeNO_OP;
     choices=nullptr;
     max_choices=0;
-    if(choice_font < 0){choice_font = FontManager::LoadFontFace("SourceSansPro-Regular",20);}
+    if(choice_font.family_id < 0){choice_font = FontManager::LoadFontFace("SourceSansPro-Regular",20);}
    
-    layout.width=256;
-    layout.height=64;
-
     sprites.Resize(3);
         sprites.Set(0,new Sprite("text_select_bar"));
         sprites.Set(1,new Sprite("select_bar_button_next"));
         sprites.Set(2,new Sprite("select_bar_button_next"));
         sprites[2]->x_flip=true;
 
+    layout.width=sprites[0]->width;
+    layout.height=sprites[0]->height;
+
     texts.Resize(2);
-        texts.Set(0,new UI_Text(label,choice_font));
-        texts.Set(1,new UI_Text(L"",choice_font));
+        texts.Set(0,new DrawableText(label,choice_font));
+        texts.Set(1,new DrawableText(L"",choice_font));
 
     clickable = new WidgetClickInfo();
         clickable->onClickAction = ChoiceBarOnClickAction;

@@ -7,7 +7,13 @@
 #include FT_FREETYPE_H
 
 
-typedef int FontID;
+struct FontID{
+    int family_id;//TODO; Right now fonts of the same family don't share a family ID, it's just a UUID.
+    int size;
+
+    void operator=(FontID f2);
+    bool operator==(FontID f2);
+};
 
 namespace FontManager{
     const static char precached_codepoints_range_lo = 32;

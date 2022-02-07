@@ -118,13 +118,16 @@ namespace Input{
         R2=14,
         Pause=15, 
         Menu=16,
-        PC_Cursor=17,
-        PC_Scroll=18,
-        PC_RClick=18,
-        PC_LClick=19,
-        PC_Text=21,
-        ToggleConsole=22,
-        AnyButton=23
+        PC_Cursor=18,
+        PC_Scroll=19,
+        PC_RClick=20,
+        PC_LClick=21,
+        PC_Text=22,
+        PC_Escape=23,
+        PC_Return=24,
+        ToggleConsole=25,
+        AnyButton=26,
+        COUNT=27
     };
 
     struct Key_Button_Bind{
@@ -149,6 +152,7 @@ namespace Input{
     void Destroy();
 
     //Input event handlers
+    void OnKeyboardKey(int key_id,bool down);
     void OnKey(int key_id,bool down);
     void OnAxis(int axis_id,float x,float y);
 
@@ -179,6 +183,9 @@ namespace Input{
 
     void UnbindButton(ButtonID button);
     void UnbindAxis(AxisID axis);
+
+    //Typing mode
+    void SetKeyboardTypingOnly(bool enabled);
 
     //Utility
     int GetKeyID(char* key_name);

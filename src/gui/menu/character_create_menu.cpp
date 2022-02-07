@@ -49,7 +49,7 @@ void CharacterCreateMenu::OnLoad(){
         header_text->layout.width=1024;
         header_text->layout.height=64;
         header_text->texts.Resize(1);
-        header_text->texts.Set(0,new UI_Text(L"Build a character:",loading_font));
+        header_text->texts.Set(0,new DrawableText(L"Build a character:",loading_font));
         header_text->MoveTo(nullptr,Top,Center_H,{0,28});
     AddWidget(header_text);
 

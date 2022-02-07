@@ -3,7 +3,6 @@
 
 #include "camera.h"
 #include "material.h"
-#include "camera.h"
 
 class Drawable{
     public:

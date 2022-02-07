@@ -15,7 +15,7 @@ class TextBox: public Widget{
     int line_count;
     int max_line_length;
     wchar** line_buffers;
-    UI_Text* shown_lines;
+    DrawableText* shown_lines;
     bool wrap_lines;
 
     TextBox(char* name,FontID font,int line_count,int line_length,int width,int height);
@@ -37,7 +37,7 @@ class TextEntryField:public Widget{
     //bool acceptable;//
     int font_size;
     wchar* line;
-    UI_Text* shown_line;
+    DrawableText* shown_line;
     //TODO: sanitize() callback for length requirements, acceptable characters/words 
 
     TextEntryField(char* name,int max_length);

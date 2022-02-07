@@ -49,18 +49,13 @@ UI_Rect::UI_Rect(int w,int h){
     rotation=0.0f;
 }
 UI_Rect::~UI_Rect(){
-
 }
 
 void UI_Rect::Draw(){
-    glDisable(GL_DEPTH_TEST);
     Shader* shape_shader = ShaderManager::UseShader("ui_shape");
-    
     Texture no_tex = TextureManager::DefaultTexture();
 
     glBindVertexArray(rect_vertex_array_id); 
-    int err = glGetError();
-    if(err != 0){logger::warn("GL error binding rect vertex array: %d",&err);}
 
     mat4 modelview;
         modelview.identity();
@@ -74,7 +69,6 @@ void UI_Rect::Draw(){
 
     glUniform2f(shape_shader->IMAGE_POS,rect.x,rect.y);
     glUniform2f(shape_shader->IMAGE_SIZE,(float)rect.w,(float)rect.h);
-    //glUniform2f(shape_shader->WINDOW_SIZE,(float)Window::width,(float)Window::height);
     glUniform2f(shape_shader->WINDOW_SIZE,(float)UI::UI_WIDTH,(float)UI::UI_HEIGHT);
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
@@ -82,11 +76,6 @@ void UI_Rect::Draw(){
 
     glDrawArrays(GL_TRIANGLES,0,6);
 
-    err = glGetError();
-    if(err != 0){
-        logger::warn("gl error");
-    }
-
-    glBindVertexArray(0);
-    glEnable(GL_DEPTH_TEST);
+    int err = glGetError(); 
+    if(err != 0){logger::warn("UI_Rect.Draw() -> GL Error: %d \n",err);}
 }

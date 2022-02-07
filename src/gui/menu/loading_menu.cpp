@@ -16,7 +16,7 @@ void LoadingMenu::OnLoad(){
     status_text_widget->layout.width = 1024;
     status_text_widget->layout.height = 64;
     status_text_widget->texts.Resize(1);
-        status_text_widget->texts.Set(0,new UI_Text(L"Loading...",loading_font));
+        status_text_widget->texts.Set(0,new DrawableText(L"Loading...",loading_font));
     status_text_widget->MoveTo(nullptr,Center_V,Center_H,{0,4});
     AddWidget(status_text_widget);
 }

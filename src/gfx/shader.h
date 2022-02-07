@@ -17,6 +17,12 @@ class Shader{
 	static const GLuint ATTRIB_BONE_INDEX=3;
 	static const GLuint ATTRIB_BONE_WEIGHT=4;
 	static const GLuint ATTRIB_COLOR=5;
+	static const int  MAX_ATTRIBS=6;
+
+	static const unsigned int FEATURE_DISABLE_DEPTH_TEST=0;
+
+	int enabled_attribs_mask;
+	int feature_flags;
 	
     //Shader program ID
 	GLuint vertex,fragment;
@@ -40,19 +46,24 @@ class Shader{
 
     Shader(char* vertex_uri,char* fragment_uri);
 	~Shader();
+	void SetFeature(unsigned int feature_id,bool enabled);
 	void Use();
+	void OnStartUse();
+	void OnFinishUse();
 };
 
 namespace ShaderManager{
 	void Init();
 	void Free();
-	void AddShader(char* name);
-    void AddShader(char* name,char* vertex_uri,char* fragment_uri);
+	Shader* AddShader(char* name);
+    Shader* AddShader(char* name,char* vertex_uri,char* fragment_uri);
 	Shader* UseShader(char* name);
     void RemoveShader(char* name);
     //Shader* GetShader(char* name);
     //Shader* DefaultShader();
-};
+	bool IsCurrentShader(char* name);
+	Shader* CurrentShader();
 
+}
 
 #endif

@@ -6,8 +6,8 @@
 #include "../input.h"
 #include "../struct/list.h"
 #include "../gfx/ui_shape.h"
-#include "../gfx/ui_sprite.h"
-#include "../gfx/ui_text.h"
+#include "../gfx/sprite.h"
+#include "../gfx/text.h"
 
 namespace UI{
 class Widget;
@@ -55,7 +55,7 @@ class Widget{
     WidgetClickInfo*        clickable;
     List<Sprite>            sprites;
     List<UI_Rect>           rects;
-    List<UI_Text>           texts;
+    List<DrawableText>      texts;
 
     Widget();
     Widget(char* widget_name);

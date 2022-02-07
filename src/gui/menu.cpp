@@ -78,6 +78,7 @@ bool Menu::HandleClickInput(Input::Event event_type){
                 if(cursor_lbutton.IsDown()){
                     if(cursor_lbutton.IsJustPressed()){
                         w->clickable->onClickEffect(w);
+                        w->clickable->onClickAction(w);
                         w->clickable->state = Pressed;
                         if(w->selectable != nullptr && (selected == nullptr || !selected->selectable->locked)){SetSelected(w);}
                         handled = true;
@@ -87,7 +88,6 @@ bool Menu::HandleClickInput(Input::Event event_type){
                     if(cursor_lbutton.IsJustReleased()){
                         if(w->clickable->state == Pressed){
                             w->clickable->onClickReleaseEffect(w);
-                            w->clickable->onClickAction(w);
                             w->clickable->state = Released;
                             handled = true;
                         }

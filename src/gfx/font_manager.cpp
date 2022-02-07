@@ -10,12 +10,17 @@ FT_Library   ft_library;
 FontID       default_font_id,current_font_id;
 List<FontManager::FontCache> cached_fonts;
 
+
+void FontID::operator=(FontID f2){family_id = f2.family_id;size=f2.size;}
+bool FontID::operator==(FontID f2){return family_id == f2.family_id && size == f2.size;}
+
+
 void FontManager::Init(){
     int err = FT_Init_FreeType(&ft_library);
     if(err != 0){
         logger::warn("Error during Freetype2 library initialization, code: %d \n",err);
     }
-    current_font_id=-1;
+    current_font_id={-1,18};
     default_font_id = LoadFontFace("Merriweather/Merriweather-Regular",18);
 }
 void FontManager::Free(){
@@ -32,34 +37,34 @@ FontID FontManager::LoadFontFace(char* font_name,int font_size){
     for(FontCache* font: cached_fonts){
         if(cstr::compare(font->font_name,font_name) && font->font_size==font_size){
             font->users++;
-            return cached_fonts.GetIndex(font);
+            return {cached_fonts.GetIndex(font),font->font_size};
         }
     }
     FontCache* fc = new FontCache(font_name,font_size);
     fc->users=1;
     int newid = cached_fonts.Add(fc);
-    return (FontID)newid;
+    return (FontID){newid,font_size};
 }
 
 void FontManager::SetActiveFont(FontID font){current_font_id = font;}
 
 FontManager::FontCache* FontManager::GetActiveFont(){
-    if(current_font_id < 0){return cached_fonts[default_font_id];}
-    FontCache* cache_entry = cached_fonts[current_font_id];
-    if(cache_entry == null){return cached_fonts[default_font_id];}
+    if(current_font_id.family_id < 0){return cached_fonts[default_font_id.family_id];}
+    FontCache* cache_entry = cached_fonts[current_font_id.family_id];
+    if(cache_entry == null){return cached_fonts[default_font_id.family_id];}
     return cache_entry;
 }
 
 FontManager::FontCache* FontManager::GetFontInfo(FontID id){
-    return cached_fonts[id];
+    return cached_fonts[id.family_id];
 }
 
 //returns either the existing or a new font ID with the newly scaled fontface
 FontID FontManager::RescaleFontID(FontID font_id,int new_font_size){
-    if(font_id < 0){
-        return -1;
+    if(font_id.family_id < 0){
+        return {-1,18};
     }
-    FontManager::FontCache* font = cached_fonts[font_id];
+    FontManager::FontCache* font = cached_fonts[font_id.family_id];
     if(font==nullptr || font->font_size == new_font_size)return font_id;
 
     if(font->users > 1){//Don't alter fontfaces if others might be using it
@@ -77,13 +82,13 @@ FontID FontManager::RescaleFontID(FontID font_id,int new_font_size){
             //free(font);
 
             cached_font->users++;
-            return cached_fonts.GetIndex(cached_font);
+            return {cached_fonts.GetIndex(cached_font),cached_font->font_size};
         }
     }
 
     //Finally replace this fontface with scaled one and delete old fontface.
     cached_fonts.Remove(font);
-    cached_fonts.Set(font_id,new FontManager::FontCache(font->font_name,new_font_size));
+    cached_fonts.Set(font_id.family_id,new FontManager::FontCache(font->font_name,new_font_size));
 
     font->ClearDynamicGlyphs();
     delete font->glyph_atlas;
@@ -250,7 +255,6 @@ void FontManager::FontCache::ClearDynamicGlyphs(){
     }
     glyph_dynamic_textures.Clear();
 }
-
 
 bool FontManager::FontCache::operator==(FontCache* f2){
     return (cstr::compare(font_name,f2->font_name) && font_size == f2->font_size);

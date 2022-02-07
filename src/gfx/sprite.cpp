@@ -1,41 +1,13 @@
-#include "ui_sprite.h"
+#include "sprite.h"
+#include "ui_quad.h"
 #include "../log.h"
 #include "../os.h"
 
 #include "../gui/layout.h"
 
-//Renders on one big triangle instead of 2 in a quad, to prevent diagonal seams.
-float sprite_vert_data[] =       {0,2,0,  0,0,0,  2,0,0};//   0,0,0,  0,1,0,  1,1,0};
-float sprite_texcoord_data[] =   {0,-1,    0,1,    2,1};//   0,1,  0,0,  1,0};
-GLuint sprite_vertex_array_id= -1;
-VBO sprite_vertices;
-VBO sprite_texcoords;
 
-void BuildSpritePrimitive(){
-    glGenVertexArrays(1,&sprite_vertex_array_id);
-    glBindVertexArray(sprite_vertex_array_id);
-
-    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
-
-    ShaderManager::UseShader("ui_sprite");
-    //TODO: Memory leak. Where to keep these values?
-    sprite_vertices.Create(sprite_vert_data,GL_FLOAT,3,9);
-    sprite_texcoords.Create(sprite_texcoord_data,GL_FLOAT,2,6);
-
-
-    sprite_vertices.Bind(Shader::ATTRIB_VERTEX);
-    sprite_texcoords.Bind(Shader::ATTRIB_TEXCOORD);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
-    int gl_err = glGetError();
-    if(gl_err != 0){logger::warn("GL error initializing sprite primitive: %d",&gl_err);}
-}
 
 Sprite::Sprite(char* ui_texturename){
-    if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = TextureManager::GetUI(ui_texturename);
     max_frames=max_strips=1;
     img_width = texture.width_px;
@@ -49,7 +21,6 @@ Sprite::Sprite(char* ui_texturename){
     rotation=0;
 }
 Sprite::Sprite(Texture spritesheet){
-    if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = spritesheet;
     max_frames=max_strips=1;
     img_width = texture.width_px;
@@ -63,7 +34,6 @@ Sprite::Sprite(Texture spritesheet){
     rotation=0;
 }
 Sprite::Sprite(Texture spritesheet,int frames,int strips){
-    if(!sprite_vertices.Valid()){BuildSpritePrimitive();}
     texture = spritesheet;
     max_frames=frames;if(max_frames < 1)max_frames=1;
     max_strips=strips;if(max_strips < 1)max_strips=1;
@@ -82,8 +52,8 @@ Sprite::~Sprite(){
 }
 
 void Sprite::Draw(){
-    glDisable(GL_DEPTH_TEST);
-    Shader* sprite_shader = ShaderManager::UseShader("ui_sprite");
+    Shader* sprite_shader = ShaderManager::UseShader("ui_2d_quad");
+    
     int abs_frame = (frame < 0)?(-frame)-1:frame; 
     int abs_strip = (strip < 0)?(-strip)-1:strip;
 
@@ -92,9 +62,7 @@ void Sprite::Draw(){
 
     TextureRectangle frame_rect = texture.GetSubTexture(frame_w*abs_frame,frame_h*abs_strip, frame_w, frame_h);
 
-    glBindVertexArray(sprite_vertex_array_id);  
-    int gl_err = glGetError();
-    if(gl_err != 0){logger::warn("GL error binding sprite vertex array: %d",&gl_err);}
+    BindUIQuad();
 
     mat4 modelview;
         modelview.identity();
@@ -122,10 +90,5 @@ void Sprite::Draw(){
     glDrawArrays(GL_TRIANGLES,0,3);
     
     int err = glGetError(); 
-    if(err != 0){
-        logger::warn("ModelData.DrawMesh() -> GL Error: %d \n",err);
-    }
-
-    glBindVertexArray(0);
-    glEnable(GL_DEPTH_TEST);
+    if(err != 0){logger::warn("Sprite.Draw() -> GL Error: %d \n",err);}
 }
