@@ -79,7 +79,7 @@ bool OSNetwork::connect(Packet* connect_packet,NetTarget* target){
 	int send_result;
 
 	if(target->address.IsLocalhost()){
-		target->conn_start=time_ms();
+		target->conn_start=OS::time_ms();
 		target->Send(connect_packet);
 		return true;
 	}
@@ -124,7 +124,7 @@ bool OSNetwork::connect(Packet* connect_packet,NetTarget* target){
 		return false;
 	}
 	
-	target->conn_start=time_ms();
+	target->conn_start=OS::time_ms();
 	return true;
 }
 

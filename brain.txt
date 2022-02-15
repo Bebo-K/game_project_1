@@ -1,20 +1,58 @@
-From Todo -> Enemies
-
-Step 1: Load entity into scene
-On loading levels/scenes.
-
-    Level files (.lvl) are loaded at the level-object scope. How are entities supposed to be loaded? 
-    It would make sense to have multiple entity "layers" determined by savefile state. Like Goron City.
-    Does this game have a save? Is it a server-side state? I think yes and yes.
-
-    We need a system for associating level.json files with the correct (if multiple) entity layers.
-    entity.json with multiple layer entries?
-
-    Also, they're json files, you probably should just leave their filenames like that.
-
-    Step 1.A: Separating game into client-server.
-    >First, we need a MAIN MENU to launch the server thread and connect to it. (Done)
-    >Next, we need our server to load a Level and Layer depending on a Savefile.
+Server connection is just starting off. Once start save is complete the focus should be in this order
+    - Loading client into an empty level
+    - Ironing out movement
+    - Entity loading
+    - Scene transitions
 
 
-    >Finally, our client needs to connect to the server, and recieve the Levelfile (URL) and each Entity in play.
+
+
+
+
+Code Conventions:
+    -Naming:
+        Constants are CAPS_AND_UNDERSCORES
+        Classes and class methods are CamelCase
+        Other class members are lowercase_and_underscores, as are parameters
+        Namespaces depend, but ones that represent singleton instances should have class naming convention in case it's converted into a proper class.
+        Macros are ALWAYS_CAPS, they don't get to look sleek
+
+        
+        Exceptions are structs to be treated as extended primitive type: methods and fields are all lowercase
+        - vec2,3,4
+        - mat3,4
+        - point_i/f, rect_i/f
+        - cstr+wstr namespaces as cstring/wide string "class methods"
+
+        Other Exceptions:
+        - OS::time_ms + OS::time_nano: because metric symbols Ms and ms mean different things. Leaving both uncapitalized for consistency.
+        - logger (To encourage logging)
+
+        On the fence:
+        - config/server_config namespaces. They'll probably be the most referenced namespace in the project so the less capitalization to guess the better?
+
+        To clean:
+        os_net.h
+        file.h
+
+    -Blocks and Methods:
+        normal block:
+        if(value){
+            code;
+        }
+
+        short block:
+        if(value){1-2 statements;}
+
+        normal method:
+        void FooBar(param){
+            code;
+        }
+
+        short method:
+        void FooBar(param){1-2 statements;}
+
+
+
+
+

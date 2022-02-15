@@ -4,12 +4,12 @@
 //since GLuints are unsigned, we're reserving the 0 buffer as "empty"
 GLuint zero_buffer;
 
-void gload_init(){
+void GLOAD_INIT(){
     glGenBuffers(1,&zero_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, zero_buffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(zero_buffer), &zero_buffer ,GL_STATIC_DRAW);
 }
-void gload_destroy(){
+void GLOAD_DESTROY(){
     glDeleteBuffers(1,&zero_buffer);
 }
 

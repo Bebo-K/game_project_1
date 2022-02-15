@@ -39,7 +39,7 @@ ConfigEntry::~ConfigEntry(){
 }
 
 void config::Init(){
-    if(build_game_folder_path()){save_directory = get_games_folder_path();}
+    if(OS::BuildGameFolderPath()){save_directory = OS::GetGameFolderPath();}
     global_config_entries.Add(new ConfigEntry("window_width",INT,&window_width));
     global_config_entries.Add(new ConfigEntry("window_height",INT,&window_height));
     global_config_entries.Add(new ConfigEntry("show_console",BOOL,&show_console));

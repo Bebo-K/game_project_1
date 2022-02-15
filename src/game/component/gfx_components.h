@@ -19,10 +19,10 @@ class CameraTarget : Component{
 	float			zoom;
 	vec3			offset;
     quaternion      rotation;
-	float_range		zoom_range;
-	float_range		zoom_pitch;
+	FloatRange		zoom_range;
+	FloatRange		zoom_pitch;
 
-	CameraTarget(Camera* cam,vec3 cam_offset,float_range zoom_scale,float_range tilt);
+	CameraTarget(Camera* cam,vec3 cam_offset,FloatRange zoom_scale,FloatRange tilt);
     ~CameraTarget();
 };
 

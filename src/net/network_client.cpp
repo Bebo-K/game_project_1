@@ -30,13 +30,13 @@ void ClientNetworkThreadEntryPoint(){
     long loop_delta;
     
     while(running){
-        loop_start=time_ms();
+        loop_start=OS::time_ms();
         if(server_target.address.IsLocalhost()){
             if(ServerNetwork::IsRunning()){
                 NetTarget* local_server_target= ServerNetwork::GetNetTargetForLocal();
                  while(local_server_target->outbound_buffer.Read((byte*)&transfer_packet)){
                     server_target.inbound_buffer.Write((byte*)&transfer_packet);
-                    server_target.last_recv = time_ms();
+                    server_target.last_recv = OS::time_ms();
                     if(server_target.state_id == NetTargetState::ID::CONNECTING){
                         server_target.SetState(NetTargetState::ID::CONNECTED_LOCAL,nullptr);
                     }
@@ -51,7 +51,7 @@ void ClientNetworkThreadEntryPoint(){
             }
             while(OSNetwork::recv_packet(&transfer_packet,&server_target)){
                 server_target.inbound_buffer.Write((byte*)&transfer_packet);
-                server_target.last_recv = time_ms();
+                server_target.last_recv = OS::time_ms();
                 if(server_target.state_id == NetTargetState::ID::CONNECTING){
                     server_target.SetState(NetTargetState::ID::CONNECTED,nullptr);
                 }
@@ -69,8 +69,8 @@ void ClientNetworkThreadEntryPoint(){
             server_target.Clear();
             running=false;
         }
-        loop_delta = time_ms()-loop_start;
-        if(loop_delta < 10 && loop_delta >= 0)sleep_thread(10-loop_delta);
+        loop_delta = OS::time_ms()-loop_start;
+        if(loop_delta < 10 && loop_delta >= 0)OS::SleepThread(10-loop_delta);
     }
 }
 
@@ -90,13 +90,13 @@ void ClientNetwork::Update(){
     server_target.Update();
     
     //Ping initiation
-    if(time_ms() - last_ping > config::network_ping_interval){
+    if(OS::time_ms() - last_ping > config::network_ping_interval){
         Packet ping_packet;
             PacketData::PING ping_data(&ping_packet);
-            ping_data.SetTimestamps(time_ms(),0,0);
+            ping_data.SetTimestamps(OS::time_ms(),0,0);
             ping_data.WritePacket();
         Send(&ping_packet);
-        last_ping = time_ms();
+        last_ping = OS::time_ms();
     }
 }
 void ClientNetwork::Send(Payload dat){
@@ -114,8 +114,8 @@ void ClientNetwork::StartConnect(wchar* host_string,Packet* JOIN){
     server_target.AddToReliableBuffer(JOIN);
     server_target.SetState(NetTargetState::ID::CONNECTING,wstr::allocf(L"Connecting to %ls ...",host_string));
     OSNetwork::connect(JOIN,&server_target);
-    start_thread(ClientNetworkThreadEntryPoint);
-    last_ping=time_ms();
+    OS::StartThread(ClientNetworkThreadEntryPoint);
+    last_ping=OS::time_ms();
 }
 void ClientNetwork::LocalConnect(Packet* JOIN){
     running=true;
@@ -123,8 +123,8 @@ void ClientNetwork::LocalConnect(Packet* JOIN){
     server_target.AddToReliableBuffer(JOIN);
     server_target.SetState(NetTargetState::ID::CONNECTING,wstr::new_copy(L"Connecting to local server..."));
     OSNetwork::connect(JOIN,&server_target);
-    start_thread(ClientNetworkThreadEntryPoint);
-    last_ping=time_ms();
+    OS::StartThread(ClientNetworkThreadEntryPoint);
+    last_ping=OS::time_ms();
 }
 void ClientNetwork::Disconnect(wchar* reason){ 
     server_target.Disconnect(reason);

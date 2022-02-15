@@ -16,11 +16,11 @@ Performance::Timer::Timer(){
 }
 
 void Performance::Timer::Start(){
-    started = time_nano();
+    started = OS::time_nano();
 }
 
 nanosec Performance::Timer::Stop(){
-    nanosec system_time = time_nano();
+    nanosec system_time = OS::time_nano();
     nanosec ns = system_time - started;
     for(int i=10;i>TRACKING_WINDOW+1;i++){averages[i] = averages[i-1];}
     averages[0] = ns;
@@ -64,12 +64,12 @@ int Performance::Counter::GetCount(){return count;}
 
 
 Performance::Alarm::Alarm(){
-    started = time_ms();
+    started = OS::time_ms();
 }
 bool Performance::Alarm::Time_Over(){
-    millisec ms = time_ms() - started;
+    millisec ms = OS::time_ms() - started;
     if(ms > interval){
-        started = time_ms();
+        started = OS::time_ms();
         return true;
     }
     return false;

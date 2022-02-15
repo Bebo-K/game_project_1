@@ -60,7 +60,7 @@ struct CollisionList {
 struct Triangle{    
 	vec3	verts[3];//vtx positions
 	vec3	edges[3];//edge vectors
-	plane	face;
+	Plane	face;
 
     Triangle();
 	

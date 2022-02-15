@@ -9,17 +9,17 @@ struct Mutex{
     void* obj_ptr;
     void* os_mtx_ptr;
     Mutex(void* object){obj_ptr=object;os_mtx_ptr=nullptr;}
-    inline bool getSync(int timeout){
-        os_mtx_ptr = get_mutex_lock(obj_ptr,timeout);
+    inline bool GetSync(int timeout){
+        os_mtx_ptr = OS::GetMutexLock(obj_ptr,timeout);
         return os_mtx_ptr != nullptr;
     }
-    inline void releaseSync(){
+    inline void ReleaseSync(){
         
         if(os_mtx_ptr != nullptr){
-            release_mutex_lock(os_mtx_ptr);
+            OS::ReleaseMutexLock(os_mtx_ptr);
             os_mtx_ptr=nullptr;}
         }
-    ~Mutex(){releaseSync();}//just to keep mutexes from dangling.
+    ~Mutex(){ReleaseSync();}//just to keep mutexes from dangling.
     
 };
 

@@ -35,7 +35,7 @@ void SynchronousBuffer::Write(byte* block){
 int SynchronousBuffer::Get(bool empty){
     int index=-1;
     Mutex buffer_mutex(this);
-    buffer_mutex.getSync(1);
+    buffer_mutex.GetSync(1);
 
     for(int i=0;i<blocks;i++){
         if(occupancy[i] == ((empty)?BLOCK_EMPTY:BLOCK_FULL)){index=i;break;}
@@ -47,7 +47,7 @@ int SynchronousBuffer::Get(bool empty){
         Resize(blocks*2);
         occupancy[index]=BLOCK_IN_USE;
     }
-    buffer_mutex.releaseSync();
+    buffer_mutex.ReleaseSync();
     return index;
 }
 

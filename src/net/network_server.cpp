@@ -39,7 +39,7 @@ void ServerNetworkThreadEntryPoint(){
     int remote_target_start_index = (local_client_target == targets)?1:0;
 
     while(running||cleanup_loop){
-        loop_start=time_ms();
+        loop_start=OS::time_ms();
         if(!running){cleanup_loop=false;}
         for(int i=remote_target_start_index; i<target_count;i++){
             target = &targets[i];
@@ -49,7 +49,7 @@ void ServerNetworkThreadEntryPoint(){
                 }
                 while(OSNetwork::recv_packet(&transfer_packet,target)){
                     target->inbound_buffer.Write((byte*)&transfer_packet);
-                    target->last_recv = time_ms();
+                    target->last_recv = OS::time_ms();
                     if(target->state_id != NetTargetState::ID::CONNECTED){
                         target->SetState(NetTargetState::ID::CONNECTED,nullptr);
                     }
@@ -70,7 +70,7 @@ void ServerNetworkThreadEntryPoint(){
                 while(target->outbound_buffer.Read((byte*)&transfer_packet)){
                     if(local_client_target->IsConnected()){
                         local_client_target->inbound_buffer.Write((byte*)&transfer_packet);
-                        local_client_target->last_recv = time_ms();
+                        local_client_target->last_recv = OS::time_ms();
                     }
                     else{
                         ServerNetwork::HandleNewLocalTarget(&transfer_packet);
@@ -95,7 +95,7 @@ void ServerNetworkThreadEntryPoint(){
                         target  = &targets[i];
                         if(target->address.Matches(&remote_address)){
                             target->inbound_buffer.Write((byte*)&transfer_packet);
-                            target->last_recv = time_ms();
+                            target->last_recv = OS::time_ms();
                             if(target->state_id != NetTargetState::ID::CONNECTED){
                                 target->SetState(NetTargetState::ID::CONNECTED,nullptr);
                             }
@@ -114,8 +114,8 @@ void ServerNetworkThreadEntryPoint(){
         else if(listener_socket != INVALID_SOCKET){
             OSNetwork::unbind(&listener_socket);
         }
-        loop_delta = time_ms()-loop_start;
-        if(loop_delta < 10 && loop_delta >= 0)sleep_thread(10-loop_delta);
+        loop_delta = OS::time_ms()-loop_start;
+        if(loop_delta < 10 && loop_delta >= 0)OS::SleepThread(10-loop_delta);
     }
 
     //Cleanup
@@ -168,7 +168,7 @@ void ServerNetwork::StartListener(int target_slots,bool allow_local,unsigned sho
     running=true;
     listener_port=port;
     listener_enabled=true;
-    start_thread(ServerNetworkThreadEntryPoint);
+    OS::StartThread(ServerNetworkThreadEntryPoint);
 }
 void ServerNetwork::StartLocalOnly(){
     target_count=1;
@@ -177,7 +177,7 @@ void ServerNetwork::StartLocalOnly(){
     local_client_target->ForLocal();
 
     running=true;
-    start_thread(ServerNetworkThreadEntryPoint);
+    OS::StartThread(ServerNetworkThreadEntryPoint);
 }
 void ServerNetwork::Update(){
     if(running){
@@ -242,8 +242,8 @@ void ServerNetwork::HandleNewTarget(Packet* request_packet,ip_address remote_add
                 NetTarget* new_target = &targets[i];
                 new_target->SetState(NetTargetState::ID::CONNECTING,nullptr);
                 new_target->address = remote_address;
-                new_target->conn_start = time_ms();
-                new_target->last_recv = time_ms();
+                new_target->conn_start = OS::time_ms();
+                new_target->last_recv = OS::time_ms();
                 response = ServerNetHandler::OnPlayerConnect(request_packet,i);
 
                 accepted=true;
@@ -271,7 +271,7 @@ void ServerNetwork::HandleNewTarget(Packet* request_packet,ip_address remote_add
 
 void ServerNetwork::HandleNewLocalTarget(Packet* request_packet){
     //assumes local target exists. Local clients can't get kicked out of their own servers and likely won't send itself garbage
-    local_client_target->last_recv = time_ms();
+    local_client_target->last_recv = OS::time_ms();
     local_client_target->SetState(NetTargetState::ID::CONNECTED_LOCAL,nullptr);
     Packet response = ServerNetHandler::OnPlayerConnect(request_packet,0);
     local_client_target->AddToReliableBuffer(&response);

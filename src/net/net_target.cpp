@@ -94,10 +94,10 @@ void NetTarget::SetState(NetTargetState::ID state,wchar* msg){
 void NetTarget::Update(){
     if(IsConnected()){
         //Timeout check
-        if(state_id == CONNECTING && time_ms() - conn_start > config::network_timeout){
+        if(state_id == CONNECTING && OS::time_ms() - conn_start > config::network_timeout){
             SetState(TIMED_OUT,wstr::new_copy(L"Failed to connect: remote host timed out"));
         }
-        if((state_id == CONNECTED || state_id == CONNECTED_LOCAL) && time_ms() - last_recv > config::network_timeout){
+        if((state_id == CONNECTED || state_id == CONNECTED_LOCAL) && OS::time_ms() - last_recv > config::network_timeout){
             SetState(TIMED_OUT,wstr::new_copy(L"Lost connection: remote host timed out"));
         }
 
@@ -110,7 +110,7 @@ void NetTarget::Update(){
                 }
                 else{
                     Send(&reliable->dataPacket);
-                    reliable->last_sent= time_ms();
+                    reliable->last_sent= OS::time_ms();
                     reliable->retry_count++;
                 }
             }
@@ -192,20 +192,20 @@ Payload NetTarget::Recieve(){
             if(ping_data.GetTimestamp2() == 0){
                 Packet response_ping;
                 PacketData::PING response_ping_data(&response_ping);
-                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),time_ms(),0);
+                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),OS::time_ms(),0);
                 response_ping_data.WritePacket();
                 Send(&response_ping);
             }
             else if(ping_data.GetTimestamp3() == 0){
-                latency= time_ms() - ping_data.GetTimestamp1();
+                latency= OS::time_ms() - ping_data.GetTimestamp1();
                 Packet response_ping;
                 PacketData::PING response_ping_data(&response_ping);
-                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),ping_data.GetTimestamp2(),time_ms());
+                response_ping_data.SetTimestamps(ping_data.GetTimestamp1(),ping_data.GetTimestamp2(),OS::time_ms());
                 response_ping_data.WritePacket();
                 Send(&response_ping);
             }
             else{
-                latency= time_ms() - ping_data.GetTimestamp2();
+                latency= OS::time_ms() - ping_data.GetTimestamp2();
             }
             continue;
         }

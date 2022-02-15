@@ -2,14 +2,14 @@
 #include "../log.h"
 #include <math.h>
 
-float_range float_range::Union(float_range r2){
-    return float_range( (min < r2.min)?min:r2.min , (max > r2.max)?max:r2.max );
+FloatRange FloatRange::Union(FloatRange r2){
+    return FloatRange( (min < r2.min)?min:r2.min , (max > r2.max)?max:r2.max );
 }
 
-float_range::float_range(){
+FloatRange::FloatRange(){
     min = max= 0;
 }
-float_range::float_range(float a,float b){
+FloatRange::FloatRange(float a,float b){
     min = (a < b)? a:b;
     max = (a < b)? b:a;
     if(a==b){
@@ -17,25 +17,25 @@ float_range::float_range(float a,float b){
         a=0.0f;b=1.0f;
     }
 }
-float float_range::Clamp(float f){
+float FloatRange::Clamp(float f){
     return (f<min)?min:((f>max)?max:f);
 }
-float float_range::Average(){
+float FloatRange::Average(){
     return (min+max)/2.0f;
 }
-float_range float_range::Clamp(float_range range){
+FloatRange FloatRange::Clamp(FloatRange range){
     return {(range.min < min)?range.min:min,(range.max > max)?range.max:max};
 }
 
-bool float_range::Overlaps(float_range range){
+bool FloatRange::Overlaps(FloatRange range){
     if(min >= range.min && min <= range.max)return true;
     if(max >= range.min && max <= range.max)return true;
     if(range.min >= min && range.min <= max)return true;
     if(range.max >= min && range.min <= max)return true;
     return false;
 }
-bool float_range::Contains(float f){return(f >= min && f <= max);}
-float float_range::ScaleTo(float f1, float_range r1){//scales float f1 from range r1 to this range.
+bool FloatRange::Contains(float f){return(f >= min && f <= max);}
+float FloatRange::ScaleTo(float f1, FloatRange r1){//scales float f1 from range r1 to this range.
     float f0 = (f1-r1.min)/(r1.max-r1.min);
     return f0*(max-min) + min;
 }
@@ -115,41 +115,41 @@ void AABB::EncompassPoint(vec3 point){
     }
 }
 
-plane::plane(){
+Plane::Plane(){
     normal = {0,1,0};
     distance = 0;
 }
 
-plane::plane(float a, float b, float c, float d){
+Plane::Plane(float a, float b, float c, float d){
     normal = {a,b,c};
     normal = normal.normalized();//just to double-check
     distance = d;
 }
 
 /*
-plane::plane(vec3 tangent_point,vec3 normal_vec){
+Plane::Plane(vec3 tangent_point,vec3 normal_vec){
     normal = normal_vec.normalized();
     distance = -(normal.x*tangent_point.x + normal.y*tangent_point.y + normal.z*tangent_point.z);
 }
 */
 
-void plane::SetFromPointNormal(vec3 tangent_point,vec3 normal_vec){
+void Plane::SetFromPointNormal(vec3 tangent_point,vec3 normal_vec){
     normal = normal_vec.normalized();
     distance = -(normal.x*tangent_point.x + normal.y*tangent_point.y + normal.z*tangent_point.z);
 }
 	
-float plane::DistanceTo(vec3 pos){
+float Plane::DistanceTo(vec3 pos){
     return normal.x*pos.x + normal.y*pos.y + normal.z*pos.z + distance;
 }
 
-void plane::Invert() {
+void Plane::Invert() {
     distance *= -1;
     normal.x *= -1;
     normal.y *= -1;
     normal.z *= -1;
 }
 
-float plane::YIntersect(float X, float Z){
+float Plane::YIntersect(float X, float Z){
     if(normal.y*normal.y == 0){
         return NAN;
     }

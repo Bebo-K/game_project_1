@@ -31,7 +31,7 @@ HDC device_context;
 HGLRC gl_rendering_context;
 
 //Save game storage folder
-PWSTR save_path = NULL;
+wchar* save_path = NULL;
 
 //Thread mutexes
 Map <void*,HANDLE> active_mutexes;
@@ -62,16 +62,16 @@ SYSTEMTIME sys_date(){//Minute program is in. (time % (seconds*60))
 }
 
 //Engine timer hooks
-long time_ms(){//ms elapsed since program start.  
+long OS::time_ms(){//ms elapsed since program start.  
     return (sys_time()-start_time)/10000;//100 ns = 0.0001ms
 }
-long long time_nano(){//ns elapsed since program start.  
+long long OS::time_nano(){//ns elapsed since program start.  
     return (sys_time()-start_time)*100;
 }
 
 ///Engine thread hooks
 //void method()
-void start_thread(void (*thread_main)() ){
+void OS::StartThread(void (*thread_main)() ){
 CreateThread( 
             NULL,                   // default security attributes
             0,                      // use default stack size  
@@ -81,7 +81,7 @@ CreateThread(
             NULL);   // returns the thread identifier 
 }
 //void method(void* param)
-void start_thread(void (*thread_main)(void*), void* param ){
+void OS::StartThread(void (*thread_main)(void*), void* param ){
 CreateThread( 
             NULL,                   // default security attributes
             0,                      // use default stack size  
@@ -91,11 +91,11 @@ CreateThread(
             NULL);   // returns the thread identifier 
 }
  
-void sleep_thread(int ms){
+void OS::SleepThread(int ms){
     Sleep(ms);
 }
 
-void* get_mutex_lock(void* object,int timeout){
+void* OS::GetMutexLock(void* object,int timeout){
     wchar_t objname[sizeof(void*)*2 +3];
     memset(objname,0,(sizeof(void*)*2 +3)*sizeof(wchar_t));
     swprintf(objname,L"%p",object);
@@ -106,16 +106,14 @@ void* get_mutex_lock(void* object,int timeout){
     return os_mtx_lock;
 }
 
-bool release_mutex_lock(void* os_mtx_lock){
+bool OS::ReleaseMutexLock(void* os_mtx_lock){
     if(os_mtx_lock!=0);
     return ReleaseMutex(os_mtx_lock);
 }
 
-int ms_per_second;
 void GetTimerData(){
     polls_per_sec.Increment();
     if(second.Time_Over()){
-        int new_ms = time_ms();
         Performance::polls_last_second = polls_per_sec.GetCount();
         Performance::updates_last_second = Performance::frames.GetCount();
         Performance::draws_last_second = Performance::draws.GetCount();
@@ -125,7 +123,6 @@ void GetTimerData(){
         Performance::frames.Reset();
         Performance::draws.Reset();
         Performance::ticks.Reset();
-        ms_per_second=new_ms;
     }
 }
 
@@ -153,7 +150,6 @@ int LoopMain(){
 //********************************************//
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prev_instance,LPSTR command_string, int nCmdShow){
     start_time = sys_time();
-    ms_per_second = time_ms();
     second.interval=1000;
     logger::start("log.txt");
     config::Init();
@@ -346,7 +342,7 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
         exit(1);
     }
 
-    gload_init();
+    GLOAD_INIT();
 
     
 	glViewport(0, 0,config::window_width,config::window_height);
@@ -359,7 +355,7 @@ void SetupOpenGL(HWND window_handle,WPARAM wparam,LPARAM  lparam){
 }
 
 void DestroyOpenGL(){
-    gload_destroy();
+    GLOAD_DESTROY();
     wglMakeCurrent(NULL,NULL);
     wglDeleteContext(gl_rendering_context);
 }
@@ -387,7 +383,7 @@ PWSTR append_wstrs(PWSTR a,PWSTR b){
     return str;
 }
 
-bool build_game_folder_path(){
+bool OS::BuildGameFolderPath(){
     if(save_path != null){return true;}//already exists
     bool result = false;
     //Windows default save path will be "My Games" under Documents
@@ -419,6 +415,6 @@ bool build_game_folder_path(){
     return result;
 }
 
-wchar_t* get_games_folder_path(){
+wchar* OS::GetGameFolderPath(){
     return save_path;
 }

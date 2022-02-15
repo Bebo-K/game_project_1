@@ -5,19 +5,15 @@
 #define null nullptr
 #endif
 
-#define SET_BIT(x,bit) x |= (1<<(bit))
-#define CLEAR_BIT(x, bit) x &= ~(1<<(bit))
-
-inline bool GET_BIT(int x,int bit){return ((x & (1 << bit)) != 0);}
+#define SET_BIT(val,place)   ((val) |=  (1<<(place)))
+#define CLEAR_BIT(val,place) ((val) &= ~(1<<(place)))
+#define TOGGLE_BIT(val,place)  ((val) ^=  (1<<(place)))
+inline bool GET_BIT(int val,char place){return (val & (1 << place)) != 0;}
 
 typedef unsigned int uint32;
 typedef unsigned char byte;
 
-inline void* i_to_p(int ptr){
-    byte* ret = null;
-    ret += ptr;
-    return ret;
-}
+void* i_to_p(int ptr);//Convention exception to match "atof",etc
 
 #endif
 

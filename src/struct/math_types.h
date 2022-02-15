@@ -3,20 +3,20 @@
 
 #include "3d_types.h"
 
-struct float_range
+struct FloatRange
 {
     float min;
     float max;
 
-    float_range();
-    float_range(float min,float max);
+    FloatRange();
+    FloatRange(float min,float max);
     float Clamp(float f);
     float Average();
     bool Contains(float f);
-    bool Overlaps(float_range r2);
-    float_range Clamp(float_range r2);
-    float_range Union(float_range r2);
-    float ScaleTo(float f1, float_range r1);
+    bool Overlaps(FloatRange r2);
+    FloatRange Clamp(FloatRange r2);
+    FloatRange Union(FloatRange r2);
+    float ScaleTo(float f1, FloatRange r1);
 };
 
 struct AABB{
@@ -57,13 +57,13 @@ struct AABB{
     void EncompassPoint(vec3 point);
 };
 
-struct plane{
+struct Plane{
     public:
     vec3 normal;
     float distance;
 
-    plane();
-    plane(float a,float b,float c,float d);
+    Plane();
+    Plane(float a,float b,float c,float d);
     //plane(vec3 tangent_point,vec3 normal);
     void SetFromPointNormal(vec3 tangent_point,vec3 normal);
     float DistanceTo(vec3 pos);

@@ -24,7 +24,7 @@ float Game::DrawInterval(){return 1.0f/drawrate;}
 void Game::Start(){
     client = new Client();
     client->Start();
-    last_frame = time_ms();
+    last_frame = OS::time_ms();
     running=true;
 }
 
@@ -33,7 +33,7 @@ void Game::StartLocalServer(){
         logger::exception("A local server is already running. Shut down the existing server before starting a new one!\n");
         return;
     }
-    start_thread(ServerMain);
+    OS::StartThread(ServerMain);
 }
 
 void Game::Update(int frames){
@@ -53,7 +53,7 @@ void Game::Poll(){
     int frame_interval_ms = 1000/framerate;
     int draw_interval_ms = 1000/drawrate;
 
-    long poll_time = time_ms();
+    long poll_time = OS::time_ms();
     long delta_ms = poll_time - last_frame;
 
     delta_ms = poll_time - last_render;

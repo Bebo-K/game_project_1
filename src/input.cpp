@@ -51,6 +51,7 @@ bool keyboard_type_only=false;
 int enter_physical_key;//these two keys are still enabled as inputs in typing mode
 int escape_physical_key;
 
+const char* keylayout_filename = "dat/misc/en_us_keyids.txt";
 
 //////////////////////
 //    Engine events
@@ -72,39 +73,39 @@ void Input::Init(){
         controller_axes[i].y=0;
         controller_axes[i].dx=0;
         controller_axes[i].dy=0;
+        controller_axes[i].key_flags=0;
+        controller_axes[i].tilt_flags=0;
     }
-    char* en_us_keylayout_filename="dat/misc/en_us_keyids.txt";
-    if(IFile::Exists(en_us_keylayout_filename)){
-        LoadKeyLayout(en_us_keylayout_filename);
-    }
+    
+    if(IFile::Exists(keylayout_filename)){LoadKeyLayout(keylayout_filename);}
     
     LoadDefaultKeyBindings();
 }
-void Input::Update(){
-    //Clear previous frame's state
 
+void Input::Update(){
     //clear "changed" flag for buttons
-        for(int i=0;i<BUTTON_COUNT;i++){
-            CLEAR_BIT(controller_buttons[i].state,1);
-        }
-        
-        CLEAR_BIT(mouse_l.state,1);
-        CLEAR_BIT(mouse_r.state,1);
-        CLEAR_BIT(mouse_c.state,1);
-        CLEAR_BIT(toggle_console.state,1);
-        CLEAR_BIT(any_button.state,1);
+    for(int i=0;i<BUTTON_COUNT;i++){
+        CLEAR_BIT(controller_buttons[i].state,1);
+    }
+    
+    CLEAR_BIT(mouse_l.state,1);
+    CLEAR_BIT(mouse_r.state,1);
+    CLEAR_BIT(mouse_c.state,1);
+    CLEAR_BIT(toggle_console.state,1);
+    CLEAR_BIT(any_button.state,1);
     //clear deltas for axes
-        for(int i=0;i<AXIS_COUNT;i++){
-            controller_axes[i].dx=0;controller_axes[i].dy=0;
-        }
+    for(int i=0;i<AXIS_COUNT;i++){
+        controller_axes[i].ClearTiltDelta();
+    }
     //clear input text
-        character_code[0]=0;
-        if(input_text != nullptr){
-            if(input_text != character_code){free(input_text);}
-            input_text = nullptr;
-        }
+    character_code[0]=0;
+    if(input_text != nullptr){
+        if(input_text != character_code){free(input_text);}
+        input_text = nullptr;
+    }
     ClearAllEvents();
 }
+
 void Input::Destroy(){
     for(Tuple<int,char*> t: physical_input_map){if(t.value)free(t.value);}
     physical_input_map.Clear();
@@ -353,6 +354,7 @@ void Controller::Axis::AddTilt(vec2 tilt){
     dy = new_y-y;
     x = tilt.x;
     y = tilt.y;
+    UpdateTilt();
 }
 
 void Controller::Axis::SetTilt(vec2 tilt){
@@ -361,19 +363,20 @@ void Controller::Axis::SetTilt(vec2 tilt){
     x = tilt.x;
     y = tilt.y;
     if(x*x + y*y < AXIS_CUTOFF){x=0;y=0;}//deadzone
+    UpdateTilt();
 }
 
-void Controller::Axis::SetDirection(int directiond_id,bool down){
-    if(down){SET_BIT(direction_down,directiond_id);}
-    else{CLEAR_BIT(direction_down,directiond_id);}
+void Controller::Axis::SetDirection(short direction_id,bool down){
+    if(down){SET_BIT(key_flags,direction_id);}
+    else{CLEAR_BIT(key_flags,direction_id);}
 
     vec2 old_pos = {x,y};
     x=0;y=0;
-    if(direction_down != 0){
-        if(GET_BIT(direction_down,0)){y += 1.0f;}
-        if(GET_BIT(direction_down,1)){y -= 1.0f;}
-        if(GET_BIT(direction_down,2)){x -= 1.0f;}
-        if(GET_BIT(direction_down,3)){x += 1.0f;}
+    if(direction_id != 0){
+        if(GET_BIT(key_flags,UP)){y += 1.0f;}
+        if(GET_BIT(key_flags,DOWN)){y -= 1.0f;}
+        if(GET_BIT(key_flags,LEFT)){x -= 1.0f;}
+        if(GET_BIT(key_flags,RIGHT)){x += 1.0f;}
             
         vec2 new_pos = GetNormalized();
         x=new_pos.x;
@@ -381,6 +384,30 @@ void Controller::Axis::SetDirection(int directiond_id,bool down){
     }
     dx=x-old_pos.x;
     dy=x-old_pos.y;
+    UpdateTilt();
+}
+
+void Controller::Axis::UpdateTilt(){
+    if(y > tilt_cutoff && !GET_BIT(tilt_flags,UP*2)){ SET_BIT(tilt_flags,UP*2); SET_BIT(tilt_flags,(UP*2)+1);}
+    else if(y < tilt_cutoff && GET_BIT(tilt_flags,UP*2)){ CLEAR_BIT(tilt_flags,UP*2); SET_BIT(tilt_flags,(UP*2)+1);}
+    
+    if(y < -tilt_cutoff && !GET_BIT(tilt_flags,DOWN*2)){ SET_BIT(tilt_flags,DOWN*2); SET_BIT(tilt_flags,(DOWN*2)+1);}
+    else if(y > -tilt_cutoff && GET_BIT(tilt_flags,DOWN*2)){ CLEAR_BIT(tilt_flags,DOWN*2); SET_BIT(tilt_flags,(DOWN*2)+1);}
+    
+    if(x < -tilt_cutoff && !GET_BIT(tilt_flags,LEFT*2)){ SET_BIT(tilt_flags,LEFT*2); SET_BIT(tilt_flags,(LEFT*2)+1);}
+    else if(x > -tilt_cutoff && GET_BIT(tilt_flags,LEFT*2)){ CLEAR_BIT(tilt_flags,LEFT*2); SET_BIT(tilt_flags,(LEFT*2)+1);}
+
+    if(x > tilt_cutoff && !GET_BIT(tilt_flags,RIGHT*2)){ SET_BIT(tilt_flags,RIGHT*2); SET_BIT(tilt_flags,(RIGHT*2)+1);}
+    else if(x < tilt_cutoff && GET_BIT(tilt_flags,RIGHT*2)){ CLEAR_BIT(tilt_flags,RIGHT*2); SET_BIT(tilt_flags,(RIGHT*2)+1);}
+}
+
+void Controller::Axis::ClearTiltDelta(){
+    dx=0;
+    dy=0;
+    CLEAR_BIT(tilt_flags,(UP*2)+1);
+    CLEAR_BIT(tilt_flags,(DOWN*2)+1);
+    CLEAR_BIT(tilt_flags,(LEFT*2)+1);
+    CLEAR_BIT(tilt_flags,(RIGHT*2)+1);
 }
 
 vec2 Controller::Axis::GetNormalized(){
@@ -395,39 +422,38 @@ vec2 Controller::Axis::GetNormalized(){
     return ret;
 }
 
-
-bool Controller::Axis::IsLeft(){
-    return( x*x > y*y && x < -0.5);
-}
-bool Controller::Axis::IsRight(){
-    return( x*x > y*y && x > 0.5);
-}
 bool Controller::Axis::IsUp(){
-    return( x*x < y*y && y > 0.5);
+    return GET_BIT(this->tilt_flags,(UP*2));
 }
 bool Controller::Axis::IsDown(){
-    return( x*x < y*y && y < -0.5);
+    return GET_BIT(this->tilt_flags,(DOWN*2));
+}
+bool Controller::Axis::IsLeft(){
+    return GET_BIT(this->tilt_flags,(LEFT*2));
+}
+bool Controller::Axis::IsRight(){
+    return GET_BIT(this->tilt_flags,(RIGHT*2));
 }
 
-
-bool Controller::Axis::IsJustLeft(){
-    return( x*x > y*y && x < -0.9 && dx < -0.1);
-}
-bool Controller::Axis::IsJustRight(){
-    return( x*x > y*y && x > 0.9 && dx > 0.1);
-}
 bool Controller::Axis::IsJustUp(){
-    return( x*x < y*y && y > 0.9 && dy > 0.1);
+    return GET_BIT(this->tilt_flags,(UP*2)) && GET_BIT(this->tilt_flags,(UP*2)+1);
 }
 bool Controller::Axis::IsJustDown(){
-    return( x*x < y*y && y < -0.9 && dy < -0.1);
+    return GET_BIT(this->tilt_flags,(DOWN*2)) && GET_BIT(this->tilt_flags,(DOWN*2)+1);
 }
+bool Controller::Axis::IsJustLeft(){
+    return GET_BIT(this->tilt_flags,(LEFT*2)) && GET_BIT(this->tilt_flags,(LEFT*2)+1);
+}
+bool Controller::Axis::IsJustRight(){
+    return GET_BIT(this->tilt_flags,(RIGHT*2)) && GET_BIT(this->tilt_flags,(RIGHT*2)+1);
+}
+
 
 
 //////////////////////
 //    Loading
 ////////////////////
-void Input::LoadKeyLayout(char* layout_filename){
+void Input::LoadKeyLayout(const char* layout_filename){
     FileReader layout_file(layout_filename);
 
     for(byte* line=layout_file.ReadLine();line != null;line=layout_file.ReadLine()){

@@ -89,7 +89,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
     //}
     
 
-    float_range vertical_cutoff_range(bottom_cutoff,top_cutoff);
+    FloatRange vertical_cutoff_range(bottom_cutoff,top_cutoff);
 
     //Find the clostest point on the triangle plane to our position.
     vec3 plane_intersect = triangle.ClosestPointToPlane(center);

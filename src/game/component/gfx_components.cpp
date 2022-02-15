@@ -3,7 +3,7 @@
 #include "../entity.h"
 #include "../system/camera_manager.h"
 
-CameraTarget::CameraTarget(Camera* cam,vec3 cam_offset,float_range zoom_scale,float_range tilt){
+CameraTarget::CameraTarget(Camera* cam,vec3 cam_offset,FloatRange zoom_scale,FloatRange tilt){
     camera = cam;
     offset=cam_offset;
     rotation.clear();

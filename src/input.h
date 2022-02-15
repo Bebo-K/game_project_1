@@ -38,15 +38,23 @@ typedef int AxisID;
 typedef int ButtonID;
 namespace Controller{
 
-    struct Axis{                                     
+    struct Axis{            
+        constexpr static int UP=0, DOWN=1, LEFT=2, RIGHT=3;
+        constexpr static float tilt_cutoff = 0.9f;                     
         float x,y;
         float dx,dy;
-        int direction_down;
+        short key_flags;//4 bits are used, one per direction.
+        //tilt_flags
+        //Hi 8 bits aren't used. Low 8 bits are used in pairs, one per direction starting with lowest = UP lo bit
+        // Lo bit is set if direction is 90% tilted, Hi bit is set if lo bit just changed
+        short tilt_flags;
         void AddTilt(vec2 tilt);
         void SetTilt(vec2 tilt);
-        void SetDirection(int direction_id,bool down);
-        vec2 GetNormalized();
+        void SetDirection(short direction_id,bool down);
+        void UpdateTilt();
+        void ClearTiltDelta();
 
+        vec2 GetNormalized();
        
         bool IsLeft();
         bool IsRight();
@@ -57,6 +65,8 @@ namespace Controller{
         bool IsJustRight();
         bool IsJustUp();
         bool IsJustDown();
+
+        
     };
 
     struct Button{
@@ -170,7 +180,7 @@ namespace Input{
     void    ClearAllEvents();
 
     //Key binding management
-    void LoadKeyLayout(char* layout_filename);
+    void LoadKeyLayout(const char* layout_filename);
     void LoadDefaultKeyBindings();
     void LoadKeyBindings(char** lines,int line_count);
     void AddKeyButtonBind(ButtonID button, int key_id);

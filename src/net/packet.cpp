@@ -72,7 +72,7 @@ Payload::Payload(int id,int len,byte* dat){
 }
 
 bool ReliablePacketEnvelope::ShouldSend(){
-    return (time_ms()-last_sent) > config::network_resend_interval;
+    return (OS::time_ms()-last_sent) > config::network_resend_interval;
 }
 
 MultipartPayload::MultipartPayload():packets_recieved(){}
@@ -89,7 +89,7 @@ void MultipartPayload::Start(MultipartPacket*p){
 void MultipartPayload::Add(MultipartPacket*p){
     memcpy(&assembled_payload[p->payload_offset],p->data,p->length);
     packets_recieved.Set(p->segment);
-    last_recv=time_ms();
+    last_recv=OS::time_ms();
 }
 void MultipartPayload::Clear(){
     packets_recieved.Resize(0);
@@ -99,5 +99,5 @@ bool MultipartPayload::IsFullyAssembled(){
     return (packets_recieved.CountBitsUnset()==0);
 }
 bool MultipartPayload::IsExpired(){
-    return ((int)(time_ms() - last_recv) > config::network_packet_expiry);
+    return ((int)(OS::time_ms() - last_recv) > config::network_packet_expiry);
 }

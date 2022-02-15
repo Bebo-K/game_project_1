@@ -19,13 +19,13 @@ void ServerMain(){
     
     
     int tick_interval_ms = 1000/Game::tickrate;
-    long last_tick = time_ms();
-    long poll_time = time_ms();
+    long last_tick = OS::time_ms();
+    long poll_time = OS::time_ms();
     long delta_ms = poll_time - last_tick;
 
     do {
-        Sleep(tick_interval_ms/4);  
-        poll_time = time_ms();
+        OS::SleepThread(tick_interval_ms/4);
+        poll_time = OS::time_ms();
         delta_ms = poll_time - last_tick;
         if(delta_ms >= tick_interval_ms){
             int elapsed_frames = (int)(delta_ms/tick_interval_ms);
