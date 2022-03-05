@@ -1,0 +1,48 @@
+Project format:
+    - http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1204r0.html#:~:text=The%20goal%20of%20establishing%20a,are%20pleasant%20to%20work%20with.
+    - For now, the project name will be the repo name- "game_project_1". "src" folder will be renamed to match the above convention
+    - Folder heirarchy should have a max depth of 3
+    - Right now I'll stick with a basic Makefile
+Code:
+    -Naming:
+        Constants are CAPS_AND_UNDERSCORES
+        Classes and class methods are CamelCase
+        Other class members are lowercase_and_underscores, as are parameters
+        Namespaces depend, but ones that represent singleton instances should have class naming convention in case it's converted into a proper class.
+        Macros are ALWAYS_CAPS, they don't get to look sleek
+        
+        Exceptions are structs to be treated as extended primitive type: methods and fields are all lowercase
+        - vec2,3,4
+        - mat3,4
+        - point_i/f, rect_i/f
+        - cstr+wstr namespaces as cstring/wide string "class methods"
+
+        Other Exceptions:
+        - OS::time_ms + OS::time_nano: because metric symbols Ms and ms mean different things. Leaving both uncapitalized for consistency.
+        - logger (To encourage logging- it does get to look sleek)
+
+        On the fence:
+        - config/server_config namespaces. They'll probably be the most referenced namespace in the project so the less capitalization to guess the better?
+
+
+    -Blocks and Methods:
+        normal block:
+        if(value){
+            code;
+        }
+
+        short block:
+        if(value){1-2 statements;}
+
+        normal method:
+        void FooBar(param){
+            code;
+        }
+
+        short method:
+        void FooBar(param){1-2 statements;}
+
+
+
+
+

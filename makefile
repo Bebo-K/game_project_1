@@ -9,38 +9,44 @@ CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
 LIBS =  -lgdi32 -lglew32 -lWs2_32 -lwinmm -lopengl32  -lz -lfreetype.dll -lole32 -luuid
 
-SRC_PATHS := src;src/io;src/net;src/gfx;src/game;src/game/component;src/game/system;src/client;src/server;src/gui;src/gui/menu;src/gui/widget;src/test;src/phys;src/struct;
-VPATH = $(SRC_PATHS)
 
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+rdirfind=$(foreach d,$(wildcard $(1:=/*)),$(call rdirfind,$d) $(filter-out %.%,$d))
 
-MAIN_SRC := $(wildcard src/*.cpp)
-CLIENT_SRC := $(wildcard src/client/*.cpp)
-SERVER_SRC := $(wildcard src/server/*.cpp)
-IO_SRC := $(wildcard src/io/*.cpp)
-NET_SRC := $(wildcard src/net/*.cpp)
-GFX_SRC := $(wildcard src/gfx/*.cpp)
-GAME_SRC := $(wildcard src/game/*.cpp)
-PHYS_SRC := $(wildcard src/phys/*.cpp)
-STRUCT_SRC :=  $(wildcard src/struct/*.cpp)
-UI_SRC := $(wildcard src/gui/*.cpp)
-MENU_SRC := $(wildcard src/gui/menu/*.cpp)
-WIDGET_SRC := $(wildcard src/gui/widget/*.cpp)
-COMPONENT_SRC := $(wildcard src/game/component/*.cpp)
-SYSTEM_SRC := $(wildcard src/game/system/*.cpp)
-TEST_SRC := $(wildcard src/test/*.cpp)
+#SRC_PATHS := game_project_1;game_project_1/io;game_project_1/net;game_project_1/gfx;game_project_1/game;game_project_1/game/component;game_project_1/game/system;game_project_1/client;game_project_1/server;game_project_1/gui;game_project_1/gui/menu;game_project_1/gui/widget;game_project_1/test;game_project_1/phys;game_project_1/struct;
+#MAIN_SRC := $(wildcard game_project_1/*.cpp)
+#STRUCT_SRC :=  $(wildcard game_project_1/types/*.cpp)
+#CLIENT_SRC := $(wildcard game_project_1/client/*.cpp)
+#SERVER_SRC := $(wildcard game_project_1/server/*.cpp)
+#IO_SRC := $(wildcard game_project_1/io/*.cpp)
+#NET_SRC := $(wildcard game_project_1/net/*.cpp)
+#GFX_SRC := $(wildcard game_project_1/gfx/*.cpp)
+#GAME_SRC := $(wildcard game_project_1/game/*.cpp)
+#PHYS_SRC := $(wildcard game_project_1/phys/*.cpp)
+#UI_SRC := $(wildcard game_project_1/gui/*.cpp)
+#MENU_SRC := $(wildcard game_project_1/gui/menu/*.cpp)
+#WIDGET_SRC := $(wildcard game_project_1/gui/widget/*.cpp)
+#COMPONENT_SRC := $(wildcard game_project_1/component/*.cpp)
+#SYSTEM_SRC := $(wildcard game_project_1/system/*.cpp)
+#ENTITY_SRC := $(wildcard game_project_1/entity/*.cpp)
+#TEST_SRC := $(wildcard game_project_1/test/*.cpp)
+#SRC := $(MAIN_SRC) $(STRUCT_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(NET_SRC) $(GFX_SRC) $(GAME_SRC) $(PHYS_SRC) $(UI_SRC) $(MENU_SRC) $(WIDGET_SRC) $(COMPONENT_SRC) $(SYSTEM_SRC) $(ENTITY_SRC) $(TEST_SRC) 
+#VPATH = $(SRC)
 
-SRC := $(MAIN_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(NET_SRC) $(GFX_SRC) $(GAME_SRC) $(COMPONENT_SRC) $(SYSTEM_SRC) $(UI_SRC) $(MENU_SRC) $(WIDGET_SRC) $(TEST_SRC) $(PHYS_SRC) $(STRUCT_SRC)
+VPATH := $(call rdirfind,game_project_1)
+SRC := $(call rwildcard,game_project_1,*.cpp)
+OBJS := $(addprefix obj/,$(notdir $(patsubst %.cpp,%.o,$(SRC))))
 
-OBJS := $(addprefix obj/,$(notdir $(SRC:.cpp=.o)))
+#notdir( $(SRC:.cpp=.o)  ))
 
 #foobar.exe: $(IO_SRC) foobar.cpp 
 #	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
 game.exe: $(OBJS) win/resource.o
-	g++ $(CFLAGS) -o $@ $^ $(LIBS)
+	g++ $(CFLAGS) -o $@ $^  $(LIBS)
 
 obj/%.o: %.cpp
-	g++ $(CFLAGS) -c -o $@ $<
+	g++ $(CFLAGS) -c -I . -o $@ $< 
 
 win/resource.o: win/dpi-aware.manifest win/icon.ico win/resource.rc
 	windres win/resource.rc --target=$(RESOURCE_ARCH) $@

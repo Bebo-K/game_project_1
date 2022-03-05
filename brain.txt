@@ -1,58 +1,31 @@
-Server connection is just starting off. Once start save is complete the focus should be in this order
+Goal heirarchy:
+
+    - Code cleanup
+        -#include transitions to non-relative paths
+        -#include guards prepending project name
+        -".h" to ".hpp" 
+        -look over namespaces to convert to classes/singletons
+        -double check for conformity to conventions below
+            Known files to clean:
+                os_net.h
+                file.h
+        -Change config/server_config from namespace to class
+        -Fix Makefile 
+
     - Loading client into an empty level
+        - "Entity" + "Scene" at client server level
+            - Split into seperate "ClientEntity/ServerEntity" + "ClientScene/ServerScene"
+            - Removes unneccesary data + functionality duplication (Server scene rendering, Client scene serialization [Except player])
+            - Create extendable EntityClass registration system to template both Client + Server instantiation
+        - Player entity join scene
+            -Server SCNE message
+                - ServerScene serialization + ClientScene deserialization
+            -Server ENTY message
+                - Client instantiation of entity
+                - Attach camera
     - Ironing out movement
     - Entity loading
     - Scene transitions
-
-
-
-
-
-
-Code Conventions:
-    -Naming:
-        Constants are CAPS_AND_UNDERSCORES
-        Classes and class methods are CamelCase
-        Other class members are lowercase_and_underscores, as are parameters
-        Namespaces depend, but ones that represent singleton instances should have class naming convention in case it's converted into a proper class.
-        Macros are ALWAYS_CAPS, they don't get to look sleek
-
-        
-        Exceptions are structs to be treated as extended primitive type: methods and fields are all lowercase
-        - vec2,3,4
-        - mat3,4
-        - point_i/f, rect_i/f
-        - cstr+wstr namespaces as cstring/wide string "class methods"
-
-        Other Exceptions:
-        - OS::time_ms + OS::time_nano: because metric symbols Ms and ms mean different things. Leaving both uncapitalized for consistency.
-        - logger (To encourage logging)
-
-        On the fence:
-        - config/server_config namespaces. They'll probably be the most referenced namespace in the project so the less capitalization to guess the better?
-
-        To clean:
-        os_net.h
-        file.h
-
-    -Blocks and Methods:
-        normal block:
-        if(value){
-            code;
-        }
-
-        short block:
-        if(value){1-2 statements;}
-
-        normal method:
-        void FooBar(param){
-            code;
-        }
-
-        short method:
-        void FooBar(param){1-2 statements;}
-
-
 
 
 
