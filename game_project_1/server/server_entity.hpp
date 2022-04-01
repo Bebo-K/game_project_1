@@ -1,19 +1,19 @@
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef SERVER_ENTITY_H
+#define SERVER_ENTITY_H
 
 #include <game_project_1/game/game_constants.hpp>
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/component/gfx_components.hpp>
 #include <game_project_1/component/phys_components.hpp>
 #include <game_project_1/component/logic_components.hpp>
 #include <game_project_1/component/anim_components.hpp>
 #include <game_project_1/component/state.hpp>
 
-/*
-struct Entity{
-    int     eid;
-    int     type;
-    wchar*   name;
+
+struct ServerEntity{
+    public:
+    int     id;
+    int     entity_class_id;
+    wchar*  name;
     float   x,y,z;
     float   turn;//euler y rotation.
     vec3    velocity;
@@ -21,52 +21,38 @@ struct Entity{
     vec3    rotation;
 
     //components
-    ModelSet*       models;
-    SpriteSet*      sprites;
-    PhysicsData*    phys_data;
+    PhysBody*       phys_data;
     ColliderSet*    colliders;
     MovementData*   movement;
     PlayerData*     player_data;
-    CameraTarget*   camera_target;
     State*          state;
     AnimationState* anim_state;
     UnitData*       unit_data;
     NPCData*        npc_data;
 
-    Entity();
-    void SetName(wchar* name);
-    vec3 GetPos(int ms);
+    ServerEntity();
+    ~ServerEntity();
+    vec3 GetPos();
+
+    int DeltaLength();
+    void SerializeDelta(byte* data);
 
     int SerializedLength();
-    void Serialize(void* data);
-
-    ~Entity();
+    void Serialize(byte* data);
 };
 
-
-
+/*
 class EntityClass{
     GameConstants::EntityClassID id;
 
-    virtual ClientEntity* BuildClientEntity();
-    virtual ServerEntity* BuildServerEntity();
+    virtual Entity* BuildClientEntity();
+    virtual Entity* BuildServerEntity();
 
     
     static void Register(EntityClass* eclass);
-    static ClientEntity* BuildClient(GameConstants::EntityClassID class_id);
-    static ServerEntity* BuildServer(GameConstants::EntityClassID class_id);
+    static Entity* BuildClient(GameConstants::EntityClassID class_id);
+    static Entity* BuildServer(GameConstants::EntityClassID class_id);
 };
-
 */
 
-
-
-
-
-
-
 #endif
-
-
-
-

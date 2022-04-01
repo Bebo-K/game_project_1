@@ -34,10 +34,35 @@ Ellipse_t::Ellipse_t(float h,float w){
     radius = w/2.0f;
 }
 
+CollisionSurface::CollisionSurface(){
+
+}
+CollisionSurface::CollisionSurface(char* type_name,char* material_name){
+
+}
+
+
 Triangle::Triangle(){
     verts[0] = verts[1] = verts[2] = {0,0,0};
     face.distance=0;
     face.normal={0,1,0};
+}
+
+void Triangle::SetFromVertices(float vertices[9]){
+    verts[0].x = vertices[0];
+    verts[0].y = vertices[1];
+    verts[0].z = vertices[2];
+    verts[1].x = vertices[3];
+    verts[1].y = vertices[4];
+    verts[1].z = vertices[5];
+    verts[2].x = vertices[6];
+    verts[2].y = vertices[7];
+    verts[2].z = vertices[8];
+        
+    edges[0] = verts[1]-verts[0];
+    edges[1] = verts[2]-verts[0];
+    edges[2] = verts[1]-verts[2];
+    face.SetFromPointNormal(verts[0],edges[0].normalized().cross(edges[1].normalized()));
 }
 
 bool Triangle::Intersects(vec3 position,vec3* out_intersection_point){
@@ -89,6 +114,10 @@ bool Triangle::PointInTriangle(vec3 point) {
     return 	SameSide(point,verts[2],verts[0],verts[1]) &&   //
             SameSide(point,verts[0],verts[2],verts[1]) &&   //
             SameSide(point,verts[1],verts[2],verts[0]);     //
+}
+
+bool Triangle::IsZeroArea(){
+    return(face.normal.length_sqr() > 0.25);
 }
 
 bool Triangle::SameSide(vec3 point,vec3 reference,vec3 origin,vec3 axis){

@@ -38,7 +38,7 @@ class SpriteSet : Pool<Sprite> , Component, Drawable{
 	public:
 
 	//Sprite* Add(char* name);
-	void Draw(Camera* cam,mat4* view, mat4* projection);
+	void Draw(Camera* cam);
 
 	~SpriteSet();
 };

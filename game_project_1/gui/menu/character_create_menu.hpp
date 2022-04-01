@@ -7,8 +7,10 @@
 class CharacterCreateMenu: public UI::Menu {
     public:
     wchar* player_name;
-    PlayerAppearance player_appearance;
+    int race_id;
     int class_id;
+    int styles[3];
+    color color1;
 
     CharacterCreateMenu();
 

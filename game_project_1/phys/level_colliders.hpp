@@ -5,17 +5,17 @@
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/io/image.hpp>
 #include <game_project_1/gfx/model.hpp>
-#include <game_project_1/game/entity.hpp>
 #include <game_project_1/phys/collider.hpp>
 #include <game_project_1/phys/collision_types.hpp>
+#include <game_project_1/component/phys_components.hpp>
 
 class CollisionMesh{ 
     public:
     char*               name;
     CollisionSurface    surface;
     AABB                bounds;
-	int		            vertex_count;// must be a multiple of 3 ('cause triangles)
-    float*              vertices;
+	int		            tri_count;
+    Triangle*           tris;
 
     CollisionMesh();
     CollisionMesh(MeshGroup* mesh,CollisionSurface* surface);
@@ -23,8 +23,9 @@ class CollisionMesh{
 
     void SetVertices(MeshGroup* mesh);
     void SetSurface(CollisionSurface* surface);
-    CollisionList* CheckCollisions(Entity* e,vec3 step_pos);
-    void CheckOOB(Entity* e);
+
+    CollisionList* CheckCollisions(PhysBody* b,vec3 step_pos);
+    void CheckOOB(PhysBody* b);
 };
 
 class HeightMap{
@@ -38,7 +39,10 @@ class HeightMap{
 
     HeightMap();
     HeightMap(float width, float height, float depth, Image* img,CollisionSurface surface);
-    CollisionList* CheckCollisions(Entity* e,vec3 step_pos);
+    //~HeightMap();
+
+    CollisionList* CheckCollisions(PhysBody* b,vec3 step_pos);
+    //void CheckOOB(PhysBody b);
 };
 
 HeightMap MakeDeathPlane(float z_pos);

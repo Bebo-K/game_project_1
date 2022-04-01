@@ -27,15 +27,15 @@ void ServerNetHandler::Update(int frames){
                     PacketData::SNPS start_new_player_save(payload);
                     SavePlayer* new_player = server->server_save.NewPlayer(
                         start_new_player_save.GetCharacterName(),
+                        start_new_player_save.GetRaceID(),
+                        start_new_player_save.GetClassID(),
                         start_new_player_save.GetCharacterAppearance());
 
-                    Scene* new_player_scene = server->GetActiveScene(new_player->player_scene);
+                    ServerScene* new_player_scene = server->GetActiveScene(new_player->player_scene);
                     if(new_player_scene == nullptr){
                         new_player_scene = server->LoadScene(new_player->player_scene);
                     }
                     int new_player_entity_id = ServerSceneController::TransitionUnitEntity(nullptr,new_player_scene,new_player->player_scene_entrance,new_player->player_unit.ToUnit());
-
-                    //;
                     break;}
                 default:break;
             }

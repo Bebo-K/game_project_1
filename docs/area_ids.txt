@@ -1,0 +1,4 @@
+AREA IDS:
+ID  Name                                        Asset
+0   None                                        ""
+1   Debug Room                                  "debug_room"

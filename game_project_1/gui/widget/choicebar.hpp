@@ -14,9 +14,6 @@ class TextChoiceBar: public  UI::Widget{
         void (*choice_change_callback)(int new_choice,wchar* choice_name);
 
 
-
-
-
     TextChoiceBar(char* label,wchar* text);
     ~TextChoiceBar();
     void OnMove();

@@ -1,7 +1,15 @@
 #include <game_project_1/component/phys_components.hpp>
 
-PhysicsData::PhysicsData():world_hitsphere(1.0f,1.0f){}
-PhysicsData::~PhysicsData(){}
+PhysBody::PhysBody():world_hitsphere(1.0f,1.0f){}
+PhysBody::~PhysBody(){}
+vec3 PhysBody::GetPosition(){return {*xp,*yp,*zp};}
+void PhysBody::SetPosition(vec3 new_pos){*xp = new_pos.x;*yp = new_pos.y;*zp = new_pos.z;}
+vec3 PhysBody::GetVelocity(){return {*vxp,*vyp,*vzp};}
+void PhysBody::SetVelocity(vec3 new_vel){*vxp = new_vel.x;*vyp = new_vel.y;*vzp = new_vel.z;}
+bool PhysBody::IsInBounds(){}
+void PhysBody::SetInBounds(bool in_bounds){}
+bool PhysBody::IsMidair(){}
+void PhysBody::SetMidair(bool midair){}
 
 ColliderSet::~ColliderSet(){}
 

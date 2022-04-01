@@ -15,7 +15,8 @@ class CapsuleCollider{
 	
 	CapsuleCollider(float x,float y,float z,float h,float r);
 	
-    bool Intersects(vec3 p,CapsuleCollider c2,vec3 p2);
+    bool Intersects(vec3 p,CapsuleCollider *c2,vec3 p2);
+    bool Intersects(vec3 p,CapsuleCollider *c2,vec3 p2,vec3* point);
 
 };
 

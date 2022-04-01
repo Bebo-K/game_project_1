@@ -26,14 +26,57 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 
 SaveUnit::SaveUnit(){
     name=nullptr;
-    race=0;
+    race_id=0;
+    class_id=0;
 }
 SaveUnit::SaveUnit(GameUnit from){
-
+    appearance = from.appearance;
+    race_id = from.race_id;
+    class_id = from.class_id;
 }
-GameUnit SaveUnit::ToUnit(){
+GameUnit* SaveUnit::ToUnit(){
+    GameUnit* new_unit = new GameUnit;
 
+    new_unit->name=wstr::new_copy(name);
+    new_unit->race_id=race_id;
+    new_unit->class_id=class_id;
+    new_unit->appearance=appearance;
+    return new_unit;
+}
+int SaveUnit::SerializedLength(){
+    int size = 0;
+    size += sizeof(wchar) * (wstr::len(name)+1);
+    size += sizeof(int);
+    size += sizeof(int);
+    //appearance
+    size += sizeof(int)*2;
+    size += sizeof(int)*appearance.style_options;
+    size += sizeof(color)*appearance.color_count;
 
+    return size;
+}
+void SaveUnit::Read(Deserializer& dat){
+    name = dat.GetWString();
+    race_id = dat.GetInt();
+    class_id = dat.GetInt();
+    appearance.style_options = dat.GetInt();
+    appearance.color_count = dat.GetInt();
+    if(appearance.colors != nullptr){free(appearance.colors);}
+    appearance.colors = (color*)malloc(sizeof(color)*appearance.color_count);
+    for(int i=0;i<appearance.style_options;i++){appearance.styles[i]=dat.GetInt();}
+
+    if(appearance.styles != nullptr){free(appearance.styles);}
+    appearance.styles = (int*)malloc(sizeof(int)*appearance.style_options);
+    for(int i=0;i<appearance.color_count;i++){appearance.colors[i].from_int(dat.GetInt());}    
+}
+void SaveUnit::Write(Serializer& dat){
+    dat.PutWString(name);
+    dat.PutInt(race_id);
+    dat.PutInt(class_id);
+    dat.PutInt(appearance.style_options);
+    dat.PutInt(appearance.color_count);
+    for(int i=0;i<appearance.style_options;i++){dat.PutInt(appearance.styles[i]);}
+    for(int i=0;i<appearance.color_count;i++){dat.PutInt(appearance.colors[i].to_int());}
 }
 
 SavePlayer::SavePlayer(){
@@ -42,25 +85,25 @@ SavePlayer::SavePlayer(){
     player_scene=0;
     player_scene_entrance=0;
 }
-
 SavePlayer::~SavePlayer(){
     save_id=0;
     player_scene=0;
     player_scene_entrance=0;
     if(player_name != nullptr){free(player_name);player_name=nullptr;}
 }
-
 void SavePlayer::Read(Deserializer& dat){
     save_id = dat.GetInt();
     player_name = dat.GetWString();
     player_scene = dat.GetInt();
     player_scene_entrance = dat.GetInt();
+    player_unit.Read(dat);
 }
 void SavePlayer::Write(Serializer& dat){
     dat.PutInt(save_id);
     dat.PutWString(player_name);
     dat.PutInt(player_scene);
     dat.PutInt(player_scene_entrance);
+    player_unit.Write(dat);
 }
 int SavePlayer::SerializedLength(){
     int size = 0;
@@ -68,6 +111,7 @@ int SavePlayer::SerializedLength(){
     size += sizeof(wchar) * (wstr::len(player_name)+1);
     size += sizeof(int);
     size += sizeof(int);
+    size += player_unit.SerializedLength();
 
     return size;
 }
@@ -253,7 +297,7 @@ SavePlayer* SaveFile::GetPlayerByID(int save_id){
     }
     return nullptr;
 }
-SavePlayer* SaveFile::NewPlayer(wchar* player_name,UnitAppearance appearance){
+SavePlayer* SaveFile::NewPlayer(wchar* player_name,int race_id,int class_id, UnitAppearance appearance){
     byte* newPlayerSave = (byte*)calloc(saved_players+1,sizeof(SavePlayer));
     
     if(saved_players> 0){
@@ -264,6 +308,9 @@ SavePlayer* SaveFile::NewPlayer(wchar* player_name,UnitAppearance appearance){
     saved_players++;
     SavePlayer* ret = &players[saved_players-1];
     ret->player_name = wstr::new_copy(player_name);
+    ret->player_unit.name = wstr::new_copy(player_name);
+    ret->player_unit.race_id = race_id;
+    ret->player_unit.class_id = class_id;
     ret->player_unit.appearance = appearance;
     ret->player_scene= GameConstants::STARTING_SCENE;
     ret->player_scene_entrance= GameConstants::STARTING_SCENE_ENTRANCE;

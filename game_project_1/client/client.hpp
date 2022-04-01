@@ -2,7 +2,7 @@
 #define CLIENT_H
 
 #include <game_project_1/gui/gui.hpp>
-#include <game_project_1/game/scene.hpp>
+#include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/signal.hpp>
 #include <game_project_1/game/player_info.hpp>
 

@@ -272,6 +272,10 @@ JSONParser::JSONParser(char* JSON,int length){
 	data = JSON;
 	end=length;
 }
+JSONParser::~JSONParser(){
+	if(data != nullptr){free(data);data=nullptr;}
+	end=0;
+}
 
 int JSONParser::NextInstanceOf(char token,int start){
 	int index = start;
@@ -446,3 +450,8 @@ JSONValue* JSONParser::ParseNull(int* index){
 	return nullval;
 }
 
+
+JSONObject* JSON::Parse(Stream* stream){
+	JSONParser parser(stream);
+	return parser.Parse();
+}

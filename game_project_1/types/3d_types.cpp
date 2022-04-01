@@ -114,6 +114,14 @@ vec3 vec3::horizontal(){
     return {x,0,z};
 }
 
+vec3 vec3::clip(vec3 direction){
+    float paralell_component = dot(direction);
+    if(paralell_component < 0){
+        return vec3(x,y,z) - (direction * paralell_component);
+    }
+    else return {x,y,z};
+ }
+
 vec2 vec3::xz(){
     return {x,z};
 }

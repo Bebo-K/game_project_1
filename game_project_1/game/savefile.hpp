@@ -8,21 +8,25 @@
 
 
 #define CAMPAIGN_COUNT 1
-
 #define CAMPAIGN_DEMO 0
 
 class SaveUnit{
     public:
 
     wchar* name;
-    int race;
+    int race_id;
+    int class_id;
     UnitAppearance appearance;
     // UnitInventory inventory
     // UnitStats stats
 
     SaveUnit();
     SaveUnit(GameUnit from);
-    GameUnit ToUnit();
+    GameUnit* ToUnit();
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
 };
 
 class SavePlayer{
@@ -37,6 +41,7 @@ class SavePlayer{
 
     SavePlayer();
     ~SavePlayer();
+
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
@@ -51,12 +56,13 @@ class SaveCampaign{
 
     SaveCampaign();
     ~SaveCampaign();
-    void Read(Deserializer& dat);
-    void Write(Serializer& dat);
-    int SerializedLength();
 
     bool GetStoryBit(int bit);
     void SetStoryBit(int bit,bool value);
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
 };
 
 class SaveFile{
@@ -76,17 +82,16 @@ class SaveFile{
     void LoadOrNew(char* save_name);
     void Load(char* save_name);
     void Save(char* save_name);
-    int Serialize(byte* bytes);
-    int SerializedLength();
-    void  Deserialize(byte* src);
 
     SaveCampaign* GetCampaign(int campaign_id);
     SavePlayer* GetPlayer(wchar* player_name);
     int GetPlayerSaveID(wchar* player_name);
     SavePlayer* GetPlayerByID(int save_id);
-    SavePlayer* NewPlayer(wchar* player_name,UnitAppearance appearance);
+    SavePlayer* NewPlayer(wchar* player_name,int race_id,int class_id, UnitAppearance appearance);
 
-
+    int SerializedLength();
+    void  Deserialize(byte* src);
+    int Serialize(byte* bytes);
 };
 
 

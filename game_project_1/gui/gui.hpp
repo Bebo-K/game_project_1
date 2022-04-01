@@ -1,7 +1,6 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include <game_project_1/game/scene.hpp>
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/types/pool.hpp>
@@ -15,6 +14,7 @@
 #include <game_project_1/gui/menu/ingame_menu.hpp>
 #include <game_project_1/gui/menu/error_menu.hpp>
 #include <game_project_1/gui/menu/character_create_menu.hpp>
+#include <game_project_1/client/client_scene.hpp>
 
 //Manages the screen real estate for menus,text, and other 2D objects
 class GUI{
@@ -46,7 +46,7 @@ class GUI{
     
     //Client events
     void Paint();
-    void Update(Scene* scene, int frames);
+    void Update(ClientScene* scene, int frames);
 
     //UI interaction events
     bool OnInput(Input::Event event_type);

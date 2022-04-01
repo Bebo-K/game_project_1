@@ -29,8 +29,17 @@ namespace SurfaceMaterial{
 struct CollisionSurface{
     int     type;
     int     material;
+
+    int     exit_id;
+    int     exit_entr_id;
+
+    int     damage;
+
     byte*   metadata;
     int     metadata_len;
+
+    CollisionSurface();
+    CollisionSurface(char* type_name,char* material_name);
 };
 
 //Level Collision linked list
@@ -63,6 +72,8 @@ struct Triangle{
 	Plane	face;
 
     Triangle();
+
+    void SetFromVertices(float vertices[9]);
 	
 	//vec3 ClosestPoint(vec3 position);
 	//vec3 ClosestPoint(vec3 position,vec3* out_contact_normal);
@@ -71,6 +82,7 @@ struct Triangle{
 	vec3 ClosestEdgePoint(vec3 position);
 
 	bool PointInTriangle(vec3 point);
+    bool IsZeroArea();
 	
 	static bool SameSide(vec3 point,vec3 reference,vec3 origin,vec3 axis);
 	static vec3 ClosestPointOnEdge(vec3 point,vec3 v1,vec3 v2);

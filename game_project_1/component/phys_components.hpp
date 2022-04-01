@@ -7,7 +7,10 @@
 #include <game_project_1/phys/collision_types.hpp>
 #include <game_project_1/phys/collider.hpp>
 
-class PhysicsData : Component{
+class PhysBody : Component{
+    
+    float* xp;float* yp;float* zp;
+    float* vxp;float* vyp;float* vzp;
     public:
     Ellipse_t world_hitsphere;
 	bool	world_collision_enabled = true;
@@ -21,11 +24,20 @@ class PhysicsData : Component{
 	bool	is_midair	=	false;
 	bool    out_of_bounds = false;
 
-    PhysicsData();
-    ~PhysicsData();
+    PhysBody();
+    ~PhysBody();
+
+    vec3 GetPosition();
+    void SetPosition(vec3 new_pos);
+    vec3 GetVelocity();
+    void SetVelocity(vec3 new_vel);
+    bool IsInBounds();
+    void SetInBounds(bool in_bounds);
+    bool IsMidair();
+    void SetMidair(bool midair);
 };
 
-class ColliderSet : Pool<CapsuleCollider> , Component{
+class ColliderSet : public Pool<CapsuleCollider> , Component{
     public:
     float bounds_xz;
     float bounds_y;

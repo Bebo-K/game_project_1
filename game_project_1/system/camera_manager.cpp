@@ -1,8 +1,8 @@
 #include <game_project_1/system/camera_manager.hpp>
 
 
-void CameraManager::Update(Scene* scene, float delta){
-    for(Entity* e : scene->entities){
+void CameraManager::Update(ClientScene* scene){
+    for(ClientEntity* e : scene->entities){
         if(e->camera_target != null){
             Camera* cam = e->camera_target->camera;
             vec3 rotated_offset = e->camera_target->offset;

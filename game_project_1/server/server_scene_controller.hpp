@@ -9,7 +9,7 @@ namespace ServerSceneController{;
 
 void Init(Server* s);
 //Entity* SpawnEntity();
-int TransitionUnitEntity(Scene* from,Scene* to, int entrance_id, GameUnit unit);
+int TransitionUnitEntity(ServerScene* from,ServerScene* to, int entrance_id, GameUnit* unit);
 //int SpawnEntityOfType(int entity_class_id);
 
 

@@ -11,7 +11,7 @@ class Skybox : public Drawable{
     Material    mat;
 
     Skybox();
-    void Build(char* image_fn);
+    void SetTexture(Texture tex);
     void Draw(Camera* cam);
 };
 

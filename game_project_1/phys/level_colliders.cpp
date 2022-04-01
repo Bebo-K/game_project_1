@@ -1,12 +1,13 @@
 #include <game_project_1/phys/level_colliders.hpp>
 #include <game_project_1/phys/collision_types.hpp>
 #include <game_project_1/phys/coll_triangle_handler.hpp>
+#include <game_project_1/component/phys_components.hpp>
 #include <game_project_1/log.hpp>
 
 CollisionMesh::CollisionMesh(){
     name=null;
-    vertex_count=0;
-    vertices=null;
+    tri_count=0;
+    tris=null;
 }
 
 CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface* coll_surface){
@@ -16,7 +17,7 @@ CollisionMesh::CollisionMesh(MeshGroup* group,CollisionSurface* coll_surface){
 
 CollisionMesh::~CollisionMesh(){
     if(name != null){free(name);name=null;}
-    if(vertices != null){free(vertices);vertices=null;}
+    if(tris != null){free(tris);tris=null;}
 }
 
 void CollisionMesh::SetSurface(CollisionSurface* coll_surface){
@@ -34,21 +35,21 @@ void CollisionMesh::SetVertices(MeshGroup* group){
     name = cstr::new_copy(group->name);
     bounds=group->bounds;
 
-    vertex_count=0;
-    for(int i=0;i<group->mesh_count;i++){
-        vertex_count += group->meshes[i].tri_count*3;
-    }
+    tri_count=0;
+    for(int i=0;i<group->mesh_count;i++){tri_count += group->meshes[i].tri_count;}
 
-    vertices = (float*)calloc(vertex_count,sizeof(float)*3);
+    tris = (Triangle*)calloc(tri_count,sizeof(Triangle));
 
-    int current_vert_count=0;
+    int current_triangle=0;
     for(int i=0;i<group->mesh_count;i++){
         Mesh* current_mesh = &group->meshes[i];
         float* mesh_verts = (float*)calloc(current_mesh->tri_count*3*3,sizeof(float));
         
-        if(group->meshes[i].index.Valid()){
+        if(group->meshes[i].index.Valid()){//de-index vertices
             int index_sizeof;
             int index_count = group->meshes[i].tri_count*3;
+            byte* indices = nullptr;
+            float* raw_verts = nullptr;
             switch(current_mesh->index.element_type){
                 case GL_BYTE:index_sizeof=1;break;
                 case GL_SHORT:index_sizeof=2;break;
@@ -57,39 +58,40 @@ void CollisionMesh::SetVertices(MeshGroup* group){
                 case GL_UNSIGNED_INT:index_sizeof=2;break;
                 default: index_sizeof=4;break;
             }
+            indices = (byte*)calloc(index_count,index_sizeof);
             
             glBindVertexArray(group->meshes[i].vertex_array_id);
 
-            byte* indices = (byte*)calloc(index_count,index_sizeof);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,current_mesh->index.buffer_id);
-                glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,index_count * index_sizeof, indices);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,current_mesh->index.buffer_id);
+            glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,index_count * index_sizeof, indices);
             int gl_err = glGetError();
             if(gl_err != 0){logger::warn("GL error building collision mesh: index buffer error %d",&gl_err);}
             
-            float* non_indexed_verts = (float*)calloc(current_mesh->vertex_count,sizeof(float)*3);
-                glBindBuffer(GL_ARRAY_BUFFER,current_mesh->vertex.buffer_id);
-                glGetBufferSubData(GL_ARRAY_BUFFER, 0, current_mesh->vertex_count * 3 * sizeof(float), non_indexed_verts);
-            
+            raw_verts = (float*)calloc(current_mesh->vertex_count,sizeof(float)*3);
+            glBindBuffer(GL_ARRAY_BUFFER,current_mesh->vertex.buffer_id);
+            glGetBufferSubData(GL_ARRAY_BUFFER, 0, current_mesh->vertex_count * 3 * sizeof(float), raw_verts);
             gl_err = glGetError();
             if(gl_err != 0){logger::warn("GL error building collision mesh: vertex buffer error %d\n",&gl_err);}
 
             for(int j=0;j< index_count;j++){
                 int index = GetIndex(indices,j,index_sizeof);
-                mesh_verts[j*3] =   non_indexed_verts[index*3];
-                mesh_verts[j*3+1] = non_indexed_verts[index*3+1];
-                mesh_verts[j*3+2] = non_indexed_verts[index*3+2];
+                mesh_verts[j*3] =   raw_verts[index*3];
+                mesh_verts[j*3+1] = raw_verts[index*3+1];
+                mesh_verts[j*3+2] = raw_verts[index*3+2];
             }
             
             free(indices);
-            free(non_indexed_verts);
+            free(raw_verts);
         }
-        else{
+        else{//vertices are already in tri_order
             glBindBuffer(GL_ARRAY_BUFFER,current_mesh->vertex.buffer_id);
             glGetBufferSubData(GL_ARRAY_BUFFER, 0, current_mesh->vertex_count * sizeof(float) * 3, mesh_verts);
         }
-
-        memcpy(vertices,mesh_verts,current_mesh->tri_count*3*3*sizeof(float));
-        current_vert_count+=group->meshes[i].tri_count*3;
+        
+        for(int t=0;t<current_mesh->tri_count;t++){
+            tris[current_triangle+t].SetFromVertices(&mesh_verts[t*9]);
+        }
+        current_triangle+=group->meshes[i].tri_count;
         free(mesh_verts);
     } 
 }
@@ -128,70 +130,29 @@ HeightMap MakeDeathPlane(float z_pos){
     return ret;
 }
 
-CollisionList* CollisionMesh::CheckCollisions(Entity* e,vec3 step_pos){
-    if(e->phys_data == null)return null;
-
+CollisionList* CollisionMesh::CheckCollisions(PhysBody* b,vec3 step_pos){
     CollisionList* ret =null;
 
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_data->world_hitsphere.radius))return ret;
-		
-    Triangle triangle;
-
-    for(int t=0;t < vertex_count*3;t+=9){
-        triangle.verts[0].x = vertices[t];
-        triangle.verts[0].y = vertices[t+1];
-        triangle.verts[0].z = vertices[t+2];
-        triangle.verts[1].x = vertices[t+3];
-        triangle.verts[1].y = vertices[t+4];
-        triangle.verts[1].z = vertices[t+5];
-        triangle.verts[2].x = vertices[t+6];
-        triangle.verts[2].y = vertices[t+7];
-        triangle.verts[2].z = vertices[t+8];
-        
-        triangle.edges[0] = triangle.verts[1]-triangle.verts[0];
-        triangle.edges[1] = triangle.verts[2]-triangle.verts[0];
-        triangle.edges[2] = triangle.verts[1]-triangle.verts[2];
-        triangle.face.SetFromPointNormal(triangle.verts[0],triangle.edges[0].normalized().cross(triangle.edges[1].normalized()));
-        
-        if( triangle.face.normal.length_sqr() < 0.25){
-            continue;
-        }//Skip zero-sized triangles. Check for duplicate verts!
-
-        ret=CollisionList::Append(ret,TriangleHandler::DoCollision(&surface,e,step_pos, e->phys_data->world_hitsphere,triangle));
-    }	
+    if(!bounds.ContainsCircle_XZ(step_pos,b->world_hitsphere.radius))return ret;
+	
+    for(int t=0;t < tri_count;t++){
+        if(tris[t].IsZeroArea())continue;
+        ret=CollisionList::Append(ret,TriangleHandler::DoCollision(b,&surface,step_pos, b->world_hitsphere,tris[t]));
+    }
     return ret;
 }
 
-void CollisionMesh::CheckOOB(Entity* e){
-    if(e->phys_data == null)return;
-    vec3 step_pos = {e->x,e->y,e->z};
+void CollisionMesh::CheckOOB(PhysBody* b){
+    vec3 step_pos = b->GetPosition();
 
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_data->world_hitsphere.radius))return;
-		
-    Triangle triangle;
-
-    for(int t=0;t < vertex_count;t+=9){
-        triangle.verts[0].x = vertices[t];
-        triangle.verts[0].y = vertices[t+1];
-        triangle.verts[0].z = vertices[t+2];
-        triangle.verts[1].x = vertices[t+3];
-        triangle.verts[1].y = vertices[t+4];
-        triangle.verts[1].z = vertices[t+5];
-        triangle.verts[2].x = vertices[t+6];
-        triangle.verts[2].y = vertices[t+7];
-        triangle.verts[2].z = vertices[t+8];
-        
-        triangle.edges[0] = triangle.verts[1]-triangle.verts[0];
-        triangle.edges[1] = triangle.verts[2]-triangle.verts[0];
-        triangle.edges[2] = triangle.verts[1]-triangle.verts[2];
-        triangle.face.SetFromPointNormal(triangle.verts[0],triangle.edges[0].normalized().cross(triangle.edges[1].normalized()));
-        
-        TriangleHandler::CheckIfOOB(e,step_pos,triangle);
+    if(!bounds.ContainsCircle_XZ(step_pos,b->world_hitsphere.radius))return;
+	
+    for(int t=0;t < tri_count;t++){
+        if(tris[t].IsZeroArea())continue;
+        if(TriangleHandler::CheckTriangleBounds(step_pos,tris[t])){b->SetInBounds(true);}
     }
 }
 
-CollisionList* HeightMap::CheckCollisions(Entity* e,vec3 step_pos){
+CollisionList* HeightMap::CheckCollisions(PhysBody* b,vec3 step_pos){
     return nullptr;
-
-
 }

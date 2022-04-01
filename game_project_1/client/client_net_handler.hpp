@@ -10,7 +10,7 @@ namespace ClientNetHandler{
 
     void Init(Client* c);
     void Update(int frames);
-    void CreatePlayer(wchar* playername, PlayerAppearance appearance,int player_class);
+    void CreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3);
     void Free();
 
 };

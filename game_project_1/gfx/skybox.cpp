@@ -26,9 +26,7 @@ Skybox::Skybox() : mat(){
     vertices=skybox_vertices;
 }
 
-void Skybox::Build(char* image_fn){
-    mat.texture = TextureManager::Get(image_fn);
-}
+void Skybox::SetTexture(Texture sky_tex){mat.texture = sky_tex;}
 
 void Skybox::Draw(Camera* cam){
     Shader* shader = ShaderManager::UseShader("skybox");//TODO: opt between skybox and skybox_flat

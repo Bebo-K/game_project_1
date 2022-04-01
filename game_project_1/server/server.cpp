@@ -84,23 +84,23 @@ void Server::Start(){
 void Server::StartShutdown(){
     logger::info("Server shutting down...\n");
     server_save.Save(server_config::save_name);
-    for(Scene* scene:active_scenes){
+    for(ServerScene* scene:active_scenes){
         scene->Unload();
     }
     ServerNetwork::ShutdownListener();
     exit=true;
 }
-Scene* Server::LoadScene(int area_id){
-    for(Scene* unloading_scene:active_scenes){
+ServerScene* Server::LoadScene(int area_id){
+    for(ServerScene* unloading_scene:active_scenes){
         if(unloading_scene->area_id == area_id){return;}
     }
-    Scene* new_scene = new Scene();
+    ServerScene* new_scene = new ServerScene();
     //TODO: Load area details...
     active_scenes.Add(new_scene);
     return new_scene;
 }
 void Server::UnloadScene(int area_id){
-    for(Scene* unloading_scene:active_scenes){
+    for(ServerScene* unloading_scene:active_scenes){
         if(unloading_scene->area_id == area_id){
             unloading_scene->Unload();
             active_scenes.Remove(unloading_scene);
@@ -110,8 +110,8 @@ void Server::UnloadScene(int area_id){
 }
 
 
-Scene* Server::GetActiveScene(int area_id){
-    for(Scene* active_scene:active_scenes){
+ServerScene* Server::GetActiveScene(int area_id){
+    for(ServerScene* active_scene:active_scenes){
         if(active_scene->area_id == area_id){
             return active_scene;
         }
@@ -119,7 +119,7 @@ Scene* Server::GetActiveScene(int area_id){
     return null;
 }
 
-void Server::UpdateScene(Scene* scene,int frames){
+void Server::UpdateScene(ServerScene* scene,int frames){
 
 
 
@@ -127,7 +127,7 @@ void Server::UpdateScene(Scene* scene,int frames){
 
 void Server::Update(int frames){
     UpdatePlayers();
-    for(Scene* scene:active_scenes){
+    for(ServerScene* scene:active_scenes){
         UpdateScene(scene,frames);
     }
     ServerNetwork::Update();

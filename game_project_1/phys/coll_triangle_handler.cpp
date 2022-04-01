@@ -1,33 +1,36 @@
 #include <game_project_1/phys/coll_triangle_handler.hpp>
-#include <game_project_1/game/system/level_collision.hpp>
+#include <game_project_1/system/level_collision.hpp>
 
-CollisionList* TriangleHandler::DoCollision(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
+CollisionList* TriangleHandler::DoCollision(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
     CollisionList* ret =null;
     float plane_y_component = triangle.face.normal.y;
 
-    CheckIfOOB(e,step_position,triangle);
+    if(CheckTriangleBounds(step_position,triangle)){
+        body->SetInBounds(true);
+    }
 
     if(plane_y_component > 0.1f){
-        ret= HandleFloorCase(surface,e,step_position,hitsphere,triangle);
+        ret= HandleFloorCase(body,surface,step_position,hitsphere,triangle);
     }
     else if(plane_y_component > -0.1f && plane_y_component < 0.1f){
-        ret= HandleWallCase(surface,e,step_position,hitsphere,triangle);
+        ret= HandleWallCase(body,surface,step_position,hitsphere,triangle);
     }
     else if(plane_y_component < -0.1f){
-        ret= HandleCeilingCase(surface,e,step_position,hitsphere,triangle);
+        ret= HandleCeilingCase(body,surface,step_position,hitsphere,triangle);
     }
     return ret;
 }
 
-void TriangleHandler::CheckIfOOB(Entity* e,vec3 step_position,Triangle triangle){
-    if(triangle.face.normal.y*triangle.face.normal.y <= 0){return;}
+bool TriangleHandler::CheckTriangleBounds(vec3 step_position,Triangle triangle){
+    if(triangle.face.normal.y*triangle.face.normal.y <= 0){return false;}
     float vertical_intersect = triangle.face.YIntersect(step_position.x, step_position.z);
     if(triangle.PointInTriangle({step_position.x,vertical_intersect,step_position.z}) ){
-        e->phys_data->out_of_bounds =false;	
+        return true;
     }
+    return false;
 }
 
-CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
+CollisionList* TriangleHandler::HandleFloorCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
     CollisionList* ret =null;
     
     float vertical_intersect = triangle.face.YIntersect(step_position.x, step_position.z);
@@ -37,7 +40,6 @@ CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity
     
     vec3 intersect_point = {step_position.x,vertical_intersect,step_position.z};
     if(triangle.PointInTriangle(intersect_point)){
-        e->phys_data->out_of_bounds =false;	
         if(vertical_shunt >= max_down_shunt && vertical_shunt <= max_up_shunt){
             //If we're embedded or very close to the ground, register a floor collision 
             //(We start with a shunt-less ground collision when airborne to prevent the entity from prematurely snapping to the ground)
@@ -50,7 +52,7 @@ CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity
             ret->flags = LevelCollisionFlag::FLOOR;
             ret->next=null;
             //if we're close to, on, or under the floor, and not going up, it's safe to mark us as grounded.
-            if(e->velocity.y <= 0){e->phys_data->is_midair=false;}
+            if(body->GetVelocity().y <= 0){body->SetMidair(false);}
             //If we're underneath by less than our max up-shunt height, move us up and out and set us grounded
             if(vertical_shunt >= 0 && vertical_shunt <= max_up_shunt){
                 ret->flags |= LevelCollisionFlag::CANCEL_VELOCITY;
@@ -58,7 +60,7 @@ CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity
                 ret->shunt.y = vertical_shunt;
             }
             //If we're already grounded and floating over the floor by less than our max shunt height, move us down to ground.
-            else if(!e->phys_data->is_midair && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
+            else if(!body->IsMidair() && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
                 ret->flags |= LevelCollisionFlag::CANCEL_VELOCITY;
                 ret->velocity_cancel = {0,1,0};
                 ret->shunt.y = vertical_shunt;
@@ -71,7 +73,7 @@ CollisionList* TriangleHandler::HandleFloorCase(CollisionSurface* surface,Entity
     return ret;
 }
 		
-CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
+CollisionList* TriangleHandler::HandleWallCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
     CollisionList* ret =null;
     
     vec3 center = step_position;
@@ -124,7 +126,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
                 float effective_radius = hitsphere.radius*EDGE_RAD_SHRINK;
                 //This shrinks our effective radius further in the case we're falling off a ledge. It smoothes out the push away from the wall we experience when falling next to a ledge.
                 //TODO: This case here would also be a good condition to proc "hanging off wall" animations
-                if(e->phys_data->is_midair && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
+                if(body->IsMidair() && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
                     effective_radius *= 1.0f-(2*edge_offset.y/hitsphere.height);
                 }
                 
@@ -145,7 +147,7 @@ CollisionList* TriangleHandler::HandleWallCase(CollisionSurface* surface,Entity*
     return ret;
 }
 	
-CollisionList* TriangleHandler::HandleCeilingCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
+CollisionList* TriangleHandler::HandleCeilingCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
     CollisionList* ret =null;
     
     vec3 top = step_position;

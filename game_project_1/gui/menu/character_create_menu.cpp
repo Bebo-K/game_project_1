@@ -12,12 +12,12 @@ CharacterCreateMenu* charmenu = nullptr;
 
 void StartCharacterCallback(){
     if(charmenu->player_name != nullptr && wstr::len(charmenu->player_name)!= 0){
-        ClientNetHandler::CreatePlayer(charmenu->player_name,charmenu->player_appearance,charmenu->class_id);
+        ClientNetHandler::CreatePlayer(charmenu->player_name,charmenu->race_id,charmenu->class_id,charmenu->color1,charmenu->styles[0],charmenu->styles[1],charmenu->styles[2]);
     }
 }
 
 void RaceChangeCallback(int choice_id, wchar* choice_name){
-    charmenu->player_appearance.race = choice_id;
+    charmenu->race_id = choice_id;
 }
 
 void ClassChangeCallback(int choice_id,wchar* choice_name){
@@ -30,15 +30,11 @@ void CharacterCreateMenu::OnLoad(){
     charmenu = this;
     player_name=nullptr;
     class_id=0;
-    player_appearance.race=0;
-    player_appearance.style1=0;
-    player_appearance.style2=0;
-    player_appearance.style3=0;
-    player_appearance.color[0]=255;
-    player_appearance.color[1]=255;
-    player_appearance.color[2]=255;
-    player_appearance.color[3]=255;
-
+    race_id=0;
+    styles[0]=0;
+    styles[1]=0;
+    styles[2]=0;
+    color1.from_bytes(0,0,0,255);
 
     AddWidget(new MenuBackground());
     
@@ -60,7 +56,8 @@ void CharacterCreateMenu::OnLoad(){
         class_choice->choice_change_callback = ClassChangeCallback;
 
     TextEntryBar* name_entry = new TextEntryBar("name_entry",L"Enter name:",&player_name);
-/*
+
+    /*
     ChoiceBar* style_1_choice = new ChoiceBar("style_1_choice",L"Style 1");
         style_1_choice->SetChoiceCount(4);
         style_1_choice->choice_change_callback = Style1ChangeCallback;
@@ -72,7 +69,6 @@ void CharacterCreateMenu::OnLoad(){
     ChoiceBar* style_3_choice = new TextChoiceBar("style_3_choice",L"Style 3");
         style_3_choice->SetChoiceCount(4);
         style_3_choice->choice_change_callback = Style3ChangeCallback;
-
     ColorPicker* color_1_picker = new ColorPicker("color_1_picker");
         color_1_picker->color_change_callback = Color1ChangeCallback;
     */

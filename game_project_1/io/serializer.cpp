@@ -101,3 +101,4 @@ byte* Deserializer::CopyBytes(int bytes){
 }
 
 int Deserializer::AmountRead(){return place;}
+

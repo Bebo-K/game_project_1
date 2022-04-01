@@ -98,6 +98,7 @@ class JSONParser{
 public:
 	JSONParser(Stream* json_stream);
 	JSONParser(char* JSON,int length);
+	~JSONParser();
 
 	char* data;
 	int end;
@@ -114,5 +115,10 @@ public:
 	int NextNonWhitespace(int start);
 	int NextInstanceOf(char token,int start);
 };
+
+
+namespace JSON{
+	JSONObject* Parse(Stream* stream);
+}
 
 #endif

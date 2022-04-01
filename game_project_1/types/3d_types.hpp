@@ -46,6 +46,8 @@ struct vec3{
     vec3 normalized();
     vec3 horizontal();
     vec2 xz();
+    vec3 clip(vec3 direction);
+
 };
 
 struct vec4{

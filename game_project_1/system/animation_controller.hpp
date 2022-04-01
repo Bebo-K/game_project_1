@@ -1,12 +1,12 @@
 #ifndef ANIMATION_CONTROLLER_H
 #define ANIMATION_CONTROLLER_H
 
-#include <game_project_1/system/system.hpp>
+#include <game_project_1/client/client_scene.hpp>
 
-namespace AnimationController:public ClientSystem{
+namespace AnimationController{
 
-    void Update(Scene* scene, float delta);
-    void HandleGroundUnit(Scene* scene, Entity* e);
+    void Update(ClientScene* scene, float delta);
+    void HandleGroundUnit(ClientEntity* e);
 
 
 

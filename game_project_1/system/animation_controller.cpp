@@ -1,18 +1,18 @@
 #include <game_project_1/system/animation_controller.hpp>
 
-void AnimationController::Update(Scene* scene, float delta){
-    for(Entity* e: scene->entities){
+void AnimationController::Update(ClientScene* scene, float delta){
+    for(ClientEntity* e: scene->entities){
         if(e->anim_state != null && e->state != null){
             switch(e->anim_state->type_id){
                 case NO_CONTROLLER:break;
-                case GROUND_UNIT:HandleGroundUnit(scene,e);break;
+                case GROUND_UNIT:HandleGroundUnit(e);break;
                 default:break;
             }
         }
     }
 }
 
-void AnimationController::HandleGroundUnit(Scene* scene, Entity* e){
+void AnimationController::HandleGroundUnit(ClientEntity* e){
     if(e->anim_state->state != e->state){
         char* new_anim = null;
         AnimationOptions anim_options;

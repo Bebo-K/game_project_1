@@ -1,8 +1,8 @@
 #ifndef TRIANGLE_HANDLER_H
 #define TRIANGLE_HANDLER_H
 
-#include <game_project_1/game/entity.hpp>
 #include <game_project_1/phys/collision_types.hpp>
+#include <game_project_1/component/phys_components.hpp>
 
 //Handles collision against level triangles.
 namespace TriangleHandler{
@@ -14,11 +14,11 @@ namespace TriangleHandler{
 	const float MIN_EDGE_NORMAL_COS  = 0.70710678118f;
     //MIN_EDGE_NORMAL_COS prevents the edge of a single wall from pushing us more than X degrees away from the way the wall actually faces.
 
-    void           CheckIfOOB(Entity* e,vec3 step_position,Triangle triangle);
-    CollisionList* DoCollision(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
-    CollisionList* HandleFloorCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
-    CollisionList* HandleWallCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
-    CollisionList* HandleCeilingCase(CollisionSurface* surface,Entity* e,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
+    bool           CheckTriangleBounds(vec3 step_position,Triangle triangle);
+    CollisionList* DoCollision(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
+    CollisionList* HandleFloorCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
+    CollisionList* HandleWallCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
+    CollisionList* HandleCeilingCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle);
 }
 
 

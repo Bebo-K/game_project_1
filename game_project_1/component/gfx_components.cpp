@@ -33,7 +33,9 @@ void ModelSet::Draw(Camera* cam){
 ModelSet::~ModelSet(){Clear();}
 
 
-void SpriteSet::Draw(Camera* cam,mat4* view, mat4* projection){
-
+void SpriteSet::Draw(Camera* cam){
+    for(Sprite* s: (*this)){
+        s->Draw();
+    }
 }
 SpriteSet::~SpriteSet(){Clear();}

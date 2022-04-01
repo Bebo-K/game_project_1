@@ -1,13 +1,11 @@
 #ifndef CAMERA_MANAGER_H
 #define CAMERA_MANAGER_H
 
-
-#include <game_project_1/system/system.hpp>
-
+#include <game_project_1/client/client_scene.hpp>
 
 namespace CameraManager{
 
-    void Update(Scene* scene, float delta);
+    void Update(ClientScene* scene);
 };
 
 

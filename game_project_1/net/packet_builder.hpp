@@ -104,11 +104,11 @@ namespace PacketData{
         void SetStyle2(int style1);
         int GetStyle3();
         void SetStyle3(int style1);
-        byte* GetColor1();
-        void SetColor1(byte* c);
+        color GetColor1();
+        void SetColor1(color c);
         wchar* GetCharacterName();
         void SetCharacterName(wchar* name);
-        PlayerAppearance GetCharacterAppearance();
+        UnitAppearance GetCharacterAppearance();
         
         SNPS(Packet* p);
         SNPS(Payload p);

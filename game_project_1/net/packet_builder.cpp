@@ -176,8 +176,8 @@ int SNPS::GetStyle2(){return ((int*)data_backing)[3];}
 void SNPS::SetStyle2(int style1){((int*)data_backing)[3] = style1;}
 int SNPS::GetStyle3(){return ((int*)data_backing)[4];}
 void SNPS::SetStyle3(int style1){((int*)data_backing)[4] = style1;}
-byte* SNPS::GetColor1(){return (byte*)(&data_backing[sizeof(int)*5]);}
-void SNPS::SetColor1(byte* color){memcpy(&data_backing[sizeof(int)*5],color,sizeof(byte)*4);}
+color SNPS::GetColor1(){return *(color*)(&data_backing[sizeof(int)*5]);}
+void SNPS::SetColor1(color color1){memcpy(&data_backing[sizeof(int)*5],&color1,sizeof(color));}
 wchar* SNPS::GetCharacterName(){
     int place = (sizeof(int)*5) + sizeof(byte)*4;
     return ((wchar*)(&data_backing[place]));
@@ -190,13 +190,16 @@ void SNPS::SetCharacterName(wchar* name){
     ((wchar*)(&data_backing[place]))[text_len]=0;
     AddDataLength(sizeof(wchar)*(text_len+1));
 }
-PlayerAppearance SNPS::GetCharacterAppearance(){
-    PlayerAppearance ret;
-    memcpy(ret.color,GetColor1(),sizeof(byte)*4);
-    ret.race=GetRaceID();
-    ret.style1=GetStyle1();
-    ret.style2=GetStyle2();
-    ret.style3=GetStyle3();
+UnitAppearance SNPS::GetCharacterAppearance(){
+    UnitAppearance ret;
+    ret.color_count=1;
+    ret.colors=(color*)malloc(sizeof(color)*1);
+    memcpy(ret.colors,&data_backing[sizeof(int)*5],sizeof(byte)*4);
+    ret.style_options=3;
+    ret.styles=(int*)malloc(sizeof(int)*3);
+    ret.styles[0]=GetStyle1();
+    ret.styles[1]=GetStyle2();
+    ret.styles[2]=GetStyle3();
     return ret;
 }
 

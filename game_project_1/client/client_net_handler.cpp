@@ -91,17 +91,17 @@ void ClientNetHandler::Update(int frames){
 }
 
 
-void ClientNetHandler::CreatePlayer(wchar* playername, PlayerAppearance appearance,int player_class){
+void ClientNetHandler::CreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3){
     Packet packet_backing;
     PacketData::SNPS start_new_player_save(&packet_backing);
 
         start_new_player_save.SetCharacterName(playername);
         start_new_player_save.SetClassID(player_class);
-        start_new_player_save.SetRaceID(appearance.race);
-        start_new_player_save.SetColor1(appearance.color);
-        start_new_player_save.SetStyle1(appearance.style1);
-        start_new_player_save.SetStyle2(appearance.style2);
-        start_new_player_save.SetStyle3(appearance.style3);
+        start_new_player_save.SetRaceID(player_race);
+        start_new_player_save.SetColor1(color1);
+        start_new_player_save.SetStyle1(style1);
+        start_new_player_save.SetStyle2(style2);
+        start_new_player_save.SetStyle3(style3);
 
         start_new_player_save.WritePacket();
 

@@ -79,7 +79,7 @@ void GUI::Paint(){
     }
     developer_console.Paint();
 }
-void GUI::Update(Scene* scene, int frames){
+void GUI::Update(ClientScene* scene,int frames){
     for(Menu* m: menus){m->Update(frames);}
     developer_console.Update(frames);
 }

@@ -1,12 +1,8 @@
-#include <game_project_1/game/entity.hpp>
-#include <game_project_1/types/map.hpp>
-#include <stdlib.h>
+#include <game_project_1/client/client_entity.hpp>
 
-/*
-
-Entity::Entity(){
-    eid =0;
-    type =0;
+ClientEntity::ClientEntity(){
+    id =0;
+    entity_class_id =0;
     name=nullptr;
     x=y=z=0;
     velocity={0,0,0};
@@ -26,18 +22,7 @@ Entity::Entity(){
     unit_data=null;
     npc_data=null;
 }
-
-void Entity::SetName(wchar* name){
-    name = wstr::new_copy(name);
-}
-
-
-vec3 Entity::GetPos(int ms){
-    float seconds = ms/1000.0f;
-    return {x+(velocity.x*seconds),y+(velocity.y*seconds),z+(velocity.z*seconds)};
-}
-
-Entity::~Entity(){
+ClientEntity::~ClientEntity(){
     if(name != nullptr){free(name);name=nullptr;}
     if(models != nullptr){delete models;models=nullptr;}
     if(sprites != nullptr){delete sprites;sprites=nullptr;}
@@ -51,23 +36,5 @@ Entity::~Entity(){
     if(unit_data != nullptr){delete unit_data;unit_data=nullptr;}
     if(npc_data != nullptr){delete  npc_data;npc_data=nullptr;}
 }
+vec3 ClientEntity::GetPos(){return {x,y,z};}
 
-
-
-Map<int,EntityClass*> registered_classes(1);
-
-void EntityClass::Register(EntityClass* eclass){
-    if(registered_classes.Has(eclass->id))return;
-    registered_classes.Add(eclass->id,eclass);
-}
-ClientEntity* EntityClass::BuildClient(GameConstants::EntityClassID class_id){
-    if(!registered_classes.Has(class_id))return new ClientEntity();
-    registered_classes.Get(class_id)->BuildClientEntity();
-}
-ServerEntity* EntityClass::BuildServer(GameConstants::EntityClassID class_id){
-    if(!registered_classes.Has(class_id))return new ServerEntity();
-    registered_classes.Get(class_id)->BuildServerEntity();
-}
-
-
-*/

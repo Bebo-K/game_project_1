@@ -2,7 +2,7 @@
 #define SERVER_H
 
 #include <game_project_1/types/list.hpp>
-#include <game_project_1/game/scene.hpp>
+#include <game_project_1/server/server_scene.hpp>
 #include <game_project_1/game/savefile.hpp>
 #include <game_project_1/game/player_info.hpp>
 #include <game_project_1/signal.hpp>
@@ -19,7 +19,7 @@ class Server{
     int     max_players;
     PlayerInfo* players;
     long long active_frames;
-    List<Scene> active_scenes;
+    List<ServerScene> active_scenes;
     SaveFile server_save;
 
     Server();
@@ -27,12 +27,12 @@ class Server{
     void Start();
     void StartShutdown();
     
-    Scene* LoadScene(int area_id);
+    ServerScene* LoadScene(int area_id);
     void UnloadScene(int area_id);
-    Scene* GetActiveScene(int area_id);//returns the scene if it's active, otherwise reuturns null.
+    ServerScene* GetActiveScene(int area_id);//returns the scene if it's active, otherwise reuturns null.
 
     void Update(int frames);
-    void UpdateScene(Scene* scene,int ms);
+    void UpdateScene(ServerScene* scene,int ms);
 
     void UpdateNetwork(int frames);
     void UpdatePlayers();
