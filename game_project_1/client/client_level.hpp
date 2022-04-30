@@ -6,22 +6,19 @@
 #include <game_project_1/gfx/model.hpp>
 #include <game_project_1/phys/level_colliders.hpp>
 
-class ClientLevel{
+class ClientLevel:public Drawable{
+    private:
+    static char* default_shader;
     public:
-    char*           shader_name;
-
-    int             model_count;
-    ModelData*      models;
-
-    int             collmesh_count; 
-    CollisionMesh*  collmeshes;
-
     Skybox skybox;
+    Array<ModelData>     models;
+    Array<MeshCollider> collmeshes;
+
 
     ClientLevel();
     ~ClientLevel();
-    void Draw(Camera* cam);
-    void LoadFromStream(Stream* stream);
+    virtual void Draw(Camera* cam);
+    void LoadArea(int area_id);
     void Unload();
 };
 

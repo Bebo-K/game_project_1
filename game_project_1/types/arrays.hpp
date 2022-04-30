@@ -6,6 +6,106 @@
 #include <game_project_1/log.hpp>
 
 
+//A simple iterable array that allocates memory but does not track it's state. 
+//Pass by value safe +s allocation/deallocation must be done manually
+template <typename T>
+class Array;
+template <typename T>
+struct ArrayIterator{
+    Array<T>*    parent;
+    int         index;
+    T* operator*();
+    ArrayIterator<T> operator++();
+    bool operator==(ArrayIterator<T>& l2);
+    bool operator!=(ArrayIterator<T>& l2);
+};
+template <typename T>
+struct Array{ 
+    friend struct ArrayIterator<T>;
+    int length;
+    T* data; 
+
+    Array(){
+        data=nullptr;
+        length=0;
+    }
+
+    Array(int size){
+        data=(T*)calloc(size,sizeof(T));
+        length=size;
+    }
+
+    ~Array(){}
+
+    void Allocate(int size){
+        if(data != nullptr){
+            logger::warn("Array::Allocate -> Data was already allocated for this array\n");
+        }
+        data=(T*)calloc(size,sizeof(T));
+        length=size;
+    }
+
+    void operator=(Array<T>& a2){
+        length=a2.length;
+        data=a2.data;
+    }
+
+    void operator=(Array<T> a2){
+        length=a2.length;
+        data=a2.data;
+    }
+
+    void Destroy(){
+        for(int i=0;i<length;i++){data[i].~T();}
+        if(data != nullptr){free(data);data=nullptr;}
+        length=0;
+    };
+
+    T* operator[](int index){
+        if(index < 0 || index >= length){logger::exception("Array::[] -> Index %d is out of range.\n",index);return nullptr;}
+        return &data[index];
+    }
+
+    int IndexOf(T* obj){
+        int index = obj-data;
+        if(index < 0 || index >= length){logger::exception("Array::Index of -> Index %d is out of range.",index);return 0;}
+        return index;
+    }
+
+    void Resize(int new_size){
+        T* new_dat = (T*)calloc(new_size,sizeof(T));
+        if(data != nullptr){
+            memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
+            free(data);
+        }
+        data = new_dat;
+        length = new_size;
+    }
+
+    ArrayIterator<T> begin(){ return {this,0};}
+    ArrayIterator<T> end(){return {this,length};}
+};
+
+template <typename T>
+T* ArrayIterator<T>::operator*(){
+    return (*parent)[index];
+}
+
+template <typename T>
+ArrayIterator<T> ArrayIterator<T>::operator++(){
+    index++;
+    return (*this);
+}
+
+template <typename T>
+bool ArrayIterator<T>::operator==(ArrayIterator<T>& l2){
+    return index ==l2.index;
+}
+template <typename T>
+bool ArrayIterator<T>::operator!=(ArrayIterator<T>& l2){
+    return !(index ==l2.index);
+}
+
 
 //A resizable array of individually settable bits.
 struct BitArray{
@@ -71,88 +171,5 @@ class DynamicArray{
     DynamicArrayIterator begin();
     DynamicArrayIterator end();
 };
-
-
-//A simple iterable array that allocates memory but does not track it's state. Can be resized by calling Resize() manually.
-template <typename T>
-class Array;
-template <typename T>
-struct ArrayIterator{
-    Array<T>*    parent;
-    int         index;
-    T* operator*();
-    ArrayIterator<T> operator++();
-    bool operator==(ArrayIterator<T>& l2);
-    bool operator!=(ArrayIterator<T>& l2);
-};
-template <typename T>
-class Array{
-    protected:
-    T* data;
-    
-    friend class ArrayIterator<T>;
-    public:
-    int length;
-
-    Array(){
-        data=nullptr;
-        length=0;
-    }
-
-    Array(int size){
-        data=calloc(size,sizeof(T));
-        length=size;
-    }
-
-    ~Array(){
-        free(data);
-        data=nullptr;
-        length=0;
-    }
-
-    T* operator[](int index){
-        if(index < 0 || index >= length){logger::exception("Array::[] -> Index %d is out of range.",index);return nullptr;}
-        return &data[index];
-    }
-
-    void Resize(int new_size){
-        T* new_dat = (T*)calloc(new_size,sizeof(T));
-        if(data != nullptr){
-            memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
-            free(data);
-        }
-        data = new_dat;
-        length = new_size;
-    }
-
-    int IndexOf(T* obj){
-        int index = obj-data;
-        if(index < 0 || index >= length){logger::exception("Array::Index of -> Index %d is out of range.",index);return 0;}
-        return index;
-    }
-    
-    ArrayIterator<T> begin(){ return {this,0};}
-    ArrayIterator<T> end(){return {this,length};}
-};
-
-template <typename T>
-T* ArrayIterator<T>::operator*(){
-    return (*parent)[index];
-}
-
-template <typename T>
-ArrayIterator<T> ArrayIterator<T>::operator++(){
-    index++;
-    return (*this);
-}
-
-template <typename T>
-bool ArrayIterator<T>::operator==(ArrayIterator<T>& l2){
-    return index ==l2.index;
-}
-template <typename T>
-bool ArrayIterator<T>::operator!=(ArrayIterator<T>& l2){
-    return !(index ==l2.index);
-}
 
 #endif

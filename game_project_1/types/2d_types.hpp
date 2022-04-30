@@ -2,7 +2,6 @@
 #define _2D_TYPES_H
 
 
-
 struct point_i{
     int x,y;
 
@@ -14,8 +13,6 @@ struct point_i{
 struct point_f{float x,y;
     point_i to_point_i();
 };
-
-
 
 struct rect_i{
     int x,y,w,h;

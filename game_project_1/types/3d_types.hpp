@@ -42,6 +42,7 @@ struct vec3{
     vec3 operator +(vec3 v2);
     vec3 operator -(vec3 v2);
     vec3 operator *(float scl);
+    vec3 operator *(vec3 scl);
     vec3 of_length(float newlen);
     vec3 normalized();
     vec3 horizontal();
@@ -56,7 +57,6 @@ struct vec4{
     vec4();
     vec4(float vx,float vy,float vz,float vw);
 };
-
 
 struct mat4;
 
@@ -77,7 +77,6 @@ struct quaternion{
 };
 
 struct mat4{
-
     float m[16];
 
 
@@ -120,12 +119,33 @@ struct mat3{
 };
 
 
+//Transforms represent a transformation matrix consisting of a translation, rotation, and scale
+// They should be used for data close to the rendering pipeline, like skeleton animatiions
 struct Transform{
     float x,y,z;
     quaternion rotation;
     vec3 scale;
 
+    vec3 Position();
     void Clear();
+};
+
+
+
+// Location is a combination of a position, rotation, and scale. Different from Transforms mainly because the rotation
+// hasn't been converted down to a quaternion yet. Game logic should happen using Location objects as:
+// rotation.x = forward/backward pitch of the object
+// rotation.y = turn of the object
+// rotation.z = left/right yaw of the object
+// Where Transform.rotation has no such mappings
+struct Location{
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+
+    Location();
+    Location(vec3 pos,vec3 rot,vec3 scale);
+    //Transform ToTransform();
 };
 
 

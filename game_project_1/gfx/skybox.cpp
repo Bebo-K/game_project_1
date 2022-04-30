@@ -5,7 +5,7 @@ float skybox_vert_data[] ={-1, 1, 0,  1, 1, 0,  1,-1, 0,   -1, 1, 0, -1,-1, 0,  
 
 VBO skybox_vertices;
 void BuildSkyboxPrimitive(){
-    skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,6);
+    skybox_vertices.Create(skybox_vert_data,GL_FLOAT,3,6,GL_ARRAY_BUFFER);
     int err = glGetError();
     if(err != 0){
         logger::warn("Error building skybox primitive");

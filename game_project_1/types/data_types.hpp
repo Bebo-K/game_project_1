@@ -15,5 +15,12 @@ typedef unsigned char byte;
 
 void* i_to_p(int ptr);//Convention exception to match "atof",etc
 
+struct color{
+    byte r,g,b,a;
+    void from_bytes(byte R, byte G, byte B, byte A);
+    void from_int(int color_code);
+    int to_int();
+};
+
 #endif
 

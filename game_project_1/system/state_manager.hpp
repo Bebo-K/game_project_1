@@ -1,11 +1,11 @@
 #ifndef STATE_MANAGER_H
 #define STATE_MANAGER_H
 
-#include <game_project_1/system/system.hpp>
+#include <game_project_1/game/entity.hpp>
 
-namespace StateManager{
+namespace AnimationManager{
 
-    void Update(Scene* scene, int frames);
+    void Update(ClientEntity* e, int frames);
 
 
 };

@@ -2,6 +2,21 @@
 #include <game_project_1/log.hpp>
 #include <math.h>
 
+
+LinearGradient::LinearGradient(){a=b=0;}
+LinearGradient::LinearGradient(float v1,float v2){a=v1;b=v2;}
+float LinearGradient::Percent(float value){
+    float min = (a < b)? a:b;
+    float dist = (a < b)? b-min:a-min;
+    return ((value-min)/dist);
+}
+float LinearGradient::ScaleTo(float value,LinearGradient g2){
+    return g2.Value(Percent(value));
+}
+float LinearGradient::Value(float percent){
+    return a*percent+b*(1.0f-percent);
+}
+    
 FloatRange FloatRange::Union(FloatRange r2){
     return FloatRange( (min < r2.min)?min:r2.min , (max > r2.max)?max:r2.max );
 }
@@ -38,6 +53,18 @@ bool FloatRange::Contains(float f){return(f >= min && f <= max);}
 float FloatRange::ScaleTo(float f1, FloatRange r1){//scales float f1 from range r1 to this range.
     float f0 = (f1-r1.min)/(r1.max-r1.min);
     return f0*(max-min) + min;
+}
+
+float FloatRange::Overlap_Center(FloatRange r2){
+    if(Contains(r2.min)){
+        if(Contains(r2.max)){return r2.Average();}
+        return (r2.min + max) /2;
+    }
+    if(r2.Contains(min)){
+        if(r2.Contains(max)){return Average();}
+        return (min + r2.max) /2;
+    }
+    return (Average() + r2.Average()) / 2;
 }
 
 

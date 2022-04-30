@@ -1,4 +1,5 @@
 #include <game_project_1/gfx/gload.hpp>
+#include <game_project_1/log.hpp>
 #include <stdio.h>
 
 //since GLuints are unsigned, we're reserving the 0 buffer as "empty"
@@ -12,6 +13,12 @@ void GLOAD_INIT(){
 void GLOAD_DESTROY(){
     glDeleteBuffers(1,&zero_buffer);
 }
+
+void CheckForGLError(const char* warn_msg){
+    int err = glGetError();
+    if(err != 0){logger::warn(warn_msg,err);}
+}
+
 
 /*
 ////////////////////////////////////////////////////INTERNAL SINGLETON

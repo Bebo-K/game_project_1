@@ -1,16 +1,13 @@
 #ifndef PHYS_COMPONENTS_H
 #define PHYS_COMPONENTS_H
 
-#include <game_project_1/component/component.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/types/3d_types.hpp>
 #include <game_project_1/phys/collision_types.hpp>
 #include <game_project_1/phys/collider.hpp>
+#include <game_project_1/io/serializer.hpp>
 
-class PhysBody : Component{
-    
-    float* xp;float* yp;float* zp;
-    float* vxp;float* vyp;float* vzp;
+class PhysBody{
     public:
     Ellipse_t world_hitsphere;
 	bool	world_collision_enabled = true;
@@ -35,21 +32,30 @@ class PhysBody : Component{
     void SetInBounds(bool in_bounds);
     bool IsMidair();
     void SetMidair(bool midair);
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+    void Copy(PhysBody* p2);
 };
 
-class ColliderSet : public Pool<CapsuleCollider> , Component{
+class ColliderSet : public Pool<ShapeCollider>{
     public:
     float bounds_xz;
     float bounds_y;
     ~ColliderSet();
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+    void Copy(ColliderSet* p2);
 };
 
-class MovementData : Component {
+class MovementData{
 	public:
     bool    lock_move;
     bool    lock_jump;
     bool    lock_action;
-    bool    lock_camera;
 
     float	base_speed;
     float	jump_speed;
@@ -73,15 +79,15 @@ class MovementData : Component {
     bool    is_action;
     bool    action_goal;
 
-    bool    can_camera;
-    bool    cam_moving;
-    float   cam_rot_goal;
-    float   cam_zoom_goal;
-
     float MaxSpeed();
 
     MovementData();
     ~MovementData();
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+    void Copy(MovementData* p2);
 };
 
 

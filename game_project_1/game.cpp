@@ -3,7 +3,7 @@
 #include <game_project_1/gfx/texture.hpp>
 #include <game_project_1/gfx/shader.hpp>
 #include <game_project_1/gfx/model.hpp>
-#include <game_project_1/gfx/animation.hpp
+#include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/log.hpp>
 #include <math.h>
 
@@ -11,21 +11,19 @@ bool Game::running = false;
 Client* Game::client=nullptr;
 Server* Game::server=nullptr;
 
-int Game::framerate = 60;
-int Game::drawrate = 60;
-int Game::tickrate = 30;
+int frame_interval_ms = 1000/60;
+int draw_interval_ms = 1000/60;
 
 long last_frame;
 long last_render;
-
-float Game::FrameInterval(){return 1.0f/framerate;}
-float Game::DrawInterval(){return 1.0f/drawrate;}
 
 void Game::Start(){
     client = new Client();
     client->Start();
     last_frame = OS::time_ms();
     running=true;
+    frame_interval_ms=1000/config::framerate;
+    draw_interval_ms=1000/config::max_drawrate;
 }
 
 void Game::StartLocalServer(){
@@ -50,8 +48,6 @@ void Game::Paint(){
 
 void Game::Poll(){
     if(!running)return;
-    int frame_interval_ms = 1000/framerate;
-    int draw_interval_ms = 1000/drawrate;
 
     long poll_time = OS::time_ms();
     long delta_ms = poll_time - last_frame;
@@ -72,14 +68,14 @@ void Game::Poll(){
 
 void Game::Exit(){
     running=false;
+    if(server != nullptr){
+        server->StartShutdown();
+    }
     if(client != nullptr){
         delete client;
         client=nullptr;
     }
-    if(server != nullptr){
-        server->StartShutdown();
-    }
-    
+
     logger::info("Exiting.\n");
     exit(0);
 }

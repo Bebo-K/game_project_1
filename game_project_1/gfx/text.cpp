@@ -127,8 +127,5 @@ void Glyph::Draw(point_i draw_offset){
 
     glDrawArrays(GL_TRIANGLES,0,3);
 
-    int err = glGetError(); 
-    if(err != 0){logger::warn("UI_Rect.Draw() -> GL Error: %d \n",err);}
-    
-    //text_shader->OnFinishUse();
+    CheckForGLError("UI_Rect.Draw() -> GL Error: %d \n");
 }

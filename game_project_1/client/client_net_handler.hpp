@@ -11,6 +11,7 @@ namespace ClientNetHandler{
     void Init(Client* c);
     void Update(int frames);
     void CreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3);
+    void SendPlayerDelta();
     void Free();
 
 };

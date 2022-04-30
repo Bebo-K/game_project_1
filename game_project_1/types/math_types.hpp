@@ -3,8 +3,21 @@
 
 #include <game_project_1/types/3d_types.hpp>
 
-struct FloatRange
-{
+
+
+struct LinearGradient{
+    float a,b;
+
+    LinearGradient();
+    LinearGradient(float v1,float v2);
+    float Percent(float value);//returns a number that represents where value is on the gradient. 0 to 1.0 lies on gradient, negative and results > 1.0 lie outside.
+    float ScaleTo(float value,LinearGradient g2);//Scale value to this gradient, then return that percentage value of g2.
+    float Value(float percent);//returns the point at percent in the gradient between a and b (a*percent + b*(1.0-percent))
+};
+
+
+//FloatGradient where min always < max
+struct FloatRange{
     float min;
     float max;
 
@@ -17,7 +30,10 @@ struct FloatRange
     FloatRange Clamp(FloatRange r2);
     FloatRange Union(FloatRange r2);
     float ScaleTo(float f1, FloatRange r1);
+    float ScaleTo(float f1, LinearGradient r1);
+    float Overlap_Center(FloatRange r2);
 };
+
 
 struct AABB{
     vec3 lo_corner;

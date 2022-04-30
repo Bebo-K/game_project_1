@@ -7,9 +7,6 @@
 #include <game_project_1/test/perf.hpp>
 
 namespace Game{
-    extern int framerate; //client updates/second
-    extern int drawrate; //cient draws/second
-    extern int tickrate;//server updates/second
     extern bool running;
     extern Client* client;
     extern Server* server;

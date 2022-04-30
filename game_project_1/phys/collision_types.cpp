@@ -1,51 +1,27 @@
 #include <game_project_1/phys/collision_types.hpp>
+#include <game_project_1/types/str.hpp>
 #include <math.h>
 
-CollisionList::CollisionList(){
-    surface=null;
-    normal={0,0,0};
-    velocity_cancel={0,0,0};
-    shunt={0,0,0};
-    flags=0;
-    solid=0;
-    floor_distance=0;
-    next=null;
-}
-
-CollisionList* CollisionList::last(){
-    CollisionList* ret = this;
-    while(ret->next != null){ret = ret->next;}
-    return ret;
-}
-
-CollisionList* CollisionList::Append(CollisionList* first,CollisionList* new_coll){
-    if(new_coll ==null)return first;
-    if(first == null)return new_coll;
-    if(first ==new_coll){
-        return first;
-    }
-    CollisionList* current_last = first->last();
-    current_last->next = new_coll;
-    return first;
-}
 
 Ellipse_t::Ellipse_t(float h,float w){
     height=h;
     radius = w/2.0f;
 }
 
-CollisionSurface::CollisionSurface(){
-
-}
-CollisionSurface::CollisionSurface(char* type_name,char* material_name){
-
-}
-
-
 Triangle::Triangle(){
     verts[0] = verts[1] = verts[2] = {0,0,0};
     face.distance=0;
     face.normal={0,1,0};
+}
+Triangle::Triangle(Triangle& t2){
+    verts[0] = t2.verts[0];verts[1] = t2.verts[1];verts[2] = t2.verts[2];
+    edges[0] = t2.edges[0];edges[1] = t2.edges[1];edges[2] = t2.edges[2];
+    face = t2.face;
+}
+void Triangle::operator=(Triangle* t2){
+    verts[0] = t2->verts[0];verts[1] = t2->verts[1];verts[2] = t2->verts[2];
+    edges[0] = t2->edges[0];edges[1] = t2->edges[1];edges[2] = t2->edges[2];
+    face = t2->face;
 }
 
 void Triangle::SetFromVertices(float vertices[9]){
@@ -117,7 +93,7 @@ bool Triangle::PointInTriangle(vec3 point) {
 }
 
 bool Triangle::IsZeroArea(){
-    return(face.normal.length_sqr() > 0.25);
+    return(face.normal.length_sqr() < 0.25);
 }
 
 bool Triangle::SameSide(vec3 point,vec3 reference,vec3 origin,vec3 axis){

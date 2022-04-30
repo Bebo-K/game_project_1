@@ -9,66 +9,70 @@ const int MAX_REASON_LENGTH = 180;
 
 PacketAccessor::PacketAccessor(Packet* p){
     type=0;
-    data_length=0;
     data_backing = p->data;
     raw_packet_backing = p;
 }
 PacketAccessor::PacketAccessor(Payload p){
     type=p.type;
-    data_length=p.length;
     data_backing = p.data;
     raw_packet_backing = nullptr;
 }
-void PacketAccessor::AddDataLength(int len){
-    data_length += len;
+
+int PacketAccessor::Byte(int count){return sizeof(byte)*count;}
+int PacketAccessor::Int(int count){return sizeof(int)*count;}
+int PacketAccessor::Wstr(int place){return place + sizeof(wchar)*(wstr::len((wchar*)&data_backing[place])+1);}
+
+int PacketAccessor::GetInt(int place){return *((int*)&data_backing[place]);}
+wchar* PacketAccessor::GetWstr(int place){return ((wchar*)&data_backing[place]);}
+
+void PacketAccessor::SetInt(int place,int val){*((int*)&data_backing[place]) = val;}
+int PacketAccessor::SetWstr(wchar* str,int place,int max){
+    int str_len = wstr::len(str);
+    if(str_len > max){str_len = MAX_PLAYER_NAME_LEN;}
+    memcpy(&data_backing[place],str,str_len*sizeof(wchar));
+    ((wchar*)&data_backing[place])[str_len]=0;
+    return place + sizeof(wchar)*(str_len+1);
 }
+
 void PacketAccessor::WritePacket(){
     if(raw_packet_backing == nullptr){logger::exception("Unsupported operation: PacketAccessor is read-only for payloads");}
     raw_packet_backing->type = type;
     raw_packet_backing->CreateID();
-    raw_packet_backing->SetDataLength(data_length);
-    raw_packet_backing->RunCRC();
+    raw_packet_backing->SetDataLength(Size());
 }
 
 
 JOIN::JOIN(Packet* p):PacketAccessor(p){type = PacketID::JOIN;}
-wchar* JOIN::GetPlayerName(){return ((wchar*)data_backing);}
-void   JOIN::SetPlayerName(wchar* name){
-    int name_len = wstr::len(name);
-    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(data_backing,name,name_len*sizeof(wchar));
-    ((wchar*)data_backing)[name_len]=0;
-    AddDataLength(sizeof(wchar)*(name_len+1));
-}
+wchar* JOIN::GetPlayerName(){return GetWstr(0);}
+void   JOIN::SetPlayerName(wchar* name){SetWstr(name,0,MAX_PLAYER_NAME_LEN);}
+int JOIN::Size(){return Wstr(0);}
 
-OKAY::OKAY(Packet* p):PacketAccessor(p){type = PacketID::OKAY;data_length=sizeof(int);}
-int OKAY::GetAckID(){return ((int*)data_backing)[0];}
-void OKAY::SetAckID(int ack){((int*)data_backing)[0] = ack;}
 
-ACPT::ACPT(Packet* p):PacketAccessor(p){type = PacketID::ACPT;data_length=sizeof(int)*5;}
+OKAY::OKAY(Packet* p):PacketAccessor(p){type = PacketID::OKAY;}
+int OKAY::GetAckID(){return GetInt(0);}
+void OKAY::SetAckID(int ack){SetInt(0,ack);}
+int OKAY::Size(){return Int(0);}
+
+ACPT::ACPT(Packet* p):PacketAccessor(p){type = PacketID::ACPT;}
 ACPT::ACPT(Payload p):PacketAccessor(p){}
-int ACPT::GetAckID(){return ((int*)data_backing)[0];}
-void ACPT::SetAckID(int ack){((int*)data_backing)[0] = ack;}
-int ACPT::GetPlayerID(){return ((int*)data_backing)[1];}
-void ACPT::SetPlayerID(int player_id){((int*)data_backing)[1] = player_id;}
-int ACPT::GetPlayerSaveID(){return ((int*)data_backing)[2];}
-void ACPT::SetPlayerSaveID(int player_save_id){((int*)data_backing)[2] = player_save_id;}
-int ACPT::GetPlayerCount(){return ((int*)data_backing)[3];}
-void ACPT::SetPlayerCount(int player_count){((int*)data_backing)[3] = player_count;}
-int ACPT::GetPlayerMax(){return ((int*)data_backing)[4];}
-void ACPT::SetPlayerMax(int player_max){((int*)data_backing)[4] = player_max;}
+int ACPT::GetAckID(){return GetInt(0);}
+void ACPT::SetAckID(int ack){SetInt(0,ack);}
+int ACPT::GetPlayerID(){return GetInt(Int(1));}
+void ACPT::SetPlayerID(int player_id){SetInt(Int(1),player_id);}
+int ACPT::GetPlayerSaveID(){return GetInt(Int(2));}
+void ACPT::SetPlayerSaveID(int player_save_id){SetInt(Int(2),player_save_id);}
+int ACPT::GetPlayerCount(){return GetInt(Int(3));}
+void ACPT::SetPlayerCount(int player_count){SetInt(Int(3),player_count);}
+int ACPT::GetPlayerMax(){return GetInt(Int(4));}
+void ACPT::SetPlayerMax(int player_max){SetInt(Int(4),player_max);}
+int ACPT::Size(){return Int(5);}
 
 NOPE::NOPE(Packet* p):PacketAccessor(p){type = PacketID::NOPE;}
-wchar* NOPE::GetReason(){return ((wchar*)data_backing);}
-void NOPE::SetReason(wchar* reason){
-    int reason_len = wstr::len(reason);
-    if(reason_len > MAX_REASON_LENGTH){ reason_len = MAX_REASON_LENGTH;}
-    memcpy(data_backing,reason,reason_len*sizeof(wchar));
-    ((wchar*)data_backing)[reason_len]=0;
-    AddDataLength(sizeof(wchar)*(reason_len+1));
-}
+wchar* NOPE::GetReason(){return GetWstr(0);}
+void NOPE::SetReason(wchar* reason){SetWstr(reason,0,MAX_REASON_LENGTH);}
+int NOPE::Size(){return Wstr(0);}
 
-PING::PING(Packet* p):PacketAccessor(p){type = PacketID::PING;data_length = sizeof(long)*3;}
+PING::PING(Packet* p):PacketAccessor(p){type = PacketID::PING;}
 long PING::GetTimestamp1(){return ((long*)data_backing)[0];}
 long PING::GetTimestamp2(){return ((long*)data_backing)[1];}
 long PING::GetTimestamp3(){return ((long*)data_backing)[2];}
@@ -77,131 +81,67 @@ void PING::SetTimestamps(long ts_1,long ts_2,long ts_3){
     ((long*)data_backing)[1]=ts_2;
     ((long*)data_backing)[2]=ts_3;
 }
+int PING::Size(){return sizeof(long)*3;}
 
-NPLR::NPLR(Packet* p):PacketAccessor(p){type = PacketID::NPLR;data_length = sizeof(int);}
+NPLR::NPLR(Packet* p):PacketAccessor(p){type = PacketID::NPLR;}
 NPLR::NPLR(Payload p):PacketAccessor(p){}
-int NPLR::GetPlayerID(){return ((int*)data_backing)[0];}
-void NPLR::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
-wchar* NPLR::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
-void   NPLR::SetPlayerName(wchar* name){
-    int name_len = wstr::len(name);
-    if(name_len > MAX_PLAYER_NAME_LEN){name_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(&data_backing[sizeof(int)],name,name_len*sizeof(wchar));
-    ((wchar*)(&data_backing[sizeof(int)]))[name_len]=0;
-    AddDataLength(sizeof(wchar)*(name_len+1));
-}
+int NPLR::GetPlayerID(){return GetInt(0);}
+void NPLR::SetPlayerID(int player_id){SetInt(0,player_id);}
+wchar* NPLR::GetPlayerName(){return GetWstr(Int(1));}
+void   NPLR::SetPlayerName(wchar* name){SetWstr(name,Int(1),MAX_PLAYER_NAME_LEN);}
+int NPLR::Size(){return Wstr(Int(1));}
 
-PINF::PINF(Packet* p):PacketAccessor(p){type = PacketID::PINF;data_length = sizeof(int)*2;}
+PINF::PINF(Packet* p):PacketAccessor(p){type = PacketID::PINF;}
 PINF::PINF(Payload p):PacketAccessor(p){}
-int PINF::GetPlayerID(){return ((int*)data_backing)[0];}
-void PINF::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
-int PINF::GetPlayerEntityID(){return ((int*)data_backing)[1];}
-void PINF::SetPlayerEntityID(int entity_id){((int*)data_backing)[1] = entity_id;}
-wchar* PINF::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)*2]);}
-void   PINF::SetPlayerName(wchar* name){
-    int name_len = wstr::len(name);
-    int offset = sizeof(int)*2;
-    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(&data_backing[offset],name,name_len*sizeof(wchar));
-    ((wchar*)(&data_backing[offset]))[name_len]=0;
-    AddDataLength(sizeof(wchar)*(name_len+1));
-}
-wchar* PINF::GetCharacterName(){
-    int name_len = wstr::len(GetPlayerName());
-    int offset = sizeof(int)*2 + sizeof(wchar)*(name_len+1);
-    return (wchar*)(&data_backing[offset]);}
-void   PINF::SetCharacterName(wchar* character){
-    int name_len = wstr::len(GetPlayerName());
-    int offset = sizeof(int)*2 + sizeof(wchar)*(name_len+1);
-    int character_len = wstr::len(character);
-    if(character_len > MAX_PLAYER_NAME_LEN){ character_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(&data_backing[offset],character,character_len*sizeof(wchar));
-    ((wchar*)(&data_backing[offset]))[character_len]=0;
-    AddDataLength(sizeof(wchar)*(character_len+1));
-}
+int PINF::GetPlayerID(){return GetInt(0);}
+void PINF::SetPlayerID(int player_id){SetInt(0,player_id);}
+wchar* PINF::GetPlayerName(){return GetWstr(Int(1));}
+void   PINF::SetPlayerName(wchar* name){SetWstr(name,Int(1),MAX_PLAYER_NAME_LEN);}
+wchar* PINF::GetCharacterName(){return GetWstr(Wstr(Int(1)));}
+void   PINF::SetCharacterName(wchar* character){SetWstr(character,Wstr(Int(1)),MAX_PLAYER_NAME_LEN);}
 
+int PINF::GetPlayerEntityID(){return GetInt(Wstr(Wstr(Int(1))));}
+void PINF::SetPlayerEntityID(int entity_id){SetInt(Wstr(Wstr(Int(1))),entity_id);}
 
-PLDC::PLDC(Packet* p):PacketAccessor(p){type = PacketID::PLDC;data_length = sizeof(int);}
+int PINF::GetPlayerEntityArea(){return GetInt(Wstr(Wstr(Int(1)))+Int(1));}
+void PINF::SetPlayerEntityArea(int entity_id){SetInt(Wstr(Wstr(Int(1)))+Int(1),entity_id);}
+int PINF::Size(){return Wstr(Wstr(Int(1)))+Int(2);}
+
+PLDC::PLDC(Packet* p):PacketAccessor(p){type = PacketID::PLDC;}
 PLDC::PLDC(Payload p):PacketAccessor(p){}
-int PLDC::GetPlayerID(){return ((int*)data_backing)[0];}
-void PLDC::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
-wchar* PLDC::GetPlayerName(){return (wchar*)(&data_backing[sizeof(int)]);}
-void   PLDC::SetPlayerName(wchar* name){
-    int name_len = wstr::len(name);
-    if(name_len > MAX_PLAYER_NAME_LEN){ name_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(&data_backing[sizeof(int)],name,name_len*sizeof(wchar));
-    ((wchar*)(&data_backing[sizeof(int)]))[name_len]=0;
-    AddDataLength(sizeof(wchar)*(name_len+1));
-}
-wchar* PLDC::GetReason(){
-    int name_len = wstr::len(GetPlayerName());
-    int offset = sizeof(int)+sizeof(wchar)*(name_len+1);
-    return (wchar*)(&data_backing[offset]);}
-void   PLDC::SetReason(wchar* reason){
-    int name_len = wstr::len(GetPlayerName());
-    int offset = sizeof(int)+sizeof(wchar)*(name_len+1);
-    int reason_len = wstr::len(reason);
-    if(reason_len > MAX_REASON_LENGTH){ reason_len = MAX_REASON_LENGTH;}
-    memcpy(&data_backing[offset],reason,reason_len*sizeof(wchar));
-    ((wchar*)(&data_backing[offset]))[reason_len]=0;
-    AddDataLength(sizeof(wchar)*(reason_len+1));
-}
-
+int PLDC::GetPlayerID(){return GetInt(0);}
+void PLDC::SetPlayerID(int player_id){SetInt(0,player_id);}
+wchar* PLDC::GetPlayerName(){return GetWstr(Int(1));}
+void   PLDC::SetPlayerName(wchar* name){SetWstr(name,Int(1),MAX_PLAYER_NAME_LEN);}
+wchar* PLDC::GetReason(){return GetWstr(Wstr(Int(1)));}
+void   PLDC::SetReason(wchar* reason){SetWstr(reason,Wstr(Int(1)),MAX_REASON_LENGTH);}
+int PLDC::Size(){return Wstr(Wstr(Int(1)));}
 
 CHAT::CHAT(Packet* p):PacketAccessor(p){type = PacketID::CHAT;}
 CHAT::CHAT(Payload p):PacketAccessor(p){}
-int CHAT::GetPlayerID(){return ((int*)data_backing)[0];}
-void CHAT::SetPlayerID(int player_id){((int*)data_backing)[0] = player_id;}
-wchar* CHAT::GetChatText(){return (wchar*)(&data_backing[sizeof(int)]);}
+int CHAT::GetPlayerID(){return GetInt(0);}
+void CHAT::SetPlayerID(int player_id){SetInt(0,player_id);}
+wchar* CHAT::GetChatText(){return GetWstr(Int(1));}
 void   CHAT::SetChatText(wchar* text){
     const int MAX_CHAT_LENGTH = (Packet::MAX_DATA_LENGTH - sizeof(wchar)) / sizeof(wchar);
-    int text_len = wstr::len(text);
-    if(text_len > MAX_CHAT_LENGTH){ text_len = MAX_CHAT_LENGTH;}
-    memcpy(&data_backing[sizeof(int)],text,text_len*sizeof(wchar));
-    ((wchar*)(&data_backing[sizeof(int)]))[text_len]=0;
-    AddDataLength(sizeof(wchar)*(text_len+1));
+    SetWstr(text,Int(1),MAX_CHAT_LENGTH);
 }
-
-
+int CHAT::Size(){return Wstr(Int(1));}
 
 SNPS::SNPS(Packet* p):PacketAccessor(p){type = PacketID::SNPS;}
 SNPS::SNPS(Payload p):PacketAccessor(p){}
-int SNPS::GetRaceID(){return ((int*)data_backing)[0];}
-void SNPS::SetRaceID(int id){((int*)data_backing)[0] = id;}
-int SNPS::GetClassID(){return ((int*)data_backing)[1];}
-void SNPS::SetClassID(int id){((int*)data_backing)[1] = id;}
-int SNPS::GetStyle1(){return ((int*)data_backing)[2];}
-void SNPS::SetStyle1(int style1){((int*)data_backing)[2] = style1;}
-int SNPS::GetStyle2(){return ((int*)data_backing)[3];}
-void SNPS::SetStyle2(int style1){((int*)data_backing)[3] = style1;}
-int SNPS::GetStyle3(){return ((int*)data_backing)[4];}
-void SNPS::SetStyle3(int style1){((int*)data_backing)[4] = style1;}
-color SNPS::GetColor1(){return *(color*)(&data_backing[sizeof(int)*5]);}
-void SNPS::SetColor1(color color1){memcpy(&data_backing[sizeof(int)*5],&color1,sizeof(color));}
-wchar* SNPS::GetCharacterName(){
-    int place = (sizeof(int)*5) + sizeof(byte)*4;
-    return ((wchar*)(&data_backing[place]));
-}
-void SNPS::SetCharacterName(wchar* name){
-    int text_len = wstr::len(name);
-    int place = (sizeof(int)*5) + sizeof(byte)*4;
-    if(text_len > MAX_PLAYER_NAME_LEN){ text_len = MAX_PLAYER_NAME_LEN;}
-    memcpy(&data_backing[place],name,text_len*sizeof(wchar));
-    ((wchar*)(&data_backing[place]))[text_len]=0;
-    AddDataLength(sizeof(wchar)*(text_len+1));
-}
-UnitAppearance SNPS::GetCharacterAppearance(){
-    UnitAppearance ret;
-    ret.color_count=1;
-    ret.colors=(color*)malloc(sizeof(color)*1);
-    memcpy(ret.colors,&data_backing[sizeof(int)*5],sizeof(byte)*4);
-    ret.style_options=3;
-    ret.styles=(int*)malloc(sizeof(int)*3);
-    ret.styles[0]=GetStyle1();
-    ret.styles[1]=GetStyle2();
-    ret.styles[2]=GetStyle3();
-    return ret;
-}
+wchar* SNPS::GetCharacterName(){return GetWstr(0);}
+void SNPS::SetCharacterName(wchar* name){SetWstr(name,0,MAX_PLAYER_NAME_LEN);}
+int SNPS::GetRaceID(){return GetInt(Wstr(0));}
+void SNPS::SetRaceID(int id){SetInt(Wstr(0),id);}
+int SNPS::GetClassID(){return GetInt(Wstr(0)+Int(1));}
+void SNPS::SetClassID(int id){SetInt(Wstr(0)+Int(1),id);}
+CharacterAppearance* SNPS::GetCharacterAppearance(){return (CharacterAppearance*)&data_backing[Wstr(0)+Int(2)];}
+void SNPS::SetStyle1(int style1){SetInt(Wstr(0)+Int(2),style1);}
+void SNPS::SetStyle2(int style2){SetInt(Wstr(0)+Int(3),style2);}
+void SNPS::SetStyle3(int style3){SetInt(Wstr(0)+Int(4),style3);}
+void SNPS::SetColor1(color color1){SetInt(Wstr(0)+Int(5),color1.to_int());}
+int SNPS::Size(){return Wstr(0)+Int(6);}
 
 /*
 

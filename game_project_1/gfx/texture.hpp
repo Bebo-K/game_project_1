@@ -31,7 +31,8 @@ namespace TextureManager{
     Texture MapToAtlas(Image* textureImage);
     Texture Get(char* texname);
     Texture GetUI(char* texname);
-    Texture Get(char* texname,bool ui_image);
+    Texture GetSkybox(char* texname);
+    Texture Get(char* texname,int img_location);
     void Remove(char* texname);
     Texture DefaultTexture();
 };

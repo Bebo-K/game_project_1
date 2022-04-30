@@ -1,147 +1,122 @@
 #include <game_project_1/system/level_collision.hpp>
-#include <game_project_1/phys/collision_response.hpp>
+#include <game_project_1/types/map.hpp>
+
+using namespace LevelCollision;
+
+Map<int,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
+Map<int,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
 
 
-
-const int MAX_FRAME_COLLISIONS=16;
-CollisionList collision_databuffer[MAX_FRAME_COLLISIONS];
-int last_collision_slot=0;
-
-
-void LevelCollision::ClientFrameUpdate(ClientEntity* e,ClientScene* s, float delta){
-    PhysBody* b = e->phys_data;
-    if(b == nullptr)return;
-    if(s->level.collmesh_count < 1)return;
-
+void LevelCollision::ClientFrame(ClientScene* s,ClientEntity* e, float delta){
+    CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
+    for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
-    CollisionList* frame_collisions=null;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
-        frame_collisions = CollisionList::Append(frame_collisions,RunCollisionStep(b,s->level.collmeshes,s->level.collmesh_count,step_delta));
+        RunCollisionStep(e,s->level.collmeshes,step_delta,collision_results);
     }
-
-    if(frame_collisions != null){
-        CollisionList* collision = frame_collisions;
-        while(collision != null){
-            ServerCollisionResponse::HandleCollision(e,s,collision);
-            collision = collision->next;
+    for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
+        if(collision_results[i].isNone())break;
+        if(ClientEntityClassCollisionHandlers.Has(e->entity_class_id)){
+            ClientHandlerCallback on_collide = ClientEntityClassCollisionHandlers.Get(e->entity_class_id);
+            on_collide(e,collision_results[i],s);
         }
-    }
-    FreeCollisionSlots();
+        collision_results[i].Clear();
+    }  
 }
-void LevelCollision::ServerFrameUpdate(ServerEntity* e,ServerScene* s, float delta){
-    PhysBody* b = e->phys_data;
-    if(b == nullptr)return;
-    if(s->level.collmesh_count < 1)return;
 
+void LevelCollision::ServerFrame(ServerScene* s,ServerEntity* e, float delta){
+    CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
+    for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
-    CollisionList* frame_collisions=null;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
-        frame_collisions = CollisionList::Append(frame_collisions,RunCollisionStep(b,s->level.collmeshes,s->level.collmesh_count,step_delta));
+        RunCollisionStep(e,s->level.collmeshes,step_delta,collision_results);
     }
-
-    if(frame_collisions != null){
-        CollisionList* collision = frame_collisions;
-        while(collision != null){
-            ServerCollisionResponse::HandleCollision(e,s,collision);
-            collision = collision->next;
+    for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
+        if(collision_results[i].isNone())break;
+        if(ServerEntityClassCollisionHandlers.Has(e->entity_class_id)){
+            ServerHandlerCallback on_collide = ServerEntityClassCollisionHandlers.Get(e->entity_class_id);
+            on_collide(e,collision_results[i],s);
         }
-    }
-    FreeCollisionSlots();
+        collision_results[i].Clear();
+    } 
 }
 
-CollisionList* LevelCollision::RunCollisionStep(PhysBody b, CollisionMesh* meshes, int mesh_count, float step_delta){
-    vec3 start_position = b.GetPosition();
-    vec3 step_velocity =  b.GetVelocity()*step_delta;
+void LevelCollision::RunCollisionStep(BaseEntity* e,Array<MeshCollider> meshes, float step_delta,CollisionResult* list){
+    vec3 start_position = e->GetPos();
+    vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
-    CollisionList* step_collisions = null;
     
     //Mark as OOB before step. If we're not marked in-bounds at end of step, we'll cancel that step.
-    b.SetInBounds(false);
-    b.SetMidair(true);
+    e->phys_data->SetInBounds(false);
+    e->phys_data->SetMidair(true);
 
-    for(int i=0;i<mesh_count;i++){
-         step_collisions = CollisionList::Append(step_collisions,meshes[i].CheckCollisions(b,step_position));
+    for(MeshCollider* mesh:meshes){
+        mesh->CheckCollisions(e,step_position,step_velocity,list);
     }
     
-    StepInfo step(step_velocity);
+    //Get our total movement including this step's velocity and any shunting out of a wall
+    vec3 total_movement = HandleSolidStepCollisions(e,step_velocity,list);
 
-    HandleSolidStepCollisions(b,&step,step_collisions);
-
-    //Handle only one floor collision per step (prevents entities from vibrating on stairs)
-    if(step.floor_entry != null){
-        step.shunt = step.shunt + step.floor_entry->shunt;
-        if((step.floor_entry->flags & LevelCollisionFlag::CANCEL_VELOCITY) > 0){
-           b.SetVelocity(b.GetVelocity().clip(step.floor_entry->velocity_cancel));
-        }
-    }
-
-    if(!ENFORCE_BOUNDS || b.IsInBounds()) {
-        b.SetPosition(b.GetPosition()+ step.shunt + step.movement);     
+    if(!ENFORCE_BOUNDS || e->phys_data->IsInBounds()) {   
+        e->x += total_movement.x;
+        e->y += total_movement.y;
+        e->z += total_movement.z;
     }else{//out of bounds, stop horizontal velocity
-        b.SetVelocity({0,b.GetVelocity().y,0});
+        e->velocity = {0,e->velocity.y,0};
     }
-    return step_collisions;    
-}
-
-CollisionList* LevelCollision::GrabCollisionSlot(){
-    if(last_collision_slot < MAX_FRAME_COLLISIONS){
-        CollisionList* ret = &collision_databuffer[last_collision_slot];
-        last_collision_slot++;
-        if(ret->next != null){
-            ret->next=null;
-        }
-        return ret;
-    }
-    else return null;
-}
-
-void LevelCollision::FreeCollisionSlots(){last_collision_slot=0;
-    memset(collision_databuffer,0,sizeof(CollisionList)*MAX_FRAME_COLLISIONS);
 }
 
 //Sub-step collision handling for solid collisions only.
-void LevelCollision::HandleSolidStepCollisions(PhysBody b, StepInfo* step, CollisionList* collisions){
-    for(CollisionList* collision = collisions; collision != null; collision = collision->next){
-        if(collision->surface == null)continue;
-        if(collision->surface->type !=  SurfaceType::SOLID)continue;
-        switch(collision->flags & LevelCollisionFlag::WALL_CASE){
-		    case LevelCollisionFlag::FLOOR:{
-                    if(step->floor_entry == null || abs(step->floor_entry->floor_distance) < abs(collision->floor_distance)){
-                        step->floor_entry = collision;
-                    }
-                    break;
-                }
-            case LevelCollisionFlag::CEILING:{
-                //On ceiling collisions, cancel the step altogether
-                step->movement.x=0;
-                step->movement.y=( step->movement.y <0)? step->movement.y:0;
-                step->movement.z=0;
-                //then cancel upward movement
-                if(e->velocity.y > 0){
-                    e->velocity.y =0;
-                }//cancel horizontal movement if we're not moving up.			
-                else if(e->velocity.y < 0){
-                    e->velocity.x =0;
-                    e->velocity.z =0;
-                }
-                break;
-                
+vec3 LevelCollision::HandleSolidStepCollisions(BaseEntity* e, vec3 step_movement, CollisionResult* list){
+    CollisionResult* floor_instance=nullptr;
+    vec3 movement = step_movement;
+    vec3 shunt = {0,0,0};
+
+    for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
+        CollisionResult inst = list[i];
+        if(inst.isNone() || inst.surface->type != SurfaceType::SOLID)continue;
+        if(inst.collision_case & CollisionCase::FLOOR){
+            if(floor_instance == nullptr || 
+                floor_instance->floor_distance < inst.floor_distance){//snap to highest floor
+                floor_instance = &list[i];
+                continue;
             }
-            case LevelCollisionFlag::WALL:{
-                step->shunt = step->shunt + collision->shunt;
-                if((collision->flags & LevelCollisionFlag::CANCEL_VELOCITY) > 0){
-                    e->velocity = ClipDirection(e->velocity, collision->velocity_cancel);
-                }
-                break;
+        }
+        if(inst.collision_case & CollisionCase::CEILING){
+            //On ceiling collisions, cancel the step's movement altogether, except downward movement
+            movement = {0, (movement.y <0)?movement.y:0 ,0};
+            //cancel upward velocity
+            if(e->velocity.y > 0){e->velocity.y =0;}
+            //cancel horizontal velocity if we're not moving up.			
+            else if(e->velocity.y < 0){
+                e->velocity.x =0;
+                e->velocity.z =0;
             }
-            default:break;
-		}
+            continue;
+        }
+        if(inst.collision_case & CollisionCase::WALL){
+            shunt = shunt + inst.shunt;
+            if(inst.collision_case & CollisionCase::CANCEL_VELOCITY){
+                e->velocity = e->velocity.clip(inst.velocity_cancel);
+            }
+        }
     }
+    //Handle only one floor collision per step (prevents entities from vibrating on stairs)
+    if(floor_instance != nullptr){
+        shunt = shunt + floor_instance->shunt;
+        if(floor_instance->collision_case & CollisionCase::CANCEL_VELOCITY){
+            e->velocity = e->velocity.clip(floor_instance->velocity_cancel);
+        }
+    }
+    return movement + shunt;
 }
 
-LevelCollision::StepInfo::StepInfo(vec3 initial_movement){
-    movement = initial_movement;
-    floor_entry=nullptr;
+
+void LevelCollision::RegisterClientEntityClassCallbacks(int entity_class_id,ClientHandlerCallback client_callback){
+    ClientEntityClassCollisionHandlers.Add(entity_class_id,client_callback);
+}
+void LevelCollision::RegisterServerEntityClassCallbacks(int entity_class_id,ServerHandlerCallback server_callback){
+    ServerEntityClassCollisionHandlers.Add(entity_class_id,server_callback);
 }

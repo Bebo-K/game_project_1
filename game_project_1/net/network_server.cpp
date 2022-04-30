@@ -224,7 +224,7 @@ void ServerNetwork::SendToOtherTargets(Packet* packet,int excluded_target){
 }
 Payload ServerNetwork::RecvFromTarget(int target_id){
     if(targets[target_id].IsConnected()){return targets[target_id].Recieve();}
-    return Payload(0,0,nullptr);
+    return Payload(0,0,0,nullptr);
 }
 void ServerNetwork::HandleNewTarget(Packet* request_packet,ip_address remote_address){
     Packet response;

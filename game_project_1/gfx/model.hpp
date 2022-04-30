@@ -9,7 +9,7 @@
 
 enum ModelID{
     NONE=0,
-    PLAYER=1
+    HUMAN_1=1
 };
 
 struct Mesh{
@@ -26,15 +26,15 @@ struct Mesh{
     VBO      bone_0_weight;
 
     Mesh();
+    ~Mesh();
     void Init();
     void DebugPrint();
-    ~Mesh();
+    void Draw(Shader* s);//Assumes uniform matricies have already positioned the mesh
 };
 
 struct MeshGroup{
     char* name;
-    int mesh_count;
-    Mesh* meshes;
+    Array<Mesh> meshes;
     AABB  bounds;
     MeshGroup();
     ~MeshGroup();
@@ -45,15 +45,12 @@ class ModelData{
     public:
 	static const int MAX_BONES = 32;
     
-    int         mesh_group_count;
-	MeshGroup*  mesh_groups;
+    Array<MeshGroup> mesh_groups;
     AABB        bounds;
     Skeleton*   skeleton;
 
     ModelData();
     ~ModelData();
-
-    void DrawMesh(Shader* shader,int group_index,int mesh_index);
     void DebugPrint();
 };
 
@@ -66,7 +63,7 @@ class Model: public Drawable{
     Model(ModelID type);
     Model(ModelData* dat);
     ~Model();
-    void Draw(Camera* cam);
+    virtual void Draw(Camera* cam);
     void StartAnimation(char* anim_name);
     void StartAnimation(char* anim_name,AnimationOptions options);
 

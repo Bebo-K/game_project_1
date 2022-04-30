@@ -1,34 +1,31 @@
 #ifndef LEVEL_COLLISION_H
 #define LEVEL_COLLISION_H
 
-#include <game_project_1/phys/collision_types.hpp>
+#include <game_project_1/phys/level_colliders.hpp>
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/server/server_scene.hpp>
 
 namespace LevelCollision {
 
+	typedef void (*ClientHandlerCallback)(ClientEntity*,CollisionResult,ClientScene*);
+	typedef void (*ServerHandlerCallback)(ServerEntity*,CollisionResult,ServerScene*);
+
     const int	VELOCITY_STEPS	= 4;
 	const bool ENFORCE_BOUNDS 	= true;//for debug
 	
-	struct StepInfo{
-		vec3 shunt;
-		vec3 movement;
-		vec3 velocity;
-		CollisionList* floor_entry;//so we don't shunt too much for overlapping floors
+	//void ClientInit();
+	//void ServerInit();
 
-		StepInfo(vec3 initial_movement);
-	};
+	void ClientFrame(ClientScene* s,ClientEntity* e,float delta);
+	void ServerFrame(ServerScene* s,ServerEntity* e,float delta);
+
+	void BaseFrame(BaseEntity* e,Array<MeshCollider>* meshes,float delta,bool server);
 	
-	void ClientFrameUpdate(ClientEntity* e,ClientScene* s, float delta);
-	void ServerFrameUpdate(ServerEntity* e,ServerScene* s, float delta);
+	void RunCollisionStep(BaseEntity* e, Array<MeshCollider> meshes,float step_delta,CollisionResult* list);
+	vec3 HandleSolidStepCollisions(BaseEntity* e, vec3 step_movement,CollisionResult* list);
 	
-	CollisionList* RunCollisionStep(PhysBody* b, CollisionMesh* meshes,int mesh_count,float step_delta);
-	void HandleSolidStepCollisions(PhysBody* b, CollisionMesh* meshes,int mesh_count,StepInfo* step, CollisionList* collisions);
-
-	void HandleCollisionResults(PhysBody* b, CollisionMesh* meshes,int mesh_count, CollisionList* collisions);
-
-	CollisionList* GrabCollisionSlot();
-	void FreeCollisionSlots();
+	void RegisterClientEntityClassCallbacks(int entity_class_id,ClientHandlerCallback client_callback);
+	void RegisterServerEntityClassCallbacks(int entity_class_id,ServerHandlerCallback server_callback);
 };
 
 

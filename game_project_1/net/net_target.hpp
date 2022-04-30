@@ -63,6 +63,7 @@ namespace NetTargetState{
 
 class NetTarget{
     private:
+    const static int RELIABLE_ID_HISTORY=10;
     Packet buffer_packet;
     public:
     ip_address address;
@@ -74,8 +75,10 @@ class NetTarget{
     int                    last_recv;
     int                    conn_start;
     int                    latency;
+    int                    sent_reliables[RELIABLE_ID_HISTORY];
+    int                    ackd_reliables[RELIABLE_ID_HISTORY];
 
-    Pool<ReliablePacketEnvelope> reliable_buffer;
+    Pool<ReliablePayloadEnvelope> reliable_buffer;
     Pool<MultipartPayload> multipart_buffer;
 
     SynchronousBuffer inbound_buffer;//buffer of packets recieved
@@ -93,19 +96,21 @@ class NetTarget{
     bool IsConnected();
 
     void Update();
+
     void Send(Packet* packet);
     void Send(Payload payload);
     Payload Recieve();
+
+    bool Acknowledge(int ack_id);//sends an acknowledgement packet for the payload ID
     void Disconnect(wchar* reason);
 
-    void AddToReliableBuffer(Packet* packet);
-    void RemoveFromReliableBuffer(int packet_id);
+    int NewReliableID();
+    void AddToReliableBuffer(Payload payload);
+    void RemoveFromReliableBuffer(int reliable_id);
 
     MultipartPayload* AddToMultipartPayload(MultipartPacket* packet);//gets or creates a multipartpayload in the buffer for the packet's ID and inserts it.
     void RemoveFromMultipartBuffer(int packet_id);//for purging/expiry, data pointer is freed
     Payload FinishMultipartPayload(int packet_id);//Destroys a completed payload. Data pointer ownership is transferred to the returned Payload object.
-
-    
 
     NetTarget();
     ~NetTarget();

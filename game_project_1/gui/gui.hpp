@@ -3,10 +3,10 @@
 
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/list.hpp>
-#include <game_project_1/types/pool.hpp>
+#include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/gui/layout.hpp>
-#include <game_project_1/gui/widget.hpp>
 #include <game_project_1/gui/widget/dev_console.hpp>
+
 #include <game_project_1/gui/menu.hpp>
 #include <game_project_1/gui/menu/main_menu.hpp>
 #include <game_project_1/gui/menu/options_menu.hpp>
@@ -14,7 +14,6 @@
 #include <game_project_1/gui/menu/ingame_menu.hpp>
 #include <game_project_1/gui/menu/error_menu.hpp>
 #include <game_project_1/gui/menu/character_create_menu.hpp>
-#include <game_project_1/client/client_scene.hpp>
 
 //Manages the screen real estate for menus,text, and other 2D objects
 class GUI{

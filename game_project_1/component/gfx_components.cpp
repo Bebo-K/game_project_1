@@ -1,20 +1,6 @@
 #include <game_project_1/component/gfx_components.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/game/entity.hpp>
-#include <game_project_1/system/camera_manager.hpp>
-
-CameraTarget::CameraTarget(Camera* cam,vec3 cam_offset,FloatRange zoom_scale,FloatRange tilt){
-    camera = cam;
-    offset=cam_offset;
-    rotation.clear();
-    zoom_range = zoom_scale;
-    zoom_pitch = tilt;
-    zoom = zoom_range.Average();
-    rotation.rotate_by(zoom_pitch.ScaleTo(zoom,zoom_range),0,0);
-}
-
-CameraTarget::~CameraTarget(){}
-
 
 Model* ModelSet::Add(ModelID model_id){
     return new (Allocate()) Model(model_id);
@@ -29,7 +15,11 @@ void ModelSet::Draw(Camera* cam){
     }
 }
 
+void ModelSet::SetPosition(vec3 pos){
+    x=pos.x;y=pos.y;z=pos.z;
+}
 
+ModelSet::ModelSet(){}
 ModelSet::~ModelSet(){Clear();}
 
 

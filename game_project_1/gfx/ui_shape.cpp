@@ -18,8 +18,8 @@ void BuildShapePrimitives(){
 
     ShaderManager::UseShader("ui_shape");
     
-    rect_vertices.Create(rect_vert_data,GL_FLOAT,3,18);
-    rect_texcoords.Create(rect_texcoord_data,GL_FLOAT,2,12);
+    rect_vertices.Create(rect_vert_data,GL_FLOAT,3,18,GL_ARRAY_BUFFER);
+    rect_texcoords.Create(rect_texcoord_data,GL_FLOAT,2,12,GL_ARRAY_BUFFER);
 
     
     rect_vertices.Bind(Shader::ATTRIB_VERTEX);

@@ -1,12 +1,21 @@
 #include <game_project_1/config.hpp>
-#include <game_project_1/struct/data_types.hpp>
-#include <game_project_1/struct/str.hpp>
+#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/str.hpp>
 #include <game_project_1/io/file.hpp>
 #include <game_project_1/os.hpp>
 #include <stdlib.h>
 
 
 List<ConfigEntry> global_config_entries(10);
+
+
+
+int config::framerate = 60;
+int config::max_drawrate = 60;
+int config::tickrate = 30;
+float config::frame_interval = 1.0f/60;
+float config::draw_interval = 1.0f/60;
+float config::tick_interval = 1.0f/30;
 
 int config::window_width = 1280;
 int config::window_height = 720;
@@ -18,12 +27,13 @@ int config::network_timeout         = 30000;
 
 bool config::show_console=false;
 bool config::show_fps_counter=false;
-bool config::debug_mode=false;
+bool config::debug_mode=true;
 bool config::debug_net=true;
 
 wchar_t* config::save_directory=L"/saves";
 
 char* server_config::save_name="server";
+bool server_config::local_only=true;
 int server_config::player_count=1;
 unsigned short server_config::default_port=8380;
 
@@ -40,6 +50,9 @@ ConfigEntry::~ConfigEntry(){
 
 void config::Init(){
     if(OS::BuildGameFolderPath()){save_directory = OS::GetGameFolderPath();}
+    global_config_entries.Add(new ConfigEntry("update_rate",INT,&framerate));
+    global_config_entries.Add(new ConfigEntry("framerate",INT,&max_drawrate));
+    global_config_entries.Add(new ConfigEntry("tickrate",INT,&tickrate));
     global_config_entries.Add(new ConfigEntry("window_width",INT,&window_width));
     global_config_entries.Add(new ConfigEntry("window_height",INT,&window_height));
     global_config_entries.Add(new ConfigEntry("show_console",BOOL,&show_console));
@@ -68,6 +81,9 @@ void config::SetConfig(char* name,char* value){
             case WSTRING:*((wchar_t**)entry->primitive) = wstr::from_cstr(value);break;
             default:break;
             }
+            if(cstr::compare(entry->name,"update_rate")){frame_interval = 1.0f/framerate;}
+            if(cstr::compare(entry->name,"framerate")){draw_interval = 1.0f/max_drawrate;}
+            if(cstr::compare(entry->name,"tickrate")){tick_interval = 1.0f/tickrate;}
         }
     }
 }

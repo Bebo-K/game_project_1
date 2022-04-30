@@ -19,8 +19,9 @@ struct ListIterator{
     bool operator!=(ListIterator<T>& l2);
 };
 
-//A dynamic array of object pointers. Memory for objects is not managed.
-template <typename T>
+//A dynamic array of object pointers (Not object memory slots like Array<T>). 
+//Memory for pointers is not managed but ptrs are cleaned up by dtor()
+template <typename T> 
 class List{
     protected:
     T**     data;

@@ -1,24 +1,23 @@
-#include <game_project_1/phys/coll_triangle_handler.hpp>
-#include <game_project_1/system/level_collision.hpp>
+#include <game_project_1/phys/triangle_handler.hpp>
 
-CollisionList* TriangleHandler::DoCollision(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
-    CollisionList* ret =null;
+LevelCollision::CollisionResult TriangleHandler::DoCollision(
+    BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     float plane_y_component = triangle.face.normal.y;
 
     if(CheckTriangleBounds(step_position,triangle)){
-        body->SetInBounds(true);
+        e->phys_data->SetInBounds(true);
     }
 
     if(plane_y_component > 0.1f){
-        ret= HandleFloorCase(body,surface,step_position,hitsphere,triangle);
+        return HandleFloorCase(e,surface,step_position,step_velocity,hitsphere,triangle);
     }
     else if(plane_y_component > -0.1f && plane_y_component < 0.1f){
-        ret= HandleWallCase(body,surface,step_position,hitsphere,triangle);
+        return HandleWallCase(e,surface,step_position,step_velocity,hitsphere,triangle);
     }
     else if(plane_y_component < -0.1f){
-        ret= HandleCeilingCase(body,surface,step_position,hitsphere,triangle);
+        return HandleCeilingCase(e,surface,step_position,step_velocity,hitsphere,triangle);
     }
-    return ret;
+    return LevelCollision::CollisionResult::None();
 }
 
 bool TriangleHandler::CheckTriangleBounds(vec3 step_position,Triangle triangle){
@@ -30,51 +29,51 @@ bool TriangleHandler::CheckTriangleBounds(vec3 step_position,Triangle triangle){
     return false;
 }
 
-CollisionList* TriangleHandler::HandleFloorCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
-    CollisionList* ret =null;
+LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
+    BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     float vertical_intersect = triangle.face.YIntersect(step_position.x, step_position.z);
     float vertical_shunt = vertical_intersect - step_position.y;
     float max_up_shunt = hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
     float max_down_shunt =  -hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
+
+    if(step_velocity.y < 0 && -step_velocity.y > max_up_shunt){
+        max_up_shunt = -step_velocity.y;
+    }
     
     vec3 intersect_point = {step_position.x,vertical_intersect,step_position.z};
     if(triangle.PointInTriangle(intersect_point)){
         if(vertical_shunt >= max_down_shunt && vertical_shunt <= max_up_shunt){
             //If we're embedded or very close to the ground, register a floor collision 
             //(We start with a shunt-less ground collision when airborne to prevent the entity from prematurely snapping to the ground)
-            ret = LevelCollision::GrabCollisionSlot();
-            if(ret == null)return null;
-            ret->surface = surface;
-            ret->shunt={0,0,0};
-            ret->normal = triangle.face.normal;
-            ret->floor_distance = vertical_shunt;
-            ret->flags = LevelCollisionFlag::FLOOR;
-            ret->next=null;
+            ret.surface = surface;
+            ret.shunt={0,0,0};
+            ret.normal = triangle.face.normal;
+            ret.floor_distance = vertical_shunt;
+            ret.collision_case = LevelCollision::CollisionCase::FLOOR;
             //if we're close to, on, or under the floor, and not going up, it's safe to mark us as grounded.
-            if(body->GetVelocity().y <= 0){body->SetMidair(false);}
+            if(e->velocity.y <= 0){e->phys_data->SetMidair(false);}
             //If we're underneath by less than our max up-shunt height, move us up and out and set us grounded
             if(vertical_shunt >= 0 && vertical_shunt <= max_up_shunt){
-                ret->flags |= LevelCollisionFlag::CANCEL_VELOCITY;
-                ret->velocity_cancel = {0,1,0};
-                ret->shunt.y = vertical_shunt;
+                ret.collision_case |= LevelCollision::CollisionCase::CANCEL_VELOCITY;
+                ret.velocity_cancel = {0,1,0};
+                ret.shunt.y = vertical_shunt;
             }
             //If we're already grounded and floating over the floor by less than our max shunt height, move us down to ground.
-            else if(!body->IsMidair() && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
-                ret->flags |= LevelCollisionFlag::CANCEL_VELOCITY;
-                ret->velocity_cancel = {0,1,0};
-                ret->shunt.y = vertical_shunt;
+            else if(!e->phys_data->IsMidair() && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
+                ret.collision_case |= LevelCollision::CollisionCase::CANCEL_VELOCITY;
+                ret.velocity_cancel = {0,1,0};
+                ret.shunt.y = vertical_shunt;
             }
-        }
-        else{
-            ret=null;
         }
     }
     return ret;
 }
 		
-CollisionList* TriangleHandler::HandleWallCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
-    CollisionList* ret =null;
+LevelCollision::CollisionResult TriangleHandler::HandleWallCase(
+    BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     vec3 center = step_position;
     center.y += (hitsphere.height/2);
@@ -102,14 +101,11 @@ CollisionList* TriangleHandler::HandleWallCase(PhysBody* body,CollisionSurface* 
          //Next, check if the plane point lies in the triangle
         if(triangle.PointInTriangle(plane_intersect)){
                 float horizontal_offset = intersect_horizontal_offset.length();
-                ret = LevelCollision::GrabCollisionSlot();
-                if(ret == null)return null;
-                ret->surface=surface;
-                ret->velocity_cancel = triangle.face.normal.horizontal();
-                ret->shunt = ret->velocity_cancel * (hitsphere.radius-horizontal_offset);
-                ret->normal = triangle.face.normal;
-                ret->flags = LevelCollisionFlag::WALL | LevelCollisionFlag::CANCEL_VELOCITY;
-                ret->next=null;
+                ret.surface=surface;
+                ret.velocity_cancel = triangle.face.normal.horizontal();
+                ret.shunt = ret.velocity_cancel * (hitsphere.radius-horizontal_offset);
+                ret.normal = triangle.face.normal;
+                ret.collision_case = LevelCollision::CollisionCase::WALL | LevelCollision::CollisionCase::CANCEL_VELOCITY;
         }
         //If not, then check if there's a point on the triangle's edges.
         else{
@@ -126,20 +122,18 @@ CollisionList* TriangleHandler::HandleWallCase(PhysBody* body,CollisionSurface* 
                 float effective_radius = hitsphere.radius*EDGE_RAD_SHRINK;
                 //This shrinks our effective radius further in the case we're falling off a ledge. It smoothes out the push away from the wall we experience when falling next to a ledge.
                 //TODO: This case here would also be a good condition to proc "hanging off wall" animations
-                if(body->IsMidair() && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
+                if(e->phys_data->IsMidair() && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
                     effective_radius *= 1.0f-(2*edge_offset.y/hitsphere.height);
                 }
                 
                 if(edge_horizontal_offset.length_sqr() < effective_radius*effective_radius && edge_normal_cos > MIN_EDGE_NORMAL_COS){
                     
                     float shunt_amount = (effective_radius-edge_horizontal_offset.length())*edge_normal_cos;
-                    ret = LevelCollision::GrabCollisionSlot();
-                    if(ret == null)return null;
-                    ret->surface=surface;
-                    ret->velocity_cancel = edge_normal.horizontal();
-                    ret->shunt = ret->velocity_cancel * shunt_amount;
-                    ret->normal = triangle.face.normal;
-                    ret->flags = LevelCollisionFlag::WALL| LevelCollisionFlag::CANCEL_VELOCITY;
+                    ret.surface=surface;
+                    ret.velocity_cancel = edge_normal.horizontal();
+                    ret.shunt = ret.velocity_cancel * shunt_amount;
+                    ret.normal = triangle.face.normal;
+                    ret.collision_case = LevelCollision::CollisionCase::WALL | LevelCollision::CollisionCase::CANCEL_VELOCITY;
                 }
             }  
         }	    
@@ -147,8 +141,9 @@ CollisionList* TriangleHandler::HandleWallCase(PhysBody* body,CollisionSurface* 
     return ret;
 }
 	
-CollisionList* TriangleHandler::HandleCeilingCase(PhysBody* body,CollisionSurface* surface,vec3 step_position,Ellipse_t hitsphere,Triangle triangle){
-    CollisionList* ret =null;
+LevelCollision::CollisionResult TriangleHandler::HandleCeilingCase(
+    BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     vec3 top = step_position;
     top.y += hitsphere.height;
@@ -158,21 +153,18 @@ CollisionList* TriangleHandler::HandleCeilingCase(PhysBody* body,CollisionSurfac
     vec3 collision_point = step_position;
     collision_point.y = triangle.face.YIntersect(collision_point.x, collision_point.z);
 
-    //If we collide with a ceiling, our definition of a successful response is to shunt our player downward so that the top of their hitsphere is no longer above the triangle plane.
+    //If we collide with a ceiling, we want to shunt the entity down back under it and cancel it's upward velocity
     if(triangle.PointInTriangle(collision_point)){
         float top_dist = triangle.face.DistanceTo(top);
         float bottom_dist = triangle.face.DistanceTo(bottom);
          
         //if hitsphere top and bottom are on different sides of the plane.
-        if(top_dist*bottom_dist < 0){           
-            ret = LevelCollision::GrabCollisionSlot();
-            if(ret == null)return null;
-            ret->surface=surface;
-            //ret->velocity_cancel={0,-1,0};
-            ret->shunt = {0,top.y-collision_point.y,0};
-            ret->normal = triangle.face.normal;
-            ret->flags = LevelCollisionFlag::CEILING;
-            ret->next=null;
+        if(top_dist*bottom_dist < 0){      
+            ret.surface=surface;
+            ret.velocity_cancel={0,-1,0};
+            ret.shunt = {0,top.y-collision_point.y,0};
+            ret.normal = triangle.face.normal;
+            ret.collision_case = LevelCollision::CollisionCase::CEILING;
         }
     }	
     return ret;

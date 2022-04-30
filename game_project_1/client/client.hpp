@@ -2,23 +2,24 @@
 #define CLIENT_H
 
 #include <game_project_1/gui/gui.hpp>
-#include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/signal.hpp>
-#include <game_project_1/game/player_info.hpp>
+#include <game_project_1/gfx/renderer.hpp>
+#include <game_project_1/game/player.hpp>
+#include <game_project_1/client/client_scene.hpp>
 
 class Client{
     private:
     static class Client* instance;
     public:
 
-    Scene       scene;
-    Renderer    scene_renderer;
+    ClientScene scene;
     GUI         ui;
 
-    PlayerInfo*  players;
-    int          max_players;
-    int          player_count;
-    int          my_player_id;
+    int           my_entity_id;
+    int           my_player_id;
+    int           my_save_id;
+    Array<Player> players;
+    int           current_players;
 
     const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 
@@ -29,20 +30,12 @@ class Client{
     static void Signal(EventSignal val);
 
     void Start();
-    void LoadScene(int scene_id);
-
-    void AddEntity(int eid);
-    void RemoveEntity(int uuid);
-    void SpawnPlayer(Entrance entrance);
 
     void Paint();
     void Resize(int screen_w,int screen_h);
     void Update(int frames);
-    void UpdatePositions();
+    
     void HandleSignals();
-
-    void HandleUIInput();
-    void HandleFrameInput();
 
     void Quit();
 };

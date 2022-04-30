@@ -4,7 +4,7 @@
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/server/server_scene.hpp>
 #include <game_project_1/game/savefile.hpp>
-#include <game_project_1/game/player_info.hpp>
+#include <game_project_1/game/player.hpp>
 #include <game_project_1/signal.hpp>
 
 class Server{
@@ -12,15 +12,13 @@ class Server{
     static Server* instance;
 
     public:
-
-    bool    exit;
-    bool    ready;
-    int     current_players;
-    int     max_players;
-    PlayerInfo* players;
+    int state;  const static int INIT=1,READY=2,PAUSED=3,EXITING=0;
     long long active_frames;
-    List<ServerScene> active_scenes;
-    SaveFile server_save;
+    int current_players;
+    int max_players;
+    Player* players;
+    Pool<ServerScene> active_scenes;
+    SaveFile save;
 
     Server();
     ~Server();
@@ -29,10 +27,9 @@ class Server{
     
     ServerScene* LoadScene(int area_id);
     void UnloadScene(int area_id);
-    ServerScene* GetActiveScene(int area_id);//returns the scene if it's active, otherwise reuturns null.
+    ServerScene* GetActiveScene(int area_id);//returns the scene if it's active, otherwise returns null.
 
     void Update(int frames);
-    void UpdateScene(ServerScene* scene,int ms);
 
     void UpdateNetwork(int frames);
     void UpdatePlayers();
@@ -40,6 +37,9 @@ class Server{
     void HandleSignals();
     static void Signal(EventSignal val);
     static Server* GetServer();
+
+    ServerEntity* TransitionPlayer(int from_area, int to_area, int entrance_id,int player_id);
+    ServerEntity* TransitionGlobalEntity(int from_area, int to_area, int entrance_id,int global_id);
 };
 
 void ServerMain();

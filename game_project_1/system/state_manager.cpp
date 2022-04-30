@@ -1,7 +1,8 @@
 #include <game_project_1/system/state_manager.hpp>
 
 
-void UpdateStateAnimation(Entity* e){
+void UpdateStateAnimation(ClientEntity* e, int frames){
+    if(e->state==null)return;
     if(e->state->state_changed){
         char* new_anim = null;
         char* next_anim = null;
@@ -20,7 +21,7 @@ void UpdateStateAnimation(Entity* e){
             }
             //TODO: sprite animation
         }
-        e->anim_state->state = e->state;     
+        e->anim_state->display_state = e->state;     
     }
     /*
     //Walk speed modulation
@@ -46,10 +47,7 @@ void UpdateStateAnimation(Entity* e){
     */
 }
 
-void StateManager::Update(Scene* scene, int frames){
-    for(Entity* e: scene->entities){
-        if(e->state == null)continue;
-        UpdateStateAnimation(e);
-        e->state->state_changed=false;
-    }
+void AnimationManager::Update(ClientEntity* e, int frames){
+    if(e->state == null || e->anim_state == null)return;
+    UpdateStateAnimation(e,frames);
 }

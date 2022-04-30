@@ -2,51 +2,41 @@
 #include <game_project_1/log.hpp>
 #include <stdlib.h>
 
-Skeleton::Skeleton(int num_bones){
-    bone_count=num_bones;
+Skeleton::Skeleton(int num_bones):bones(num_bones),animations(){
     if(num_bones <= 0){
-        bones= null;
         inverse_bind_mats=null;
     }
-    bones=(Bone*)calloc(num_bones,sizeof(Bone));
     inverse_bind_mats=(mat4*)calloc(num_bones,sizeof(mat4));
-    animation_count=0;
-    animations=nullptr;
 
-    for(int i=0;i<bone_count;i++){
-        bones[i].parent_index=-1;
-        bones[i].bind_transform.identity();
+    for(int i=0;i<num_bones;i++){
+        bones[i]->parent_index=-1;
+        bones[i]->bind_transform.identity();
         inverse_bind_mats[i].identity();
     }
 }
 
 Skeleton::~Skeleton(){
-    if(bones != nullptr){
-        for(int i=0;i<bone_count;i++){free(bones[i].name);}
-        free(bones);
-        bones = nullptr;
-    }
+    for(Bone* bone:bones){free(bone->name);}
+    bones.Destroy();
+    animations.Destroy();
     if(inverse_bind_mats != nullptr){free(inverse_bind_mats);inverse_bind_mats=null;}
-    if(animations != nullptr){
-        delete[] animations;
-    }
 }
 
 void Skeleton::SetBoneName(int bone_id, char* bone_name){
-    bones[bone_id].name = cstr::new_copy(bone_name);
+    bones[bone_id]->name = cstr::new_copy(bone_name);
 }
 
 void Skeleton::DebugPrint(){
-    logger::info("Bone Count: %d\n",bone_count);
-    for(int i=0; i< bone_count;i++){
+    logger::info("Bone Count: %d\n",bones.length);
+    for(int i=0; i< bones.length;i++){
         logger::info("Bone %d:\n",i);
-        bones[i].DebugPrint();
+        bones[i]->DebugPrint();
     }
     
-    logger::info("..Animation Count: %d\n",animation_count);
-    for(int i=0; i< animation_count;i++){
+    logger::info("..Animation Count: %d\n",animations.length);
+    for(int i=0; i< animations.length;i++){
         logger::info("..Animation %d:\n",i);
-        animations[i].DebugPrint();
+        animations[i]->DebugPrint();
     }
 }
 
@@ -55,17 +45,15 @@ void Bone::DebugPrint(){
 }
 
 Animation* Skeleton::GetAnimation(char* name){
-    for(int i=0;i<animation_count;i++){
-        if(cstr::compare(name,animations[i].name)){
-            return &animations[i];
-        }
+    for(Animation* anim:animations){
+        if(cstr::compare(name,anim->name))return anim;
     }
     return null;
 }
 
-Pose::Pose(Skeleton* target):anim_hook(target->bone_count*3){
+Pose::Pose(Skeleton* target):anim_hook(target->bones.length*3){
     skeleton=target;
-    bone_count=target->bone_count;
+    bone_count=target->bones.length;
     transforms= (Transform*)calloc(bone_count,sizeof(Transform));
     matrices =  (mat4*)calloc(bone_count,sizeof(mat4));
 
@@ -73,17 +61,17 @@ Pose::Pose(Skeleton* target):anim_hook(target->bone_count*3){
         transforms[i].Clear();
         matrices[i].identity();
         
-        anim_hook.targets[i*3].object_name = skeleton->bones[i].name;
+        anim_hook.targets[i*3].object_name = skeleton->bones[i]->name;
         anim_hook.targets[i*3].value_type = AnimationType::TRANSLATION;
         anim_hook.targets[i*3].num_values=3;
         anim_hook.values[i*3]= &transforms[i].x;//,y,z
 
-        anim_hook.targets[i*3+1].object_name = skeleton->bones[i].name;
+        anim_hook.targets[i*3+1].object_name = skeleton->bones[i]->name;
         anim_hook.targets[i*3+1].value_type = AnimationType::ROTATION;
         anim_hook.targets[i*3+1].num_values=4;
         anim_hook.values[i*3+1]= &transforms[i].rotation.x;//,y,z
 
-        anim_hook.targets[i*3+2].object_name = skeleton->bones[i].name;
+        anim_hook.targets[i*3+2].object_name = skeleton->bones[i]->name;
         anim_hook.targets[i*3+2].value_type = AnimationType::SCALE;
         anim_hook.targets[i*3+2].num_values=3;
         anim_hook.values[i*3+2]= &transforms[i].scale.x;//,y,z
@@ -100,14 +88,14 @@ void Pose::Calculate(){
     mat4 bone_matrix;
     for(int i=0; i < bone_count;i++){
         int bone_index = i;//pose_order[i];
-        Bone* bone = &skeleton->bones[bone_index];
+        Bone* bone = skeleton->bones[bone_index];
         bone_matrix.identity(); 
         int parent = bone->parent_index;
         if(parent >= 0 && parent < bone_count){
             bone_matrix.set(&matrices[parent]);
         }
         if(parent > i){
-            logger::exception("Bone ordered non-heirarchically. who would do this?!");
+            logger::exception("Bone ordered non-heirarchically. I should handle this case");
         }
         //bone_matrix.multiply_by(&bone->bind_transform);
         bone_matrix.translate(transforms[bone_index].x,

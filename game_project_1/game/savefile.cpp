@@ -24,99 +24,167 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 }
 
 
-SaveUnit::SaveUnit(){
-    name=nullptr;
-    race_id=0;
-    class_id=0;
-}
-SaveUnit::SaveUnit(GameUnit from){
-    appearance = from.appearance;
-    race_id = from.race_id;
-    class_id = from.class_id;
-}
-GameUnit* SaveUnit::ToUnit(){
-    GameUnit* new_unit = new GameUnit;
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////                               SAVE ENTITY                                     /////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    new_unit->name=wstr::new_copy(name);
-    new_unit->race_id=race_id;
-    new_unit->class_id=class_id;
-    new_unit->appearance=appearance;
-    return new_unit;
+SaveEntity::SaveEntity(int gid):BaseEntity(-1){global_id = gid;}
+int SaveEntity::SavedLength(){
+    return sizeof(int)*2+SerializedLength(AllExistingComponents());
 }
-int SaveUnit::SerializedLength(){
-    int size = 0;
-    size += sizeof(wchar) * (wstr::len(name)+1);
-    size += sizeof(int);
-    size += sizeof(int);
-    //appearance
-    size += sizeof(int)*2;
-    size += sizeof(int)*appearance.style_options;
-    size += sizeof(color)*appearance.color_count;
+void SaveEntity::Load(Deserializer& dat){
+    id = dat.GetInt();//may no longer exist
+    global_id = dat.GetInt();
+    Deserialize(dat,0);
+}
+void SaveEntity::Save(Serializer& dat){
+    dat.PutInt(id);//may no longer exist
+    dat.PutInt(global_id);
+    Serialize(AllExistingComponents(),dat);
+}
+void SaveEntity::LoadFrom(ServerEntity* e){
+    CopyFrom(e);
+    if(e->persist != null){
+        global_id = e->persist->global_id;
+    }
+    else{global_id=0;}
+}
+void SaveEntity::CopyTo(ServerEntity* e){
+    int eid = e->id;
+    e->CopyFrom(this);
+    e->id = eid;
+    if(global_id != 0){
+        e->persist = new Persistance();
+        e->persist->global_id = global_id;
+    }
+}
 
-    return size;
-}
-void SaveUnit::Read(Deserializer& dat){
-    name = dat.GetWString();
-    race_id = dat.GetInt();
-    class_id = dat.GetInt();
-    appearance.style_options = dat.GetInt();
-    appearance.color_count = dat.GetInt();
-    if(appearance.colors != nullptr){free(appearance.colors);}
-    appearance.colors = (color*)malloc(sizeof(color)*appearance.color_count);
-    for(int i=0;i<appearance.style_options;i++){appearance.styles[i]=dat.GetInt();}
-
-    if(appearance.styles != nullptr){free(appearance.styles);}
-    appearance.styles = (int*)malloc(sizeof(int)*appearance.style_options);
-    for(int i=0;i<appearance.color_count;i++){appearance.colors[i].from_int(dat.GetInt());}    
-}
-void SaveUnit::Write(Serializer& dat){
-    dat.PutWString(name);
-    dat.PutInt(race_id);
-    dat.PutInt(class_id);
-    dat.PutInt(appearance.style_options);
-    dat.PutInt(appearance.color_count);
-    for(int i=0;i<appearance.style_options;i++){dat.PutInt(appearance.styles[i]);}
-    for(int i=0;i<appearance.color_count;i++){dat.PutInt(appearance.colors[i].to_int());}
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////                               SAVE PLAYER                                     /////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SavePlayer::SavePlayer(){
-    save_id=0;
+    player_id=0;
+    entity_global_id=0;
+    last_scene = 0;
+    last_entrance = 0;
     player_name=nullptr;
-    player_scene=0;
-    player_scene_entrance=0;
 }
+
 SavePlayer::~SavePlayer(){
-    save_id=0;
-    player_scene=0;
-    player_scene_entrance=0;
+    player_id=0;
+    entity_global_id=0;;
+    last_scene = 0;
+    last_entrance = 0;
     if(player_name != nullptr){free(player_name);player_name=nullptr;}
 }
+int SavePlayer::SerializedLength(){
+    return sizeof(int)*4 + sizeof(wchar) * (wstr::len(player_name)+1);
+}
 void SavePlayer::Read(Deserializer& dat){
-    save_id = dat.GetInt();
+    player_id = dat.GetInt();
+    entity_global_id = dat.GetInt();
+    last_scene = dat.GetInt();
+    last_entrance = dat.GetInt();
     player_name = dat.GetWString();
-    player_scene = dat.GetInt();
-    player_scene_entrance = dat.GetInt();
-    player_unit.Read(dat);
 }
 void SavePlayer::Write(Serializer& dat){
-    dat.PutInt(save_id);
+    dat.PutInt(player_id);
+    dat.PutInt(entity_global_id);
+    dat.PutInt(last_scene);
+    dat.PutInt(last_entrance);
     dat.PutWString(player_name);
-    dat.PutInt(player_scene);
-    dat.PutInt(player_scene_entrance);
-    player_unit.Write(dat);
 }
-int SavePlayer::SerializedLength(){
-    int size = 0;
-    size += sizeof(int);
-    size += sizeof(wchar) * (wstr::len(player_name)+1);
-    size += sizeof(int);
-    size += sizeof(int);
-    size += player_unit.SerializedLength();
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////                               SAVE SCENE                                      /////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SaveScene::SaveScene():global_entities_in_area(),non_global_entities(){
+    area_id=0;
+}
+SaveScene::~SaveScene(){
+    if(global_entities_in_area != nullptr)delete[] global_entities_in_area;
+    non_global_entities.Destroy();
+}
+
+void SaveScene::AddGlobalEntity(int global_id){
+    for(int i=0;i<num_global_entities;i++){
+        if(global_entities_in_area[i] == global_id)return;
+    }
+
+    num_global_entities++;
+    int* new_global_entities_in_area = new int[num_global_entities];
+    new_global_entities_in_area[num_global_entities-1]=global_id;
+
+    delete[] global_entities_in_area;
+    global_entities_in_area = new_global_entities_in_area;
+}
+void SaveScene::RemoveGlobalID(int global_id){
+    for(int i=0;i<num_global_entities;i++){
+        if(global_entities_in_area[i] == global_id){
+            if(num_global_entities == 1){
+                num_global_entities=0;
+                delete[] global_entities_in_area;
+                global_entities_in_area = nullptr;
+                return;
+            }
+
+            int* new_global_entities_in_area = new int[num_global_entities-1];
+            for(int j=0;j<i;j++){
+                new_global_entities_in_area[j]=global_entities_in_area[j];
+            }
+            for(int j=i+1;j<num_global_entities;j++){
+                new_global_entities_in_area[j-1]=global_entities_in_area[j];
+            }
+            new_global_entities_in_area[num_global_entities-1]=global_id;
+
+            delete[] global_entities_in_area;
+            global_entities_in_area = new_global_entities_in_area;
+            num_global_entities--;
+        }
+    }
+}
+
+int SaveScene::SerializedLength(){
+    int size=sizeof(int);//area_id
+    size+=sizeof(int);//num_global_entities
+    size+=num_global_entities*sizeof(int);//global_entities_in_area
+    size+=sizeof(int);//non_global_entities.length
+    for(SaveEntity* entity:non_global_entities){
+        size += entity->SavedLength();//non_global_entities
+    }
     return size;
 }
+void SaveScene::Read(Deserializer& dat){
+    area_id = dat.GetInt();
+    num_global_entities = dat.GetInt();
+    global_entities_in_area = (num_global_entities>0)?new int[num_global_entities] : nullptr;
+    for(int i=0;i<num_global_entities;i++){
+        global_entities_in_area[i] = dat.GetInt();
+    }   
+    non_global_entities.Resize(dat.GetInt());
+    for(SaveEntity* entity:non_global_entities){
+        entity->Load(dat);
+    }
+}
+    
+void SaveScene::Write(Serializer& dat){
+    dat.PutInt(area_id);
+    dat.PutInt(num_global_entities);
+    for(int i=0; i<num_global_entities;i++){
+        dat.PutInt(global_entities_in_area[i]);
+    }
+    dat.PutInt(non_global_entities.length);
+    for(SaveEntity* entity:non_global_entities){
+        entity->Save(dat);
+    }
+}
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////                               SAVE CAMPAIGN                                   /////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 SaveCampaign::SaveCampaign(){
     campaign_id=0;
     bitflag_len=0;
@@ -164,158 +232,166 @@ void SaveCampaign::SetStoryBit(int bit,bool value){
 
 
 
-void BuildDemoCampaign(SaveCampaign* campaign){
-    campaign->campaign_id=1;
-    campaign->bitflag_len=32;
-    campaign->story_bits=(byte*)calloc(4,sizeof(byte));
-}
-
-void SpawnPlayerInitialDemo(SavePlayer* player){
-    player->player_scene = 0;
-    player->player_scene_entrance = 0;
-}
-
-SaveFile::SaveFile(){
-    saved_campaigns=0;
-    saved_players=0;
-    players=nullptr;
-    campaigns=nullptr;
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////                               SAVE FILE                                       /////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+SaveFile::SaveFile():campaigns(),global_entities(),players(),saved_scenes(){}
 SaveFile::~SaveFile(){
-    if(players != nullptr){
-        for(int i=0;i<saved_players;i++){players[i].~SavePlayer();}
-        free(players);
-        players=nullptr;}
-    if(campaigns != nullptr){
-        for(int i=0;i<saved_campaigns;i++){campaigns[i].~SaveCampaign();}
-        free(campaigns);
-        campaigns=nullptr;}
-    saved_campaigns=0;
-    saved_players=0;
+    players.Destroy();
+    campaigns.Destroy();
+    global_entities.Clear();
+    saved_scenes.Destroy();
 }
+
 void SaveFile::New(){
-    saved_campaigns = CAMPAIGN_COUNT;
-    campaigns = (SaveCampaign*)calloc(CAMPAIGN_COUNT,sizeof(SaveCampaign));
-    BuildDemoCampaign(&campaigns[0]);
+    campaigns.Allocate(CAMPAIGN_COUNT);
+    
+    //Demo campaign
+    campaigns[0]->campaign_id=1;
+    campaigns[0]->bitflag_len=32;
+    campaigns[0]->story_bits=(byte*)calloc(4,sizeof(byte));
+
 }
-bool SaveFile::Exists(char* save_name){
-    return UserFile::Exists(GetSaveFilePath(save_name));
-}
+bool SaveFile::Exists(char* save_name){return UserFile::Exists(GetSaveFilePath(save_name));}
 void SaveFile::LoadOrNew(char* save_name){
     if(SaveFile::Exists(save_name)){
-        logger::info("Loading savefile '%s'...",save_name);
+        logger::info("Loading savefile '%s'...\n",save_name);
         Load(server_config::save_name);
-        logger::info("done\n");
     }
     else{
         logger::info("No save file found for save '%s', starting a new one.\n",save_name);
         New();
     }
+    logger::info("done\n");
 }
 void SaveFile::Load(char* save_name){
     UserFile save_file(GetSaveFilePath(save_name),'r');
+    if(save_file.error || save_file.length <= 0){
+        logger::warn("Savefile %s cannot be read.",save_name);
+        return;
+    }
 
-    byte* data = (byte*)calloc(save_file.length,1);
-    save_file.read(data,save_file.length);
-    Deserialize(data);
+    byte* buffer = (byte*)calloc(save_file.length,1);
+    save_file.read(buffer,save_file.length);
+   
+    Deserializer data(buffer);
 
-    free(data);
+    campaigns.Allocate(data.GetInt());
+    for(SaveCampaign* campaign:campaigns){
+        campaign->Read(data);
+    }
+    int global_entity_count = data.GetInt();
+    for(int i=0;i<global_entity_count;i++){
+        SaveEntity* new_global_entity = new (global_entities.Allocate()) SaveEntity(0);
+        new_global_entity->Load(data);
+    }
+    players.Allocate(data.GetInt());
+    for(SavePlayer* player:players){
+        player->Read(data);
+    }
+    saved_scenes.Allocate(data.GetInt());
+    for(SaveScene* scene:saved_scenes){
+        scene->Read(data);
+    }
+
+    free(buffer);
     save_file.close();
 }
 void SaveFile::Save(char* save_name){
     UserFile save_file(GetSaveFilePath(save_name),'w');
 
-    byte* data = (byte*)calloc(SerializedLength(),1);
-    int data_len = Serialize(data);
-    save_file.write(data,data_len);
+    int serialized_length = SerializedLength();
+    byte* buffer = (byte*)calloc(serialized_length,1);
+    Serializer data(buffer,serialized_length);
 
-    free(data);
+    data.PutInt(campaigns.length);
+    for(SaveCampaign* campaign:campaigns){
+        campaign->Write(data);
+    }
+    data.PutInt(global_entities.Count());
+    for(SaveEntity* entity:global_entities){
+        entity->Save(data);
+    }
+    data.PutInt(players.length);
+    for(SavePlayer* player:players){
+        player->Write(data);
+    }
+    data.PutInt(saved_scenes.length);
+    for(SaveScene* scene:saved_scenes){
+        scene->Write(data);
+    }
+
+    save_file.write(buffer,serialized_length);
+    free(buffer);
     save_file.close();
     logger::info("Savefile '%s' saved.\n",save_name);
 }
-int SaveFile::Serialize(byte* data){
-    Serializer dat(data,SerializedLength());
-
-    dat.PutInt(saved_players);
-    for(int i=0;i<saved_players;i++){
-        players[i].Write(dat);
-    }
-    dat.PutInt(saved_campaigns);
-    for(int i=0;i<saved_campaigns;i++){
-        campaigns[i].Write(dat);
-    }
-
-    return dat.data_length;
-}
-void SaveFile::Deserialize(byte* src){
-    Deserializer dat(src);
-
-    saved_players = dat.GetInt();
-    players = (SavePlayer*)calloc(saved_players,sizeof(SavePlayer));
-    for(int i=0;i<saved_players;i++){
-        players[i].Read(dat);
-    }
-    saved_campaigns = dat.GetInt();
-    campaigns = (SaveCampaign*)calloc(saved_campaigns,sizeof(SaveCampaign));
-    for(int i=0;i<saved_campaigns;i++){
-        campaigns[i].Read(dat);
-    }
-}
-
 int SaveFile::SerializedLength(){
-    int size=0;
-    size+=sizeof(int);//saved_players
-    for(int i=0;i<saved_players;i++){
-        size+=players[i].SerializedLength();
-    }
-    size+=sizeof(int);//saved_campaigns
-    for(int i=0;i<saved_campaigns;i++){
-       size+=campaigns[i].SerializedLength();
-    }
+    int size=sizeof(int);
+    for(SaveCampaign* campaign:campaigns){size+= campaign->SerializedLength();}
+    size+=sizeof(int);
+    for(SaveEntity* entity:global_entities){size += entity->SavedLength();}
+    size+=sizeof(int);
+    for(SavePlayer* player:players){size += player->SerializedLength();}
+    size+=sizeof(int);
+    for(SaveScene* scene:saved_scenes){size += scene->SerializedLength();}
     return size;
 }
 
 SaveCampaign* SaveFile::GetCampaign(int campaign_id){
-    for(int i=0;i<saved_campaigns;i++){if(campaigns[i].campaign_id==campaign_id)return &campaigns[i];}
+    for(SaveCampaign* campaign:campaigns){if(campaign->campaign_id==campaign_id)return campaign;}
+    return nullptr;
+}
+SaveScene* SaveFile::GetScene(int area_id){
+    for(SaveScene* scene:saved_scenes){if(scene->area_id == area_id)return scene;}
     return nullptr;
 }
 SavePlayer* SaveFile::GetPlayer(wchar* player_name){
-    for(int i=0;i<saved_players;i++){
-        if(wstr::compare(player_name,players[i].player_name))return &players[i];
+    for(SavePlayer* player:players){
+         if(wstr::compare(player_name,player->player_name))return player;
     }
     return nullptr;
 }
-int SaveFile::GetPlayerSaveID(wchar* player_name){
-    for(int i=0;i<saved_players;i++){
-        if(wstr::compare(player_name,players[i].player_name))return i;
-    }
-    return -1;
-}
-SavePlayer* SaveFile::GetPlayerByID(int save_id){
-    for(int i=0;i<saved_players;i++){
-        if(players[i].save_id == save_id){return &players[i];}
-    }
+SavePlayer* SaveFile::GetPlayerByID(int player_save_id){
+    for(SavePlayer* player:players){if(player->player_id==player_save_id)return player;}
     return nullptr;
 }
-SavePlayer* SaveFile::NewPlayer(wchar* player_name,int race_id,int class_id, UnitAppearance appearance){
-    byte* newPlayerSave = (byte*)calloc(saved_players+1,sizeof(SavePlayer));
-    
-    if(saved_players> 0){
-        memcpy(newPlayerSave,players,sizeof(SavePlayer)*saved_players);
-        free(players);//free old memory but don't call delete
+SaveEntity* SaveFile::GetGlobalEntity(int global_id){
+    for(SaveEntity* save_entity:global_entities){
+        if(save_entity->global_id == global_id)return save_entity;
     }
-    players = (SavePlayer*)newPlayerSave;
-    saved_players++;
-    SavePlayer* ret = &players[saved_players-1];
-    ret->player_name = wstr::new_copy(player_name);
-    ret->player_unit.name = wstr::new_copy(player_name);
-    ret->player_unit.race_id = race_id;
-    ret->player_unit.class_id = class_id;
-    ret->player_unit.appearance = appearance;
-    ret->player_scene= GameConstants::STARTING_SCENE;
-    ret->player_scene_entrance= GameConstants::STARTING_SCENE_ENTRANCE;
-    while(ret->save_id <= 0){ret->save_id = rand();}
-    SpawnPlayerInitialDemo(ret);
-    return ret;
+    return nullptr;
 }
 
+SaveEntity* SaveFile::GetPlayerSaveEntity(wchar* player_name){return GetGlobalEntity(GetPlayer(player_name)->entity_global_id);}
+
+SavePlayer* SaveFile::NewPlayer(wchar* player_name){
+    players.Resize(players.length+1);
+    SavePlayer* new_player = players[players.length-1];
+    do{
+    new_player->player_id = abs(rand());
+    }while(new_player->player_id == 0||GetPlayerByID(new_player->player_id) != new_player);
+    new_player->player_name = wstr::new_copy(player_name);
+    new_player->entity_global_id = 0;
+    new_player->last_scene =  GameConstants::STARTING_SCENE;
+    new_player->last_entrance =  GameConstants::STARTING_SCENE_ENTRANCE;
+    return new_player;
+}
+
+int SaveFile::PersistEntity(ServerEntity* e){
+    int new_global_id =0;
+    do{new_global_id = abs(rand());} while(new_global_id ==0 || GetGlobalEntity(new_global_id)!= nullptr);
+    SaveEntity* new_global_entity = new (global_entities.Allocate()) SaveEntity(new_global_id);
+    new_global_entity->LoadFrom(e);
+    new_global_entity->global_id = new_global_id;
+    e->persist = new Persistance();
+    e->persist->global_id = new_global_id;
+    return new_global_id;
+}
+
+void SaveFile::AssignEntityToScene(int global_id, int area_id,bool one_instance){
+    for(SaveScene* scene:saved_scenes){
+        if(one_instance){scene->RemoveGlobalID(global_id);}
+        if(area_id == scene->area_id){scene->AddGlobalEntity(global_id);}
+    }
+}

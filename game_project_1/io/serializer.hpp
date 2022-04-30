@@ -18,6 +18,7 @@ class Serializer{
 
     void Allocate(int size);
 
+    void PutByte(byte b);
     void PutInt(int i);
     void PutFloat(float f);
     void PutString(char* str);
@@ -33,6 +34,7 @@ class Deserializer{
 
     Deserializer(byte* data);
 
+    byte GetByte();
     int GetInt();
     float GetFloat();
     char* GetString();

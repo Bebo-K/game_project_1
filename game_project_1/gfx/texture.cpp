@@ -185,18 +185,24 @@ Texture TextureManager::Add(char* texname,Image* texture_image){
 }
 
 Texture TextureManager::Get(char* texname){
-    return Get(texname,false);
+    return Get(texname,0);
 }Texture TextureManager::GetUI(char* texname){
-    return Get(texname,true);
+    return Get(texname,1);
+}Texture TextureManager::GetSkybox(char* texname){
+    return Get(texname,2);
 }
-Texture TextureManager::Get(char* texname,bool ui_image){
+
+Texture TextureManager::Get(char* texname,int img_location){
     Texture* cache_pointer = (Texture*)cached_textures.Get(texname);
     if(cache_pointer != null) {
         return *cache_pointer;			
     }
     Stream* texture_stream = nullptr;
-    if(ui_image){texture_stream = AssetManager::UI_Image(texname);}
-    else{ texture_stream = AssetManager::Texture(texname);}
+    switch(img_location){
+        case 0:texture_stream = AssetManager::Texture(texname);break;
+        case 1:texture_stream = AssetManager::UI_Image(texname);break;
+        case 2:texture_stream = AssetManager::SkyboxTexture(texname);break;
+    }
     Image* texture_image = new Image(texture_stream);
     delete texture_stream;
     return Add(texname,texture_image);

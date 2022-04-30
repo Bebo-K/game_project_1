@@ -9,7 +9,13 @@
 
 namespace config{
     enum ConfigEntryType{INT,FLOAT,BOOL,STRING,WSTRING};
-
+    
+    extern int framerate;
+    extern float frame_interval;
+    extern int max_drawrate;
+    extern float draw_interval;
+    extern int tickrate;
+    extern float tick_interval;
 
     extern int window_width;
     extern int window_height;
@@ -35,6 +41,7 @@ namespace config{
 };
 
 namespace server_config{
+    extern bool  local_only;
     extern char* save_name;
     extern int   player_count;
     extern unsigned short default_port;

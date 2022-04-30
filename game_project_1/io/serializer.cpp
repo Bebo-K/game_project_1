@@ -30,6 +30,12 @@ void Serializer::Allocate(int size){
     raw_data = (byte*)calloc(size,1);
     data_length = size;
 }
+void Serializer::PutByte(byte b){
+    if( (int)(place + 1) > data_length){
+        logger::exception("Serializer.PutByte(%d) writes past the end of the data buffer (pos:%d,len%d)",b,place,data_length);};
+    raw_data[place] = b;
+    place++;
+}
 void Serializer::PutInt(int i){
     if( (int)(place + sizeof(int)) > data_length){
         logger::exception("Serializer.PutInt(%d) writes past the end of the data buffer (pos:%d,len%d)",i,place,data_length);}
@@ -72,6 +78,11 @@ Deserializer::Deserializer(byte* source){
     place=0;
     raw_data=source;
 }
+
+byte Deserializer::GetByte(){
+    place += 1;
+    return raw_data[place-1]; 
+}
 int Deserializer::GetInt(){
     int* ret = (int*)&raw_data[place];
     place += sizeof(int);
@@ -89,7 +100,7 @@ char* Deserializer::GetString(){
 }
 wchar* Deserializer::GetWString(){
     wchar* str = wstr::new_copy((wchar*)&raw_data[place]);
-    place += wstr::len(str)+1;
+    place += (wstr::len(str)+1)*sizeof(wchar);
     return str;
 }
 

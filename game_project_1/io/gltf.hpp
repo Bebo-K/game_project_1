@@ -17,12 +17,12 @@
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/gfx/model.hpp>
+#include <game_project_1/phys/level_colliders.hpp>
 
 class GLTFScene{
 	private:
 	JSONObject* gltf_data;
 	List<byte> binary_buffers;
-	const char*	filename;
 
 	void LoadAsGLTF(Stream* gltf_stream);
 	void LoadAsGLB(Stream* gltf_stream);
@@ -47,6 +47,7 @@ class GLTFScene{
 	
 	ModelData* Load();
 	void LoadIn(ModelData* dest);
+	MeshCollider* GetMeshGroupAsCollider(char* group_name);
 
 	~GLTFScene();
 };

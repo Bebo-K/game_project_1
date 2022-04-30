@@ -11,6 +11,14 @@ namespace ServerNetHandler{
     void Update(int frames);
     void Free();
 
+    void OnPlayerConnected(int player_id);
+    void OnStartNewPlayerSave(int player_id,Payload snps_packet);
+    void OnPlayerSceneTransition(int player_id,int area_id);
+    void SendEntityDeltas(ServerScene* s);
+
+    ComponentChunk::Mask GetComponentPermissionMask(ComponentChunk::Mask mask,int player_id,Server* e);
+
+    //Async methods
     Packet OnPlayerConnect(Packet* JOIN,int player_id);
     void OnPlayerDisconnect(wchar* reason,int player_id);
     void OnPlayerFailConnect(wchar* player_name,wchar* reason);

@@ -37,16 +37,17 @@ void Renderer::Draw(){
     free(sorted_list);
 }
 
-boolean PrimitiveIsCloser(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera_axis){
-    if(p1->layer < p2->layer)return true;
-    if(p1->layer > p2->layer)return false;
+boolean PrimitiveIsFarther(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera_axis){
+    if(p1->layer < p2->layer)return false;
+    if(p1->layer > p2->layer)return true;
     float p1_zdist = camera_axis.dot({p1->x-camera_pos.x, p1->y-camera_pos.y, p1->z-camera_pos.z});
     float p2_zdist = camera_axis.dot({p2->x-camera_pos.x, p2->y-camera_pos.y, p2->z-camera_pos.z});
 
-    return p1_zdist <= p2_zdist;
+    return p1_zdist >= p2_zdist;
 }
 
 //return a sorted list of primitive pointers based on layer and distance on camera's z axis
+//From farthest/highest layer to closest/lowest layer
 Drawable** Renderer::SortPrimitives(){
 	Drawable** ret = new Drawable*[primitives.Count()];
 
@@ -63,7 +64,7 @@ Drawable** Renderer::SortPrimitives(){
         to_insert = p;
         for(int i=0;i <last;i++){
             current=ret[i];
-            if(PrimitiveIsCloser(to_insert,current,camera_pos,camera_axis)){
+            if(PrimitiveIsFarther(to_insert,current,camera_pos,camera_axis)){
                 ret[i] = to_insert;
                 to_insert=current;
             }

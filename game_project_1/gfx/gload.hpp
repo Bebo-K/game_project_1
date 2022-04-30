@@ -12,6 +12,8 @@
 void GLOAD_INIT();
 void GLOAD_DESTROY();
 
+void CheckForGLError(const char* warn_msg);
+
 //#define GETGLPROC(a) wglGetProcAddress(a)
 
 

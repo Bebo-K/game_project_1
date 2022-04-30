@@ -1,17 +1,18 @@
 #include <game_project_1/system/physics.hpp>
-#include <game_project_1/phys/level_collision.hpp>
+#include <game_project_1/system/level_collision.hpp>
+#include <game_project_1/system/entity_collision.hpp>
 #include <math.h>
 
 const float GRAVITY_TERMINAL= -128.0f;
 const float GRAVITY_ACCEL = -64.0f;
 
-void ApplyGravity(Entity* e, float delta){
+void ApplyGravity(BaseEntity* e, float delta){
     if(e->velocity.y > GRAVITY_TERMINAL){
         e->velocity.y += delta*GRAVITY_ACCEL;
     }
 }
 
-void ApplyVelocityDampening(Entity* e, float delta){
+void ApplyVelocityDampening(BaseEntity* e, float delta){
     if(e->phys_data->is_midair){
         float damper_amount = (float) pow(1-e->phys_data->midair_velocity_damper,delta);
 		e->velocity.x *= damper_amount;
@@ -24,7 +25,7 @@ void ApplyVelocityDampening(Entity* e, float delta){
     }
 }
 
-void SetStateFromPhysics(Entity* e){
+void SetStateFromPhysics(BaseEntity* e){
     if(e->phys_data->is_midair){
         if(e->movement != null && e->movement->is_jumping){
             e->state->Set(JUMPING);
@@ -60,26 +61,56 @@ void SetStateFromPhysics(Entity* e){
     }
 }
 
-void Physics::FrameUpdate(Scene* scene,float delta){
-    for(Entity* e:scene->entities){
-        //No-phys entitiy movement 
+void Physics::ClientFrame(ClientScene* scene,float delta){
+    for(ClientEntity* e:scene->entities){
+        //No-phys movement 
         if(e->phys_data == nullptr){
             e->x += e->velocity.x *delta;
             e->y += e->velocity.y *delta;
             e->z += e->velocity.z *delta;
-        continue;
+            return;
         };
 
-        PhysicsData* phys = e->phys_data;
+        PhysBody* phys = e->phys_data;
         if(phys->apply_gravity)ApplyGravity(e,delta);
-        if(phys->world_collision_enabled)LevelCollision::FrameUpdate(e,scene,delta);
+        if(phys->world_collision_enabled)LevelCollision::ClientFrame(scene,e,delta);
         else{
             e->x += e->velocity.x *delta;
             e->y += e->velocity.y *delta;
             e->z += e->velocity.z *delta;
         }
         if(phys->dampen_velocity)ApplyVelocityDampening(e,delta);
-        //TODO:Entity collision
         if(e->state != null)SetStateFromPhysics(e);
+        EntityCollision::ClientFrame(scene,e,delta);
     }
 }
+
+void Physics::ServerFrame(ServerScene* scene,float delta){
+    for(ServerEntity* e:scene->entities){
+        //No-phys movement 
+        if(e->phys_data == nullptr){
+            e->x += e->velocity.x *delta;
+            e->y += e->velocity.y *delta;
+            e->z += e->velocity.z *delta;
+            return;
+        };
+
+        PhysBody* phys = e->phys_data;
+        if(phys->apply_gravity)ApplyGravity(e,delta);
+        if(phys->world_collision_enabled)LevelCollision::ServerFrame(scene,e,delta);
+        else{
+            e->x += e->velocity.x *delta;
+            e->y += e->velocity.y *delta;
+            e->z += e->velocity.z *delta;
+        }
+        if(phys->dampen_velocity)ApplyVelocityDampening(e,delta);
+        if(e->state != null)SetStateFromPhysics(e);
+        
+        EntityCollision::ServerFrame(scene,e,delta);
+
+        if((e->lastupdate_position - e->GetPos()).length_sqr() > 3.0 ||
+            (e->lastupdate_velocity - e->velocity).length_sqr() > 0.1){
+            e->delta_mask |= (1 << ComponentChunk::POSITION);
+        }
+    }
+} 

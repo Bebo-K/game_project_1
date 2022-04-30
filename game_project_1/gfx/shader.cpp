@@ -77,8 +77,7 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
             WINDOW_SIZE 		= glGetUniformLocation(program,"window_size");
             POSE_MATRICES   	= glGetUniformLocation(program,"pose_matrices");
 
-            int err = glGetError();
-            if(err !=0){logger::warn("Shader::Shader -> got GLError %d setting shader uniforms.\n",err);}
+            CheckForGLError("Shader::Shader -> got GLError %d setting shader uniforms.\n");
             
 
             if(glGetAttribLocation(program,vertex_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_VERTEX);}
@@ -88,8 +87,7 @@ Shader::Shader(char* vertex_uri,char* fragment_uri){
             if(glGetAttribLocation(program,bone_weight_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_BONE_WEIGHT);}
             if(glGetAttribLocation(program,color_attrib) >= 0){SET_BIT(enabled_attribs_mask,ATTRIB_COLOR);}
 
-            err = glGetError();
-            if(err !=0){logger::warn("Shader::Shader -> got GLError %d enabling shader attribs.\n",err);}
+            CheckForGLError("Shader::Shader -> got GLError %d enabling shader attribs.\n");
         }
         else{//Linker error
             char* error_info_log = (char*)malloc(MAX_INFO_LOG_LENGTH);
@@ -132,39 +130,39 @@ Shader::~Shader(){
 
 void Shader::Use(){
     glUseProgram(program);
-
-    int err = glGetError();
-    if(err != 0){logger::warn("Shader::Use-> GL error: %d \n",err);}
+    CheckForGLError("Shader::Use-> GL error: %d \n");
 }
 
 void Shader::OnStartUse(){
     if(GET_BIT(feature_flags,FEATURE_DISABLE_DEPTH_TEST)){
         glDisable(GL_DEPTH_TEST);
+        CheckForGLError("Shader::OnStartUse-> GL error: %d enabling feature \n");
     }
 
     for(int i=0;i<MAX_ATTRIBS;i++){
         if(GET_BIT(enabled_attribs_mask,i)){
             glEnableVertexAttribArray(i);
+            CheckForGLError("Shader::OnStartUse-> GL error: %d enabling attrib \n");
         }
     }
-    int err = glGetError();
-    if(err !=0){logger::warn("Shader::Use -> got GLError %d enabling shader features\n",err);}
+    CheckForGLError("Shader::OnStartUse -> got GLError %d enabling shader features\n");
 }
 
 void Shader::OnFinishUse(){
     glBindVertexArray(0);
+    CheckForGLError("Shader::OnFinishUse -> got GLError %d binding 0 attrib array\n");
+
     if(GET_BIT(feature_flags,FEATURE_DISABLE_DEPTH_TEST)){
         glEnable(GL_DEPTH_TEST);
+        CheckForGLError("Shader::OnFinishUse -> got GLError %d disabling feature\n");
     }
 
     for(int i=0;i<MAX_ATTRIBS;i++){
         if(GET_BIT(enabled_attribs_mask,i)){
             glDisableVertexAttribArray(i);
+            CheckForGLError("Shader::OnFinishUse -> got GLError %d disabling attrib\n");
         }
     }
-
-    int err = glGetError();
-    if(err !=0){logger::warn("Shader::Use -> got GLError %d disabling shader\n",err);}
 }
 
 void Shader::SetFeature(unsigned int feature_id,bool enabled){
@@ -221,6 +219,7 @@ Shader* ShaderManager::UseShader(char* name){
         logger::warn("Shader not found, using default.");
         ret=DEFAULT_SHADER;
     }
+    
     if(ret != CURRENT_SHADER){
         if(CURRENT_SHADER !=nullptr)CURRENT_SHADER->OnFinishUse();
         ret->Use();

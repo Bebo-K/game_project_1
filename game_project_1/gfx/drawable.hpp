@@ -14,7 +14,8 @@ class Drawable{
     char* shader_name;
 
     Drawable();
-    virtual void Draw(Camera* cam);
+    virtual void Draw(Camera* cam)=0;
+    void SetLocation(Location l);
     virtual ~Drawable();
 };
 
@@ -25,9 +26,9 @@ struct VBO{
 
     VBO();
     bool Valid();
-    void Create(void* data,GLuint type,int per_vertex,int count);
+    //void Create(void* data,GLuint type,int per_vertex,int count);
     void Create(void* data,GLuint type,int per_vertex,int count,GLuint buffer_type);
-    void CreateEmpty(GLuint type,int per_vertex,int count,GLuint buffer_type);
+    //void CreateEmpty(GLuint type,int per_vertex,int count,GLuint buffer_type);
     void CreateEmptyWeights(GLuint type,int per_vertex,int count,GLuint buffer_type);
     void Bind(int attrib_slot);
     void Bind(int attrib_slot, int stride, int start);
@@ -42,12 +43,12 @@ class ShapePrimitive : public Drawable{
     Material    mat;
 	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
     float       color[4];
-	
+
     ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d);
     ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d);
     ~ShapePrimitive();
  
-    void Draw(Shader* shader,mat4* view, mat4* projection);
+    void Draw(Camera* cam);
 };
 
 class WirePrimitive : public Drawable{
@@ -61,7 +62,7 @@ class WirePrimitive : public Drawable{
     WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d);
     ~WirePrimitive();
  
-    void Draw(Shader* shader,mat4* view, mat4* projection);
+    virtual void Draw(Camera* cam);
 };
 
 #endif

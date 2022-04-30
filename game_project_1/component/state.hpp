@@ -1,7 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include <game_project_1/component/component.hpp>
+#include <game_project_1/io/serializer.hpp>
 
 
 enum MovementLayerStateID{
@@ -23,7 +23,7 @@ enum CombatLayerStateID{
 	TALKING
 };
 
-class State : Component {
+class State {
 	MovementLayerStateID 	move_state;
 	CombatLayerStateID		combat_state;
 
@@ -40,6 +40,11 @@ class State : Component {
 	bool operator==(State* s2);
 	bool operator!=(State* s2);
 	void operator=(State* s2);
+
+    int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+    void Copy(State* s2);
 
 };
 

@@ -36,25 +36,25 @@ void BitArray::Resize(int new_bit_count){
 }
 void BitArray::Initialize(int bit_count){
     bits = bit_count;
-    int char_count = bit_count/8 + ((bit_count % 8) > 0);
-    data = (unsigned char*)calloc(char_count,1);
+    int bytes = bit_count/8 + ((bit_count % 8) > 0);
+    data = (unsigned char*)calloc(bytes,1);
 }
 int BitArray::CountBitsSet(){
     int count = 0;
-    for(int i=0; i< bits/8;i++){
-        for(int j=0;j<8;j++){
-            count += ((data[i] >> j) & 1);
-        }
+    for(int bit=0;bit<bits;bit++){
+        int byte = bit/8;
+        int bit_indx = bit%8;
+        if((data[byte] & (1 << bit_indx)) != 0)count++;
     }
     return count;
 }
 int BitArray::CountBitsUnset(){
     int count = 0;
-    for(int i=0; i< bits/8;i++){
-        for(int j=0;j<8;j++){
-            count += ((data[i] >> j) ^ 1);
-        }
-    }  
+    for(int bit=0;bit<bits;bit++){
+        int byte = bit/8;
+        int bit_indx = bit%8;
+        if((data[byte] & (1 << bit_indx)) == 0)count++;
+    }
     return count;
 }
 bool BitArray::Get(int index){
@@ -79,8 +79,8 @@ bool BitArray::Toggle(int index){
     return ((data[index/8] >> (index%8)) & 1) > 0;
 }
 void BitArray::Clear(){
-    int char_count = bits/8 + ((bits % 8) > 0);
-    memset(data,0,char_count);
+    int bytes = bits/8 + ((bits % 8) > 0);
+    memset(data,0,bytes);
 }
 
 
@@ -125,7 +125,9 @@ int  DynamicArray::Index(byte* obj){
     if(obj < data || obj >= data+(slot_size*slots)){logger::exception("DynamicArray::Index -> Memory address 0x%08x is out of range.",obj);}
     return (obj-data)/slot_size;
 }
-void* DynamicArray::Get(int index){return &data[index*slot_size];}
+void* DynamicArray::Get(int index){
+    if(occupancy.Get(index)){return &data[index*slot_size];}else return null;
+}
 int   DynamicArray::NextNonEmpty(int start_index){
     int next=start_index;
     while( ++next < slots && !occupancy.Get(next));

@@ -32,3 +32,21 @@ void State::Set(CombatLayerStateID newstate){
     if(combat_state!=newstate){state_changed=true;}
     combat_state=newstate;
 }
+
+int State::SerializedLength(){
+    return 2;
+}
+void State::Write(Serializer& dat){
+    dat.PutByte((byte)move_state);
+    dat.PutByte((byte)combat_state);
+}
+void State::Read(Deserializer& dat){
+    MovementLayerStateID move = (MovementLayerStateID)dat.GetByte();
+    CombatLayerStateID combat = (CombatLayerStateID)dat.GetByte();
+    if(move_state != move){move_state=move;state_changed=true;}
+    if(combat_state != combat){combat_state=combat;state_changed=true;}
+}
+void State::Copy(State* s2){
+    move_state = s2->move_state;
+    combat_state = s2->combat_state;
+}

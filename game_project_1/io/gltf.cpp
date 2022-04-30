@@ -13,8 +13,9 @@ GLTFScene::GLTFScene(Stream* model_stream) :binary_buffers(1){
 }
 
 GLTFScene::~GLTFScene(){
-	if(filename != null){free((void*)filename);filename=null;}
 	delete gltf_data;
+	for(byte* buffer:binary_buffers){free(buffer);}
+	binary_buffers.Clear();
 }
 
 void GLTFScene::LoadAsGLB(Stream* glb_stream){
@@ -38,9 +39,8 @@ void GLTFScene::LoadAsGLB(Stream* glb_stream){
 		
 		switch(chunk_id){
 			case JSON_CHUNK:{
-				JSONParser parser = JSONParser((char*)data,chunk_length);
+				JSONParser parser((char*)data,chunk_length);
 				gltf_data = parser.Parse();
-				free(data);
 				break;}
 			case BINARY_CHUNK:
 				binary_buffers.Add(data);
@@ -54,7 +54,6 @@ void GLTFScene::LoadAsGLB(Stream* glb_stream){
 }
 
 void GLTFScene::LoadAsGLTF(Stream* gltf_stream){
-	filename = gltf_stream->uri;
 	byte* gltf_json = (byte*)malloc(gltf_stream->length);
 	gltf_stream->read(gltf_json,gltf_stream->length);
 
@@ -401,12 +400,11 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 
 	group->name = FindMeshGroupName(group_id);
 	if(group->name== null){group->name = cstr::new_copy(mesh->GetString("name")->string);}
-	group->mesh_count=primitives->count;
-	group->meshes = new Mesh[primitives->count];
+	group->meshes.Allocate(primitives->count);
 
 	Mesh* prim = nullptr;
 	for(int i=0;i<primitives->count;i++){
-		prim = &group->meshes[i];
+		prim = group->meshes[i];
 		JSONObject* primitive = primitives->At(i)->ObjectValue();
 		JSONObject* attribs = primitive->GetJObject("attributes");
 
@@ -454,6 +452,90 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 	}
 }
 
+MeshCollider* GLTFScene::GetMeshGroupAsCollider(char* group_name){
+	if(!gltf_data->HasArray("meshes")){return nullptr;}
+	JSONArray* meshes = gltf_data->GetArray("meshes");
+
+	MeshCollider* collider = nullptr;
+	JSONArray* primitives = nullptr;
+
+	for(int i=0;i< meshes->count;i++){
+		char* mesh_group_name = FindMeshGroupName(i);
+		if(cstr::compare(group_name,mesh_group_name)){
+			JSONObject* mesh = meshes->At(i)->ObjectValue();
+			primitives = mesh->GetArray("primitives");
+			collider = new MeshCollider();
+			collider->name = cstr::new_copy(group_name);
+		}
+	}
+	if(primitives == nullptr){return nullptr;}
+
+	collider->tri_count=0;
+	vec3** primitive_verts = new vec3*[primitives->count];
+	int* primitive_tri_count = new int[primitives->count];
+
+	for(int i=0;i<primitives->count;i++){
+		JSONObject* primitive = primitives->At(i)->ObjectValue();
+		JSONObject* attribs = primitive->GetJObject("attributes");
+
+		int pos_attrib_id=attribs->GetInt("POSITION");
+		JSONObject* pos_accessor = GetAccessor(pos_attrib_id);
+		int primitive_vert_count = pos_accessor->GetInt("count");
+
+		JSONArray* max_array = pos_accessor->GetArray("max");
+		JSONArray* min_array = pos_accessor->GetArray("min");
+		AABB prim_bounds;
+			prim_bounds.hi_corner.x= max_array->At(0)->FloatValue();
+			prim_bounds.hi_corner.y= max_array->At(1)->FloatValue();
+			prim_bounds.hi_corner.z= max_array->At(2)->FloatValue();
+			prim_bounds.lo_corner.x= min_array->At(0)->FloatValue();
+			prim_bounds.lo_corner.y= min_array->At(1)->FloatValue();
+			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
+		collider->bounds.Union(prim_bounds);
+
+		vec3* raw_verts = (vec3*)BuildAccessorFloatArray(pos_attrib_id,&primitive_vert_count);
+
+		if(primitive->HasInt("indices")){
+			int index_accessor_id=primitive->GetInt("indices"); 
+			int index_count=0;
+			int* indices = BuildAccessorIntArray(index_accessor_id,nullptr);
+			index_count = GetAccessor(index_accessor_id)->GetInt("count");
+			if(index_count % 3 != 0){
+				logger::warn("Non-Triangulated Mesh: %s has an index buffer length that is not a multiple of 3: %d", collider->name, index_count);
+			}
+			primitive_verts[i] = new vec3[index_count];
+			primitive_tri_count[i] = index_count/3;
+			for(int t=0;t<primitive_tri_count[i];t++){
+				primitive_verts[i][t] = raw_verts[indices[t]];
+			}
+			free(raw_verts);
+		}
+		else{
+			if(primitive_vert_count % 9 != 0){
+				logger::warn("Non-Triangulated Mesh: %s has an vertex buffer length that is not a multiple of 9: %d", collider->name, primitive_vert_count);
+			}
+			primitive_verts[i]=raw_verts;
+			primitive_tri_count[i] = primitive_vert_count/9;
+			raw_verts=nullptr;
+		}
+		collider->tri_count+= primitive_tri_count[i];
+	}
+
+	collider->tris = (Triangle*)calloc(collider->tri_count,sizeof(Triangle));
+	int tri_index=0;
+	for(int i=0;i<primitives->count;i++){
+		for(int j=0;j<primitive_tri_count[i];j++){
+			collider->tris[tri_index].SetFromVertices((float*)&primitive_verts[i][j*3]);
+			tri_index++;
+		}
+		free(primitive_verts[i]);
+	}
+	free(primitive_verts);
+	free(primitive_tri_count);
+	return collider;
+}
+
+
 Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	if(!gltf_data->HasArray("skins")){return nullptr;}
 	JSONArray* skins = gltf_data->GetArray("skins");
@@ -468,22 +550,22 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	int ibm_data_buffer_id = GetAccessor(skin->GetInt("inverseBindMatrices"))->GetInt("bufferView");
 	int read =0;
 	byte* ibm_data_buffer=GetBufferViewData(ibm_data_buffer_id,&read);
-	int ibm_expected_size = sizeof(mat4)*ret->bone_count;
+	int ibm_expected_size = sizeof(mat4)*ret->bones.length;
 	if(ibm_expected_size != read){
 		logger::exception("Expected inverse bind matrix buffer of size %d, got %d\n",ibm_expected_size,read);
 	}
 	memcpy(ret->inverse_bind_mats,ibm_data_buffer,read);
-	for(int i=0;i<ret->bone_count;i++){
+	for(int i=0;i<ret->bones.length;i++){
 		ret->inverse_bind_mats[i].transpose();
 	}
 
 	float px=0,py=0,pz=0;
 	quaternion rotation;
 	vec3 scale = {1,1,1};
-	for(int i=0;i<ret->bone_count;i++){
+	for(int i=0;i<ret->bones.length;i++){
 		JSONObject* bone_node = nodes_array->At(joint_nodes->At(i)->IntValue())->ObjectValue();
 		JSONArray *pos_array=null,*rot_array=null,*scale_array=null,*child_array=null;
-		Bone* bone = &ret->bones[i];
+		Bone* bone = ret->bones[i];
 		ret->SetBoneName(i,bone_node->GetString("name")->string);
 		
 		px=0;py=0;pz=0;
@@ -519,7 +601,7 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 						child_bone_index=k;
 					}
 				}
-				ret->bones[child_bone_index].parent_index = i;
+				ret->bones[child_bone_index]->parent_index = i;
 			}
 		}
 		bone->bind_transform.identity();
@@ -532,7 +614,7 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
 	JSONArray* channels = animation->GetArray("channels");
 
-	Animation* dest = &target->animations[animation_id];
+	Animation* dest = target->animations[animation_id];
 
 	dest->SetName(animation->GetString("name")->string);
 	dest->SetChannelCount(channels->count);
@@ -549,9 +631,9 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 		char* target_type = channel_target->GetString("path")->string;
 
 		channel->target.object_name=null;
-		for(int b=0;b<target->bone_count;b++){
-			if(cstr::compare(target_node_name,target->bones[b].name)){
-				channel->target.object_name=target->bones[b].name;
+		for(int b=0;b<target->bones.length;b++){
+			if(cstr::compare(target_node_name,target->bones[b]->name)){
+				channel->target.object_name=target->bones[b]->name;
 				break;
 			}
 		}
@@ -610,7 +692,7 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 }
 
 void GLTFScene::GetModel(ModelData* model){
-	model->mesh_group_count=0;
+	int mesh_group_count=0;
 
 	JSONArray* nodes_array = gltf_data->GetArray("nodes");
 	int* mesh_ids = new int[nodes_array->count];//can't have more meshes than nodes.
@@ -632,19 +714,18 @@ void GLTFScene::GetModel(ModelData* model){
 					model->skeleton=GetSkeleton(model_skeleton_id);
 				}
 			}
-			mesh_ids[model->mesh_group_count] = node->GetInt("mesh");
-			model->mesh_group_count++;
+			mesh_ids[mesh_group_count] = node->GetInt("mesh");
+			mesh_group_count++;
 		}
 	}
-	model->mesh_groups = new MeshGroup[model->mesh_group_count];
-	for(int i=0;i<model->mesh_group_count;i++){
-		GetMeshGroup(&model->mesh_groups[i],mesh_ids[i]);
-		model->bounds.Union(model->mesh_groups[i].bounds);
+	model->mesh_groups.Allocate(mesh_group_count);
+	for(int i=0;i<mesh_group_count;i++){
+		GetMeshGroup(model->mesh_groups[i],mesh_ids[i]);
+		model->bounds.Union(model->mesh_groups[i]->bounds);
 	}
 	if(gltf_data->HasArray("animations") && model->skeleton != nullptr){
 		int anim_count = gltf_data->GetArray("animations")->count;
-		model->skeleton->animation_count = anim_count;
-		model->skeleton->animations = new Animation[anim_count]();
+		model->skeleton->animations.Allocate(anim_count);
 		for(int i=0;i<anim_count;i++){
 			LoadAnimation(i,model->skeleton);
 		}

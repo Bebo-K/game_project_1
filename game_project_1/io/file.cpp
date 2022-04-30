@@ -16,7 +16,7 @@ IFile::IFile(const char* filename){
 	length = -1;
 	error=false;
 	if(file_handle == nullptr){
-		logger::warn("File::open -> Cannot open file %s",filename);
+		logger::warn("File::open -> Cannot open file %s\n",filename);
 		error=true;
 	}
 	else{
@@ -49,12 +49,12 @@ bool IFile::Exists(const char* filename){
 }
 int IFile::read(void* dest, int bytes){
 	if(error){
-		logger::warn("File::read -> File is closed or in an error state.");
+		logger::warn("File::read -> File is closed or in an error state.\n");
 		return 0;
 	}
 	int read_amount = fread(dest,1,bytes,file_handle);
 	if(read_amount != bytes){
-		logger::warn("File::read -> Failed to read %d bytes from file.",bytes);
+		logger::warn("File::read -> Failed to read %d bytes from file.\n",bytes);
 		error=true;
 		return 0;
 	}
@@ -65,7 +65,7 @@ int IFile::peek(void* dest,int bytes){
 	int read_amount = fread(dest,1,bytes,file_handle);
 	fseek(file_handle,-bytes,SEEK_CUR);
 	if(read_amount != bytes){
-		logger::warn("File::peek -> Failed to peek %d bytes from file.",bytes);
+		logger::warn("File::peek -> Failed to peek %d bytes from file.\n",bytes);
 		error=true;
 		return 0;
 	}
@@ -96,11 +96,11 @@ UserFile::UserFile(const wchar_t* filename,char mode){
 		read_mode=false;
 	}
 	else{
-		logger::exception("UserFile::open -> Invalid mode %c",mode);
+		logger::exception("UserFile::open -> Invalid mode %c\n",mode);
 	}
 	error=false;
 	if(file_handle == nullptr){
-		logger::warnW(L"UserFile::open -> Cannot open file %S",filename);
+		logger::warnW(L"UserFile::open -> Cannot open file %S\n",filename);
 		error=true;
 	}
 }
@@ -115,16 +115,16 @@ bool UserFile::Exists(const wchar_t* filename){
 
 void UserFile::read(void* dest,int bytes){
 	if(!read_mode){
-		logger::exception("UserFile::read -> File is open for write only.");
+		logger::exception("UserFile::read -> File is open for write only.\n");
 		return;
 	}
 	if(error){
-		logger::warn("UserFile::read -> File is closed or in an error state.");
+		logger::warn("UserFile::read -> File is closed or in an error state.\n");
 		return;
 	}
 	int read_amount = fread(dest,1,bytes,file_handle);
 	if(read_amount != bytes){
-		logger::warn("UserFile::read -> Failed to read %d bytes from file.",bytes);
+		logger::warn("UserFile::read -> Failed to read %d bytes from file.\n",bytes);
 		error=true;
 		return;
 	}
@@ -132,29 +132,29 @@ void UserFile::read(void* dest,int bytes){
 }
 void UserFile::peek(void* dest,int bytes){
 	if(!read_mode){
-		logger::exception("UserFile::peek -> File is open for write only.");
+		logger::exception("UserFile::peek -> File is open for write only.\n");
 		return;
 	}
 	int read_amount = fread(dest,1,bytes,file_handle);
 	fseek(file_handle,-bytes,SEEK_CUR);
 	if(read_amount != bytes){
-		logger::warn("UserFile::peek -> Failed to peek %d bytes from file.",bytes);
+		logger::warn("UserFile::peek -> Failed to peek %d bytes from file.\n",bytes);
 		error=true;
 		return;
 	}
 }
 void UserFile::write(byte* data,int bytes){
 	if(read_mode){
-		logger::exception("UserFile::write -> File is open for read only.");
+		logger::exception("UserFile::write -> File is open for read only.\n");
 		return;
 	}
 	if(error){
-		logger::warn("UserFile::write -> File is closed or in an error state.");
+		logger::warn("UserFile::write -> File is closed or in an error state.\n");
 		return;
 	}
 	int write_amount = fwrite(data,1,bytes,file_handle);
 	if(write_amount != bytes){
-		logger::warn("UserFile::write -> Failed to write %d bytes to file.",bytes);
+		logger::warn("UserFile::write -> Failed to write %d bytes to file.\n",bytes);
 		error=true;
 		return;
 	}

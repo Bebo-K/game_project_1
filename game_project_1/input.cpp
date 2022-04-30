@@ -516,7 +516,7 @@ void Input::LoadKeyBindings(char** lines,int line_count){
                         direction_id = k;
                     }
                 }
-                AddKeyAxisBind((AxisID)i,physical_input_id,direction_id);
+                AddKeyAxisBind((AxisID)j,physical_input_id,direction_id);
             }
         }
     }

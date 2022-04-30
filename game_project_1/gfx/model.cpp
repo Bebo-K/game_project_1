@@ -6,6 +6,7 @@
 #include <game_project_1/log.hpp>
 #include <string.h>
 
+
 Pool<ModelCacheEntry> model_registry;
 ModelData empty_model;
 
@@ -15,8 +16,10 @@ Mesh::Mesh(){
 };
 
 void Mesh::Init(){
+    ShaderManager::UseShader("model_dynamic_lighting");
     glGenVertexArrays(1,&vertex_array_id);
     glBindVertexArray(vertex_array_id);
+    CheckForGLError("GL error initializing mesh(1): %d\n");
 
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
@@ -25,33 +28,37 @@ void Mesh::Init(){
     glEnableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
     glEnableVertexAttribArray(Shader::ATTRIB_COLOR);
 
+
+    CheckForGLError("GL error initializing mesh(2): %d\n");
     //TODO: Memory leak. Where to keep these values?
     if(!normal.Valid()){
         float* default_normals = (float*)malloc(vertex_count*3*3*sizeof(float));
         for(int i=0;i<vertex_count*3*3;i++){default_normals[i]=1.0f;}
-        normal.Create(default_normals,GL_FLOAT,3,vertex_count*3);
+        normal.Create(default_normals,GL_FLOAT,3,vertex_count*3,GL_ARRAY_BUFFER);
     }
     if(!texcoord_0.Valid()){ 
         float* default_texcoord = (float*)malloc(vertex_count*3*2*sizeof(float));
         for(int i=0;i<vertex_count*3*2;i++){default_texcoord[i]=0.0f;}
-        texcoord_0.Create(default_texcoord,GL_FLOAT,2,vertex_count*3);
+        texcoord_0.Create(default_texcoord,GL_FLOAT,2,vertex_count*3,GL_ARRAY_BUFFER);
     }
     if(!vertex_colors.Valid()){
         float* default_colors = (float*)malloc(vertex_count*3*3*sizeof(float));
         for(int i=0;i<vertex_count*3*3;i++){default_colors[i]=1.0f;}
-        vertex_colors.Create(default_colors,GL_FLOAT,3,vertex_count*3);
+        vertex_colors.Create(default_colors,GL_FLOAT,3,vertex_count*3,GL_ARRAY_BUFFER);
     }
     if(!bone_0_index.Valid()){ 
         short* default_bone_index = (short*)malloc(vertex_count*3*4*sizeof(short));
         for(int i=0;i<vertex_count*3*4;i++){default_bone_index[i]=0;}
-        bone_0_index.Create(default_bone_index,GL_UNSIGNED_SHORT,4,vertex_count*3);
+        bone_0_index.Create(default_bone_index,GL_UNSIGNED_SHORT,4,vertex_count*3,GL_ARRAY_BUFFER);
     }
     if(!bone_0_weight.Valid()){
         float* default_bone_weight = (float*)malloc(vertex_count*3*4*sizeof(float));
         for(int i=0;i<vertex_count*3*4;i++){default_bone_weight[i]=0.0f;}
-        bone_0_weight.Create(default_bone_weight,GL_FLOAT,4,vertex_count*3);
+        bone_0_weight.Create(default_bone_weight,GL_FLOAT,4,vertex_count*3,GL_ARRAY_BUFFER);
     }
     
+    
+    CheckForGLError("GL error initializing mesh(3): %d\n");
     vertex.Bind(Shader::ATTRIB_VERTEX);
     texcoord_0.Bind(Shader::ATTRIB_TEXCOORD);
     normal.Bind(Shader::ATTRIB_NORMAL);
@@ -59,6 +66,8 @@ void Mesh::Init(){
     bone_0_weight.Bind(Shader::ATTRIB_BONE_WEIGHT);
     vertex_colors.Bind(Shader::ATTRIB_COLOR);
 
+
+    CheckForGLError("GL error initializing mesh(4): %d\n");
     if(index.Valid()){
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index.buffer_id);
     }
@@ -69,8 +78,7 @@ void Mesh::Init(){
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
-    int gl_err = glGetError();
-    if(gl_err != 0){logger::warn("GL error initializing mesh. Error during index bind: %d",&gl_err);}
+    CheckForGLError("GL error initializing mesh(5). Error during index bind: %d\n");
 }
 
 Mesh::~Mesh(){
@@ -98,9 +106,29 @@ void Mesh::DebugPrint(){
     logger::info("....Indices ID: %d\n",index.buffer_id);
 }
 
-MeshGroup::MeshGroup(){
-    meshes=null;
-    mesh_count=0;
+void Mesh::Draw(Shader* shader){
+    glBindVertexArray(vertex_array_id);
+    CheckForGLError("Mesh.Draw: GL Error %d binding vertex array\n");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
+    glUniform1i(shader->TEXTURE_0,0);
+
+    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform4fv(shader->COLOR,1,(GLfloat*)&mat.base_color);
+ 
+    if(index.Valid()){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index.buffer_id);
+        glDrawElements(GL_TRIANGLES,tri_count*3,index.element_type,nullptr);
+    }
+    else{
+        glDrawArrays(GL_TRIANGLES,0,vertex_count);
+    } 
+
+    CheckForGLError("Mesh.Draw: GL Error %d during draw\n");
+}
+
+MeshGroup::MeshGroup():meshes(){
     name=null;
 }
 
@@ -109,25 +137,18 @@ MeshGroup::~MeshGroup(){
         free(name);
         name=null;
     }
-    if(meshes != null){
-        delete[] meshes;
-        meshes = null;
-        mesh_count=0;
-    }
+    meshes.Destroy();
 }
 
 void MeshGroup::DebugPrint(){
-    logger::info("..Meshes: %d\n",mesh_count);
-    for(int i=0; i< mesh_count;i++){
+    logger::info("..Meshes: %d\n",meshes.length);
+    for(int i=0; i< meshes.length;i++){
         logger::info("..Mesh %d:\n",i);
-        meshes[i].DebugPrint();
+        meshes[i]->DebugPrint();
     }
 }
 
-
-ModelData::ModelData(){
-    mesh_group_count=0;
-	mesh_groups=null;
+ModelData::ModelData():mesh_groups(){
 	skeleton=null;
 }
 
@@ -136,51 +157,15 @@ ModelData::~ModelData(){
         delete skeleton;
         skeleton = null;
     }
-    if(mesh_groups != null){
-        delete[] mesh_groups;
-        mesh_groups=null;
-        mesh_group_count=0;
-    }
-}
-
-void ModelData::DrawMesh(Shader* shader,int group_index,int mesh_index){
-    if(group_index < 0 || group_index >= mesh_group_count){return;}
-    if(mesh_index < 0 || mesh_index >= mesh_groups[group_index].mesh_count){return;}
-    
-    Mesh* m = &mesh_groups[group_index].meshes[mesh_index];
-    glBindVertexArray(m->vertex_array_id);
-    int gl_err = glGetError();
-    if(gl_err != 0){logger::warn("GL error binding model vertex array: %d",&gl_err);}
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,m->mat.texture.atlas_id);
-    glUniform1i(shader->TEXTURE_0,0);
-    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&m->mat.texture.tex_coords);
-    glUniform4fv(shader->COLOR,1,(GLfloat*)&m->mat.base_color);
- 
-
-    
-    if(m->index.Valid()){
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->index.buffer_id);
-        glDrawElements(GL_TRIANGLES,m->tri_count*3,m->index.element_type,nullptr);
-    }
-    else{
-        glDrawArrays(GL_TRIANGLES,0,m->vertex_count);
-    } 
-    
-    glBindVertexArray(0);
-    
-    int err = glGetError(); 
-    if(err != 0){
-        logger::warn("ModelData.DrawMesh() -> GL Error: %d \n",err);
-    }
+    mesh_groups.Destroy();
 }
 
 void ModelData::DebugPrint(){
     logger::info("Model printout:---------------\n");
-    logger::info("Mesh Groups: %d\n",mesh_group_count);
-    for(int i=0; i< mesh_group_count;i++){
+    logger::info("Mesh Groups: %d\n",mesh_groups.length);
+    for(int i=0; i< mesh_groups.length;i++){
         logger::info("Mesh Group %d:\n",i);
-        mesh_groups[i].DebugPrint();
+        mesh_groups[i]->DebugPrint();
     }
     if(skeleton != null){
         logger::info("Skeleton:\n");
@@ -225,13 +210,6 @@ Model::~Model(){
 
 void Model::Draw(Camera* cam){
     Shader* shader = ShaderManager::UseShader(shader_name);
-
-    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
-    glEnableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
-    glEnableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
-    glEnableVertexAttribArray(Shader::ATTRIB_COLOR);
     
     mat4 model;
     mat3 normal;
@@ -262,10 +240,9 @@ void Model::Draw(Camera* cam){
     glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
-    for(int i=0;i<data->mesh_group_count;i++){
-        int group_count = data->mesh_groups[i].mesh_count;
-        for(int j=group_count-1;j>=0;j--){
-            data->DrawMesh(shader,i,j);
+    for(MeshGroup* group:data->mesh_groups){
+        for(Mesh* mesh:group->meshes){
+            mesh->Draw(shader);
         }
     }
 
@@ -274,15 +251,6 @@ void Model::Draw(Camera* cam){
             glUniformMatrix4x3fv(shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
         }
     }
-
-
-    glDisableVertexAttribArray(Shader::ATTRIB_COLOR);
-    glDisableVertexAttribArray(Shader::ATTRIB_BONE_WEIGHT);
-    glDisableVertexAttribArray(Shader::ATTRIB_BONE_INDEX);
-    glDisableVertexAttribArray(Shader::ATTRIB_NORMAL);
-    glDisableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
-    glDisableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    glBindVertexArray(0);
 }
 
 void Model::StartAnimation(char* anim_name){
@@ -296,18 +264,21 @@ void Model::StartAnimation(char* anim_name, AnimationOptions options){
 void ModelManager::Init(){
     ShapePrimitive error_cube(EPrimitiveShape::CUBE,"./dat/img/error.png",1,1,1);
 
+    empty_model.mesh_groups.length=0;
+    empty_model.mesh_groups.data=nullptr;
     empty_model.skeleton= null;
     empty_model.bounds = {{-0.5f,-0.5f,-0.5f},{0.5f,0.5f,0.5f}};
-    empty_model.mesh_groups=new MeshGroup[1]();
-    empty_model.mesh_group_count=1;
-    empty_model.mesh_groups[0].meshes = new Mesh[1]();
-    empty_model.mesh_groups[0].name = cstr::new_copy("ErrorModel.MeshGroup");
-    empty_model.mesh_groups[0].meshes[0].vertex_count = error_cube.vertex_count;
-    empty_model.mesh_groups[0].meshes[0].tri_count = empty_model.mesh_groups[0].meshes[0].vertex_count/3;
-    empty_model.mesh_groups[0].meshes[0].mat = error_cube.mat;
-    empty_model.mesh_groups[0].meshes[0].vertex = error_cube.vertices;
-    empty_model.mesh_groups[0].meshes[0].texcoord_0 = error_cube.tex_coords;
-    empty_model.mesh_groups[0].meshes[0].normal = error_cube.normals;
+    empty_model.mesh_groups.Allocate(1);
+    MeshGroup* empty_mesh_group = empty_model.mesh_groups[0];
+        empty_mesh_group->meshes.Allocate(1);
+        empty_mesh_group->name = cstr::new_copy("ErrorModel.MeshGroup");
+    Mesh* empty_mesh = empty_mesh_group->meshes[0];
+        empty_mesh->vertex_count = error_cube.vertex_count;
+        empty_mesh->tri_count = empty_mesh->vertex_count/3;
+        empty_mesh->mat = error_cube.mat;
+        empty_mesh->vertex = error_cube.vertices;
+        empty_mesh->texcoord_0 = error_cube.tex_coords;
+        empty_mesh->normal = error_cube.normals;
 }
 
 
@@ -388,3 +359,4 @@ void ModelManager::Unregister(ModelID id){
 ModelData* ModelManager::ErrorModel(){
     return &empty_model;
 }
+

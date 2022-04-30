@@ -12,7 +12,7 @@ namespace PacketID{
     const int ACPT = CSTR_TO_PACKETID("ACPT");//R  Server accepts new client connection
     const int OKAY = CSTR_TO_PACKETID("OKAY");//   (Both sides) Acknowledge reliable packet 
     const int NOPE = CSTR_TO_PACKETID("NOPE");//   Disconnect (Either side)
-    const int PINF = CSTR_TO_PACKETID("PINF");//R  Player Info-- Sent to new players to catch them up
+    const int PINF = CSTR_TO_PACKETID("PINF");//R  Player Info-- Sent to new players to catch them up or when their state changes
     const int NPLR = CSTR_TO_PACKETID("NPLR");//R  New Player-- Server notification of a new player
     const int PLDC = CSTR_TO_PACKETID("PLDC");//R  Player Disconnect-- Server notification of a player disconnecting
     const int PING = CSTR_TO_PACKETID("PING");//   Ping loopback-- finds latency and keeps connection fresh
@@ -29,17 +29,17 @@ namespace PacketID{
 
 //Base packet object for UDP datagrams
 struct Packet{
-    const static int  HEADER_SIZE = 16;
+    const static int  HEADER_SIZE = 20;
     const static int MAX_DATA_LENGTH = MAX_UDP_PACKET_SIZE-HEADER_SIZE;
     int id;//unique random ID
     int type;//from PacketID list
+    int timestamp;//time it was sent (ms)
     int length;//includes these header items
     int crc;
     byte data[MAX_DATA_LENGTH];
     void ClearData();
     void CreateID();
     void SetDataLength(int data_len);
-    void RunCRC();
     bool IsReliable();//if true, return an OKAY acknowledgement packet once recieved.
     bool IsMultipart();//if true, this obect can be cast to a MultipartPacket
     Payload getPayload();
@@ -47,38 +47,51 @@ struct Packet{
 
 //Extended packet objects for multipart data.
 struct MultipartPacket{
-    const static int  HEADER_SIZE = 28;
+    const static int  HEADER_SIZE = 32;
     const static int MAX_DATA_LENGTH = MAX_UDP_PACKET_SIZE-HEADER_SIZE;
     int id;
     int type;
+    int timestamp;
     int length;
     int crc;
-    short segment;
-    short segment_count;
-    int   payload_length;
-    int   payload_offset;
+    short segment;//index of this segment
+    short segment_count;//# of segments
+    int   packet_data_length;//length of this packet
+    int   payload_offset;//offset of packet data into full payload
     byte data[MAX_DATA_LENGTH];
     void ClearData();
     void CreateID();
-    void SetDataLength(int data_len);
-    void RunCRC();
+    void SetPayloadLength(int payload_len);
+    void SetPacketDataLength(int data_len);
     bool IsReliable();//if true, return an OKAY acknowledgement packet once recieved.
 };
 
-class ReliablePacketEnvelope{
+class ReliablePayloadEnvelope{
     public:
-    Packet dataPacket;
+    int type;
+    int length;
+    byte* data;
+
+    int  reliable_id;
     long last_sent;
     int  retry_count;
+    ReliablePayloadEnvelope();
+    ~ReliablePayloadEnvelope();
     bool ShouldSend();
 };
 
 struct Payload{
+    int id;
     int type;
     int length;//includes these header items
+    int timestamp;
     byte* data;
     bool free_after_use;
-    Payload(int id,int len,byte* dat);
+    Payload();
+    Payload(int id,int type,int len,int timestamp,byte* dat);
+    Payload(int type,int len,int timestamp,byte* dat);
+    Payload(Packet& p);
+    bool IsReliable();
 };
 
 

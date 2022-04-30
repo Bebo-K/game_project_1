@@ -1,6 +1,7 @@
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/log.hpp>
+#include <game_project_1/game/game_constants.hpp>
 
 char filepath_base[] = "dat/";
 
@@ -26,6 +27,12 @@ void AssetManager::Init(){
 }
 Stream* AssetManager::Texture(char* uri){
     char* filename = BuildFileName("textures/",uri,".png");
+    FileStream* texture_stream = new FileStream(filename);
+    free(filename);
+    return texture_stream;
+}
+Stream* AssetManager::SkyboxTexture(char* uri){
+    char* filename = BuildFileName("textures/skybox/",uri,".png");
     FileStream* texture_stream = new FileStream(filename);
     free(filename);
     return texture_stream;
@@ -60,9 +67,11 @@ Stream* AssetManager::FragmentShader(char* uri){
     free(filename);
     return shader_stream;
 }
-Stream* AssetManager::Level(char* uri){
+Stream* AssetManager::Level(int area_id){
+    char* uri = GameConstants::GetMapFileForAreaID(area_id);
     char* filename = BuildFileName("levels/",uri,".lvl");
     FileStream* level_stream = new FileStream(filename);
     free(filename);
     return level_stream;
 }
+

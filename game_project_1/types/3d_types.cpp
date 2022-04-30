@@ -98,6 +98,7 @@ void vec3::rotate_z(float theta){
 vec3 vec3::operator +(vec3 v2){return{x+v2.x,y+v2.y,z+v2.z};}
 vec3 vec3::operator -(vec3 v2){return{x-v2.x,y-v2.y,z-v2.z};}
 vec3 vec3::operator *(float scl){return {x*scl,y*scl,z*scl};}
+vec3 vec3::operator *(vec3 scl){return {x*scl.x,y*scl.y,z*scl.z};}
 vec3 vec3::of_length(float newlen){
     float len = length();
     if(newlen == 0 || len ==0){return {0,0,0};}
@@ -447,8 +448,15 @@ void mat3::invert(){
 }
 
 
+vec3 Transform::Position(){return {x,y,z};}
 void Transform::Clear(){
     x=y=z=0;
     rotation.x=rotation.y=rotation.z=0;
     scale.x=scale.y=scale.z=1.0f;
 }
+
+
+
+Location::Location(){position={0,0,0};rotation={0,0,0};scale={1,1,1};}
+Location::Location(vec3 pos,vec3 rot,vec3 scl){position=pos;rotation=rot;scale=scl;}
+//Transform Location::ToTransform(){}

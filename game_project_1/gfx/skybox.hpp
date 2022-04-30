@@ -12,7 +12,7 @@ class Skybox : public Drawable{
 
     Skybox();
     void SetTexture(Texture tex);
-    void Draw(Camera* cam);
+    virtual void Draw(Camera* cam);
 };
 
 

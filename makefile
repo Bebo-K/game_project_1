@@ -33,7 +33,7 @@ rdirfind=$(foreach d,$(wildcard $(1:=/*)),$(call rdirfind,$d) $(filter-out %.%,$
 #SRC := $(MAIN_SRC) $(STRUCT_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(IO_SRC) $(NET_SRC) $(GFX_SRC) $(GAME_SRC) $(PHYS_SRC) $(UI_SRC) $(MENU_SRC) $(WIDGET_SRC) $(COMPONENT_SRC) $(SYSTEM_SRC) $(ENTITY_SRC) $(TEST_SRC) 
 #VPATH = $(SRC)
 
-VPATH := $(call rdirfind,game_project_1)
+VPATH := game_project_1;$(call rdirfind,game_project_1)
 SRC := $(call rwildcard,game_project_1,*.cpp)
 OBJS := $(addprefix obj/,$(notdir $(patsubst %.cpp,%.o,$(SRC))))
 
@@ -42,11 +42,11 @@ OBJS := $(addprefix obj/,$(notdir $(patsubst %.cpp,%.o,$(SRC))))
 #foobar.exe: $(IO_SRC) foobar.cpp 
 #	g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
-game.exe: $(OBJS) win/resource.o
-	g++ $(CFLAGS) -o $@ $^  $(LIBS)
-
 obj/%.o: %.cpp
 	g++ $(CFLAGS) -c -I . -o $@ $< 
+
+game.exe: $(OBJS) win/resource.o
+	g++ $(CFLAGS) -o $@ $^  $(LIBS)
 
 win/resource.o: win/dpi-aware.manifest win/icon.ico win/resource.rc
 	windres win/resource.rc --target=$(RESOURCE_ARCH) $@

@@ -131,6 +131,21 @@ bool cstr::compare(const char* str1,const char* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
     return strcmp(str1,str2)==0;
 }
+bool cstr::compare_caseless(const char* str1,const char* str2){
+    if(str1 == str2)return true;//pointer comparison shortcut
+    if(str1 == nullptr || str2 == nullptr)return false;
+    int indx;
+    for(indx=0;str1[indx]==0;indx++){
+        char char1=str1[indx];
+        char char2=str2[indx];
+        if(char2 == 0)return false;
+        if(char1 >= 'A'){char1 -= ('A'-'a');}
+        if(char2 >= 'A'){char2 -= ('A'-'a');}
+        if(char1 != char2)return false;
+    }
+    if(str2[indx] != 0)return false;
+    return true;
+}
 bool cstr::starts_with(const char* str, const char* start){
     int i=0;
     for(i=0;str[i] != 0 && start[i]!= 0;i++){
@@ -354,6 +369,21 @@ wchar* wstr::append(const wchar* str1,wchar char1){
 bool wstr::compare(const wchar* str1,const wchar* str2){
     if(str1 == str2)return true;//pointer comparison shortcut
     return wcscmp(str1,str2)==0;
+}
+bool wstr::compare_caseless(const wchar* str1,const wchar* str2){
+    if(str1 == str2)return true;//pointer comparison shortcut
+    if(str1 == nullptr || str2 == nullptr)return false;
+    int indx;
+    for(indx=0;str1[indx]==0;indx++){
+        wchar char1=str1[indx];
+        wchar char2=str2[indx];
+        if(char2 == 0)return false;
+        if(char1 >= 'A'){char1 -= ('A'-'a');}
+        if(char2 >= 'A'){char2 -= ('A'-'a');}
+        if(char1 != char2)return false;
+    }
+    if(str2[indx] != 0)return false;
+    return true;
 }
 bool wstr::starts_with(const wchar* str, const wchar* start){
     int i=0;

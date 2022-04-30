@@ -90,6 +90,21 @@ class Map{
         }
         return nullptr;
     }
+    int MatchIndex(K key){
+        for(int i=0;i< slots;i++){
+            if(KeyNull(keys[i]))continue;
+            if(CompareKey(key,keys[i])){return i;}
+        }
+        return -1;
+    }
+    K KeyAtIndex(int index){
+        if(index < 0 || index >= slots){logger::exception("Map::KeyAtIndex: Trying to access a map key with an invalid index:%d",index);}
+        return keys[index];
+    }
+    V ValueAtIndex(int index){
+        if(index < 0 || index >= slots){logger::exception("Map::ValueAtIndex: Trying to access a map value with an invalid index:%d",index);}
+        return values[index];
+    }
     bool Has(K key){return Get(key)!=nullptr;}
     bool Add(K key,V value){
         if(Has(key))return false;

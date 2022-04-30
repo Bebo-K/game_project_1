@@ -16,8 +16,8 @@ void BuildQuadPrimitive(){
     glBindVertexArray(vertex_array_id);
 
     //TODO: Memory leak. Where to keep these values?
-    vertices.Create(vert_data,GL_FLOAT,3,9);
-    texcoords.Create(texcoord_data,GL_FLOAT,2,6);
+    vertices.Create(vert_data,GL_FLOAT,3,9,GL_ARRAY_BUFFER);
+    texcoords.Create(texcoord_data,GL_FLOAT,2,6,GL_ARRAY_BUFFER);
 
     vertices.Bind(Shader::ATTRIB_VERTEX);
     texcoords.Bind(Shader::ATTRIB_TEXCOORD);

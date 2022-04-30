@@ -4,43 +4,61 @@
 #include <game_project_1/io/file.hpp>
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/game/game_constants.hpp>
-#include <game_project_1/game/unit.hpp>
+#include <game_project_1/types/pool.hpp>
+#include <game_project_1/types/list.hpp>
+#include <game_project_1/game/entity.hpp>
 
 
 #define CAMPAIGN_COUNT 1
 #define CAMPAIGN_DEMO 0
 
-class SaveUnit{
+
+class SaveEntity: public BaseEntity {
     public:
+    int global_id;
+    //TODO: wchar** tags for scripting lookups
+    SaveEntity(int gid);
 
-    wchar* name;
-    int race_id;
-    int class_id;
-    UnitAppearance appearance;
-    // UnitInventory inventory
-    // UnitStats stats
+    int SavedLength();
+    void Load(Deserializer& dat);
+    void Save(Serializer& dat);
 
-    SaveUnit();
-    SaveUnit(GameUnit from);
-    GameUnit* ToUnit();
+    void LoadFrom(ServerEntity* e);
+    void CopyTo(ServerEntity* e);
+};
+
+class SavePlayer{
+    public:
+    int     player_id;
+    wchar*  player_name;
+    int     entity_global_id;
+    //int   active_party_count
+    //int*  active_party_units
+    int     last_scene;
+    int     last_entrance;
+
+    SavePlayer();
+    ~SavePlayer();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
-class SavePlayer{
+class SaveScene{
     public:
-    int   save_id;
-    wchar* player_name;
-    int   player_scene;
-    int   player_scene_entrance;
-    SaveUnit player_unit;
-    //int party_members;
-    //SaveUnit party_units;
+    int area_id;
+    int  num_global_entities;
+    int* global_entities_in_area;
+    Array<SaveEntity> non_global_entities; // they're saved to the area but cannot travel outside it
+    // For things like props, grounded items that we don't want to despawn forever when the scene unloads
 
-    SavePlayer();
-    ~SavePlayer();
+
+    SaveScene();
+    ~SaveScene();
+
+    void AddGlobalEntity(int global_id);
+    void RemoveGlobalID(int global_id);
 
     int SerializedLength();
     void Read(Deserializer& dat);
@@ -70,28 +88,38 @@ class SaveFile{
     static const char* savefile_extension;//=".save"
     static wchar_t* GetSaveFilePath(char* save_name);
     public:
-    int           saved_players;
-    SavePlayer*   players;
-    int           saved_campaigns;
-    SaveCampaign* campaigns;
+    
+    Array<SaveCampaign> campaigns;
+    Pool<SaveEntity>    global_entities;
+    Array<SavePlayer>   players;
+    Array<SaveScene>    saved_scenes;
     
     SaveFile();
     ~SaveFile();
+
     void New();
     static bool Exists(char* save_name);
     void LoadOrNew(char* save_name);
     void Load(char* save_name);
     void Save(char* save_name);
 
-    SaveCampaign* GetCampaign(int campaign_id);
-    SavePlayer* GetPlayer(wchar* player_name);
-    int GetPlayerSaveID(wchar* player_name);
-    SavePlayer* GetPlayerByID(int save_id);
-    SavePlayer* NewPlayer(wchar* player_name,int race_id,int class_id, UnitAppearance appearance);
+
+    SaveCampaign*   GetCampaign(int campaign_id);
+    SaveScene*      GetScene(int area_id);
+    SavePlayer*     GetPlayer(wchar* player_name);
+    SavePlayer*     GetPlayerByID(int player_save_id);
+    SaveEntity*     GetGlobalEntity(int global_id);
+    SaveEntity*     GetPlayerSaveEntity(wchar* player_name);//shorthand for GetGlobalEntity(GetPlayer(player_name)->player_unit_id);
+
+    SavePlayer* NewPlayer(wchar* player_name);
+    SaveScene*  StartNewSaveScene(int area_id);
+
+    int PersistEntity(ServerEntity* e);//Registers a ServerEntity globally with a corresponding SaveEntity 
+    void AssignEntityToScene(int global_id, int area_id,bool one_instance);//Saves a global entity to a scene. 
+        //Can be used to pre-populate inactive scenes with existing global entities. 
+        //Will scan and remove previous instance if one_instancce is true
 
     int SerializedLength();
-    void  Deserialize(byte* src);
-    int Serialize(byte* bytes);
 };
 
 

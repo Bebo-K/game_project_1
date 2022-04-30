@@ -88,6 +88,6 @@ void Sprite::Draw(){
 
     glDrawArrays(GL_TRIANGLES,0,3);
     
-    int err = glGetError(); 
-    if(err != 0){logger::warn("Sprite.Draw() -> GL Error: %d \n",err);}
+    
+    CheckForGLError("Sprite.Draw() -> GL Error: %d \n");
 }

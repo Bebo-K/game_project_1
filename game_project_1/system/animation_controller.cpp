@@ -13,7 +13,7 @@ void AnimationController::Update(ClientScene* scene, float delta){
 }
 
 void AnimationController::HandleGroundUnit(ClientEntity* e){
-    if(e->anim_state->state != e->state){
+    if(e->anim_state->display_state != e->state){
         char* new_anim = null;
         AnimationOptions anim_options;
         if(e->state->Is(IDLE)){new_anim="idle";anim_options.end_action=LOOP;}
@@ -27,7 +27,7 @@ void AnimationController::HandleGroundUnit(ClientEntity* e){
             for(Model* m:(*e->models)){m->StartAnimation(new_anim,anim_options);}
             //TODO: sprite animation
         }
-        e->anim_state->state = e->state;            
+        e->anim_state->display_state = e->state;            
     }
     //Walk speed modulation
     if(e->state->Is(WALKING)){
