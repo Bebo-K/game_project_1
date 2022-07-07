@@ -1,103 +1,63 @@
 #include <game_project_1/server/server_net_handler.hpp>
 #include <game_project_1/net/network.hpp>
-#include <game_project_1/net/packet_builder.hpp>
+#include <game_project_1/net/payload.hpp>
+#include <game_project_1/net/packet.hpp>
 #include <game_project_1/base/base_player.hpp>
 
+
 Server* ServerNetHandler::server=nullptr;
-    
-const ComponentChunk::Mask server_private_component_mask = ~(1 << ComponentChunk::INVENTORY);
 
-void ServerNetHandler::Init(Server* s){
-    server = s;
-}
-void ServerNetHandler::Free(){
-    server=nullptr;
-}
-
-
+void ServerNetHandler::Init(Server* s){server = s;}
 void ServerNetHandler::Update(int frames){
     if(!ServerNetwork::IsRunning())return;
-    Payload payload(0,0,0,nullptr);
     for(int i=0;i<server->max_players;i++){
-        if(!ServerNetwork::TargetConnected(i))continue;
-        payload=ServerNetwork::RecvFromTarget(i);
+        if(!ServerNetwork::PlayerConnected(i))continue;
+        Payload payload = ServerNetwork::RecvFromPlayer(i);
         while(payload.type != 0){
             switch(payload.type){
                 case PacketID::CHAT:{ServerNetwork::SendToAllTargets(payload);break;}
-                case PacketID::SNPS:{
-                    OnPlayerConnected(i);OnStartNewPlayerSave(i,payload);break;}
-                case PacketID::CONT:{
-                    OnPlayerConnected(i);break;}
-                case PacketID::CDLT:{
-                    ServerEntity* player_entity = server->GetActiveScene(server->players[i].entity_scene)->GetEntity(server->players[i].entity_id);
-                    Deserializer playerDelta(payload.data);
-                    int client_given_entity_id= playerDelta.GetInt();
-                    if(player_entity->id != client_given_entity_id){
-                        logger::warn("Client is sending a delta for an entity they're not. Ours:%d Theirs:%d\n",player_entity->id,client_given_entity_id);
-                    }
-                    player_entity->Deserialize(playerDelta,payload.timestamp);
-                    break;}
+                case PacketID::SNPS:{OnStartNewPlayerSave(i,Packet::SNPS(payload));break;}
+                case PacketID::CDLT:{OnClientDelta(i,payload);break;}
                 default:break;
             }
             if(payload.free_after_use){free(payload.data);}
-            payload=ServerNetwork::RecvFromTarget(i);
+            payload = ServerNetwork::RecvFromPlayer(i);
         }
     }
 }
+void ServerNetHandler::Free(){server = nullptr;}
 
-void ServerNetHandler::OnPlayerConnected(int player_id){    
-    Packet player_info;
-        PacketData::NPLR new_player_data(&player_info); //Send NPLR packets for client to other players
-        new_player_data.SetPlayerID(player_id);
-        new_player_data.SetPlayerName(server->players[player_id].name);
-        new_player_data.WritePacket();
-    ServerNetwork::SendToOtherTargets(&player_info,player_id);
+void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_save_info){
+    SavePlayer* save = server->save.NewPlayer();
+    server->players[player_slot].save = save;
 
-    for(int i=0;i<server->max_players;i++){//send PINF packets to the new client for previously connected players
-        if(server->players[i].state <= Player::DISCONNECTED)continue;
-        if(i==player_id)continue;
-        PacketData::PINF current_player_info(&player_info);
-            current_player_info.SetPlayerID(i);
-            current_player_info.SetPlayerName(server->players[i].name); 
-            current_player_info.SetCharacterName(server->players[i].character_name); 
-            current_player_info.SetPlayerEntityID(server->players[i].entity_id);   
-            current_player_info.SetPlayerEntityArea(server->players[i].entity_scene);
-
-        ServerNetwork::SendToTarget(player_id,&player_info);
-    }
-
-    if(server->players[player_id].save_id != 0){
-        SavePlayer* save = server->save.GetPlayerByID(server->players[player_id].save_id);
-        server->players[player_id].save_entity_id = save->entity_global_id;
-        server->TransitionPlayer(0,save->last_scene,save->last_entrance,player_id);
-    }
-    //else we wait for a StartNewPlayerSave packet
+    ServerEntity* player_base_entity = new ServerEntity();
+        player_base_entity->entity_class_id = EntityClass::Humanoid;
+        player_base_entity->name = new_save_info.player_name;
+        player_base_entity->char_data = new Character();
+            player_base_entity->char_data->class_id = new_save_info.class_id;
+            player_base_entity->char_data->race_id = new_save_info.race_id;
+            player_base_entity->char_data->appearance.color1 = new_save_info.color_1;
+            player_base_entity->char_data->appearance.style1 = new_save_info.style_1;
+            player_base_entity->char_data->appearance.style2 = new_save_info.style_2;
+            player_base_entity->char_data->appearance.style3 = new_save_info.style_3; 
+    HumanoidInitialPlayerBuilder(player_base_entity);
+    save->character_global_id = server->save.PersistEntity(player_base_entity);
+    server->TransitionPlayer(0,save->last_scene,save->last_entrance,player_slot);
+    delete player_base_entity;
 }
 
-void ServerNetHandler::OnStartNewPlayerSave(int player_id,Payload snps_packet){
-    SavePlayer* save = server->save.NewPlayer(server->players[player_id].name);
-    server->players[player_id].save_id=save->player_id;
-    PacketData::SNPS start_new_player_save(snps_packet);
-
-    ServerEntity* player_base = new ServerEntity(0);//generate temporary player entity outside of any scene
-    player_base->player_id=player_id;
-    player_base->entity_class_id=EntityClass::Humanoid;
-    player_base->name = wstr::new_copy(start_new_player_save.GetCharacterName());
-    player_base->char_data = new Character();
-    player_base->char_data->race_id =  start_new_player_save.GetRaceID();
-    player_base->char_data->class_id =  start_new_player_save.GetClassID();
-    player_base->char_data->appearance.Copy(start_new_player_save.GetCharacterAppearance());
-    HumanoidServerBuilder(player_base,nullptr);
-
-    save->entity_global_id = server->save.PersistEntity(player_base);   
-    server->players[player_id].save_entity_id = save->entity_global_id;
-    
-    delete player_base;
-
-    server->TransitionPlayer(0,save->last_scene,save->last_entrance,player_id);
+void ServerNetHandler::OnPlayerInfoUpdate(int player_slot){
+    Packet::PINF player_info();
+        player_info.player_id = player_slot;
+        player_info.player_entity = server->players[player_slot].entity_id;
+        player_info.player_area_id = server->players[player_slot].entity_scene;
+        player_info.SetPersona(server->players[player_slot].persona);
+        
+    ServerNetwork::SendToOtherTargets(player_info.GetPayload(),player_slot);
 }
 
-void ServerNetHandler::OnPlayerSceneTransition(int player_id,int area_id){
+void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
     int total_scne_length=sizeof(int)*3;//area_id,your_entity_id,entity_count
 
     ServerScene* scene = server->GetActiveScene(area_id);//should be loaded by now.
@@ -107,38 +67,38 @@ void ServerNetHandler::OnPlayerSceneTransition(int player_id,int area_id){
     Payload scene_payload(PacketID::SCNE,total_scne_length,0,(byte*)calloc(total_scne_length,1));
     Serializer scene_serializer(scene_payload.data,total_scne_length);
         scene_serializer.PutInt(area_id);
-        scene_serializer.PutInt(server->players[player_id].entity_id);
+        scene_serializer.PutInt(server->players[player_slot].entity_id);
         scene_serializer.PutInt(scene->entities.Count());
-        
-        logger::debug("Sending player %d scene transition to area %d\n",player_id,area_id);
-
     for(ServerEntity* e:scene->entities){
         scene_serializer.PutInt(e->id);
         e->Serialize(e->AllExistingComponents() & server_private_component_mask,scene_serializer);
-    }
+    }    
+    logger::debug("Sending player %d scene transition to area %d\n",player_slot,area_id);
+    ServerNetwork::SendToTarget(player_slot,scene_payload);
 
-    ServerNetwork::SendToTarget(player_id,scene_payload);
     free(scene_payload.data);
-    server->players[player_id].state = Player::PLAYING;
-
-    Packet player_info; PacketData::PINF current_player_info(&player_info);//Tell other clients that player is moving
-        current_player_info.SetPlayerID(player_id);
-        current_player_info.SetPlayerName(server->players[player_id].name); 
-        current_player_info.SetCharacterName(server->players[player_id].character_name); 
-        current_player_info.SetPlayerEntityID(server->players[player_id].entity_id);   
-        current_player_info.SetPlayerEntityArea(area_id);
-    ServerNetwork::SendToOtherTargets(&player_info,player_id);
+    OnPlayerInfoUpdate(player_slot);
 }
 
-void ServerNetHandler::SendEntityDeltas(ServerScene* scene){
+void ServerNetHandler::OnClientDelta(int player_slot,Payload delta){
+    int entity_id = server->players[player_slot].entity_id;
+    int area_id = server->players[player_slot].entity_scene;
+    ServerEntity* player_entity = server->GetActiveScene(area_id)->GetEntity(entity_id);
+    Deserializer playerDelta(payload.data);
+    int client_given_entity_id= playerDelta.GetInt();
+    if(entity_id != client_given_entity_id){
+        logger::warn("Client is sending a delta for an entity they're not. Ours:%d Theirs:%d\n",player_entity->id,client_given_entity_id);
+    }
+    player_entity->Deserialize(playerDelta,payload.timestamp);
+}
+
+void ServerNetHandler::SendEntityDeltas(ServerScene* s){
     int total_create_length=sizeof(int);//num_entities
     int total_delete_length=sizeof(int);//num_entities
     int total_delta_length=sizeof(int);//num_entities
     int created_entites=0;
     int updated_entities=0;
     int deleted_entities=0;
-
-    
 
     for(ServerEntity* e:scene->entities){//count how big delta packets are first
         if(e->just_created){//Create
@@ -202,51 +162,205 @@ void ServerNetHandler::SendEntityDeltas(ServerScene* scene){
     if(delete_payload.data){free(delete_payload.data);}
 }
 
+ComponentChunk::Mask ServerNetHandler::GetComponentPermissionMask(ComponentChunk::Mask mask,int player_slot,Server* e){}
 
-
-//ASYNC: These are not called on the main thread. 
-Packet ServerNetHandler::OnPlayerConnect(Packet* JOIN,int target_id){
-    PacketData::JOIN join_request(JOIN);
-    Packet response;
-
-    wchar* name = join_request.GetPlayerName();
-    SavePlayer* player_save = server->save.GetPlayer(name);  
-    int save_id = (player_save != null)? player_save->player_id:0;
-    
-    server->players[target_id].name = wstr::new_copy(name);
-    server->players[target_id].state = Player::CONNECTING;
-    server->players[target_id].save_id = save_id;
+void ServerNetHandler::OnPlayerConnect(int player_slot,Packet::JOIN join_info){
     server->current_players++;
+    Player* new_player = &server->players[player_slot];
+        new_player->persona = wstr::new_copy(join_info.persona_buffer);
+    SavePlayer* player_save = server->save.GetPlayer(join_info.player_save_id);
+    new_player->save_id = (player_save)?join_info.player_save_id:0;
+    if(new_player->save_id != 0){
+        server->TransitionPlayer(0,player_save->last_scene,player_save->last_entrance,player_slot);
+    }
 
-    PacketData::ACPT accept_data(&response);//Send ACPT packet back to client
-        accept_data.SetPlayerID(target_id);
-        accept_data.SetPlayerSaveID(save_id);
-        accept_data.SetAckID(JOIN->id);
-        accept_data.SetPlayerMax(server->max_players);
-        accept_data.SetPlayerCount(server->current_players);
-        accept_data.WritePacket();
+    Packet::PINF existing_player_info();//send PINF packets to the new client for previously connected players
+    for(int i=0;i<server->max_players;i++){
+        if(i==player_slot)continue;
+        if(ServerNetwork::PlayerConnected(i)){
+            existing_player_info.player_id = i;
+            existing_player_info.player_entity = server->players[i].entity_id;
+            existing_player_info.player_area_id = server->players[i].entity_scene;
+            existing_player_info.SetPersona(server->players[i].persona);
+            ServerNetwork::SendToTarget(player_slot,existing_player_info.GetPayload());
+        }            
+    }
 
-    return response;
+    Packet::PLYR new_player_notification();//send PLYR packets to all current players for the newly joined player
+        new_player_notification.player_id = player_slot;
+        new_player_notification.SetPersona(join_info.persona_buffer);
+    ServerNetwork::SendToOtherPlayers(new_player_notification.GetPayload(),player_slot);
+}
+
+void ServerNetHandler::OnPlayerDisconnect(int player_slot,wchar* reason){
+    Packet::PLDC dc_notification();
+        dc_notification.player_id = player_slot;
+        dc_notification.SetPlayerAndReason(server->players[player_slot].persona,reason);
+    ServerNetwork::SendToOtherPlayers(dc_notification.GetPayload(),player_slot);
+    
+    server->players[player_slot].Clear();
+}
+
+void ServerNetHandler::OnPlayerFailConnect(wchar* persona, wchar* reason){
+    Packet::PLDC dc_notification();
+        dc_notification.player_id = -1;
+        dc_notification.SetPlayerAndReason(persona,reason);
+    ServerNetwork::SendToAllPlayers(dc_notification.GetPayload());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+const ComponentChunk::Mask server_private_component_mask = ~(1 << ComponentChunk::INVENTORY);
+
+void ServerNetHandler::Init(Server* s){
+    server = s;
+}
+void ServerNetHandler::Free(){
+    server=nullptr;
+}
+
+
+void ServerNetHandler::Update(int frames){
+    if(!ServerNetwork::IsRunning())return;
+    Payload payload(0,0,0,nullptr);
+    for(int i=0;i<server->max_players;i++){
+        if(!ServerNetwork::TargetConnected(i))continue;
+        payload=ServerNetwork::RecvFromTarget(i);
+        while(payload.type != 0){
+            switch(payload.type){
+                case PacketID::CHAT:{ServerNetwork::SendToAllTargets(payload);break;}
+                case PacketID::SNPS:{OnStartNewPlayerSave(i,Packet::SNPS(payload));break;}
+                case PacketID::CDLT:{OnClientDelta(i,payload);break;}
+                default:break;
+            }
+            if(payload.free_after_use){free(payload.data);}
+            payload=ServerNetwork::RecvFromTarget(i);
+        }
+    }
+}
+
+
+void ServerNetHandler::CatchUpNewPlayer(int player_slot){
+
+}
+
+void ServerNetHandler::OnPlayerInfoUpdate(int player_slot){    
+
+}
+
+void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
+
+}
+
+
+void ServerNetHandler::OnClientDelta(int player_slot,Payload delta){
+    ServerEntity* player_entity = server->GetActiveScene(server->players[player_slot].entity_scene)->GetEntity(server->players[player_slot].entity_id);
+    Deserializer playerDelta(payload.data);
+    int client_given_entity_id= playerDelta.GetInt();
+    if(player_entity->id != client_given_entity_id){
+        logger::warn("Client is sending a delta for an entity they're not. Ours:%d Theirs:%d\n",player_entity->id,client_given_entity_id);
+    }
+    player_entity->Deserialize(playerDelta,payload.timestamp);
+}
+
+void ServerNetHandler::SendEntityDeltas(ServerScene* scene){
+
+}
+
+
+
+//ASYNC: These are not called on the main thread. 
+void ServerNetHandler::OnPlayerConnect(int player_save_id,int target_id){
+    SavePlayer* player_save = server->save.GetPlayerByID(player_save_id);
+
+    if(player_save == nullptr){
+        player_save = server->save.NewPlayer();
+    }
+    
+    server->players[target_id].name = null;
+    server->players[target_id].state = Player::CONNECTING;
+    server->players[target_id].save_id = player_save->player_id;
+    server->current_players++;
 }
 
 //ASYNC: These are not called on the main thread. 
-void ServerNetHandler::OnPlayerDisconnect(wchar* reason,int target_id){
-    Packet PLDC;
-        PacketData::PLDC disconnected_player_data(&PLDC);
-        disconnected_player_data.SetPlayerID(target_id);
-        disconnected_player_data.SetPlayerName(server->players[target_id].name);
-        disconnected_player_data.SetReason(reason);
-        disconnected_player_data.WritePacket();
-    ServerNetwork::SendToAllTargets(&PLDC);
-    server->players[target_id].state=Player::DISCONNECTED;
+void ServerNetHandler::OnPlayerDisconnect(int player_slot,wchar* reason){
+    Packet::PLDC pldc();
+        pldc.SetPlayerAndReason(player_slot,reason);
+    ServerNetwork::SendToAllTargets(pldc.GetPayload());
+
+    server->players[player_slot].Clear();
 }
 
 //ASYNC: These are not called on the main thread. 
-void ServerNetHandler::OnPlayerFailConnect(wchar* player_name,wchar* reason){
-    Packet PLDC;
-        PacketData::PLDC disconnected_player_data(&PLDC);
-        disconnected_player_data.SetPlayerID(-1);
-        disconnected_player_data.SetPlayerName(player_name);
-        disconnected_player_data.SetReason(reason);
-    ServerNetwork::SendToAllTargets(&PLDC);
+void ServerNetHandler::OnPlayerFailConnect(wchar* player_name,wchar* reason){    
+    Packet::PLDC pldc();
+        pldc.SetPlayerAndReason(-1,reason);
+    ServerNetwork::SendToAllTargets(pldc.GetPayload());
 }

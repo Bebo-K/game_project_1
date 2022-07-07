@@ -38,7 +38,7 @@ class Server{
     static void Signal(EventSignal val);
     static Server* GetServer();
 
-    ServerEntity* TransitionPlayer(int from_area, int to_area, int entrance_id,int player_id);
+    ServerEntity* TransitionPlayer(int from_area, int to_area, int entrance_id,int player_slot);
     ServerEntity* TransitionGlobalEntity(int from_area, int to_area, int entrance_id,int global_id);
 };
 

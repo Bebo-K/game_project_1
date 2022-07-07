@@ -19,6 +19,10 @@ void Client::SpawnPlayer(Entrance eid){
 */
 
 
+void HumanoidInitialPlayerBuilder(ServerEntity* entity){
+    HumanoidServerBuilder(entity,null);
+}
+
 void HumanoidClientBuilder(ClientEntity* entity, ClientScene* scene){
     entity->anim_state = new AnimationState(GROUND_UNIT);
     entity->models = new ModelSet();

@@ -3,11 +3,9 @@
 
 
 Player::Player(){
-    state = DISCONNECTED;
-    name = nullptr;
+    persona = nullptr;
     character_name = nullptr;
-    save_id=0;
-    save_entity_id=0;
+    save=nullptr;
     entity_id=0;
     entity_scene=0;
 }
@@ -15,12 +13,14 @@ Player::~Player(){
     Clear();
 }
 
+bool Player::Active(){
+    return (entity_id != 0 && entity_scene != 0);
+}
+
 void Player::Clear(){
-    state = DISCONNECTED;
-    if(name != nullptr){free(name); name = nullptr;}
+    if(persona != nullptr){free(persona); persona = nullptr;}
     if(character_name != nullptr){free(character_name); character_name = nullptr;}
-    save_id=0;
-    save_entity_id=0;
+    save=nullptr;
     entity_id=0;
     entity_scene=0;
 }

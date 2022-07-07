@@ -1,10 +1,7 @@
 #ifndef OS_NET_H
 #define OS_NET_H
 
-#include <game_project_1/net/packet.hpp>
-#include <game_project_1/net/net_target.hpp>
-#include <game_project_1/types/str.hpp>
-#include <game_project_1/threads.hpp>
+#include <game_project_1/net/net_types.h>
 
 #ifdef _WIN32
     #include <game_project_1/net/os_net_win.hpp>
@@ -14,19 +11,22 @@
 
 // Networking
 namespace OSNetwork{
+
     bool Init();
     void Destroy();
     
-    ip_address DNS_lookup(wchar* hostname, unsigned short port);
-    bool connect(Packet* connect_packet,NetTarget* target);
-    void disconnect(NetTarget* target);
+    int DNS_lookup(wchar* hostname, unsigned short port,NetAddress& addr);
+    
+    void connect(Datagram* data,Connection* conn);
+    void disconnect(Connection* conn);
 
-    bool send_packet(Packet* packet, NetTarget* target);
-    bool recv_packet(Packet* packet, NetTarget* target);
+    bool send(Datagram* data, Connection* conn);
+    bool recv(Datagram* data, Connection* conn);
+    bool ping(Datagram* data, NetAddress target);//One-off send that closes connection immediately
 
     Socket bind_to_port(unsigned short port);
     void unbind(Socket* listen_socket);
-    int listen(Packet* packet, Socket socket,ip_address* source_addr);
+    int listen(Datagram* dgram, Socket socket,NetAddress* source_addr);
 };
 
 

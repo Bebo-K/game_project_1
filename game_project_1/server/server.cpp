@@ -134,14 +134,19 @@ ServerScene* Server::GetActiveScene(int area_id){
 
 void Server::Update(int frames){
     UpdatePlayers();
+    List<ServerEntity> just_created(8);
+    List<ServerEntity> just_deleted(8);
     for(ServerScene* scene:active_scenes){
         scene->Update(frames);
         ServerNetHandler::SendEntityDeltas(scene);
-        for(int i = scene->entities.next(-1);i != scene->entities.end().index;i = scene->entities.next(i)){
-            ServerEntity* e = scene->entities[i];
-            if(e->just_created){e->just_created=false;}
-            if(e->just_deleted){scene->entities.Delete(i);}
+        for(ServerEntity* e:scene->entities){
+            if(e->just_created){just_created.Add(e);}
+            if(e->just_deleted){just_deleted.Add(e);}
         }
+        for(ServerEntity* e:just_created){e->just_created=false;}
+        for(ServerEntity* e:just_deleted){scene->entities.Delete(e);}
+        just_created.Clear();
+        just_deleted.Clear();
     }
     ServerNetwork::Update();
     ServerNetHandler::Update(frames);
@@ -151,43 +156,42 @@ void Server::Update(int frames){
 
 void Server::UpdatePlayers(){
     for(int i=0;i < max_players;i++){
-        if(players[i].state == Player::DISCONNECTING){//Clean up disconnecting players
-            if(players[i].entity_scene >=0 && players[i].entity_id >= 0){
+        if(!ServerNetwork::PlayerConnected(i)){
+            if(players[i].Active()){//Clean up players who've left
                 ServerScene* scene = GetActiveScene(players[i].entity_scene);
                 if(scene){scene->RemoveEntity(players[i].entity_id);}
+                players[i].Clear();
+                current_players--;
             }
-            players[i].Clear();
-            current_players--;
+            else continue;
         }
     }
 }
 
-ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_id,int player_id){
-    SavePlayer* player_save = save.GetPlayerByID(players[player_id].save_id);
-    player_save->last_scene=to_area;
-    player_save->last_entrance=entrance_id;
-    
-    players[player_id].state = Player::LOADING_INTO_ZONE;
-
+ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_id,int player_slot){
     ServerScene* to = GetActiveScene(to_area);
     if(to==null){to = LoadScene(to_area);}
     if(to == null){
         if(to_area != GameConstants::DEFAULT_SCENE){
-            logger::warnW(L"Level transition for player %S failed, moving to default scene.\n",players[player_id].name);
-            return TransitionPlayer(to_area,GameConstants::DEFAULT_SCENE,0,player_id);
+            logger::warnW(L"Level transition for player %S failed, moving to default scene.\n",players[player_slot].name);
+            return TransitionPlayer(to_area,GameConstants::DEFAULT_SCENE,0,player_slot);
         }
         else{
-            logger::exceptionW(L"Failed to transition player %S to any scene!\n",players[player_id].name);
+            logger::exceptionW(L"Failed to transition player %S to any scene!\n",players[player_slot].name);
             return nullptr;
         }
     }
 
+    SavePlayer* save = players[player_slot].save;
     ServerEntity* new_entity = 
-        TransitionGlobalEntity(from_area,to_area,entrance_id,players[player_id].save_entity_id);
+        TransitionGlobalEntity(from_area,to_area,entrance_id,save->character_global_id);
 
-    players[player_id].entity_id = new_entity->id;
-    players[player_id].entity_scene=to_area;
-    new_entity->player_id = player_id;
+    players[player_slot].entity_id=new_entity->id;
+    players[player_slot].entity_scene=to_area;
+    save->last_entrance=entrance_id;
+    save->last_scene=to_area;
+    new_entity->player_id = player_slot;
+    ServerNetHandler::OnPlayerSceneTransition(player_slot,to_area);
 
     ServerScene* from = GetActiveScene(from_area);
     if(from != null){
@@ -197,7 +201,6 @@ ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_
         }
         if(!stay_loaded){UnloadScene(from_area);}
     }
-    ServerNetHandler::OnPlayerSceneTransition(player_id,to_area);
     return new_entity;
 }
 

@@ -42,6 +42,8 @@ namespace config{
 
 namespace server_config{
     extern bool  local_only;
+    extern wchar* server_name;
+    extern wchar* server_description;
     extern char* save_name;
     extern int   player_count;
     extern unsigned short default_port;

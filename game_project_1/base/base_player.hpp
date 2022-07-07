@@ -13,6 +13,7 @@ namespace EntityClass{
 void ClientInit_BasePak1();
 void ServerInit_BasePak1();
 
+void HumanoidInitialPlayerBuilder(ServerEntity* entity);
 void HumanoidClientBuilder(ClientEntity* entity, ClientScene* scene);
 void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene);
 

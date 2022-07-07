@@ -346,14 +346,8 @@ SaveScene* SaveFile::GetScene(int area_id){
     for(SaveScene* scene:saved_scenes){if(scene->area_id == area_id)return scene;}
     return nullptr;
 }
-SavePlayer* SaveFile::GetPlayer(wchar* player_name){
-    for(SavePlayer* player:players){
-         if(wstr::compare(player_name,player->player_name))return player;
-    }
-    return nullptr;
-}
-SavePlayer* SaveFile::GetPlayerByID(int player_save_id){
-    for(SavePlayer* player:players){if(player->player_id==player_save_id)return player;}
+SavePlayer* SaveFile::GetPlayer(int save_id){
+    for(SavePlayer* player:players){if(player->save_id==save_id)return player;}
     return nullptr;
 }
 SaveEntity* SaveFile::GetGlobalEntity(int global_id){
@@ -363,16 +357,13 @@ SaveEntity* SaveFile::GetGlobalEntity(int global_id){
     return nullptr;
 }
 
-SaveEntity* SaveFile::GetPlayerSaveEntity(wchar* player_name){return GetGlobalEntity(GetPlayer(player_name)->entity_global_id);}
-
-SavePlayer* SaveFile::NewPlayer(wchar* player_name){
+SavePlayer* SaveFile::NewPlayer(){
     players.Resize(players.length+1);
     SavePlayer* new_player = players[players.length-1];
     do{
-    new_player->player_id = abs(rand());
-    }while(new_player->player_id == 0||GetPlayerByID(new_player->player_id) != new_player);
-    new_player->player_name = wstr::new_copy(player_name);
-    new_player->entity_global_id = 0;
+    new_player->save_id = abs(rand());
+    }while(new_player->save_id == 0||GetPlayer(new_player->save_id) != new_player);
+    new_player->character_global_id = 0;
     new_player->last_scene =  GameConstants::STARTING_SCENE;
     new_player->last_entrance =  GameConstants::STARTING_SCENE_ENTRANCE;
     return new_player;

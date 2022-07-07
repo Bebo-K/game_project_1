@@ -15,6 +15,7 @@
 
 class SaveEntity: public BaseEntity {
     public:
+    wchar* name;
     int global_id;
     //TODO: wchar** tags for scripting lookups
     SaveEntity(int gid);
@@ -29,11 +30,10 @@ class SaveEntity: public BaseEntity {
 
 class SavePlayer{
     public:
-    int     player_id;
-    wchar*  player_name;
-    int     entity_global_id;
+    int     save_id;
+    int     character_global_id;
     //int   active_party_count
-    //int*  active_party_units
+    //int*  active_party_units_eid
     int     last_scene;
     int     last_entrance;
 
@@ -106,13 +106,11 @@ class SaveFile{
 
     SaveCampaign*   GetCampaign(int campaign_id);
     SaveScene*      GetScene(int area_id);
-    SavePlayer*     GetPlayer(wchar* player_name);
-    SavePlayer*     GetPlayerByID(int player_save_id);
+    SavePlayer*     GetPlayer(int player_save_id);
     SaveEntity*     GetGlobalEntity(int global_id);
-    SaveEntity*     GetPlayerSaveEntity(wchar* player_name);//shorthand for GetGlobalEntity(GetPlayer(player_name)->player_unit_id);
 
-    SavePlayer* NewPlayer(wchar* player_name);
-    SaveScene*  StartNewSaveScene(int area_id);
+    SavePlayer*     NewPlayer();
+    SaveScene*      StartNewSaveScene(int area_id);
 
     int PersistEntity(ServerEntity* e);//Registers a ServerEntity globally with a corresponding SaveEntity 
     void AssignEntityToScene(int global_id, int area_id,bool one_instance);//Saves a global entity to a scene. 

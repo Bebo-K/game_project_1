@@ -32,6 +32,9 @@ bool config::debug_net=true;
 
 wchar_t* config::save_directory=L"/saves";
 
+
+wchar* server_config::server_name="my server";
+wchar* server_config::server_description="a server";
 char* server_config::save_name="server";
 bool server_config::local_only=true;
 int server_config::player_count=1;
