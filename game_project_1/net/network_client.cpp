@@ -32,17 +32,18 @@ void ClientNetworkThreadEntryPoint(){
     while(running||cleanup_loop){   if(!running){cleanup_loop=false;}
         loop_start=OS::time_ms();
 
-        while(server_target.outbound_buffer.Read((byte*)&packet_buffer)){
-            server_target.connection.Write(&packet_buffer);
+        if(server_target.IsConnected()){
+            while(server_target.outbound_buffer.Read((byte*)&packet_buffer)){
+                server_target.connection.Write(&packet_buffer);
+            }
+            while(server_target.connection.Read(&packet_buffer)){
+                server_target.inbound_buffer.Write((byte*)&packet_buffer);
+                server_target.last_success = OS::time_ms();
+            }
         }
-        while(server_target.connection.Read(&packet_buffer)){
-            server_target.inbound_buffer.Write((byte*)&packet_buffer);
-            server_target.last_success = OS::time_ms();
-        }
-        if(server_target.connection.state <= 0 || server_target.disconnecting){
-            server_target.connection.Disconnect();
-            server_target.disconnecting=false;
+        else if(server_target.IsJustDisconnected()){
             ClientSignalDisconnect(server_target.connection.state, wstr::new_copy(server_target.connection.message));
+            server_target.connection.SetState(0,null);
             running=false;
             continue;
         }
@@ -59,53 +60,62 @@ void ClientNetwork::Init(){
 
 void ClientNetwork::Free(){
     if(server_target.connection.IsConnected()){
-        server_target.SendDisconnect(L"Disconnect by user.")
+        server_target.SendDisconnect(L"Disconnect by user.");
     }
     last_ping=0;
     int join_timeout = 5000;
     while(running && join_timeout > 0){join_timeout--;OS::SleepThread(1);}//join with recv thread
+    logger::info("Disconnected from server.");
     //TODO: join timeout error msg
 }
-bool ClientNetwork::IsRunning(){return running;}
-NetTarget* ClientNetwork::GetNetTargetForLocal(){return server_target;}
+
 void ClientNetwork::Update(){
     if(!server_target.IsConnected())return;
     server_target.Update();
     
     //Ping initiation
     if(OS::time_ms() - last_ping > config::network_ping_interval){
-        Packet::PING ping_packet();
+        Packet::PING ping_packet;
             ping_packet.ts_1=OS::time_ms();
 
         server_target.Send(ping_packet.GetPayload());
         last_ping = OS::time_ms();
     }
 }
+
 void ClientNetwork::Send(Payload dat){
     server_target.Send(dat);
 }
+
 Payload ClientNetwork::Recieve(){
     return server_target.Recieve();
 }
-void ClientNetwork::StartConnect(wchar* host_string,Packet::JOIN* JOIN){
-    running=true;
+
+void ClientNetwork::StartConnect(wchar* host_string,wchar* persona, int save_id){
+    Packet::JOIN JOIN;
+        JOIN.player_save_id=save_id;
+        JOIN.SetPersona(persona);
     server_target.ForAddress(host_string);
-    server_target.Send(JOIN->GetPayload());
-    server_target.AddToReliableBuffer(JOIN);
-    server_target.SetState(NetTargetState::ID::CONNECTING,wstr::allocf(L"Connecting to %ls ...",host_string));
-    OSNetwork::connect(JOIN,&server_target);
-    OS::StartThread(ClientNetworkThreadEntryPoint);
-    last_ping=OS::time_ms();
-}
-void ClientNetwork::LocalConnect(Packet* JOIN){
+    server_target.SendConnect(JOIN.GetPayload());
     running=true;
-    server_target.ForLocal();
-    server_target.AddToReliableBuffer(JOIN);
-    server_target.SetState(NetTargetState::ID::CONNECTING,wstr::new_copy(L"Connecting to local server..."));
-    OSNetwork::connect(JOIN,&server_target);
     OS::StartThread(ClientNetworkThreadEntryPoint);
     last_ping=OS::time_ms();
 }
-void ClientNetwork::Disconnect(wchar* reason){ 
-    server_target.Disconnect(reason);
+
+void ClientNetwork::LocalConnect(wchar* persona, int save_id){
+    Packet::JOIN JOIN;
+        JOIN.player_save_id=save_id;
+        JOIN.SetPersona(persona);
+    server_target.ForLocal(&ServerNetwork::GetNetTargetForLocal()->inbound_buffer);
+    server_target.SendConnect(JOIN.GetPayload());
+    running=true;
+    OS::StartThread(ClientNetworkThreadEntryPoint);
+    last_ping=OS::time_ms();
 }
+
+void ClientNetwork::Disconnect(wchar* reason){ 
+    server_target.SendDisconnect(reason);
+}
+
+bool ClientNetwork::IsRunning(){return running;}
+NetTarget* ClientNetwork::GetNetTargetForLocal(){return &server_target;}

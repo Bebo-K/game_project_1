@@ -9,8 +9,6 @@ namespace ClientSignalID{
     const int DISCONNECTED_FROM_SERVER=103;
     const int LOCAL_SERVER_READY=104;
 
-
-
 };
 
 

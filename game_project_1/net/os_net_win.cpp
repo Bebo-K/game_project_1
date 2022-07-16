@@ -18,12 +18,26 @@
 #include <game_project_1/log.hpp>
 #include <game_project_1/config.hpp>
 
-using namespace OSNetwork;
+//using namespace OSNetwork;
 
 void set_state_from_error(Connection* conn);
 
+char* NetAddrToString(NetAddress addr){
+	if(addr.IsIpv6()){
+		short c[8];
+		for(int i=0;i<8;i++){
+			c[i] = ((short)addr.ipv6[i*2] << 8) | (addr.ipv6[i*2+1]);
+		}
+		return cstr::allocf("%#04x:%#04x:%#04x:%#04x:%#04x:%#04x:%#04x:%#04x",c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7]);
+	}
+	else{
+		return cstr::allocf("%d.%d.%d.%d",addr.ipv4[0],addr.ipv4[1],addr.ipv4[2],addr.ipv4[3]);
+	}
 
-bool Init(){
+}
+
+
+bool OSNetwork::Init(){
 	WSADATA wsaData;//has specifics like max datagram size and max connections, but otherwise unneeded.
 	if (WSAStartup(MAKEWORD(2,2),&wsaData) != 0){
 			logger::exception("Failed to initialize networking. WSAStartup error code: %d",WSAGetLastError());
@@ -33,11 +47,11 @@ bool Init(){
 	return true;
 }
 
-void Destroy(){
+void OSNetwork::Destroy(){
 	WSACleanup();
 }
 
-int DNS_lookup(wchar* hostname, unsigned short port,NetAddress& addr){
+int OSNetwork::DNS_Lookup(wchar* hostname, unsigned short port,NetAddress& addr){
 	addrinfoW*	target_address;
 	addrinfoW	dns_hints = {0};
 		dns_hints.ai_socktype = SOCK_DGRAM;
@@ -77,7 +91,7 @@ int DNS_lookup(wchar* hostname, unsigned short port,NetAddress& addr){
 	return 0;
 }
 
-void connect(Datagram* data,Connection* conn){
+void OSNetwork::Connect(Datagram* data,Connection* conn){
 	Socket s = socket(conn->address.IsIpv6()? AF_INET6 : AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if (s == INVALID_SOCKET) {
 		conn->SetState(Connection::NETWORK_UNAVAILABLE,
@@ -117,12 +131,12 @@ void connect(Datagram* data,Connection* conn){
 	}
 }
 
-void disconnect(Connection* conn){
+void OSNetwork::Disconnect(Connection* conn){
 	closesocket(conn->socket_handle);
 	conn->socket_handle = INVALID_SOCKET;
 }
 
-bool send(Datagram* dgram, Connection* conn){
+bool OSNetwork::Send(Datagram* dgram, Connection* conn){
 	int result = send(conn->socket_handle,(char*)dgram, dgram->length, 0 );
     if (result == SOCKET_ERROR) {
 		set_state_from_error(conn);
@@ -131,7 +145,7 @@ bool send(Datagram* dgram, Connection* conn){
 	return true;
 }
 
-bool recv(Datagram* dgram, Connection* conn){
+bool OSNetwork::Recv(Datagram* dgram, Connection* conn){
 	unsigned long available;
 	if(ioctlsocket(conn->socket_handle,FIONREAD,&available) != 0){
 		conn->SetState(Connection::UNKNOWN_ERROR,wstr::allocf(L"Failed to get listener socket status, error code %x",WSAGetLastError()));
@@ -147,7 +161,55 @@ bool recv(Datagram* dgram, Connection* conn){
 	return true;
 }
 
-Socket bind_to_port(unsigned short port){
+bool OSNetwork::Ping(Datagram* dgram, NetAddress addr){
+	Socket s = socket(addr.IsIpv6()? AF_INET6 : AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+	if (s == INVALID_SOCKET) {
+		char* address_string = NetAddrToString(addr);
+		logger::warn("Failed to send to temporary address %s: WinSock2 socket error code: %d",address_string,WSAGetLastError());
+		free(address_string);
+		return false;
+	}
+	int send_result=0;
+	if(addr.IsIpv6()){
+		sockaddr_in6 addr6 = {0};
+		memcpy(&addr6.sin6_addr,addr.ipv6,16);
+		addr6.sin6_family = AF_INET6;
+		addr6.sin6_flowinfo= addr.ipv6_flowinfo;
+		addr6.sin6_port = addr.port;
+		addr6.sin6_scope_id= addr.ipv6_scopeid;
+		addr6.sin6_scope_struct.Value= addr.ipv6_scope;
+
+		send_result = sendto(s,(const char*)dgram,dgram->length,0,(sockaddr*)&addr6,sizeof(sockaddr_in6)); 
+	}
+	else{
+		sockaddr_in addr4 = {0};
+		memcpy(&addr4.sin_addr,addr.ipv4,4);
+		addr4.sin_family = AF_INET;
+		addr4.sin_port = addr.port;
+
+		send_result = sendto(s,(const char*)dgram,dgram->length,0,(sockaddr*)&addr4,sizeof(sockaddr_in)); 
+	}
+
+	//Sendto will internally mark port as "bound", and can be listened from afterwards
+	if(send_result == SOCKET_ERROR){
+		char* address_string = NetAddrToString(addr);
+		logger::warn("Failed to send to temporary address %s: WinSock2 sendto error code: %d",address_string,WSAGetLastError());
+		free(address_string);
+		closesocket(s);
+		return false;
+	}
+	else if(send_result != dgram->Size()){
+		char* address_string = NetAddrToString(addr);
+		logger::warn("Failed to send to temporary address %s: packet not fully sent.",address_string);
+		free(address_string);
+		closesocket(s);
+		return false;
+	}
+	closesocket(s);
+	return true;
+}
+
+Socket OSNetwork::BindToPort(unsigned short port){
 	Socket result = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if (result == INVALID_SOCKET){
 		logger::exception("Failed to create a local socket. WinSock2 socket() error code: %d",WSAGetLastError());
@@ -165,12 +227,12 @@ Socket bind_to_port(unsigned short port){
 	return result;
 }
 
-void unbind(Socket* listen_socket){
+void OSNetwork::Unbind(Socket* listen_socket){
 	closesocket(*listen_socket);
 	*listen_socket = INVALID_SOCKET;
 }
 
-int listen(Datagram* dgram, Socket socket,NetAddress* source_addr){
+int OSNetwork::Listen(Datagram* dgram, Socket socket,NetAddress* source_addr){
 	unsigned long available;
 	if(ioctlsocket(socket,FIONREAD,&available) != 0){
 		logger::exception("Failed to get listener socket status, error code %d\n",WSAGetLastError());

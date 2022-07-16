@@ -64,36 +64,32 @@ void SaveEntity::CopyTo(ServerEntity* e){
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SavePlayer::SavePlayer(){
-    player_id=0;
-    entity_global_id=0;
+    save_id=0;
+    character_global_id=0;
     last_scene = 0;
     last_entrance = 0;
-    player_name=nullptr;
 }
 
 SavePlayer::~SavePlayer(){
-    player_id=0;
-    entity_global_id=0;;
+    save_id=0;
+    character_global_id=0;
     last_scene = 0;
     last_entrance = 0;
-    if(player_name != nullptr){free(player_name);player_name=nullptr;}
 }
 int SavePlayer::SerializedLength(){
-    return sizeof(int)*4 + sizeof(wchar) * (wstr::len(player_name)+1);
+    return sizeof(int)*4;
 }
 void SavePlayer::Read(Deserializer& dat){
-    player_id = dat.GetInt();
-    entity_global_id = dat.GetInt();
+    save_id = dat.GetInt();
+    character_global_id = dat.GetInt();
     last_scene = dat.GetInt();
     last_entrance = dat.GetInt();
-    player_name = dat.GetWString();
 }
 void SavePlayer::Write(Serializer& dat){
-    dat.PutInt(player_id);
-    dat.PutInt(entity_global_id);
+    dat.PutInt(save_id);
+    dat.PutInt(character_global_id);
     dat.PutInt(last_scene);
     dat.PutInt(last_entrance);
-    dat.PutWString(player_name);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +250,7 @@ void SaveFile::New(){
 }
 bool SaveFile::Exists(char* save_name){return UserFile::Exists(GetSaveFilePath(save_name));}
 void SaveFile::LoadOrNew(char* save_name){
-    if(SaveFile::Exists(save_name)){
+    if(false/*(TODO: toggled off for dev work)SaveFile::Exists(save_name)*/){
         logger::info("Loading savefile '%s'...\n",save_name);
         Load(server_config::save_name);
     }
@@ -357,15 +353,27 @@ SaveEntity* SaveFile::GetGlobalEntity(int global_id){
     return nullptr;
 }
 
-SavePlayer* SaveFile::NewPlayer(){
-    players.Resize(players.length+1);
+int SaveFile::GenerateSaveID(){
+    int ret;
+    do{ret= abs(rand());}while(ret == 0||GetPlayer(ret) != nullptr);
+    return ret;    
+}
+
+SavePlayer* SaveFile::NewPlayer(int save_id){   
+    if(save_id == 0){
+        logger::warn("Cannot start a new save ID 0: invalid id");
+        return nullptr;
+    }
+    if(GetPlayer(save_id) != nullptr){
+        logger::warn("Cannot start a new save ID %d: save exists.",save_id);
+        return nullptr;
+    }
+    players.Allocate(players.length+1);
     SavePlayer* new_player = players[players.length-1];
-    do{
-    new_player->save_id = abs(rand());
-    }while(new_player->save_id == 0||GetPlayer(new_player->save_id) != new_player);
-    new_player->character_global_id = 0;
-    new_player->last_scene =  GameConstants::STARTING_SCENE;
-    new_player->last_entrance =  GameConstants::STARTING_SCENE_ENTRANCE;
+        new_player->save_id = save_id;
+        new_player->character_global_id = 0;
+        new_player->last_scene =  GameConstants::STARTING_SCENE;
+        new_player->last_entrance =  GameConstants::STARTING_SCENE_ENTRANCE;
     return new_player;
 }
 

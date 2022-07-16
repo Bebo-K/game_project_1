@@ -20,8 +20,8 @@ namespace ClientNetwork{
     void Free();
     bool IsRunning();
 
-    void StartConnect(wchar* host_string,Payload join_request);
-    void LocalConnect(Payload join_request);
+    void StartConnect(wchar* host_string,wchar* persona, int save_id);
+    void LocalConnect(wchar* persona, int save_id);
     void Disconnect(wchar* reason);
 
     void Update();

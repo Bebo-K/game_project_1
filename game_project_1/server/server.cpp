@@ -10,9 +10,14 @@
 #include <game_project_1/server/server_net_handler.hpp>
 #include <game_project_1/server/server_signal.hpp>
 
+#include <game_project_1/system/npc_controller.hpp>
+#include <game_project_1/system/movement.hpp>
+#include <game_project_1/system/physics.hpp>
+
 #include <game_project_1/base/base_player.hpp>
 
 Server* Server::instance=nullptr;
+float Server::tick_interval=1;
 
 void ServerMain(){
     Server* server = new Server();
@@ -50,6 +55,7 @@ Server::Server():active_scenes(),save(){
     instance = this;
     active_frames=0;
     max_players = server_config::player_count;
+    tick_interval = config::tick_interval;
     current_players =0;
     players = new Player[max_players];
     ServerNetwork::Init();
@@ -122,62 +128,68 @@ void Server::UnloadScene(int area_id){
     }
 }
 
+bool Server::SceneIsActive(int area_id){
+    for(ServerScene* active_scene:active_scenes){
+        if(active_scene->area_id == area_id){return true;}
+    }
+    return false;
+}
+
 ServerScene* Server::GetActiveScene(int area_id){
     for(ServerScene* active_scene:active_scenes){
         if(active_scene->area_id == area_id){
             return active_scene;
         }
     }
+    logger::warn("Looking for active area %d but it's not loaded.\n",area_id);
     return null;
 }
 
 
 void Server::Update(int frames){
     UpdatePlayers();
-    List<ServerEntity> just_created(8);
-    List<ServerEntity> just_deleted(8);
     for(ServerScene* scene:active_scenes){
-        scene->Update(frames);
+        UpdateScene(scene,frames);
         ServerNetHandler::SendEntityDeltas(scene);
-        for(ServerEntity* e:scene->entities){
-            if(e->just_created){just_created.Add(e);}
-            if(e->just_deleted){just_deleted.Add(e);}
-        }
-        for(ServerEntity* e:just_created){e->just_created=false;}
-        for(ServerEntity* e:just_deleted){scene->entities.Delete(e);}
-        just_created.Clear();
-        just_deleted.Clear();
     }
     ServerNetwork::Update();
     ServerNetHandler::Update(frames);
     ServerSignalHandler::Update(frames);
 }
 
+void Server::UpdateScene(ServerScene* s,int frames){
+    for(int i=0;i<frames;i++){
+        for(ServerEntity* entity:s->entities){
+            if(entity->spawn_mode < 0)s->HandleSpawn(entity);
+            if(entity->spawn_mode > 0)s->HandleDespawn(entity);
+            NPCController::FrameUpdate(entity);
+            Movement::Update(entity,tick_interval);
+            Physics::ServerFrame(entity,s,tick_interval);
+        }
+    }
+}
+
 
 void Server::UpdatePlayers(){
     for(int i=0;i < max_players;i++){
         if(!ServerNetwork::PlayerConnected(i)){
-            if(players[i].Active()){//Clean up players who've left
-                ServerScene* scene = GetActiveScene(players[i].entity_scene);
-                if(scene){scene->RemoveEntity(players[i].entity_id);}
-                players[i].Clear();
-                current_players--;
-            }
+            if(players[i].Active()){SaveAndRemovePlayer(i);}//Clean up players who've left
             else continue;
         }
     }
 }
 
 ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_id,int player_slot){
-    ServerScene* to = GetActiveScene(to_area);
-    if(to==null){to = LoadScene(to_area);}
+    ServerScene* to;
+    if(SceneIsActive(to_area)){ to = GetActiveScene(to_area);}
+    else{to = LoadScene(to_area);}
     if(to == null){
         if(to_area != GameConstants::DEFAULT_SCENE){
-            logger::warnW(L"Level transition for player %S failed, moving to default scene.\n",players[player_slot].name);
+            logger::warnW(L"Level transition for player %S failed, moving to default scene.\n",players[player_slot].character_name);
             return TransitionPlayer(to_area,GameConstants::DEFAULT_SCENE,0,player_slot);
         }
         else{
-            logger::exceptionW(L"Failed to transition player %S to any scene!\n",players[player_slot].name);
+            logger::exceptionW(L"Failed to transition player %S to any scene!\n",players[player_slot].character_name);
             return nullptr;
         }
     }
@@ -193,8 +205,7 @@ ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_
     new_entity->player_id = player_slot;
     ServerNetHandler::OnPlayerSceneTransition(player_slot,to_area);
 
-    ServerScene* from = GetActiveScene(from_area);
-    if(from != null){
+    if(SceneIsActive(from_area)){
         bool stay_loaded=false;
         for(int i=0;i<max_players;i++){
             if(players[i].entity_scene == from_area){stay_loaded=true;}
@@ -205,30 +216,56 @@ ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_
 }
 
 ServerEntity* Server::TransitionGlobalEntity(int from_area, int to_area, int entrance_id,int global_id){
-    ServerScene* to = GetActiveScene(to_area);
-    ServerScene* from = GetActiveScene(from_area);
-    ServerEntity* ret = nullptr;
-    if(from != null){
-        SaveEntity* save_entity =  save.GetGlobalEntity(global_id);
-        ServerEntity* local_entity = from->GetEntity(save_entity->id);
-        if(local_entity != null){
-            save_entity->LoadFrom(local_entity);
-            from->RemoveEntity(local_entity->id);
+    ServerEntity* target = nullptr;
+    ServerScene* from;
+    ServerScene* to;
+    SaveEntity* save_entity =  save.GetGlobalEntity(global_id);
+
+    if(SceneIsActive(from_area)){
+        from = GetActiveScene(from_area);
+        target = from->GetEntity(save_entity->id);
+        if(target != null){
+            save_entity->LoadFrom(target);
+            from->RemoveEntity(target->id,DespawnType::FADE_OUT);
         }
     }
-    if(to!=null){
-        Location spawn_location = to->level.entrances[entrance_id]->GenerateLocation();
-        ServerEntity* e = to->CreateEntity();
-        SaveEntity* save_entity= save.GetGlobalEntity(global_id);
-        save_entity->CopyTo(e);
 
-        //Overwrite with position
-        e->x=spawn_location.position.x; e->y=spawn_location.position.y; e->z=spawn_location.position.z;
-        e->rotation = spawn_location.rotation;
-        e->delta_mask |= ComponentChunk::BASIC_COMPONENTS;
-        to->HandleSpawn(e,to->level.entrances[entrance_id]->style);
-        ret = e;
-    }
+    if(SceneIsActive(to_area)){to=GetActiveScene(to_area);}
+    else{to=LoadScene(to_area);}
+
+    Location spawn_location = to->level.entrances[entrance_id]->GenerateLocation();
+
+    target = to->CreateEntity((SpawnType)to->level.entrances[entrance_id]->style);
+    save_entity->CopyTo(target);
+
+    //Overwrite with position
+    target->x=spawn_location.position.x; target->y=spawn_location.position.y; target->z=spawn_location.position.z;
+    target->rotation = spawn_location.rotation;
+    target->delta_mask |= ComponentChunk::BASIC_COMPONENTS;
+    target->spawn_mode = to->level.entrances[entrance_id]->style;
     save.AssignEntityToScene(global_id,to_area,true);
-    return ret;
+    return target;
+}
+
+void Server::SaveAndRemovePlayer(int player_slot){
+    int player_scene_id = players[player_slot].entity_scene;
+    if(player_scene_id != 0){
+        ServerScene* player_scene = GetActiveScene(player_scene_id);
+        ServerEntity* player_entity = player_scene->GetEntity(players[player_slot].entity_id);
+
+        if(player_entity != null){
+            save.PersistEntity(player_entity);
+            player_scene->RemoveEntity(player_entity->id,DespawnType::FADE_OUT);
+            bool stay_loaded=false;
+            for(int i=0;i<max_players;i++){
+                if(i==player_slot)continue;
+                if(players[i].entity_scene == player_scene_id){stay_loaded=true;}
+            }
+            if(!stay_loaded){UnloadScene(player_scene_id);}
+        }
+    }
+
+
+    players[player_slot].Clear();
+    current_players--;
 }

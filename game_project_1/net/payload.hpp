@@ -28,6 +28,7 @@ namespace PacketID{
 };
 
 const int reliable_payload_ids[] = {
+    PacketID::JOIN,
     PacketID::ACPT,
     PacketID::PLYR,
     PacketID::PINF,
@@ -79,7 +80,6 @@ struct Datagram{
 
     Datagram();
     void Clear();
-    void CreateID();
     bool IsMultipart();//if true, getMultipartHeader returns a valid multipart header, else ToPayload is valid to use.
     MultipartHeader getMultipartHeader();
     Payload ToPayload();

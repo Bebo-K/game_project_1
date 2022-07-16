@@ -8,25 +8,23 @@
 #endif
 
 
-
-// Networking
+// Raw network calls
 namespace OSNetwork{
-
     bool Init();
     void Destroy();
     
-    int DNS_lookup(wchar* hostname, unsigned short port,NetAddress& addr);
+    int DNS_Lookup(wchar* hostname, unsigned short port,NetAddress& addr);
     
-    void connect(Datagram* data,Connection* conn);
-    void disconnect(Connection* conn);
+    void Connect(Datagram* data,Connection* conn);
+    void Disconnect(Connection* conn);
 
-    bool send(Datagram* data, Connection* conn);
-    bool recv(Datagram* data, Connection* conn);
-    bool ping(Datagram* data, NetAddress target);//One-off send that closes connection immediately
+    bool Send(Datagram* data, Connection* conn);
+    bool Recv(Datagram* data, Connection* conn);
+    bool Ping(Datagram* data, NetAddress target);//One-off send that closes socket immediately
 
-    Socket bind_to_port(unsigned short port);
-    void unbind(Socket* listen_socket);
-    int listen(Datagram* dgram, Socket socket,NetAddress* source_addr);
+    Socket BindToPort(unsigned short port);
+    void Unbind(Socket* listen_socket);
+    int Listen(Datagram* dgram, Socket socket,NetAddress* source_addr);
 };
 
 

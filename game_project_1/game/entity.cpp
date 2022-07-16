@@ -283,8 +283,6 @@ ClientEntity::~ClientEntity(){
 vec3 ClientEntity::GetPos(){return {x,y,z};}
 ServerEntity::ServerEntity(int entity_id):BaseEntity(entity_id){
     delta_mask=0;
-    just_created=false;
-    just_deleted=false;
     player_id = 0;
     lastupdate_position = {x,y,z};
     lastupdate_velocity = velocity;

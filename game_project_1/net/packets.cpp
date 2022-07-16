@@ -43,16 +43,16 @@ Payload PING::GetPayload(){return Payload(PacketID::PING,sizeof(PING),(byte*)thi
 
 PINF::PINF(){
     player_id=0; player_entity=0; player_area_id=0;
-    memset(persona_buffer,0,sizeof(wchar)*(PERSONA_MAX+1));
+    memset(character_name_buffer,0,sizeof(wchar)*(PLAYERNAME_MAX+1));
 }
 PINF::PINF(Payload p){memcpy(this,p.data,p.length);}
 Payload PINF::GetPayload(){
     return Payload(PacketID::PINF,
-    sizeof(int)*3 + sizeof(wchar)*(wstr::len(persona_buffer)+1),
+    sizeof(int)*3 + sizeof(wchar)*(wstr::len(character_name_buffer)+1),
     (byte*)this);
 }
-void PINF::SetPersona(wchar* playername){
-    SetWStringWithMax(persona_buffer,playername,PERSONA_MAX);
+void PINF::SetCharacterName(wchar* charactername){
+    SetWStringWithMax(character_name_buffer,charactername,PLAYERNAME_MAX);
 }
 
 PLDC::PLDC(){
@@ -81,14 +81,14 @@ Payload CHAT::GetPayload(){
 }
 
 SNPS::SNPS(){
-    race_id=class_id=style_1=style_2=style_3=0;
+    save_id=race_id=class_id=style_1=style_2=style_3=0;
     color_1.from_int(0);color_2.from_int(0);color_3.from_int(0);
     memset(player_name,0,sizeof(wchar)*(PLAYERNAME_MAX+1));
 }
 SNPS::SNPS(Payload p){memcpy(this,p.data,p.length);}
 void SNPS::SetPlayerName(wchar* name){SetWStringWithMax(player_name,name,PLAYERNAME_MAX);}
 Payload SNPS::GetPayload(){
-    return Payload(PacketID::SNPS, sizeof(int)*5+ sizeof(color)*3+ sizeof(wchar)*(wstr::len(player_name)+1), (byte*)this); 
+    return Payload(PacketID::SNPS, sizeof(int)*6+ sizeof(color)*3+ sizeof(wchar)*(wstr::len(player_name)+1), (byte*)this); 
 }
 
 INFO::INFO(){reserved=0;}
@@ -111,15 +111,15 @@ Payload SINF::GetPayload(){
 }
 
 
-wchar* SetWStringWithMax(wchar* dest, wchar* source, int max){
+wchar* Packet::SetWStringWithMax(wchar* dest, wchar* source, int max){
     int strlen = wstr::len(source);
     if(strlen > DC_REASON_MAX)strlen = DC_REASON_MAX;
-    memcpy(dest,source,strlen);
+    memcpy(dest,source,strlen*sizeof(wchar));
     dest[strlen]=0;
     return &dest[strlen+1];
 }
 
-int GetNthStringLength(wchar* str,int strings){//Length in bytes of wchar buffer containing (strings) null-terminated strings (including terminating 0s)
+int Packet::GetNthStringLength(wchar* str,int strings){//Length in bytes of wchar buffer containing (strings) null-terminated strings (including terminating 0s)
     int place=0;
     for(int i=0;i<strings;i++){place+=wstr::len(&str[place])+1;}
     return place*sizeof(wchar);

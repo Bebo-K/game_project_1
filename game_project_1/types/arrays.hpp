@@ -41,6 +41,9 @@ struct Array{
         if(data != nullptr){
             logger::warn("Array::Allocate -> Data was already allocated for this array\n");
         }
+        if(size <= 0){
+            logger::exception("Array::Allocate -> Cannot allocate an array of <= 0 length\n");
+        }
         data=(T*)calloc(size,sizeof(T));
         length=size;
     }
@@ -110,6 +113,7 @@ bool ArrayIterator<T>::operator!=(ArrayIterator<T>& l2){
 //A resizable array of individually settable bits.
 struct BitArray{
     int bits;
+    int allocated;
     byte* data;
 
     BitArray();

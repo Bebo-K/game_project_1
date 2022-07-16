@@ -29,6 +29,7 @@ bool PlayerInput::HandleMovementInput(){
 }
 
 bool PlayerInput::HandleJumpingInput(){
+    if(target == nullptr)return false;
     if(target->movement->lock_jump){return false;}
     if(target->movement->can_jump){
         if(Controller::GetButton(Controller::A).IsJustPressed()){
@@ -46,6 +47,7 @@ bool PlayerInput::HandleJumpingInput(){
 }
 
 bool PlayerInput::HandleActionInput(){
+    if(target == nullptr)return false;
     if(target->movement->lock_jump){return false;}
     if(!target->movement->can_jump){return true;}
 

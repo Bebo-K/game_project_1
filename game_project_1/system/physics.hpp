@@ -10,8 +10,8 @@ namespace Physics{
 	extern float GRAVITY_TERMINAL;
 	extern float GRAVITY_ACCEL;
 
-	void ClientFrame(ClientScene* s,float delta);
-	void ServerFrame(ServerScene* s,float delta);
+	void ClientFrame(ClientEntity* e,ClientScene* s,float delta);
+	void ServerFrame(ServerEntity* e,ServerScene* s,float delta);
 };
 
 

@@ -16,8 +16,8 @@ namespace LevelCollision {
 	//void ClientInit();
 	//void ServerInit();
 
-	void ClientFrame(ClientScene* s,ClientEntity* e,float delta);
-	void ServerFrame(ServerScene* s,ServerEntity* e,float delta);
+	void ClientFrame(ClientEntity* e,ClientScene* s,float delta);
+	void ServerFrame(ServerEntity* e,ServerScene* s,float delta);
 
 	void BaseFrame(BaseEntity* e,Array<MeshCollider>* meshes,float delta,bool server);
 	

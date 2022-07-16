@@ -29,6 +29,7 @@ namespace config{
     extern bool debug_mode;
     extern bool debug_net;
     extern wchar_t* save_directory;
+    extern wchar_t* player_persona;
 
     extern int key_binding_count;
 

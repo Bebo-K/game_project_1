@@ -38,16 +38,11 @@ void ServerNetworkThreadEntryPoint(){
     int target_start_index=0;
 
     if(listener_enabled){
-        listener_socket = OSNetwork::bind_to_port(listener_port);
+        listener_socket = OSNetwork::BindToPort(listener_port);
     }
     if(local_listener){//Local is push/push mode. Server pushes msgs to client target instance and client pushes packets from server target instance. 
         target_start_index++;
-        if(ClientNetwork::IsRunning()){
-            targets[0].ForLocal(&ClientNetwork::GetNetTargetForLocal()->inbound_buffer);
-        }
-        else{
-            logger::exception("Can't start local listener without a client instance\n");
-        }
+        targets[0].ForLocal(&ClientNetwork::GetNetTargetForLocal()->inbound_buffer);
     }
 
     while(running||cleanup_loop){   if(!running){cleanup_loop=false;}
@@ -62,15 +57,14 @@ void ServerNetworkThreadEntryPoint(){
                     target->inbound_buffer.Write((byte*)&packet_buffer);
                     target->last_success = OS::time_ms();
                 }
-
-                if(target->connection.state <= 0){
-                    target->connection.Disconnect();
-                }
+            }
+            else if(target->IsJustDisconnected()){
+                target->Clear();
             }
         }
 
         if(listener_enabled){
-            int listen_result = OSNetwork::listen(&packet_buffer,listener_socket,&remote_address);
+            int listen_result = OSNetwork::Listen(&packet_buffer,listener_socket,&remote_address);
             if(listen_result < 0){listener_enabled=false;}
             while(listen_result > 0){
                 bool target_exists = false;
@@ -86,7 +80,7 @@ void ServerNetworkThreadEntryPoint(){
                 if(!target_exists){
                     ServerNetwork::HandleNewConnection(packet_buffer.ToPayload(),remote_address);
                 }
-                listen_result = OSNetwork::listen(&packet_buffer,listener_socket,&remote_address);
+                listen_result = OSNetwork::Listen(&packet_buffer,listener_socket,&remote_address);
                 if(listen_result < 0){
                     logger::exception("Server listener failed with error code %d\n",listen_result);
                     listener_enabled=false;
@@ -94,7 +88,7 @@ void ServerNetworkThreadEntryPoint(){
             }
         }
         else if(listener_socket != INVALID_SOCKET){
-            OSNetwork::unbind(&listener_socket);
+            OSNetwork::Unbind(&listener_socket);
         }
         loop_delta = OS::time_ms()-loop_start;
         if(loop_delta > POLL_INTERVAL_MS){loop_delta = POLL_INTERVAL_MS;}
@@ -106,6 +100,11 @@ void ServerNetworkThreadEntryPoint(){
 
     //Cleanup
     packet_buffer.FromPayload(Packet::NOPE(L"Server is shutting down").GetPayload());
+
+    if(local_listener && ClientNetwork::IsRunning()){//Unplug client local link
+        ClientNetwork::GetNetTargetForLocal()->connection.Disconnect();
+    }
+
     for(int i=0;i<target_count;i++){
         if(targets[i].connection.IsConnected()){
             targets[i].connection.Write(&packet_buffer);
@@ -113,6 +112,8 @@ void ServerNetworkThreadEntryPoint(){
         }
         targets[i].~NetTarget();
     }
+
+
     free(targets);
     targets=nullptr;
 }
@@ -143,7 +144,7 @@ void ServerNetwork::StartListener(int player_slots,bool include_local,unsigned s
         targets[i].Clear();
     }
 
-    if(include_local){targets[0].connection.address.SetLocalhost(true);}
+    if(include_local){targets[0].connection.address.SetLocalhost(true);local_listener=true;}
 
     running=true;
     listener_port=port;
@@ -154,6 +155,7 @@ void ServerNetwork::StartLocalOnly(){
     target_count=1;
     targets = new NetTarget();
     targets->connection.address.SetLocalhost(true);
+    local_listener=true;
 
     running=true;
     OS::StartThread(ServerNetworkThreadEntryPoint);
@@ -205,7 +207,7 @@ Payload ServerNetwork::RecvFromPlayer(int player_slot){
 void RejectResponse(wchar* response,NetAddress address){
     Datagram dgram;
         dgram.FromPayload(Packet::NOPE(response).GetPayload());
-    OSNetwork::ping(&dgram,address);
+    OSNetwork::Ping(&dgram,address);
 }
 
 void InfoResponse(NetAddress address){
@@ -216,7 +218,7 @@ void InfoResponse(NetAddress address){
         
     Datagram dgram;
         dgram.FromPayload(server_info.GetPayload());
-    OSNetwork::ping(&dgram,address);
+    OSNetwork::Ping(&dgram,address);
 }
 
 int ServerNetwork::JoinPlayer(NetAddress address){ 
@@ -242,13 +244,13 @@ int ServerNetwork::JoinPlayer(NetAddress address){
 void ServerNetwork::HandleNewConnection(Payload request,NetAddress remote_address){
     switch(request.type){
         case PacketID::JOIN: {
-            int player_slot = JoinPlayer(remote_address);
-            if(player_slot >= 0){
-                 ServerNetHandler::OnPlayerConnect(player_slot,Packet::JOIN(request));
-            }
-            else{
+            if(JoinPlayer(remote_address) < 0){
+                Packet::JOIN join_request(request);
                 wchar server_full_msg[] = L"Server is full";
-                ServerNetHandler::OnPlayerFailConnect(Packet::JOIN(request).persona_buffer,server_full_msg);
+                Packet::PLDC dc_notification;
+                    dc_notification.player_id = -1;
+                    dc_notification.SetPlayerAndReason(join_request.persona_buffer,server_full_msg);
+                SendToAllPlayers(dc_notification.GetPayload());
                 RejectResponse(server_full_msg,remote_address);
             }
             break;

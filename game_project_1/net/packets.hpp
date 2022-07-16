@@ -73,12 +73,12 @@ namespace Packet{
         int player_id;
         int player_entity;
         int player_area_id;
-        wchar persona_buffer[PERSONA_MAX + 1];
+        wchar character_name_buffer[PLAYERNAME_MAX + 1];
 
         PINF();
         PINF(Payload p);
         Payload GetPayload();
-        void SetPersona(wchar* persona);
+        void SetCharacterName(wchar* character_name);
     };
 
     struct PLDC{//Server player disconnect notification
@@ -105,6 +105,7 @@ namespace Packet{
     };
 
     struct SNPS{//Start new player save- Client player creation request
+        int save_id;
         int race_id;
         int class_id;
         int style_1,style_2,style_3;

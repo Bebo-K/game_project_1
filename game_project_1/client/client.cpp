@@ -6,10 +6,14 @@
 #include <game_project_1/client/client_signal.hpp>
 #include <game_project_1/client/client_net_handler.hpp>
 
+#include <game_project_1/system/physics.hpp>
+#include <game_project_1/system/movement.hpp>
+
 #include <game_project_1/base/base_player.hpp>
 
 
 Client* Client::instance = nullptr;
+float Client::frame_interval=1;
 
 
 Client::Client() : scene(), ui(),players(0){
@@ -26,7 +30,10 @@ Client::Client() : scene(), ui(),players(0){
     ClientNetHandler::Init(this);
     ClientSignalHandler::Init(this);
 
-    my_entity_id=0;
+    my_slot_id=-1;
+    my_save_id=0;
+    
+    frame_interval = config::frame_interval;
     current_players=0;
 }
 
@@ -47,14 +54,18 @@ Client::~Client(){
 Client* Client::GetClient(){return Client::instance;}
 void Client::Signal(EventSignal val){ClientSignalHandler::Signal(val);}
 
+
+Player* Client::Me(){
+    if(my_slot_id<0)return nullptr;
+    return players[my_slot_id];
+}
+
 void Client::Start(){
     FontManager::LoadFontFace("Merriweather/Merriweather-Regular",8);
     FontID debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
     FontManager::SetActiveFont(debug_font);
 
     ClientInit_BasePak1();
-
-
 
     ui.Load();
     ui.main_menu->Open();
@@ -84,7 +95,7 @@ void Client::Update(int frames){
         }
 
         if(scene.global_timer > 0){
-            scene.Update(frames_to_run,seconds);
+            UpdateScene(frames_to_run,seconds);
             ClientNetHandler::SendPlayerDelta();
         }
         ui.Update(&scene,frames);
@@ -93,6 +104,25 @@ void Client::Update(int frames){
     ClientNetwork::Update();
     ClientNetHandler::Update(frames);
     ClientSignalHandler::Update(frames);
+}
+
+void Client::UpdateScene(int frames,float delta){
+    for(int i=0;i<frames;i++){
+        for(ClientEntity* entity:scene.entities){
+            Movement::Update(entity,frame_interval);
+            Physics::ClientFrame(entity,&scene,frame_interval);
+        }
+    }
+
+    scene.camera_manager.Update(delta);
+    scene.global_timer+=frames;
+}
+
+void Client::OnSpawnPlayer(ClientEntity* player){
+    logger::debug("Setting player control to entity %d\n",player->id);
+    scene.SetPlayerControl(player->id);
+    if(!ui.ingame_menu->active){ui.ingame_menu->Open();}
+    if(ui.loading_menu->active){ui.loading_menu->Close();}
 }
 
 void Client::Quit(){

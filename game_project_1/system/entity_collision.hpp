@@ -30,8 +30,8 @@ namespace EntityCollision{
 	//void ClientInit();
 	//void ServerInit();
 
-	void ClientFrame(ClientScene* s,ClientEntity* e1,float delta);
-	void ServerFrame(ServerScene* s,ServerEntity* e2,float delta);
+	void ClientFrame(ClientEntity* e1,ClientScene* s,float delta);
+	void ServerFrame(ServerEntity* e1,ServerScene* s,float delta);
 	CollisionResult CheckCollision(BaseEntity* e1, BaseEntity* e2);
 
 	void RegisterClientEntityClassCallbacks(EntityClassPair pair,ClientHandlerCallback client_callback);

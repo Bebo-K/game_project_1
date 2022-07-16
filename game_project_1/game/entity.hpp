@@ -86,7 +86,9 @@ class ClientEntity: public BaseEntity{
 struct ServerEntity: public BaseEntity{
     public:
     int  delta_mask;//mask of entity chunks updated since last delta was sent out
-    bool just_created;//First frame of an entity generates a "New Entity" packet to clients instead of a delta
+    int  spawn_mode;
+        //If >0: just spawned this frame, spawn_mode is the spawn type ID for clients to use
+        //If <0: despawning after this frame, (-spawn_mode) is the despawn type ID for clients to use
     bool just_deleted;//Entities persist until the end of the frame they're deleted on, then a "Delete Entity" packet is sent and it's removed.
     int player_id;//0 if not a player. Helpful to cache as players control what scenes stay loaded
 

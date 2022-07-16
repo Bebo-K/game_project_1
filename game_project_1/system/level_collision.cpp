@@ -7,7 +7,7 @@ Map<int,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
 Map<int,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
 
 
-void LevelCollision::ClientFrame(ClientScene* s,ClientEntity* e, float delta){
+void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
@@ -25,7 +25,7 @@ void LevelCollision::ClientFrame(ClientScene* s,ClientEntity* e, float delta){
     }  
 }
 
-void LevelCollision::ServerFrame(ServerScene* s,ServerEntity* e, float delta){
+void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;

@@ -109,7 +109,8 @@ class SaveFile{
     SavePlayer*     GetPlayer(int player_save_id);
     SaveEntity*     GetGlobalEntity(int global_id);
 
-    SavePlayer*     NewPlayer();
+    int             GenerateSaveID();
+    SavePlayer*     NewPlayer(int save_id);
     SaveScene*      StartNewSaveScene(int area_id);
 
     int PersistEntity(ServerEntity* e);//Registers a ServerEntity globally with a corresponding SaveEntity 

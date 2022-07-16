@@ -1,7 +1,4 @@
 #include <game_project_1/client/client_scene.hpp>
-
-#include <game_project_1/system/physics.hpp>
-#include <game_project_1/system/movement.hpp>
 #include <game_project_1/io/asset_manager.hpp>
 
 
@@ -11,7 +8,6 @@ Map<int,ClientEntityBuilder> ClientScene::entity_builders;
 ClientScene::ClientScene():renderer(),level(),entities(8){
     area_id=-1;
     global_timer=0;
-    frame_interval = config::frame_interval;
     renderer.camera.ortho=false;
 }
 ClientScene::~ClientScene(){Unload();}
@@ -72,19 +68,9 @@ bool ClientScene::OnInput(Input::Event input){
     else return camera_manager.HandleCameraInput(input);
 }
 
-void ClientScene::Update(int frames,float delta){
-    for(int i=0;i<frames;i++){
-        for(ClientEntity* entity:entities){
-            Movement::Update(entity,frame_interval);
-        }
-        Physics::ClientFrame(this,frame_interval);
-    }
-
-    camera_manager.Update(delta);
-    global_timer+=frames;
-}
-
 void ClientScene::SpawnEntity(ClientEntity* e,int spawn_type_id){
+    logger::debug("Spawning entity %s with ID %d\n",e->name,e->id);
+
     if(entity_builders.Has(e->entity_class_id)){
         ClientEntityBuilder builder = entity_builders.Get(e->entity_class_id);
         builder(e,this);
@@ -97,8 +83,7 @@ void ClientScene::SpawnEntity(ClientEntity* e,int spawn_type_id){
     }
 }
 void ClientScene::DespawnEntity(int eid,int despawn_type_id){
-    switch(despawn_type_id){
-        //TODO:
+    switch(despawn_type_id){//TODO:
         default: DestroyEntity(eid);break;//immediate mode
     }
 }

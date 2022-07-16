@@ -10,9 +10,7 @@ BitArray::BitArray(){
     data = null;
 }
 BitArray::BitArray(int bit_count){
-    bits = bit_count;
-    int char_count = bit_count/8 + ((bit_count % 8) > 0);
-    data = (unsigned char*)calloc(char_count,1);
+    Initialize(bit_count);
 }
 BitArray::~BitArray(){
     free(data);
@@ -25,19 +23,23 @@ void BitArray::Resize(int new_bit_count){
     }
     int old_char_count = bits/8 + (bits % 8 > 0);
     int new_char_count = new_bit_count/8 + (new_bit_count % 8 > 0);
-    unsigned char* new_data = (unsigned char*)calloc(new_char_count,1);
-    
-    if(old_char_count <= new_char_count){
+    int new_int_count = new_char_count/4 + ((new_char_count % 4) > 0);
+    if(allocated < (int)(new_int_count*sizeof(int))){
+        allocated = (int)(new_int_count*sizeof(int));
+        unsigned char* new_data = (unsigned char*)calloc(new_char_count,1);
         memcpy(new_data,data,old_char_count);
+        
+        free(data);
+        data = new_data;
     }
     bits = new_bit_count;
-    free(data);
-    data = new_data;
 }
 void BitArray::Initialize(int bit_count){
     bits = bit_count;
-    int bytes = bit_count/8 + ((bit_count % 8) > 0);
-    data = (unsigned char*)calloc(bytes,1);
+    int char_count = bit_count/8 + ((bit_count % 8) > 0);
+    int int_count = char_count/4 + ((char_count % 4) > 0);
+    allocated = sizeof(int)*int_count;//try to fit on int boundary
+    data = (unsigned char*)calloc(allocated,1);
 }
 int BitArray::CountBitsSet(){
     int count = 0;

@@ -11,6 +11,9 @@ namespace ServerNetHandler{
     void Update(int frames);
     void Free();
 
+    void HandlePayload(int player_slot,Payload p);
+    void SendToPlayersInArea(Payload p,int area_id);
+
     void OnStartNewPlayerSave(int player_slot,Packet::SNPS new_save_info);
     void OnPlayerSceneTransition(int player_slot,int area_id);
     void OnPlayerInfoUpdate(int player_slot);
@@ -18,12 +21,9 @@ namespace ServerNetHandler{
     void OnClientDelta(int player_slot,Payload delta);
     void SendEntityDeltas(ServerScene* s);
 
-    ComponentChunk::Mask GetComponentPermissionMask(ComponentChunk::Mask mask,int player_slot,Server* e);
-
     //Async methods
-    void OnPlayerConnect(int player_slot,Packet::JOIN join_info);
+    void OnPlayerConnect(int player_slot,Payload request);
     void OnPlayerDisconnect(int player_slot,wchar* reason);
-    void OnPlayerFailConnect(wchar* persona, wchar* reason);
 }
 
 

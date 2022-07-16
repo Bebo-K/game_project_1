@@ -5,13 +5,13 @@
 #include <game_project_1/config.hpp>
 
 Payload::Payload(){Clear();}
-Payload::Payload(int id,int type,int len,int time,byte* dat){
-    id=id; type=type; length=len; data=dat;
+Payload::Payload(int id_num,int type_id,int len,int time,byte* dat){
+    id=id_num; type=type_id; length=len; data=dat;
     timestamp=time;
     free_after_use=false;
 }
-Payload::Payload(int type,int len,byte* dat){
-    id=rand(); type=type; length=len; data=dat;
+Payload::Payload(int type_id,int len,byte* dat){
+    id=rand(); type=type_id; length=len; data=dat;
     timestamp = OS::time_ms();
     free_after_use=false;
 }
@@ -31,9 +31,6 @@ void Datagram::Clear(){
     timestamp=0; crc=0;
     memset(data,0,MAX_DATA_LENGTH);
 }
-void Datagram::CreateID(){
-    id = rand();
-}
 bool Datagram::IsMultipart(){
     return length >= MAX_DATA_LENGTH;
 }
@@ -44,13 +41,17 @@ Payload Datagram::ToPayload(){
     if(IsMultipart()){
         logger::exception("Cannot convert single multipart packet to payload");
     }
-    return Payload(id,type,length,timestamp,data);
+    Payload ret(id,type,length,timestamp,null);
+    ret.data = (byte*)malloc(length);
+    memcpy(ret.data,data,length);
+    ret.free_after_use=true;
+    return ret;
 }
 void Datagram::FromPayload(Payload payload){
     if(payload.length > MAX_DATA_LENGTH){
         logger::exception("Cannot build payload of length %d with one packet.",payload.length);
     }
-    id = payload.id; if(payload.id == 0){CreateID();}
+    id = payload.id;
     type = payload.type;
     length = payload.length;
     memcpy(data,payload.data,payload.length);
@@ -77,8 +78,10 @@ int Datagram::FromPayload(Payload payload,int segment){
     header.segment=segment;
 
     id = payload.id;
+    type = payload.type;
     length = payload.length;
-    memcpy(data,&payload.data[header.payload_offset],header.packet_data_length);
+    memcpy(data,&header,sizeof(MultipartHeader));
+    memcpy(&data[sizeof(MultipartHeader)],&payload.data[header.payload_offset],header.packet_data_length);
     timestamp = OS::time_ms();
     crc = 0; crc = CRC((byte*)this,DATAGRAM_HEADER_SIZE+sizeof(MultipartHeader)+header.packet_data_length);
 
@@ -133,7 +136,7 @@ void InboundMultipartPayload::Add(Datagram* p){
         logger::exception("Packet id %d is not multipart!",p->id);
     }
     MultipartHeader header = p->getMultipartHeader();
-    memcpy(&assembled_payload[header.payload_offset],p->data,header.packet_data_length);
+    memcpy(&assembled_payload[header.payload_offset],&p->data[sizeof(MultipartHeader)],header.packet_data_length);
     packets_recieved.Set(header.segment);
     last_recv=OS::time_ms();
 }

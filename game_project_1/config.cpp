@@ -31,10 +31,11 @@ bool config::debug_mode=true;
 bool config::debug_net=true;
 
 wchar_t* config::save_directory=L"/saves";
+wchar_t* config::player_persona=L"Chowzang";
 
 
-wchar* server_config::server_name="my server";
-wchar* server_config::server_description="a server";
+wchar* server_config::server_name=L"my server";
+wchar* server_config::server_description=L"a server";
 char* server_config::save_name="server";
 bool server_config::local_only=true;
 int server_config::player_count=1;
@@ -68,6 +69,7 @@ void config::Init(){
     global_config_entries.Add(new ConfigEntry("network_ping_interval",INT,&network_ping_interval));
     global_config_entries.Add(new ConfigEntry("network_packet_expiry",INT,&network_packet_expiry));
     global_config_entries.Add(new ConfigEntry("network_timeout",INT,&network_timeout));
+    global_config_entries.Add(new ConfigEntry("player_persona",WSTRING,&player_persona));
 }
 
 void config::Destroy(){}

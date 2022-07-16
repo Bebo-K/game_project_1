@@ -1,31 +1,10 @@
 Goal heirarchy:
 
-    - Code cleanup
-        -#include transitions to non-relative paths
-        -#include guards prepending project name
-        -".h" to ".hpp" 
-        -look over namespaces to convert to classes/singletons
-        -double check for conformity to conventions below
-            Known files to clean:
-                os_net.h
-                file.h
-        -Change config/server_config from namespace to class
-        -Fix Makefile 
+    - Iron out movement + collision bugs
+    - Multiplayer menu, widgets + connection
+    - Multiple client test
+    - Combat
 
-    - Loading client into an empty level
-        - "Entity" + "Scene" at client server level
-            - Split into seperate "ClientEntity/ServerEntity" + "ClientScene/ServerScene"
-            - Removes unneccesary data + functionality duplication (Server scene rendering, Client scene serialization [Except player])
-            - Create extendable EntityClass registration system to template both Client + Server instantiation
-        - Player entity join scene
-            -Server SCNE message
-                - ServerScene serialization + ClientScene deserialization
-            -Server ENTY message
-                - Client instantiation of entity
-                - Attach camera
-    - Ironing out movement
-    - Entity loading
-    - Scene transitions
 
 
 

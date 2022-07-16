@@ -17,7 +17,6 @@ typedef void (*ClientEntityBuilder)(ClientEntity*,ClientScene*);
 class ClientScene{
     private:
     static Map<int,ClientEntityBuilder> entity_builders;
-    float frame_interval;
     public:
     int  area_id;
     long long global_timer;//Frame count since the scene has been loaded.
@@ -33,13 +32,13 @@ class ClientScene{
     ~ClientScene();
     void Load(int area_id);
     void Unload();
-    
-    void Update(int frames,float delta);
+
     void Draw();
 
     ClientEntity* AddEntity(int eid);
     ClientEntity* GetEntity(int eid);
     void          DestroyEntity(int eid);
+
     void SpawnEntity(ClientEntity* e,int spawn_type_id);
     void DespawnEntity(int eid,int despawn_type_id);
 

@@ -14,6 +14,7 @@
 class NetTarget{
     private:
     const static int RELIABLE_ID_HISTORY=10;
+    void Transfer(Payload payload);
     public:
     Connection      connection;
     int             last_success;
@@ -41,7 +42,10 @@ class NetTarget{
     bool OnRecieve(Payload payload);
 
     bool IsConnected();
+    bool IsJustDisconnected();
+    bool IsLocal();
 
+    void SendConnect(Payload payload);//send 
     bool SendAck(int ack_id);//sends an acknowledgement packet for the payload ID
     void SendDisconnect(wchar* reason);//sends a disconnect packet and closes the connection
 
@@ -50,8 +54,8 @@ class NetTarget{
 
     private:
 
-    int NewReliableID();
-    void AddToReliableBuffer(Payload payload);
+    int NewReliablePayloadID();
+    int AddToReliableBuffer(Payload payload);
     void RemoveFromReliableBuffer(int reliable_id);
 
     InboundMultipartPayload* AddToMultipartPayload(Datagram* dgram);//gets or creates a multipartpayload in the buffer for the packet's ID and inserts it.

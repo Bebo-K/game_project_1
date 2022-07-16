@@ -10,32 +10,36 @@
 class Client{
     private:
     static class Client* instance;
+    static float    frame_interval;
     public:
 
-    ClientScene scene;
-    GUI         ui;
+    ClientScene     scene;
+    GUI             ui;
 
-    int           my_entity_id;
-    int           my_player_id;
-    int           my_save_id;
-    Array<Player> players;
-    int           current_players;
+    int             my_slot_id;
+    int             my_save_id;
+    Array<Player>   players;
+    int             current_players;
 
-    const int   FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
+    const static int FRAMESKIP_MAX=5;//Don't simulate more than 5 frames per update.
 
     Client();
     ~Client();
 
     static Client* GetClient();
     static void Signal(EventSignal val);
+    Player* Me();
 
     void Start();
 
     void Paint();
     void Resize(int screen_w,int screen_h);
     void Update(int frames);
+    void UpdateScene(int frames,float delta);
     
     void HandleSignals();
+
+    void OnSpawnPlayer(ClientEntity* player);
 
     void Quit();
 };

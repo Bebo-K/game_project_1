@@ -28,7 +28,7 @@ CollisionResult EntityCollision::CheckCollision(BaseEntity* e1, BaseEntity* e2){
     return CollisionResult(false);
 }
 
-void EntityCollision::ClientFrame(ClientScene* s,ClientEntity* e1,float delta){
+void EntityCollision::ClientFrame(ClientEntity* e1,ClientScene* s,float delta){
     for(int i2 = s->entities.next(s->entities.IndexOf(e1));i2 != s->entities.end().index;i2 = s->entities.next(i2)){
         ClientEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);
@@ -50,7 +50,7 @@ void EntityCollision::ClientFrame(ClientScene* s,ClientEntity* e1,float delta){
     }
 }
 
-void EntityCollision::ServerFrame(ServerScene* s,ServerEntity* e1,float delta){
+void EntityCollision::ServerFrame(ServerEntity* e1,ServerScene* s,float delta){
     for(int i2 = s->entities.next(s->entities.IndexOf(e1));i2 != s->entities.end().index;i2 = s->entities.next(i2)){
         ServerEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);

@@ -1,5 +1,4 @@
 #include <game_project_1/client/client_signal.hpp>
-#include <game_project_1/net/packet_builder.hpp>
 #include <game_project_1/threads.hpp>
 #include <game_project_1/net/network.hpp>
 #include <game_project_1/server/server.hpp>
@@ -45,11 +44,7 @@ void ClientSignalHandler::Update(int frames){
             case ClientSignalID::LOCAL_SERVER_READY:{
                     logger::info("Local server is ready. Connecting...\n");
                     client->ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
-                    Packet join_request;
-                        PacketData::JOIN join_data(&join_request);
-                        join_data.SetPlayerName(L"Chowzang");
-                        join_data.WritePacket();
-                    ClientNetwork::LocalConnect(&join_request);
+                    ClientNetwork::LocalConnect(config::player_persona,client->my_save_id);
                 break;}
             default:break;
         }
