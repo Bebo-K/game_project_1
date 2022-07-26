@@ -105,7 +105,7 @@ char* cstr::append(const char* str1,const char* str2){
     int str2_len = len(str2);
     char* str = (char*)malloc(str1_len+str2_len+1);
     strcpy(str,str1);
-    strcpy(&str[str1_len],str1);
+    strcpy(&str[str1_len],str2);
     str[str1_len+str2_len]=0;
     return str;
 }
@@ -344,7 +344,7 @@ wchar* wstr::append(const wchar* str1,const wchar* str2){
     int str2_len = len(str2);
     wchar* str = (wchar*)malloc((str1_len+str2_len+1)*sizeof(wchar));
     wcscpy(str,str1);
-    wcscpy(&str[str1_len],str1);
+    wcscpy(&str[str1_len],str2);
     str[str1_len+str2_len]=0;
     return str;
 }

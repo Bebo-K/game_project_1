@@ -111,6 +111,7 @@ void Client::UpdateScene(int frames,float delta){
         for(ClientEntity* entity:scene.entities){
             Movement::Update(entity,frame_interval);
             Physics::ClientFrame(entity,&scene,frame_interval);
+            AnimationController::Update(entity,frame_interval);
         }
     }
 

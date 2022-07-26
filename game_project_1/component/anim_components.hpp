@@ -14,6 +14,7 @@ enum AnimationControllerType{
 class AnimationState{
     public:
     State                   display_state;
+    char*                   anim_name;
     AnimationControllerType type_id;
     
     AnimationState(AnimationControllerType type);

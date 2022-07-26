@@ -493,7 +493,9 @@ MeshCollider* GLTFScene::GetMeshGroupAsCollider(char* group_name){
 			prim_bounds.lo_corner.z= min_array->At(2)->FloatValue();
 		collider->bounds.Union(prim_bounds);
 
-		vec3* raw_verts = (vec3*)BuildAccessorFloatArray(pos_attrib_id,&primitive_vert_count);
+		int primitive_float_vert_count =0;
+		vec3* raw_verts = (vec3*)BuildAccessorFloatArray(pos_attrib_id,&primitive_float_vert_count);
+		primitive_vert_count = primitive_float_vert_count/3;
 
 		if(primitive->HasInt("indices")){
 			int index_accessor_id=primitive->GetInt("indices"); 
@@ -505,8 +507,8 @@ MeshCollider* GLTFScene::GetMeshGroupAsCollider(char* group_name){
 			}
 			primitive_verts[i] = new vec3[index_count];
 			primitive_tri_count[i] = index_count/3;
-			for(int t=0;t<primitive_tri_count[i];t++){
-				primitive_verts[i][t] = raw_verts[indices[t]];
+			for(int vert=0;vert<index_count;vert++){
+				primitive_verts[i][vert] = raw_verts[indices[vert]];
 			}
 			free(raw_verts);
 		}
@@ -525,7 +527,7 @@ MeshCollider* GLTFScene::GetMeshGroupAsCollider(char* group_name){
 	int tri_index=0;
 	for(int i=0;i<primitives->count;i++){
 		for(int j=0;j<primitive_tri_count[i];j++){
-			collider->tris[tri_index].SetFromVertices((float*)&primitive_verts[i][j*3]);
+			collider->tris[tri_index].SetFromVertices((float*)(&primitive_verts[i][j*3]));
 			tri_index++;
 		}
 		free(primitive_verts[i]);

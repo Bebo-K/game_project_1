@@ -9,6 +9,7 @@
 
 #include <game_project_1/system/camera_manager.hpp>
 #include <game_project_1/system/player_input.hpp>
+#include <game_project_1/system/animation_controller.hpp>
 
 
 class ClientScene;

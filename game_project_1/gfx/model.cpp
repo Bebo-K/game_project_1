@@ -253,12 +253,25 @@ void Model::Draw(Camera* cam){
     }
 }
 
-void Model::StartAnimation(char* anim_name){
-    if(pose != null){pose->StartAnimation(anim_name);}
+void Model::StartAnimation(char* anim_name, bool loop){
+    AnimationOptions options;
+    options.end_action = (loop)? AnimationEndAction::LOOP : AnimationEndAction::STOP;
+    options.next_anim = nullptr;
+    options.timescale = 1.0f;
+    if(pose != null){pose->StartAnimation(anim_name,options);}
 }
 
-void Model::StartAnimation(char* anim_name, AnimationOptions options){
-    if(pose != null){pose->StartAnimation(anim_name,options);}
+void Model::StartAnimationWithWindup(char* start_anim,char* loop_anim){
+    if(pose == null){return;}
+    AnimationOptions anim_1_options;
+        anim_1_options.end_action=AnimationEndAction::GOTO;
+        anim_1_options.next_anim= data->skeleton->GetAnimation(loop_anim);
+        if(anim_1_options.next_anim == null){
+            logger::warn("cannot find follow up %s for windup animation %s\n",loop_anim,start_anim);
+            anim_1_options.end_action =AnimationEndAction::STOP;
+        }
+        anim_1_options.timescale = 1.0f;
+    pose->StartAnimation(start_anim,anim_1_options);
 }
 
 void ModelManager::Init(){

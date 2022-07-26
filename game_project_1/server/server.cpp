@@ -160,8 +160,8 @@ void Server::Update(int frames){
 void Server::UpdateScene(ServerScene* s,int frames){
     for(int i=0;i<frames;i++){
         for(ServerEntity* entity:s->entities){
-            if(entity->spawn_mode < 0)s->HandleSpawn(entity);
-            if(entity->spawn_mode > 0)s->HandleDespawn(entity);
+            if(entity->spawn_mode > 0)s->HandleSpawn(entity);
+            if(entity->spawn_mode < 0)s->HandleDespawn(entity);
             NPCController::FrameUpdate(entity);
             Movement::Update(entity,tick_interval);
             Physics::ServerFrame(entity,s,tick_interval);

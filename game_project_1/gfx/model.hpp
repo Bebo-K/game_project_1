@@ -64,8 +64,9 @@ class Model: public Drawable{
     Model(ModelData* dat);
     ~Model();
     virtual void Draw(Camera* cam);
-    void StartAnimation(char* anim_name);
-    void StartAnimation(char* anim_name,AnimationOptions options);
+    void StartAnimation(char* anim_name, bool loop);
+    void StartAnimationWithWindup(char* start_anim,char* loop_anim);
+    //void StartAnimationFromOffset(char* anim_name,AnimationOptions options, float elapsed);
 
 };
 

@@ -3,6 +3,7 @@
 
 AnimationState::AnimationState(AnimationControllerType type){
     type_id=type;
+    anim_name=null;
 }
 
 AnimationState::~AnimationState(){}

@@ -372,16 +372,14 @@ void Controller::Axis::SetDirection(short direction_id,bool down){
 
     vec2 old_pos = {x,y};
     x=0;y=0;
-    if(direction_id != 0){
-        if(GET_BIT(key_flags,UP)){y += 1.0f;}
-        if(GET_BIT(key_flags,DOWN)){y -= 1.0f;}
-        if(GET_BIT(key_flags,LEFT)){x -= 1.0f;}
-        if(GET_BIT(key_flags,RIGHT)){x += 1.0f;}
-            
-        vec2 new_pos = GetNormalized();
-        x=new_pos.x;
-        y=new_pos.y;
-    }
+    if(GET_BIT(key_flags,UP)){y += 1.0f;}
+    if(GET_BIT(key_flags,DOWN)){y -= 1.0f;}
+    if(GET_BIT(key_flags,LEFT)){x -= 1.0f;}
+    if(GET_BIT(key_flags,RIGHT)){x += 1.0f;}
+        
+    vec2 new_pos = GetNormalized();
+    x=new_pos.x;
+    y=new_pos.y;
     dx=x-old_pos.x;
     dy=x-old_pos.y;
     UpdateTilt();
