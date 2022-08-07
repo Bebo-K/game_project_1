@@ -7,7 +7,7 @@ const float GRAVITY_TERMINAL= -128.0f;
 const float GRAVITY_ACCEL = -64.0f;
 
 void ApplyGravity(BaseEntity* e, float delta){
-    if(e->velocity.y > GRAVITY_TERMINAL){
+    if(e->velocity.y > GRAVITY_TERMINAL && e->phys_data->is_midair){
         e->velocity.y += delta*GRAVITY_ACCEL;
     }
 }
