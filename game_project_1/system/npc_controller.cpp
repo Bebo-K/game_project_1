@@ -3,5 +3,9 @@
 
 
 void NPCController::FrameUpdate(ServerEntity* e){
+    if(e->npc_state == null){return;}
+    MovementData* move = e->movement;
+
+    
 
 }
