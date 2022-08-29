@@ -96,7 +96,7 @@ struct ServerEntity: public BaseEntity{
     vec3 lastupdate_velocity;//velocity as ^
 
     Persistance*    persist;
- //   NPCControllerState*     npc_state;
+    NPCControllerState*     npc_state;
 
 
     ServerEntity(int entity_id);

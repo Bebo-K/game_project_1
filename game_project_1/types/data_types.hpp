@@ -15,6 +15,14 @@ typedef unsigned char byte;
 
 void* i_to_p(int ptr);//Convention exception to match "atof",etc
 
+union value
+{
+    int i;
+    float f;
+    wchar_t* wstr;
+};
+
+
 struct color{
     byte r,g,b,a;
     void from_bytes(byte R, byte G, byte B, byte A);

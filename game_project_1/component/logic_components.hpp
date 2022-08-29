@@ -4,13 +4,14 @@
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/game/item.hpp>
 #include <game_project_1/game/stats.hpp>
+#include <game_project_1/types/arrays.hpp>
 
 
 //RPG stat block
 class StatBlock{
     public:
     int level;
-    Stats base_stats;
+    BaseStats base_stats;
 
     StatBlock();
     
@@ -74,6 +75,17 @@ class Persistance{
     public:
     int global_id;//unique across all scenes+entities, corresponds to a SaveEntity
     Persistance();
+};
+
+
+class NPCControllerState{
+    public:
+    int controller_id;
+    int current_action;
+    int action_counter;
+    
+    Array<value> constants;
+    Array<value> parameters;
 };
 
 

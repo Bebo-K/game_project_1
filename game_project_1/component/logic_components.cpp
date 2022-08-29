@@ -6,19 +6,19 @@ StatBlock::StatBlock(){
     level=0;
 }
 
-int StatBlock::SerializedLength(){return sizeof(int)+sizeof(Stats);}
+int StatBlock::SerializedLength(){return sizeof(int)+sizeof(BaseStats);}
 void StatBlock::Read(Deserializer& dat){
     level=dat.GetInt();
-    base_stats.hp=dat.GetInt();base_stats.max_hp=dat.GetInt();
-    base_stats.mp=dat.GetInt();base_stats.max_mp=dat.GetInt();
+    base_stats.max_hp=dat.GetInt();
+    base_stats.max_hp=dat.GetInt();
     base_stats.strength=dat.GetInt();
     base_stats.intelligence=dat.GetInt();
     base_stats.agility=dat.GetInt();
 }
 void StatBlock::Write(Serializer& dat){
     dat.PutInt(level);
-    dat.PutInt(base_stats.hp);dat.PutInt(base_stats.max_hp);
-    dat.PutInt(base_stats.mp);dat.PutInt(base_stats.max_mp);
+    dat.PutInt(base_stats.max_hp);
+    dat.PutInt(base_stats.max_mp);
     dat.PutInt(base_stats.strength);
     dat.PutInt(base_stats.intelligence);
     dat.PutInt(base_stats.agility);

@@ -4,23 +4,40 @@
 #include <game_project_1/types/data_types.hpp>
 
 //RPG stat block
-class Stats{
+class BaseStats{
     public:
-    int hp,max_hp;
-    int mp,max_mp;
+    int max_hp;
+    int max_mp;
 
     int strength;
     int intelligence;
     int agility;
 
-    Stats();
-    Stats(int max_hp,int max_mp,int str,int intel,int agi);
-    ~Stats();
+    BaseStats();
+    BaseStats(int max_hp,int max_mp,int str,int intel,int agi);
+    ~BaseStats();
 
     int SerializedLength();
-    void Add(Stats* s2);
-    void Copy(Stats* s2);
+    void Add(BaseStats* s2);
+    void Copy(BaseStats* s2);
     void AddRandomizedBonus(int max_bonus);
+};
+
+//Fully calculated stats
+class ActiveStats{
+    int hp,mp;
+
+    int strength;
+    int intelligence;
+    int agility;
+
+    int iframes;
+
+    //StatModifierStack
+
+    ActiveStats(BaseStats* base);
+    void ResetFromBase(BaseStats* base);
+    int SerializedLength();
 };
 
 //Buffs,debuffs, and the like

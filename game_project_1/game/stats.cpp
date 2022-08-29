@@ -2,38 +2,46 @@
 #include <game_project_1/game/dice.hpp>
 
 
-Stats::Stats(){
-
-}
-Stats::Stats(int mhp,int mmp,int str,int intel,int agi){
-    hp = max_hp = mhp;
-    mp = max_mp = mmp;
+BaseStats::BaseStats(){}
+BaseStats::BaseStats(int mhp,int mmp,int str,int intel,int agi){
+    max_hp = mhp;
+    max_mp = mmp;
     strength = str;
     intelligence = intel;
     agility = agi;
 }
-Stats::~Stats(){}
-void Stats::AddRandomizedBonus(int max_bonus){
+BaseStats::~BaseStats(){}
+void BaseStats::AddRandomizedBonus(int max_bonus){
     int bonus = Dice::RollRange(0,max_bonus);
-    max_hp += bonus; hp += bonus;bonus = Dice::RollRange(0,max_bonus);
-    max_mp += bonus; mp += bonus;bonus = Dice::RollRange(0,max_bonus);
+    max_hp += bonus; bonus = Dice::RollRange(0,max_bonus);
+    max_mp += bonus; bonus = Dice::RollRange(0,max_bonus);
     strength += bonus; bonus = Dice::RollRange(0,max_bonus);
     intelligence += bonus;bonus = Dice::RollRange(0,max_bonus);
     agility += bonus;
 }
-void Stats::Copy(Stats* s2){
-    hp=s2->hp;max_hp=s2->max_hp;
-    mp=s2->mp;max_mp=s2->max_mp;
+void BaseStats::Copy(BaseStats* s2){
+    max_hp=s2->max_hp;
+    max_mp=s2->max_mp;
     strength=s2->strength;
     intelligence=s2->intelligence;
     agility=s2->agility;
 }
-void Stats::Add(Stats* s2){
-    hp+=s2->hp;max_hp+=s2->max_hp;
-    mp+=s2->mp;max_mp+=s2->max_mp;
+void BaseStats::Add(BaseStats* s2){
+    max_hp+=s2->max_hp;
+    max_mp+=s2->max_mp;
     strength+=s2->strength;
     intelligence+=s2->intelligence;
     agility+=s2->agility;
+}
+int BaseStats::SerializedLength(){return sizeof(BaseStats);}
+
+ActiveStats::ActiveStats(BaseStats* base){
+    hp = base->max_hp;
+    mp = base->max_mp;
+
+    strength = base->strength;
+    agility = base->agility;
+    intelligence = base->intelligence;
 }
 
 CharacterAppearance::CharacterAppearance(){
