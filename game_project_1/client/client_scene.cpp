@@ -2,7 +2,7 @@
 #include <game_project_1/io/asset_manager.hpp>
 
 
-Map<int,ClientEntityBuilder> ClientScene::entity_builders;
+Map<EntityClass,ClientEntityBuilder> ClientScene::entity_builders;
 
 
 ClientScene::ClientScene():renderer(),level(),entities(8){
@@ -71,8 +71,8 @@ bool ClientScene::OnInput(Input::Event input){
 void ClientScene::SpawnEntity(ClientEntity* e,int spawn_type_id){
     logger::debug("Spawning entity %s with ID %d\n",e->name,e->id);
 
-    if(entity_builders.Has(e->entity_class_id)){
-        ClientEntityBuilder builder = entity_builders.Get(e->entity_class_id);
+    if(entity_builders.Has(e->type)){
+        ClientEntityBuilder builder = entity_builders.Get(e->type);
         builder(e,this);
     }
     if(e->models != nullptr){renderer.Add(e->models);}
@@ -88,8 +88,8 @@ void ClientScene::DespawnEntity(int eid,int despawn_type_id){
     }
 }
 
-void ClientScene::RegisterEntityBuilder(int entity_class_id, ClientEntityBuilder builder){
-    if(!entity_builders.Has(entity_class_id)){
-        entity_builders.Add(entity_class_id,builder);
+void ClientScene::RegisterEntityBuilder(EntityClass type, ClientEntityBuilder builder){
+    if(!entity_builders.Has(type)){
+        entity_builders.Add(type,builder);
     }
 }

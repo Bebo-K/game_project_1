@@ -33,7 +33,7 @@ void EntityCollision::ClientFrame(ClientEntity* e1,ClientScene* s,float delta){
         ClientEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);
         if(res.collided){
-            EntityClassPair collided_pair = {e1->entity_class_id,e2->entity_class_id};
+            EntityClassPair collided_pair = {e1->type,e2->type};
             int callback_map_index  = EntityPairClientCollisionHandlers.MatchIndex(collided_pair);
             if(callback_map_index >= 0){
                 ClientHandlerCallback callback = EntityPairClientCollisionHandlers.Get(collided_pair);
@@ -55,7 +55,7 @@ void EntityCollision::ServerFrame(ServerEntity* e1,ServerScene* s,float delta){
         ServerEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);
         if(res.collided){
-            EntityClassPair collided_pair = {e1->entity_class_id,e2->entity_class_id};
+            EntityClassPair collided_pair = {e1->type,e2->type};
             int callback_map_index  = EntityPairServerCollisionHandlers.MatchIndex(collided_pair);
             if(callback_map_index >= 0){
                 ServerHandlerCallback callback = EntityPairServerCollisionHandlers.Get(collided_pair);

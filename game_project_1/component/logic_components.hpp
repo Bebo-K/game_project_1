@@ -4,6 +4,7 @@
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/game/item.hpp>
 #include <game_project_1/game/stats.hpp>
+#include <game_project_1/game/races_and_classes.hpp>
 #include <game_project_1/types/arrays.hpp>
 
 
@@ -14,6 +15,7 @@ class StatBlock{
     BaseStats base_stats;
 
     StatBlock();
+    StatBlock(int start_level);
     
     int SerializedLength();
     void Read(Deserializer& dat);
@@ -21,7 +23,7 @@ class StatBlock{
     void Copy(StatBlock* s2);
 };
 
- //equipment and inventory. Only equipment is sent thru client delta, inventory is private unless requested (Difference between "Write" +"Save")
+ //Only equipment is sent thru client delta
 class Equip{
     public:
     ItemInstance head;
@@ -40,6 +42,7 @@ class Equip{
     void Copy(Equip* i2);
 };
 
+//Inventory is private unless requested
 class Inventory{
     public:
     int inventory_slots;
@@ -54,11 +57,13 @@ class Inventory{
     void Copy(Inventory* i2);
 };
 
+
+
 //Public character info: race, character class, appearance
 class Character{
     public:
-    int race_id;
-    int class_id;
+    RaceID race_id;
+    ClassID class_id;
     CharacterAppearance appearance;
 
     Character();
@@ -77,15 +82,19 @@ class Persistance{
     Persistance();
 };
 
-
+//Server-side NPC "brains"
+typedef int NPCControllerType;
 class NPCControllerState{
     public:
-    int controller_id;
+    NPCControllerType controller_type;
+    bool init;//1-time-init control path flag that the controller callback can optionally use
     int current_action;
     int action_counter;
     
     Array<value> constants;
     Array<value> parameters;
+
+    NPCControllerState(NPCControllerType type);
 };
 
 

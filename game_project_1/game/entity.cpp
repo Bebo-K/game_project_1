@@ -11,7 +11,7 @@ float BaseEntity::GetTurnAngle(){return rotation.y;}
 
 BaseEntity::BaseEntity(int entity_id){
     id =entity_id;
-    entity_class_id =0;
+    type =0;
     for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=0;}
     name=nullptr;
     x=y=z=0;
@@ -144,7 +144,7 @@ void BaseEntity::WriteChunk(ID ChunkID,Serializer& dat){
         colliders->Write(dat);
         break;}
     case IDS:{
-        dat.PutInt(entity_class_id);
+        dat.PutInt(type);
         dat.PutWString(name);
         break;}
     case STATS:{
@@ -189,7 +189,7 @@ void BaseEntity::ReadChunk(ID ChunkID,Deserializer& dat){
         colliders->Read(dat);
         break;}
     case IDS:{
-        entity_class_id=dat.GetInt(); 
+        type=dat.GetInt(); 
         name=dat.GetWString();
         break;}
     case STATS:{
@@ -228,7 +228,7 @@ Mask BaseEntity::AllExistingComponents(){//Mask needed to create all non-null co
 void BaseEntity::CopyFrom(BaseEntity* e){//Deep entity copy
     Clear();
     id=e->id;
-    entity_class_id=e->entity_class_id;
+    type=e->type;
     for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=e->last_update[i];}
     name = wstr::new_copy(e->name);
     x=e->x;y=e->y;z=e->z;

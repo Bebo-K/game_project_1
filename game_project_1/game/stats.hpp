@@ -53,11 +53,12 @@ class EffectSet : public Pool<Effect>{
 };
 */
 
-//Sliders to adjust a character model
+
+
 struct CharacterAppearance{
     int style1,style2,style3;
     color color1;
-    //float range1,range2,range3
+    //float range1,range2,range3 //TODO: float sliders to adjust a character model
 
     CharacterAppearance();
     ~CharacterAppearance();

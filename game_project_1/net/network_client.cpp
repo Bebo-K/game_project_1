@@ -16,7 +16,7 @@ NetTarget ClientNetwork::server_target=NetTarget();
 
 void ClientSignalDisconnect(int code,wchar* reason){
     EventSignal signal;
-        signal.type= ClientSignalID::DISCONNECTED_FROM_SERVER;
+        signal.type= ClientSignalType::DISCONNECTED_FROM_SERVER;
         signal.params[0].ival=code;
         signal.params[1].strval=reason;
         signal.params[2].ival=0;

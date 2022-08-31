@@ -3,16 +3,16 @@
 
 
 PlayerInput::PlayerInput(){
-    target=null;
+    player=null;
     camera=null;
 }
-void PlayerInput::Attach(ClientEntity* e,Camera* reference_cam){target = e;camera=reference_cam;}
-void PlayerInput::Detach(){target = null;}
+void PlayerInput::Attach(ClientEntity* e,Camera* reference_cam){player = e;camera=reference_cam;}
+void PlayerInput::Detach(){player = null;}
 
 bool PlayerInput::HandleMovementInput(){
-    if(target == nullptr)return false;
-    if(target->movement->lock_move){return false;}
-    if(!target->movement->can_move){return true;}
+    if(player == nullptr)return false;
+    if(player->movement->lock_move){return false;}
+    if(!player->movement->can_move){return true;}
 
     Controller::Axis axis = Controller::GetAxis(Controller::Move);
     vec2 move_input = axis.GetNormalized();
@@ -20,26 +20,26 @@ bool PlayerInput::HandleMovementInput(){
     
     if(move_amount > 0){
         move_input.rotate(-camera->turn);
-        target->movement->move_goal =  {move_input.x,0,-move_input.y};
+        player->movement->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{
-        target->movement->move_goal = {0,0,0};
+        player->movement->move_goal = {0,0,0};
     }
     return 0;
 }
 
 bool PlayerInput::HandleJumpingInput(){
-    if(target == nullptr)return false;
-    if(target->movement->lock_jump){return false;}
-    if(target->movement->can_jump){
+    if(player == nullptr)return false;
+    if(player->movement->lock_jump){return false;}
+    if(player->movement->can_jump){
         if(Controller::GetButton(Controller::A).IsJustPressed()){
-            target->movement->jump_goal=true;
+            player->movement->jump_goal=true;
             return true;
         }
     }
     else{
         if(Controller::GetButton(Controller::A).IsJustReleased()){
-            target->movement->jump_goal = false;
+            player->movement->jump_goal = false;
             return true;
         }
     }
@@ -47,11 +47,11 @@ bool PlayerInput::HandleJumpingInput(){
 }
 
 bool PlayerInput::HandleActionInput(){
-    if(target == nullptr)return false;
-    if(target->movement->lock_jump){return false;}
-    if(!target->movement->can_jump){return true;}
+    if(player == nullptr)return false;
+    if(player->movement->lock_jump){return false;}
+    if(!player->movement->can_jump){return true;}
 
-    target->movement->action_goal=Controller::GetButton(Controller::B).IsJustPressed();
+    player->movement->action_goal=Controller::GetButton(Controller::B).IsJustPressed();
     return true;
 }
 

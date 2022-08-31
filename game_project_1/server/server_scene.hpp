@@ -40,7 +40,8 @@ class ServerScene{
     void HandleSpawn(ServerEntity* e);
     void HandleDespawn(ServerEntity* e);
 
-    static void RegisterEntityBuilder(int entity_class_id, ServerEntityBuilder builder);
+    static void RegisterEntityBuilder(EntityClass type, ServerEntityBuilder builder);
+    static ServerEntityBuilder GetEntityBuilder(EntityClass type);
 };
 
 

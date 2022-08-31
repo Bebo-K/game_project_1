@@ -8,8 +8,8 @@
 namespace EntityCollision{
 
 	struct EntityClassPair{
-		int class_a;
-		int class_b;
+		EntityClass class_a;
+		EntityClass class_b;
 		bool operator==(EntityClassPair& b);
 		bool operator==(int b);
 	};

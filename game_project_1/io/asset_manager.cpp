@@ -1,7 +1,7 @@
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/log.hpp>
-#include <game_project_1/game/game_constants.hpp>
+#include <game_project_1/game/areas.hpp>
 
 char filepath_base[] = "dat/";
 
@@ -68,7 +68,7 @@ Stream* AssetManager::FragmentShader(char* uri){
     return shader_stream;
 }
 Stream* AssetManager::Level(int area_id){
-    char* uri = GameConstants::GetMapFileForAreaID(area_id);
+    char* uri = Areas::GetMapName(area_id);
     char* filename = BuildFileName("levels/",uri,".lvl");
     FileStream* level_stream = new FileStream(filename);
     free(filename);

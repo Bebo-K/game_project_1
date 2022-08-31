@@ -4,7 +4,7 @@
 #include <game_project_1/signal.hpp>
 #include <game_project_1/client/client.hpp>
 
-namespace ClientSignalID{
+namespace ClientSignalType{
     const int CONNECTED_TO_SERVER=102;
     const int DISCONNECTED_FROM_SERVER=103;
     const int LOCAL_SERVER_READY=104;

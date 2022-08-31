@@ -2,11 +2,12 @@
 #include <game_project_1/net/network.hpp>
 #include <game_project_1/net/payload.hpp>
 #include <game_project_1/net/packets.hpp>
-#include <game_project_1/base/base_player.hpp>
 #include <game_project_1/net/server_serializer.hpp>
+#include <game_project_1/content/base_content.hpp>
 
 
 Server* ServerNetHandler::server=nullptr;
+ServerScene dummy_scene = ServerScene();
 
 void ServerNetHandler::Init(Server* s){server = s;}
 void ServerNetHandler::Free(){server = nullptr;}
@@ -99,7 +100,7 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
     server->players[player_slot].save = save;
 
     ServerEntity* player_base_entity = new ServerEntity(-1);
-        player_base_entity->entity_class_id = EntityClass::Humanoid;
+        player_base_entity->type = BaseContent::HUMANOID;
         player_base_entity->name = wstr::new_copy(new_save_info.player_name);
         player_base_entity->char_data = new Character();
             player_base_entity->char_data->class_id = new_save_info.class_id;
@@ -108,7 +109,7 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
             player_base_entity->char_data->appearance.style1 = new_save_info.style_1;
             player_base_entity->char_data->appearance.style2 = new_save_info.style_2;
             player_base_entity->char_data->appearance.style3 = new_save_info.style_3; 
-    HumanoidInitialPlayerBuilder(player_base_entity);
+    dummy_scene.BuildEntity(player_base_entity,Location());
     save->character_global_id = server->save.PersistEntity(player_base_entity);
     server->TransitionPlayer(0,save->last_scene,save->last_entrance,player_slot);
     delete player_base_entity;

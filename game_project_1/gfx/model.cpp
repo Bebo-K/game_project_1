@@ -189,7 +189,7 @@ Model::Model(ModelID type){
 
 Model::Model(ModelData* dat){//Does not use cache. 
     shader_name = "model_dynamic_lighting";
-    type_id= NONE;
+    type_id=0;
     data = dat;
     if(data->skeleton != null){
         pose = new Pose(data->skeleton);
@@ -304,7 +304,7 @@ void ModelManager::Free(){
 }
 
 ModelData* ModelManager::Use(ModelID id){
-    if(id == NONE){return ErrorModel();}
+    if(id == 0){return ErrorModel();}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             if(cache->data==null){
@@ -330,7 +330,7 @@ ModelData* ModelManager::Use(ModelID id){
 }
 
 void ModelManager::Return(ModelID id){
-    if(id == NONE){return;}
+    if(id == 0){return;}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             cache->users--;

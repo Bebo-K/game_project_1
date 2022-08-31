@@ -3,7 +3,7 @@
 #include <game_project_1/gui/widget/choicebar.hpp>
 #include <game_project_1/gui/widget/text_entry_bar.hpp>
 #include <game_project_1/gui/gui.hpp>
-#include <game_project_1/game/game_constants.hpp>
+#include <game_project_1/game/races_and_classes.hpp>
 #include <game_project_1/client/client_net_handler.hpp>
 
 using namespace UI;
@@ -47,13 +47,21 @@ void CharacterCreateMenu::OnLoad(){
         header_text->MoveTo(nullptr,Top,Center_H,{0,28});
     AddWidget(header_text);
 
+    wchar** race_names = new wchar*[Races::Max];
+    for(int i=0;i<Races::Max;i++){race_names[i] = Races::GetRaceByID(i).name;}
+
     TextChoiceBar* race_choice = new TextChoiceBar("race_choice",L"Race");
-        race_choice->SetChoiceList(GameConstants::race_names,GameConstants::race_count);
+        race_choice->SetChoiceList(race_names,Races::Max);
         race_choice->choice_change_callback = RaceChangeCallback;
+    delete race_names;
+
+    wchar** class_names = new wchar*[Classes::Max];
+    for(int i=0;i<Classes::Max;i++){class_names[i] = Classes::GetClassByID(i).name;}
 
     TextChoiceBar* class_choice = new TextChoiceBar("class_choice",L"Class");
-        class_choice->SetChoiceList(GameConstants::class_names,GameConstants::class_count);
+        class_choice->SetChoiceList(class_names,Classes::Max);
         class_choice->choice_change_callback = ClassChangeCallback;
+    delete class_names;
 
     TextEntryBar* name_entry = new TextEntryBar("name_entry",L"Enter name:",&player_name);
 

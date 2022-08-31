@@ -2,9 +2,11 @@
 #include <game_project_1/config.hpp>
 
 #include <game_project_1/io/asset_manager.hpp>
+#include <game_project_1/content/base_content.hpp>
 
 
-Map<int,ServerEntityBuilder> ServerScene::entity_builders;
+Map<EntityClass,ServerEntityBuilder> ServerScene::entity_builders;
+void EmptyServerEntityBuilder(ServerEntity* e,ServerScene* s){}
 
 ServerScene::ServerScene():entities(8),just_spawned(8),just_deleted(8){
     area_id=0;
@@ -21,10 +23,11 @@ void ServerScene::Load(int area){
 
     ServerEntity* friendly = CreateEntity(SpawnType::APPEAR);
         friendly->name = wstr::new_copy(L"friendly");
-        friendly->entity_class_id = 1;
+        friendly->type = BaseContent::HUMANOID;
         friendly->char_data = new Character();
-        friendly->char_data->race_id=GameConstants::Race::Human;
-        friendly->char_data->class_id=GameConstants::Class::Archer;
+        friendly->char_data->race_id=Races::Human.id;
+        friendly->char_data->class_id=Classes::Archer.id;
+        friendly->npc_state = new NPCControllerState(BaseContent::NPC_WANDER);
     
     Location place;
     place.position = {7,4,1};
@@ -65,10 +68,8 @@ void ServerScene::BuildEntity(ServerEntity* e,Location pos){
     e->delta_mask |= ComponentChunk::BASIC_COMPONENTS;
     e->spawn_mode = SpawnType::APPEAR;
 
-    if(e->entity_class_id != 0 && entity_builders.Has(e->entity_class_id)){
-        ServerEntityBuilder builder = entity_builders.Get(e->entity_class_id);
-        builder(e,this);
-    }
+    ServerEntityBuilder builder = GetEntityBuilder(e->type);
+    builder(e,this);
 }
 
 void ServerScene::ClearEntity(ServerEntity* e){
@@ -93,8 +94,12 @@ void ServerScene::HandleDespawn(ServerEntity* e){
 }
 
 
-void ServerScene::RegisterEntityBuilder(int entity_class_id, ServerEntityBuilder builder){
-    if(!entity_builders.Has(entity_class_id)){
-        entity_builders.Add(entity_class_id,builder);
+void ServerScene::RegisterEntityBuilder(EntityClass type, ServerEntityBuilder builder){
+    if(!entity_builders.Has(type)){
+        entity_builders.Add(type,builder);
     }
+}
+
+ServerEntityBuilder ServerScene::GetEntityBuilder(EntityClass type){
+    return (entity_builders.Has(type))? entity_builders.Get(type) : &EmptyServerEntityBuilder;
 }

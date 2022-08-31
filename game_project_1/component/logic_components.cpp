@@ -2,10 +2,8 @@
 #include <game_project_1/game/dice.hpp>
 #include <stdlib.h>
 
-StatBlock::StatBlock(){
-    level=0;
-}
-
+StatBlock::StatBlock(){level=1;}
+StatBlock::StatBlock(int start_level){level=start_level;}
 int StatBlock::SerializedLength(){return sizeof(int)+sizeof(BaseStats);}
 void StatBlock::Read(Deserializer& dat){
     level=dat.GetInt();
@@ -110,6 +108,14 @@ void Character::Copy(Character* c2){
     race_id = c2->race_id;
     class_id = c2->class_id;
     appearance = c2->appearance;
+}
+
+
+NPCControllerState::NPCControllerState(NPCControllerType type){
+    init=false;
+    current_action=0;
+    action_counter=0;
+    controller_type = type;
 }
 
 Persistance::Persistance(){global_id =0;}

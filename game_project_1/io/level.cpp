@@ -187,11 +187,7 @@ Array<LevelExit> LevelLoader::LoadExits(){
             lvl_exit->style=0;
             lvl_exit->target_pos={0,0,0};
             
-            /*if(current_exit->HasString("destination")){
-                char* dest = current_exit->GetString("destination")->string;
-                lvl_exit->new_area_id = GameConstants::FindAreaIDForString(dest);
-            }
-            else*/ if(current_exit->HasInt("area_id")){
+            if(current_exit->HasInt("area_id")){
                 lvl_exit->new_area_id = current_exit->GetInt("area_id");
             }
             else if(current_exit->HasInt("to_entrance")){

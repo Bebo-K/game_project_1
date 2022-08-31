@@ -4,18 +4,13 @@
 #include <game_project_1/component/state.hpp>
 #include <game_project_1/io/serializer.hpp>
 
-enum AnimationControllerType{
-    NO_CONTROLLER=0,
-    GROUND_UNIT=1
-
-};
-
+typedef int AnimationControllerType;
 
 class AnimationState{
     public:
     State                   display_state;
     char*                   anim_name;
-    AnimationControllerType type_id;
+    AnimationControllerType controller_type;
     
     AnimationState(AnimationControllerType type);
     ~AnimationState();

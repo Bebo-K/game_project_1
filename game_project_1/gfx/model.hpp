@@ -7,11 +7,6 @@
 #include <game_project_1/gfx/drawable.hpp>
 #include <game_project_1/gfx/skeleton.hpp>
 
-enum ModelID{
-    NONE=0,
-    HUMAN_1=1
-};
-
 struct Mesh{
 	int		 vertex_count;
     int      tri_count;
@@ -54,6 +49,7 @@ class ModelData{
     void DebugPrint();
 };
 
+typedef int ModelID;//0 is reserved for no/error model
 class Model: public Drawable{
     public:
     ModelID     type_id;

@@ -14,7 +14,9 @@
 #include <game_project_1/system/movement.hpp>
 #include <game_project_1/system/physics.hpp>
 
-#include <game_project_1/base/base_player.hpp>
+#include <game_project_1/content/base_content.hpp>
+#include <game_project_1/game/areas.hpp>
+
 
 Server* Server::instance=nullptr;
 float Server::tick_interval=1;
@@ -79,8 +81,7 @@ void Server::Start(){
 
     save.LoadOrNew(server_config::save_name);
 
-
-    ServerInit_BasePak1();
+    BaseContent::LoadServer();
     Sleep(1000);//temp just so I can see the loading screen
 
     state=Server::READY;
@@ -88,7 +89,7 @@ void Server::Start(){
     if(Game::client != null){
         if(server_config::local_only){ServerNetwork::StartLocalOnly();}
         else{ServerNetwork::StartListener(max_players,true,server_config::default_port);}
-        Client::Signal({ClientSignalID::LOCAL_SERVER_READY,0,0,0});
+        Client::Signal({ClientSignalType::LOCAL_SERVER_READY,0,0,0});
     }
     else{
         ServerNetwork::StartListener(max_players,false,server_config::default_port);
@@ -162,7 +163,7 @@ void Server::UpdateScene(ServerScene* s,int frames){
         for(ServerEntity* entity:s->entities){
             if(entity->spawn_mode > 0)s->HandleSpawn(entity);
             if(entity->spawn_mode < 0)s->HandleDespawn(entity);
-            NPCController::FrameUpdate(entity);
+            NPCController::FrameUpdate(entity,s);
             Movement::Update(entity,tick_interval);
             Physics::ServerFrame(entity,s,tick_interval);
         }
@@ -184,9 +185,9 @@ ServerEntity* Server::TransitionPlayer(int from_area, int to_area, int entrance_
     if(SceneIsActive(to_area)){ to = GetActiveScene(to_area);}
     else{to = LoadScene(to_area);}
     if(to == null){
-        if(to_area != GameConstants::DEFAULT_SCENE){
+        if(to_area != Areas::error_room){
             logger::warnW(L"Level transition for player %S failed, moving to default scene.\n",players[player_slot].character_name);
-            return TransitionPlayer(to_area,GameConstants::DEFAULT_SCENE,0,player_slot);
+            return TransitionPlayer(to_area,Areas::error_room,0,player_slot);
         }
         else{
             logger::exceptionW(L"Failed to transition player %S to any scene!\n",players[player_slot].character_name);

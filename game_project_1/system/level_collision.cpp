@@ -3,8 +3,8 @@
 
 using namespace LevelCollision;
 
-Map<int,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
-Map<int,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
+Map<EntityClass,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
+Map<EntityClass,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
 
 
 void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
@@ -17,8 +17,8 @@ void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        if(ClientEntityClassCollisionHandlers.Has(e->entity_class_id)){
-            ClientHandlerCallback on_collide = ClientEntityClassCollisionHandlers.Get(e->entity_class_id);
+        if(ClientEntityClassCollisionHandlers.Has(e->type)){
+            ClientHandlerCallback on_collide = ClientEntityClassCollisionHandlers.Get(e->type);
             on_collide(e,collision_results[i],s);
         }
         collision_results[i].Clear();
@@ -35,8 +35,8 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        if(ServerEntityClassCollisionHandlers.Has(e->entity_class_id)){
-            ServerHandlerCallback on_collide = ServerEntityClassCollisionHandlers.Get(e->entity_class_id);
+        if(ServerEntityClassCollisionHandlers.Has(e->type)){
+            ServerHandlerCallback on_collide = ServerEntityClassCollisionHandlers.Get(e->type);
             on_collide(e,collision_results[i],s);
         }
         collision_results[i].Clear();
@@ -114,9 +114,9 @@ vec3 LevelCollision::HandleSolidStepCollisions(BaseEntity* e, vec3 step_movement
 }
 
 
-void LevelCollision::RegisterClientEntityClassCallbacks(int entity_class_id,ClientHandlerCallback client_callback){
-    ClientEntityClassCollisionHandlers.Add(entity_class_id,client_callback);
+void LevelCollision::RegisterClientEntityClassCallbacks(EntityClass type,ClientHandlerCallback client_callback){
+    ClientEntityClassCollisionHandlers.Add(type,client_callback);
 }
-void LevelCollision::RegisterServerEntityClassCallbacks(int entity_class_id,ServerHandlerCallback server_callback){
-    ServerEntityClassCollisionHandlers.Add(entity_class_id,server_callback);
+void LevelCollision::RegisterServerEntityClassCallbacks(EntityClass type,ServerHandlerCallback server_callback){
+    ServerEntityClassCollisionHandlers.Add(type,server_callback);
 }

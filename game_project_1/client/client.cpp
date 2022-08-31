@@ -9,7 +9,7 @@
 #include <game_project_1/system/physics.hpp>
 #include <game_project_1/system/movement.hpp>
 
-#include <game_project_1/base/base_player.hpp>
+#include <game_project_1/content/base_content.hpp>
 
 
 Client* Client::instance = nullptr;
@@ -65,7 +65,8 @@ void Client::Start(){
     FontID debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
     FontManager::SetActiveFont(debug_font);
 
-    ClientInit_BasePak1();
+    BaseContent::LoadClient();
+    
 
     ui.Load();
     ui.main_menu->Open();

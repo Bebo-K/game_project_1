@@ -72,12 +72,12 @@ void ClientSerializer::DeserializeSpawnEntities(ClientScene* scene, Payload payl
     int create_count = spawn_deserializer.GetInt();
     for(int i=0;i<create_count;i++){
         int entity_id = spawn_deserializer.GetInt();
-        int spawn_type_id = spawn_deserializer.GetInt();
+        int spawn_type = spawn_deserializer.GetInt();
         ClientEntity* entity = scene->GetEntity(entity_id);
         if(entity == nullptr){
             entity = scene->AddEntity(entity_id);
             entity->Deserialize(spawn_deserializer,payload.timestamp);
-            scene->SpawnEntity(entity,spawn_type_id);  
+            scene->SpawnEntity(entity,spawn_type);  
             if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
         }
         else{

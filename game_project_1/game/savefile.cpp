@@ -2,6 +2,7 @@
 #include <game_project_1/types/str.hpp>
 #include <game_project_1/log.hpp>
 #include <game_project_1/config.hpp>
+#include <game_project_1/game/areas.hpp>
 
 
 const char* SaveFile::savefile_extension = ".save";
@@ -372,8 +373,8 @@ SavePlayer* SaveFile::NewPlayer(int save_id){
     SavePlayer* new_player = players[players.length-1];
         new_player->save_id = save_id;
         new_player->character_global_id = 0;
-        new_player->last_scene =  GameConstants::STARTING_SCENE;
-        new_player->last_entrance =  GameConstants::STARTING_SCENE_ENTRANCE;
+        new_player->last_scene =  Areas::save_start_id;
+        new_player->last_entrance =  Areas::save_start_entrance;
     return new_player;
 }
 

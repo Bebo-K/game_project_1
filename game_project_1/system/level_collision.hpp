@@ -24,8 +24,8 @@ namespace LevelCollision {
 	void RunCollisionStep(BaseEntity* e, Array<MeshCollider> meshes,float step_delta,CollisionResult* list);
 	vec3 HandleSolidStepCollisions(BaseEntity* e, vec3 step_movement,CollisionResult* list);
 	
-	void RegisterClientEntityClassCallbacks(int entity_class_id,ClientHandlerCallback client_callback);
-	void RegisterServerEntityClassCallbacks(int entity_class_id,ServerHandlerCallback server_callback);
+	void RegisterClientEntityClassCallbacks(EntityClass type,ClientHandlerCallback client_callback);
+	void RegisterServerEntityClassCallbacks(EntityClass type,ServerHandlerCallback server_callback);
 };
 
 

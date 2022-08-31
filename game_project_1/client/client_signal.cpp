@@ -16,7 +16,7 @@ void ClientSignalHandler::Update(int frames){
     EventSignal signal = {0};
     while(client_signals.Read((byte*)&signal)){
         switch(signal.type){
-            case ClientSignalID::DISCONNECTED_FROM_SERVER:{
+            case ClientSignalType::DISCONNECTED_FROM_SERVER:{
                 int disconnect_code = signal.params[0].ival;
                 wchar* disconnect_reason = signal.params[1].strval;
                 if(disconnect_code < 0){
@@ -41,7 +41,7 @@ void ClientSignalHandler::Update(int frames){
                 }
                 if(Server::GetServer() != nullptr){Server::GetServer()->StartShutdown();}
                 break;}
-            case ClientSignalID::LOCAL_SERVER_READY:{
+            case ClientSignalType::LOCAL_SERVER_READY:{
                     logger::info("Local server is ready. Connecting...\n");
                     client->ui.loading_menu->SetStatusMessage(wstr::new_copy(L"Connecting to local server..."));
                     ClientNetwork::LocalConnect(config::player_persona,client->my_save_id);

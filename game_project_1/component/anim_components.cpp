@@ -2,7 +2,7 @@
 
 
 AnimationState::AnimationState(AnimationControllerType type){
-    type_id=type;
+    controller_type=type;
     anim_name=null;
 }
 

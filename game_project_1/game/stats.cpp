@@ -43,6 +43,14 @@ ActiveStats::ActiveStats(BaseStats* base){
     agility = base->agility;
     intelligence = base->intelligence;
 }
+void ActiveStats::ResetFromBase(BaseStats* base){
+    hp = base->max_hp;
+    mp = base->max_hp;
+    strength = base->strength;
+    agility = base->agility;
+    intelligence = base->intelligence;
+}
+int ActiveStats::SerializedLength(){return sizeof(ActiveStats);}
 
 CharacterAppearance::CharacterAppearance(){
     style1=0;style2=0;style3=0;

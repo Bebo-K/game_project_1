@@ -46,7 +46,7 @@ class ClientScene{
     void SetPlayerControl(int eid);
     bool OnInput(Input::Event input);
 
-    static void RegisterEntityBuilder(int entity_class_id, ClientEntityBuilder builder);
+    static void RegisterEntityBuilder(EntityClass type, ClientEntityBuilder builder);
 };
 
 

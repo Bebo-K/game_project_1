@@ -8,7 +8,7 @@
 
 class PlayerInput{
     public:
-    ClientEntity* target;
+    ClientEntity* player;
     Camera* camera;
     
     PlayerInput();
