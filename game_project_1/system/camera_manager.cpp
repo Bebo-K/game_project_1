@@ -11,10 +11,10 @@ CameraManager::CameraManager(){
     rotation_goal=0;
 	zoom_goal=0;
 
-	offset={0,2,4};
+	offset={0,1,0};
     rotation.clear();
-    zoom=0;
-	zoom_range = {5,30};
+	zoom_range = {10,30};
+    zoom = zoom_range.a;
 	zoom_pitch = {-20,-45};
 }
 
@@ -43,13 +43,15 @@ void CameraManager::Update(float delta){
 
 void CameraManager::PreDraw(){
     if(target != null && camera != null){
-        vec3 rotated_offset = offset;
-        rotated_offset.rotate_y(camera->turn);
-
-        camera->x = target->x + rotated_offset.x;
-        camera->y = target->y + rotated_offset.y;
-        camera->z = target->z + rotated_offset.z;
+        vec3 camera_offset = {0,0,zoom};
         camera->pitch = zoom_pitch.ScaleTo(zoom,zoom_range);
+        camera_offset.rotate_x(-camera->pitch);
+        camera_offset = camera_offset+ offset;
+        camera_offset.rotate_y(camera->turn);
+
+        camera->x = target->x + camera_offset.x;
+        camera->y = target->y + camera_offset.y;
+        camera->z = target->z + camera_offset.z;
     }
 }
 
