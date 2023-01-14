@@ -87,11 +87,7 @@ void ColliderSet::Copy(ColliderSet* c2){
     }
 }
 
-MovementData::MovementData():move_goal(0,0,0){
-    lock_move=false;
-    lock_jump=false;
-    lock_action=false;
-
+MoveParams::MoveParams(){
 	base_speed = 1.0f;
 	jump_speed = 20.0f;
 
@@ -101,88 +97,34 @@ MovementData::MovementData():move_goal(0,0,0){
     jump_accel_speed = 20.0f;
     
 	multiplier = 1.0f;
-
-	can_move = true;
-	is_moving = false;
-	//move_goal = {0,0,0};
-
-	can_jump = true;
-	is_jumping = false;
-	jump_goal = false;
-
-    can_action = true;
-    is_action = false;
-    action_goal = false;
 }
-MovementData::~MovementData(){}
-int MovementData::SerializedLength(){
-    return sizeof(float)*9 + sizeof(int);
+MoveParams::~MoveParams(){}
+int MoveParams::SerializedLength(){
+    return sizeof(float)*6;
 }
-void MovementData::Read(Deserializer& dat){
+void MoveParams::Read(Deserializer& dat){
     base_speed = dat.GetFloat();
     jump_speed = dat.GetFloat();
     jump_hold_boost = dat.GetFloat();
     accel_speed = dat.GetFloat();
     jump_accel_speed = dat.GetFloat();
     multiplier = dat.GetFloat();
-    move_goal={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
-
-    int flags = dat.GetInt();
-    lock_move= (flags & 1) > 0;
-    lock_jump= (flags & 2) > 0;
-    lock_action= (flags & 4) > 0;
-    can_move= (flags & 8) > 0;
-    is_moving= (flags & 16) > 0;
-    can_jump= (flags & 32) > 0;
-    is_jumping= (flags & 64) > 0;
-    jump_goal= (flags & 128) > 0;
-    can_action= (flags & 256) > 0;
-    is_action= (flags & 512) > 0;
-    action_goal= (flags & 1024) > 0;
 }
-void MovementData::Write(Serializer& dat){
+void MoveParams::Write(Serializer& dat){
     dat.PutFloat(base_speed);
     dat.PutFloat(jump_speed);
     dat.PutFloat(jump_hold_boost);
     dat.PutFloat(accel_speed);
     dat.PutFloat(jump_accel_speed);
     dat.PutFloat(multiplier);
-    dat.PutFloat(move_goal.x);dat.PutFloat(move_goal.y);dat.PutFloat(move_goal.z);
-
-    int flags =0;
-    if(lock_move){flags |= 1;}
-    if(lock_jump){flags |= 2;}
-    if(lock_action){flags |= 4;}
-    if(can_move){flags |= 8;}
-    if(is_moving){flags |= 16;}
-    if(can_jump){flags |= 32;}
-    if(is_jumping){flags |= 64;}
-    if(jump_goal){flags |= 128;}
-    if(can_action){flags |= 256;}
-    if(is_action){flags |= 512;}
-    if(action_goal){flags |= 1024;}
-
-    dat.PutInt(flags);
 }
-void MovementData::Copy(MovementData* p2){
-    lock_move=p2->lock_move;
-    lock_jump=p2->lock_jump;
-    lock_action=p2->lock_action;
+void MoveParams::Copy(MoveParams* p2){
     base_speed=p2->base_speed;
     jump_speed=p2->jump_speed;
     jump_hold_boost=p2->jump_hold_boost;
     accel_speed=p2->accel_speed;
     jump_accel_speed=p2->jump_accel_speed;
     multiplier=p2->multiplier;
-    can_move=p2->can_move;
-    is_moving=p2->is_moving;
-    move_goal=p2->move_goal;
-    can_jump=p2->can_jump;
-    is_jumping=p2->is_jumping;
-    jump_goal=p2->jump_goal;
-    can_action=p2->can_action;
-    is_action=p2->is_action;
-    action_goal=p2->action_goal;
 }
 
-float MovementData::MaxSpeed(){return base_speed*multiplier;}
+float MoveParams::MaxSpeed(){return base_speed*multiplier;}

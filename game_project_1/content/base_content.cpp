@@ -9,7 +9,7 @@
 using namespace BaseContent;
 void BaseContent::LoadClient(){
     Areas::RegisterMapName(1,"default");
-    ModelManager::Register(HUMAN_1,"default_human");
+    ModelManager::Register(HUMAN_1,"human");
     ClientScene::RegisterEntityBuilder(HUMANOID,HumanoidClientBuilder);
     LevelCollision::RegisterClientEntityClassCallbacks(HUMANOID,HumanoidLevelClientCollisionHandler);
     EntityCollision::RegisterClientEntityClassCallbacks({HUMANOID,0},HumanoidEntityClientCollisionHandler);

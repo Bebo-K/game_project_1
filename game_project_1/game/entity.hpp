@@ -5,7 +5,7 @@
 #include <game_project_1/component/phys_components.hpp>
 #include <game_project_1/component/logic_components.hpp>
 #include <game_project_1/component/anim_components.hpp>
-#include <game_project_1/component/state.hpp>
+#include <game_project_1/component/state_components.hpp>
 #include <game_project_1/io/serializer.hpp>
 
 
@@ -43,8 +43,9 @@ class BaseEntity{
     //nullable
     PhysBody*       phys_data;
     ColliderSet*    colliders;
-    MovementData*   movement;
-    State*          state;
+    MovementState*  move_state;
+    ActionState*    action_state;
+    MoveParams*     movement;
     StatBlock*      stats;
     Equip*          equip;
     Inventory*      inventory;

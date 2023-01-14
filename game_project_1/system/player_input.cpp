@@ -48,8 +48,6 @@ bool PlayerInput::HandleJumpingInput(){
 
 bool PlayerInput::HandleActionInput(){
     if(player == nullptr)return false;
-    if(player->movement->lock_jump){return false;}
-    if(!player->movement->can_jump){return true;}
 
     player->movement->action_goal=Controller::GetButton(Controller::B).IsJustPressed();
     return true;

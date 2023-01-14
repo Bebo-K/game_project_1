@@ -7,6 +7,7 @@
 #include <game_project_1/phys/collider.hpp>
 #include <game_project_1/io/serializer.hpp>
 
+//Component for entities that physics act upon
 class PhysBody{
     public:
     Ellipse_t world_hitsphere;
@@ -18,8 +19,6 @@ class PhysBody{
 	float	midair_velocity_damper = 0.75f;
 	float	ground_velocity_damper = 0.9999f;
 	float	y_velocity_damper = 0;
-	bool	is_midair	=	false;
-	bool    out_of_bounds = false;
 
     PhysBody();
     ~PhysBody();
@@ -39,6 +38,7 @@ class PhysBody{
     void Copy(PhysBody* p2);
 };
 
+//Component container for hitboxes
 class ColliderSet : public Pool<ShapeCollider>{
     public:
     float bounds_xz;
@@ -51,12 +51,9 @@ class ColliderSet : public Pool<ShapeCollider>{
     void Copy(ColliderSet* p2);
 };
 
-class MovementData{
+//Information about how an entity can move: move/jump speeds, run/walk, etc. 
+class MoveParams{
 	public:
-    bool    lock_move;
-    bool    lock_jump;
-    bool    lock_action;
-
     float	base_speed;
     float	jump_speed;
 
@@ -67,30 +64,16 @@ class MovementData{
 
     float	multiplier;
 
-    bool	can_move;
-    bool	is_moving;
-    vec3	move_goal;
-
-    bool	can_jump;
-    bool	is_jumping;
-    bool	jump_goal;
-
-    bool    can_action;
-    bool    is_action;
-    bool    action_goal;
 
     float MaxSpeed();
 
-    MovementData();
-    ~MovementData();
+    MoveParams();
+    ~MoveParams();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(MovementData* p2);
+    void Copy(MoveParams* p2);
 };
-
-
-
 
 #endif
