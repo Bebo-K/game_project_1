@@ -1,8 +1,7 @@
-#include "game_project_1/net/server_serializer.hpp"
+#include <game_project_1/net/server_serializer.hpp>
+#include <game_project_1/game/entity_serializer.hpp>
 
-
-int server_delta_client_mask = ~(1 << ComponentChunk::INVENTORY);
-
+ComponentMask server_delta_client_mask = ~(1 << 11/*Inventory*/);
 
 Payload ServerSerializer::FullScene(Player* player_for,ServerScene* scene){
     int scene_size = sizeof(int)*3;//area_id, player_entity, num_entities
@@ -10,10 +9,10 @@ Payload ServerSerializer::FullScene(Player* player_for,ServerScene* scene){
     int client_visible_entity_mask;
 
     for(ServerEntity* e:scene->entities){//First loop through to count entities and size
-        client_visible_entity_mask = e->AllExistingComponents() & server_delta_client_mask;
+        client_visible_entity_mask = EntitySerializer::AllExistingComponents(e) & server_delta_client_mask;
         if(client_visible_entity_mask){
             scene_size += sizeof(int);//id
-            scene_size += e->SerializedLength(client_visible_entity_mask);
+            scene_size += EntitySerializer::SerializedLength(e,client_visible_entity_mask);
             current_entities++;
         }
     }
@@ -25,10 +24,10 @@ Payload ServerSerializer::FullScene(Player* player_for,ServerScene* scene){
     scene_serializer.PutInt(current_entities);
 
     for(ServerEntity* e:scene->entities){//Second loop to populate with spawn info
-        client_visible_entity_mask = e->AllExistingComponents() & server_delta_client_mask;
+        client_visible_entity_mask = EntitySerializer::AllExistingComponents(e) & server_delta_client_mask;
         if(client_visible_entity_mask){//Update
             scene_serializer.PutInt(e->id);
-            e->Serialize(client_visible_entity_mask,scene_serializer);
+            EntitySerializer::Serialize(e,client_visible_entity_mask,scene_serializer);
         }
     }
     return scene_payload;
@@ -41,8 +40,8 @@ Payload ServerSerializer::SceneNewEntities(ServerScene* scene){
 
     for(ServerEntity* e:scene->just_spawned){//First loop through to count spawned entities and size
         spawn_size += sizeof(int)*2;//id, spawn_type
-        client_visible_spawn_mask = e->AllExistingComponents() & server_delta_client_mask;
-        spawn_size += e->SerializedLength(client_visible_spawn_mask);
+        client_visible_spawn_mask = EntitySerializer::AllExistingComponents(e) & server_delta_client_mask;
+        spawn_size += EntitySerializer::SerializedLength(e,client_visible_spawn_mask);
         spawned_entities++;
     }
     if(spawned_entities==0){return Payload(PacketID::SPWN,0,0);}
@@ -53,10 +52,10 @@ Payload ServerSerializer::SceneNewEntities(ServerScene* scene){
     spawn_serializer.PutInt(spawned_entities);
 
     for(ServerEntity* e:scene->just_spawned){//Second loop to populate with spawn info
-        client_visible_spawn_mask = e->AllExistingComponents() & server_delta_client_mask;
+        client_visible_spawn_mask = EntitySerializer::AllExistingComponents(e) & server_delta_client_mask;
         spawn_serializer.PutInt(e->id);
         spawn_serializer.PutInt(e->spawn_mode);
-        e->Serialize(client_visible_spawn_mask,spawn_serializer);
+        EntitySerializer::Serialize(e,client_visible_spawn_mask,spawn_serializer);
         e->spawn_mode=0;
     }
     scene->just_spawned.Clear();
@@ -91,7 +90,7 @@ Payload ServerSerializer::SceneDelta(ServerScene* scene){
         client_visible_delta_mask = e->delta_mask & server_delta_client_mask;
         if(client_visible_delta_mask){
             delta_size += sizeof(int);//id
-            delta_size += e->SerializedLength(client_visible_delta_mask);
+            delta_size += EntitySerializer::SerializedLength(e,client_visible_delta_mask);
             updated_entities++;
         }
     }
@@ -106,7 +105,7 @@ Payload ServerSerializer::SceneDelta(ServerScene* scene){
         client_visible_delta_mask = e->delta_mask & server_delta_client_mask;
         if(client_visible_delta_mask){//Update
             delta_serializer.PutInt(e->id);
-            e->Serialize(client_visible_delta_mask,delta_serializer);
+            EntitySerializer::Serialize(e,client_visible_delta_mask,delta_serializer);
             e->delta_mask=0;
         }
     }
@@ -121,6 +120,6 @@ void ServerSerializer::DeserializeClientDelta(Player* player_from,ServerScene* s
         logger::warn("Client is sending a delta for an entity they're not. Ours:%d Theirs:%d\n",player_from->entity_id,entity_id);
     }
     ServerEntity* player_entity = scene->GetEntity(entity_id);
-    player_entity->Deserialize(player_delta,payload.timestamp);
+    EntitySerializer::Deserialize(player_entity,player_delta,payload.timestamp);
 }
 

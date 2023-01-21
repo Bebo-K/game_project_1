@@ -1,12 +1,13 @@
-#include "game_project_1/net/client_serializer.hpp"
-#include "game_project_1/io/serializer.hpp"
-#include "game_project_1/game/spawn.hpp"
+#include <game_project_1/net/client_serializer.hpp>
+#include <game_project_1/io/serializer.hpp>
+#include <game_project_1/game/spawn.hpp>
+#include <game_project_1/game/entity_serializer.hpp>
 
-
-ComponentChunk::Mask player_delta_mask =
-    (1 << ComponentChunk::POSITION) | 
-    (1 << ComponentChunk::MOVE) | 
-    (1 << ComponentChunk::STATE);
+ComponentMask player_delta_mask =
+    (1 << 1) | //Position
+    (1 << 5) | //Phys state
+    (1 << 6) | //Move state
+    (1 << 7);  //Action state
 
 Client* client;
 byte delta_buffer[Datagram::MAX_DATA_LENGTH];
@@ -15,7 +16,7 @@ void ClientSerializer::Init(Client* c){client=c;}
 void ClientSerializer::Free(){client=nullptr;}
 
 Payload ClientSerializer::ClientDelta(ClientEntity* entity){
-    int entity_len = entity->SerializedLength(player_delta_mask);
+    int entity_len = EntitySerializer::SerializedLength(entity,player_delta_mask);
     if(entity_len == 0){return Payload(PacketID::CDLT,0,nullptr);}
     int delta_length = sizeof(int) + entity_len;
 
@@ -23,7 +24,7 @@ Payload ClientSerializer::ClientDelta(ClientEntity* entity){
 
     Serializer delta_data(ret.data,ret.length);
         delta_data.PutInt(entity->id);
-        entity->Serialize(player_delta_mask,delta_data);
+        EntitySerializer::Serialize(entity,player_delta_mask,delta_data);
 
     return ret;
 }
@@ -39,7 +40,7 @@ void ClientSerializer::DeserializeNewScene(ClientScene* scene, Payload payload){
     int entity_count = scene_deserializer.GetInt();
     for(int i=0;i<entity_count;i++){
         ClientEntity* new_entity = scene->AddEntity(scene_deserializer.GetInt());
-        new_entity->Deserialize(scene_deserializer,payload.timestamp);
+        EntitySerializer::Deserialize(new_entity,scene_deserializer,payload.timestamp);
         scene->SpawnEntity(new_entity,SpawnType::APPEAR);
         if(new_entity->id == me->entity_id){client->OnSpawnPlayer(new_entity);}
     }
@@ -54,15 +55,15 @@ void ClientSerializer::DeserializeServerDelta(ClientScene* scene, Payload payloa
         if(e != null){
             if(e->id == client->Me()->entity_id){
                 //TODO: reconcile server/client 
-                e->Skip(delta_deserializer);//don't overwrite my player
+                EntitySerializer::Skip(delta_deserializer);//don't overwrite my player
             }
             else{
-                e->Deserialize(delta_deserializer,payload.timestamp);
+                EntitySerializer::Deserialize(e,delta_deserializer,payload.timestamp);
             }
         }
         else{
             ClientEntity* temp_entity = scene->AddEntity(entity_id);
-            temp_entity->Deserialize(delta_deserializer,payload.timestamp);
+            EntitySerializer::Deserialize(temp_entity,delta_deserializer,payload.timestamp);
         }
     }
 }
@@ -76,13 +77,13 @@ void ClientSerializer::DeserializeSpawnEntities(ClientScene* scene, Payload payl
         ClientEntity* entity = scene->GetEntity(entity_id);
         if(entity == nullptr){
             entity = scene->AddEntity(entity_id);
-            entity->Deserialize(spawn_deserializer,payload.timestamp);
+            EntitySerializer::Deserialize(entity,spawn_deserializer,payload.timestamp);
             scene->SpawnEntity(entity,spawn_type);  
             if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
         }
         else{
             logger::debug("Entity ID collision on spawn: %d\n",entity_id);
-            entity->Skip(spawn_deserializer);
+            EntitySerializer::Skip(spawn_deserializer);
         }
     }
 }

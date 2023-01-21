@@ -10,8 +10,8 @@ void BaseContent::NPCController_Wander(ServerEntity* e, ServerScene* s){
         npc_state->init=true;
     }
     e->npc_state->action_counter++;
-    if(e->movement != null){
-        MovementData* move = e->movement;
+    if(e->move_state){
+        MovementState* move = e->move_state;
         move->move_goal = vec3(0,0,-1);
         move->move_goal.rotate_y(e->npc_state->action_counter);
 

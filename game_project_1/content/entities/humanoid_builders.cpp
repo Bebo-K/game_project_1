@@ -20,8 +20,6 @@ void HumanoidClientBuilder(ClientEntity* entity, ClientScene* scene){
 }
 
 void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
-    if(entity->state == null){entity->state = new State();entity->state->Set(IDLE);}
-
     int race_id = Dice::RollRange(0,Races::Max);
     int class_id = Dice::RollRange(0,Classes::Max);
 
@@ -37,16 +35,30 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
     Race my_race = Races::GetRaceByID(race_id);
     Class my_class = Classes::GetClassByID(class_id);
 
+    if(entity->phys_state == null){
+        entity->phys_state = new PhysicsState();
+    }
+    if(entity->move_state == null){
+        entity->move_state = new MovementState();
+        entity->move_state->current_movement = MovementTypeID::IDLE;
+    }
+    if(entity->action_state == null){
+        entity->action_state = new ActionState();
+    }
     if(entity->stats == null){
         entity->stats = new StatBlock(1);
         entity->stats->base_stats.Copy(&my_race.stat_base);
         entity->stats->base_stats.Add(&my_class.stat_bonus);
         entity->stats->base_stats.AddRandomizedBonus(4); 
     }
-    if(entity->phys_data == null){
-        entity->phys_data = new PhysBody();
-        entity->phys_data->world_hitsphere.height=my_race.hitsphere_height;
-        entity->phys_data->world_hitsphere.height=my_race.hitsphere_radius;
+    if(entity->phys_props == null){
+        entity->phys_props = new PhysicsProperties();
+        entity->phys_props->world_hitsphere.height=my_race.hitsphere_height;
+        entity->phys_props->world_hitsphere.height=my_race.hitsphere_radius;
+    }
+    if(entity->move_props == null){
+        entity->move_props = new MoveProperties();
+        entity->move_props->base_speed=10;
     }
     if(entity->colliders == null){
         entity->colliders = new ColliderSet();
@@ -57,8 +69,4 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
     
     if(entity->equip == null){entity->equip = new Equip();}
     if(entity->inventory == null){entity->inventory = new Inventory();}
-    if(entity->movement == null){
-        entity->movement = new MovementData();
-        entity->movement->base_speed=10;
-    }
 }

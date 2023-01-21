@@ -1,6 +1,5 @@
 #include <game_project_1/game/entity.hpp>
 
-using namespace ComponentChunk;
 
 vec3 BaseEntity::GetPos(){return {x,y,z};}
 Location BaseEntity::GetLocation(){
@@ -12,263 +11,171 @@ float BaseEntity::GetTurnAngle(){return rotation.y;}
 BaseEntity::BaseEntity(int entity_id){
     id =entity_id;
     type =0;
-    for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=0;}
     name=nullptr;
     x=y=z=0;
     velocity={0,0,0};
     scale ={1,1,1};
     rotation = {0,0,0};
-  
-    phys_data=null;
-    colliders=null;
-    movement=null;
-    state=null;
-    stats=null;
-    equip=null;
-    inventory=null;
-    char_data=null;
+
+    phys_props = null;
+    move_props = null;
+    //action_props = null;
+    phys_state = null;
+    move_state = null;
+    action_state = null;
+    colliders = null;
+    stats = null;
+    equip = null;
+    inventory = null;
+    char_data = null;
+
+    for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=0;}
 }
 BaseEntity::~BaseEntity(){
     Clear();
 }
 
+void BaseEntity::Duplicate(BaseEntity* copy){
+    Clear();
+    type = copy->type;
+    name= wstr::new_copy(copy->name);
+    x=copy->x; y=copy->y; z=copy->z;
+    velocity= copy->velocity;
+    scale = copy->scale;
+    rotation = copy->rotation;
+
+    if(copy->phys_props)phys_props = new PhysicsProperties(copy->phys_props);
+    if(copy->move_props)move_props = new MoveProperties(copy->move_props);
+    //if(copy->phys_props)to->action_props = new ActionProperties(copy->action_props);
+    if(copy->phys_state)phys_state = new PhysicsState(copy->phys_state);
+    if(copy->move_state)move_state = new MovementState(copy->move_state);
+    if(copy->action_state)action_state = new ActionState(copy->action_state);
+    if(copy->colliders)colliders = new ColliderSet(copy->colliders);
+    if(copy->stats)stats = new StatBlock(copy->stats);
+    if(copy->equip)equip = new Equip(copy->equip);
+    if(copy->inventory)inventory = new Inventory(copy->inventory);
+    if(copy->char_data)char_data = new Character(copy->char_data);
+
+    for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=copy->last_update[i];}
+}
+
 void BaseEntity::Clear(){
+    id = 0;
+    type = 0;
     if(name != nullptr){free(name);name=nullptr;}
-    if(phys_data != nullptr){delete phys_data;phys_data=nullptr;}
-    if(colliders != nullptr){delete colliders;colliders=nullptr;}
-    if(movement != nullptr){delete movement;movement=nullptr;}
-    if(state != nullptr){delete state;state=nullptr;}
-    if(stats != nullptr){delete stats;stats=nullptr;}
-    if(equip != nullptr){delete equip;equip=nullptr;}
-    if(inventory != nullptr){delete inventory;inventory=nullptr;}
-    if(char_data != nullptr){delete char_data;char_data=nullptr;}
+    x=y=z=0;
+    velocity={0,0,0};
+    scale ={1,1,1};
+    rotation = {0,0,0};
+
+    if(phys_props != nullptr){free(phys_props);phys_props=nullptr;}
+    if(move_props  != nullptr){free(move_props);move_props=nullptr;}
+    //if(move_props != nullptr){free(move_props);move_props=nullptr;}
+    if(phys_state != nullptr){free(phys_state);phys_state=nullptr;}
+    if(move_state != nullptr){free(move_state);move_state=nullptr;}
+    if(action_state != nullptr){free(action_state);action_state=nullptr;}
+    if(colliders != nullptr){free(colliders);colliders=nullptr;}
+    if(stats != nullptr){free(stats);stats=nullptr;}
+    if(equip != nullptr){free(equip);equip=nullptr;}
+    if(inventory != nullptr){free(inventory);inventory=nullptr;}
+    if(char_data != nullptr){free(char_data);char_data=nullptr;}
+
+    for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=0;}
 }
 
-int BaseEntity::SerializedLength(Mask delta_mask){
-    Mask write_mask = delta_mask & AllExistingComponents();
-    Mask chunk_mask = 1;
-    int length = sizeof(Mask);
-    for(int i=0;i<COMPONENT_COUNT;i++){
-        if(chunk_mask & write_mask){
-            length += sizeof(int) + ChunkLength((ID)i);
-        }
-        chunk_mask = chunk_mask << 1;
-    }
-    return length;
-}
-void BaseEntity::Serialize(Mask delta_mask,Serializer& dat){
-    Mask write_mask = delta_mask & AllExistingComponents();
-    Mask chunk_mask = 1;
-    dat.PutInt(write_mask);
-    for(int i=0;i<COMPONENT_COUNT;i++){
-        if(chunk_mask & write_mask){
-            int chunk_len = ChunkLength((ID)i);
-            dat.PutInt(chunk_len);
-            int start_place = dat.place;
-            WriteChunk((ID)i,dat);
-            if(start_place+chunk_len != dat.place){
-                logger::exception("Serialization failed for entity ID %d, expected %d, was %d\n",id,chunk_len,dat.place-start_place);
-            }
-        }
-        chunk_mask = chunk_mask << 1;
-    }
-}
-void BaseEntity::Deserialize(Deserializer& dat,int timestamp){
-    Mask read_mask = dat.GetInt();
-    Mask chunk_mask = 1;
-    for(int i=0;i<COMPONENT_COUNT;i++){
-        if(chunk_mask & read_mask){
-            if(last_update[i] <= timestamp){
-                int chunk_len = dat.GetInt();//chunk_length
-                int start_place = dat.place;
-                ReadChunk((ID)i,dat);
-                if(dat.place-start_place != chunk_len){
-                    logger::exception("Deserialization failed for entity ID %d, expected %d, was %d\n",id,chunk_len,dat.place-start_place); 
-                }
-                last_update[i] = timestamp;
-            }
-            else{
-                dat.place+=dat.GetInt();
-            }
-        }
-        chunk_mask = chunk_mask << 1;
+bool BaseEntity::HasComponent(int component_id){
+    switch (component_id){
+        case  0:
+        case  1:{return true;}
+        case  2:{return phys_props != null;}
+        case  3:{return move_props != null;} 
+        case  4:{return false;} 
+        case  5:{return phys_state != null;} 
+        case  6:{return move_state != null;} 
+        case  7:{return action_state != null;} 
+        case  8:{return colliders != null;} 
+        case  9:{return stats != null;} 
+        case 10:{return equip != null;} 
+        case 11:{return inventory != null;} 
+        case 12:{return char_data != null;}  
+        default: return false;
     }
 }
 
-void BaseEntity::Skip(Deserializer& dat){//discard all serialized chunks for this entity
-    Mask read_mask = dat.GetInt();
-    Mask chunk_mask = 1;
-    for(int i=0;i<COMPONENT_COUNT;i++){
-        if((chunk_mask & read_mask)){dat.place+=dat.GetInt();}
-        chunk_mask = chunk_mask << 1;
+int BaseEntity::ComponentSize(int component_id){
+    switch (component_id){
+        case  0:{return sizeof(int) + (wstr::len(name)+1)*sizeof(wchar);}
+        case  1:{return sizeof(vec3)*4;}
+        case  2:{return phys_props->SerializedLength();}
+        case  3:{return move_props->SerializedLength();} 
+        case  4:{return 0;} 
+        case  5:{return phys_state->SerializedLength();} 
+        case  6:{return move_state->SerializedLength();} 
+        case  7:{return action_state->SerializedLength();} 
+        case  8:{return colliders->SerializedLength();} 
+        case  9:{return stats->SerializedLength();} 
+        case 10:{return equip->SerializedLength();} 
+        case 11:{return inventory->SerializedLength();} 
+        case 12:{return char_data->SerializedLength();}  
+        default: return 0;
     }
 }
 
-int BaseEntity::ChunkLength(ID ChunkID){
-    switch (ChunkID){
-    case POSITION:return sizeof(vec3)*4 + 1;
-    case MOVE:return movement->SerializedLength();
-    case STATE:return state->SerializedLength();
-    case PHYS:return phys_data->SerializedLength();
-    case COLLIDERS:return colliders->SerializedLength();
-    case IDS:return sizeof(int) + (wstr::len(name)+1)*sizeof(wchar);
-    case STATS:return stats->SerializedLength();
-    case EQUIP:return equip->SerializedLength();
-    case INVENTORY:return inventory->SerializedLength();
-    case CHARACTER:return char_data->SerializedLength();
-    default: break;
-    }
-    return 0;
-}
-void BaseEntity::WriteChunk(ID ChunkID,Serializer& dat){
-    switch (ChunkID){
-    case POSITION:{
+void BaseEntity::WriteComponent(int component_id,Serializer& dat){
+    switch (component_id){
+    case  0:{
+        dat.PutInt(type);
+        dat.PutWString(name);
+        break;}
+    case  1:{
         dat.PutFloat(x);dat.PutFloat(y);dat.PutFloat(z);
         dat.PutFloat(rotation.x);dat.PutFloat(rotation.y);dat.PutFloat(rotation.z);
         dat.PutFloat(scale.x);dat.PutFloat(scale.y);dat.PutFloat(scale.z);
         dat.PutFloat(velocity.x);dat.PutFloat(velocity.y);dat.PutFloat(velocity.z);
-        byte is_midair=0;
-        if(phys_data != null){is_midair = phys_data->is_midair?1:0;}
-        dat.PutByte(is_midair);
         break;}
-    case MOVE:{
-        movement->Write(dat);
-        break;}
-    case STATE:{
-        state->Write(dat);
-        break;}
-    case PHYS:{
-        phys_data->Write(dat);
-        break;}
-    case COLLIDERS:{
-        colliders->Write(dat);
-        break;}
-    case IDS:{
-        dat.PutInt(type);
-        dat.PutWString(name);
-        break;}
-    case STATS:{
-        stats->Write(dat);
-        break;}
-    case EQUIP:{
-        equip->Write(dat);
-        break;}
-    case INVENTORY:{
-        inventory->Write(dat);
-        break;}
-    case CHARACTER:{
-        char_data->Write(dat);
-        break;}
+    case  2:{phys_props->Write(dat);break;}
+    case  3:{move_props->Write(dat);break;} 
+    case  4:{break;} 
+    case  5:{phys_state->Write(dat);break;} 
+    case  6:{move_state->Write(dat);break;} 
+    case  7:{action_state->Write(dat);break;} 
+    case  8:{colliders->Write(dat);break;} 
+    case  9:{stats->Write(dat);break;} 
+    case 10:{equip->Write(dat);break;} 
+    case 11:{inventory->Write(dat);break;} 
+    case 12:{char_data->Write(dat);break;}  
     default: break;
     }
 }
-void BaseEntity::ReadChunk(ID ChunkID,Deserializer& dat){
-    switch (ChunkID){
-    case POSITION:{
+
+void BaseEntity::ReadComponent(int component_id,Deserializer& dat){
+    switch (component_id){
+    case  0:{
+        type=dat.GetInt(); 
+        name=dat.GetWString();
+        break;}
+    case  1:{
         x=dat.GetFloat();y=dat.GetFloat();z=dat.GetFloat();
         rotation={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
         scale={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
         velocity={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
-        bool midair = (dat.GetByte() > 0);
-        if(phys_data != null){phys_data->is_midair = midair;}
         break;}
-    case MOVE:{
-        if(movement == null){movement = new MovementData();}
-        movement->Read(dat);
-        break;}
-    case STATE:{
-        if(state == null){state = new State();}
-        state->Read(dat);
-        break;}
-    case PHYS:{
-        if(phys_data == null){phys_data = new PhysBody();}
-        phys_data->Read(dat);
-        break;}
-    case COLLIDERS:{
-        if(colliders == null){colliders = new ColliderSet();}
-        colliders->Read(dat);
-        break;}
-    case IDS:{
-        type=dat.GetInt(); 
-        name=dat.GetWString();
-        break;}
-    case STATS:{
-        if(stats == null){stats = new StatBlock();}
-        stats->Read(dat);
-        break;}
-    case EQUIP:{
-        if(equip== null){equip = new Equip();}
-        equip->Read(dat);
-        break;}
-    case INVENTORY:{
-        if(inventory == null){inventory = new Inventory();}
-        inventory->Read(dat);
-        break;}
-    case CHARACTER:{
-        if(char_data == null){char_data = new Character();}
-        char_data->Read(dat);
-        break;}
+    case  2:{if(!phys_props){phys_props = new PhysicsProperties();} phys_props->Read(dat);break;}
+    case  3:{if(!move_props){move_props = new MoveProperties();} move_props->Read(dat);break;} 
+    case  4:{break;} 
+    case  5:{if(!phys_state){phys_state = new PhysicsState();} phys_state->Read(dat);break;} 
+    case  6:{if(!move_state){move_state = new MovementState();} move_state->Read(dat);break;} 
+    case  7:{if(!action_state){action_state = new ActionState();} action_state->Read(dat);break;} 
+    case  8:{if(!colliders){colliders = new ColliderSet();} colliders->Read(dat);break;} 
+    case  9:{if(!stats){stats = new StatBlock();} stats->Read(dat);break;} 
+    case 10:{if(!equip){equip = new Equip();} equip->Read(dat);break;} 
+    case 11:{if(!inventory){inventory = new Inventory();} inventory->Read(dat);break;} 
+    case 12:{if(!char_data){char_data = new Character();} char_data->Read(dat);break;}  
     default: break;
     }
 }
 
-Mask BaseEntity::AllExistingComponents(){//Mask needed to create all non-null components
-    int mask = BASIC_COMPONENTS;
-    if(movement != null){mask |=  1 << MOVE;}
-    if(state != null){mask |= 1 << STATE;}
-    if(phys_data != null){mask |= 1 << PHYS;}
-    if(colliders != null){mask |= 1 << COLLIDERS;}
-    if(stats != null){mask |= 1 << STATS;}
-    if(equip != null){mask |= 1 << EQUIP;}
-    if(inventory != null){mask |= 1 << INVENTORY;}
-    if(char_data != null){mask |= 1 << CHARACTER;}
-    return mask;
-}
 
-void BaseEntity::CopyFrom(BaseEntity* e){//Deep entity copy
-    Clear();
-    id=e->id;
-    type=e->type;
-    for(int i=0;i<COMPONENT_COUNT;i++){last_update[i]=e->last_update[i];}
-    name = wstr::new_copy(e->name);
-    x=e->x;y=e->y;z=e->z;
-    velocity=e->velocity;
-    scale=e->scale;
-    rotation=e->rotation;
-
-    if(e->phys_data != null){
-        phys_data = new PhysBody();
-        phys_data->Copy(e->phys_data);
-    }
-    if(e->colliders != null){
-        colliders = new ColliderSet();
-        colliders->Copy(e->colliders);
-    }
-    if(e->movement != null){
-        movement = new MovementData();
-        movement->Copy(e->movement);
-    }
-    if(e->state != null){
-        state = new State();
-        state->Copy(e->state);
-    }
-    if(e->stats != null){
-        stats = new StatBlock();
-        stats->Copy(e->stats);
-    }
-    if(e->equip != null){
-        equip = new Equip();
-        equip->Copy(e->equip);
-    }
-    if(e->inventory != null){
-        inventory = new Inventory();
-        inventory->Copy(e->inventory);
-    }
-    if(e->char_data != null){
-        char_data = new Character();
-        char_data->Copy(e->char_data);
-    }
-}
 
 ClientEntity::ClientEntity(int entity_id):BaseEntity(entity_id){
     models=null;
@@ -280,7 +187,7 @@ ClientEntity::~ClientEntity(){
     if(sprites != null){delete sprites;sprites=null;}
     if(anim_state != null){delete anim_state;anim_state=null;}
 }
-vec3 ClientEntity::GetPos(){return {x,y,z};}
+
 ServerEntity::ServerEntity(int entity_id):BaseEntity(entity_id){
     delta_mask=0;
     player_id = 0;

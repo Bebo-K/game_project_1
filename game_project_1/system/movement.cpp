@@ -4,11 +4,12 @@
 
 
 void Movement::Update(BaseEntity* e, float delta){
-    if(e->movement == null){return;}
-    MovementData* move = e->movement;
+    if(!e->move_props || !e->move_state){return;}
+    MoveProperties* move_props = e->move_props;
+    MovementState* move_state = e->move_state;
     
     bool airborne = false;
-    if(e->phys_data!=null){airborne = e->phys_data->is_midair;}
+    if(e->phys_state!=null){airborne = e->phys_state->midair;}
     
     /* Turn speeds, I'm scrapping this.
     float current_angle = e->rotation.y;
@@ -20,16 +21,16 @@ void Movement::Update(BaseEntity* e, float delta){
     */
     
     vec2 horizontal_velocity = e->velocity.xz();
-    float max_speed_sqr = move->MaxSpeed(); max_speed_sqr *= max_speed_sqr;
-    float accel_speed = (airborne)?e->movement->jump_accel_speed:e->movement->accel_speed;
+    float max_speed_sqr = move_props->MaxSpeed(); max_speed_sqr *= max_speed_sqr;
+    float accel_speed = (airborne)?move_props->jump_accel_speed:move_props->accel_speed;
 
-    horizontal_velocity.x += move->move_goal.x*accel_speed*delta;
-    horizontal_velocity.y += move->move_goal.z*accel_speed*delta;
+    horizontal_velocity.x += move_state->move_goal.x*accel_speed*delta;
+    horizontal_velocity.y += move_state->move_goal.z*accel_speed*delta;
 
     if(horizontal_velocity.length_sqr() > max_speed_sqr){
             horizontal_velocity.normalize();
-            horizontal_velocity.x *= move->MaxSpeed();
-            horizontal_velocity.y *= move->MaxSpeed();
+            horizontal_velocity.x *= move_props->MaxSpeed();
+            horizontal_velocity.y *= move_props->MaxSpeed();
     }
 
     e->velocity.x = horizontal_velocity.x;
@@ -39,21 +40,21 @@ void Movement::Update(BaseEntity* e, float delta){
         horizontal_velocity.normalize();
         e->rotation.y = atan2(-horizontal_velocity.x, horizontal_velocity.y) /(PI_OVER_180);
     }
-    move->is_moving = (horizontal_velocity.length_sqr() > 0);
+    move_state->is_moving = (horizontal_velocity.length_sqr() > 0);
 
     if(airborne){
         //todo: coyote time
-        move->can_jump = false;
+        move_state->can_jump = false;
     }
     //Jump hold floating
-    if(move->jump_goal && move->is_jumping){
-        if(e->velocity.y > 0){e->velocity.y += delta*e->movement->jump_hold_boost;}
+    if(move_state->jump_goal && move_state->is_jumping){
+        if(e->velocity.y > 0){e->velocity.y += delta*move_props->jump_hold_boost;}
     }
     //Jump impulse
-    if(move->can_jump && move->jump_goal){
-        move->can_jump=false;
-        move->is_jumping=true;
-        e->velocity.y = move->jump_speed;
-        if(e->phys_data!=null){e->phys_data->is_midair=true;}
+    if(move_state->can_jump && move_state->jump_goal){
+        move_state->can_jump=false;
+        move_state->is_jumping=true;
+        e->velocity.y = move_props->jump_speed;
+        if(e->phys_state!=null){e->phys_state->midair=true;}
     }
 }

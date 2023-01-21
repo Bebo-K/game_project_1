@@ -3,6 +3,7 @@
 #include <game_project_1/log.hpp>
 #include <game_project_1/config.hpp>
 #include <game_project_1/game/areas.hpp>
+#include <game_project_1/game/entity_serializer.hpp>
 
 
 const char* SaveFile::savefile_extension = ".save";
@@ -31,20 +32,40 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 
 SaveEntity::SaveEntity(int gid):BaseEntity(-1){global_id = gid;}
 int SaveEntity::SavedLength(){
-    return sizeof(int)*2+SerializedLength(AllExistingComponents());
+    int len=sizeof(int)*3;
+    for(int i=0;i<COMPONENT_COUNT;i++){
+        if(HasComponent(i)) len += sizeof(int)+ComponentSize(i);
+    }
+    return len;
+}
+void SaveEntity::Save(Serializer& dat){
+    int mask = 0;
+    for(int i=0;i<COMPONENT_COUNT;i++){
+        if(HasComponent(i)) mask |= (1 << i);
+    }
+
+    dat.PutInt(id);
+    dat.PutInt(global_id);
+    dat.PutInt(mask);
+    for(int i=0;i<COMPONENT_COUNT;i++){
+        if(HasComponent(i)){
+            WriteComponent(i,dat);
+        }
+    }
 }
 void SaveEntity::Load(Deserializer& dat){
     id = dat.GetInt();//may no longer exist
     global_id = dat.GetInt();
-    Deserialize(dat,0);
-}
-void SaveEntity::Save(Serializer& dat){
-    dat.PutInt(id);//may no longer exist
-    dat.PutInt(global_id);
-    Serialize(AllExistingComponents(),dat);
+    int mask = dat.GetInt();
+    for(int i=0;i<COMPONENT_COUNT;i++){
+        if( (mask & (1 << i)) > 0){
+            ReadComponent(i,dat);
+        }
+    }
 }
 void SaveEntity::LoadFrom(ServerEntity* e){
-    CopyFrom(e);
+    Duplicate(e);
+    id=e->id;
     if(e->persist != null){
         global_id = e->persist->global_id;
     }
@@ -52,7 +73,7 @@ void SaveEntity::LoadFrom(ServerEntity* e){
 }
 void SaveEntity::CopyTo(ServerEntity* e){
     int eid = e->id;
-    e->CopyFrom(this);
+    e->Duplicate(this);
     e->id = eid;
     if(global_id != 0){
         e->persist = new Persistance();

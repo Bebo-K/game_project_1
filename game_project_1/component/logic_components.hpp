@@ -1,7 +1,6 @@
 #ifndef LOGIC_COMPONENTS_H
 #define LOGIC_COMPONENTS_H
 
-#include <game_project_1/io/serializer.hpp>
 #include <game_project_1/game/item.hpp>
 #include <game_project_1/game/stats.hpp>
 #include <game_project_1/game/races_and_classes.hpp>
@@ -16,11 +15,12 @@ class StatBlock{
 
     StatBlock();
     StatBlock(int start_level);
-    
+    StatBlock(StatBlock* s2);
+    ~StatBlock();
+
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(StatBlock* s2);
 };
 
  //Only equipment is sent thru client delta
@@ -34,12 +34,12 @@ class Equip{
     ItemInstance left_hand;
 
     Equip();
+    Equip(Equip* s2);
     ~Equip();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(Equip* i2);
 };
 
 //Inventory is private unless requested
@@ -49,12 +49,12 @@ class Inventory{
     ItemInstance* items;
 
     Inventory();
+    Inventory(Inventory* i2);
     ~Inventory();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(Inventory* i2);
 };
 
 
@@ -67,11 +67,12 @@ class Character{
     CharacterAppearance appearance;
 
     Character();
-
+    Character(Character* c2);
+    ~Character();
+    
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(Character* c2);
 };
 
 

@@ -16,6 +16,7 @@
 
 #include <game_project_1/content/base_content.hpp>
 #include <game_project_1/game/areas.hpp>
+#include <game_project_1/game/entity_serializer.hpp>
 
 
 Server* Server::instance=nullptr;
@@ -242,7 +243,7 @@ ServerEntity* Server::TransitionGlobalEntity(int from_area, int to_area, int ent
     //Overwrite with position
     target->x=spawn_location.position.x; target->y=spawn_location.position.y; target->z=spawn_location.position.z;
     target->rotation = spawn_location.rotation;
-    target->delta_mask |= ComponentChunk::BASIC_COMPONENTS;
+    target->delta_mask |= EntitySerializer::GUARENTEED_COMPONENTS;
     target->spawn_mode = to->level.entrances[entrance_id]->style;
     save.AssignEntityToScene(global_id,to_area,true);
     return target;

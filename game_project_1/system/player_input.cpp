@@ -11,8 +11,7 @@ void PlayerInput::Detach(){player = null;}
 
 bool PlayerInput::HandleMovementInput(){
     if(player == nullptr)return false;
-    if(player->movement->lock_move){return false;}
-    if(!player->movement->can_move){return true;}
+    if(!player->move_state->can_move){return true;}
 
     Controller::Axis axis = Controller::GetAxis(Controller::Move);
     vec2 move_input = axis.GetNormalized();
@@ -20,26 +19,25 @@ bool PlayerInput::HandleMovementInput(){
     
     if(move_amount > 0){
         move_input.rotate(-camera->turn);
-        player->movement->move_goal =  {move_input.x,0,-move_input.y};
+        player->move_state->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{
-        player->movement->move_goal = {0,0,0};
+        player->move_state->move_goal = {0,0,0};
     }
     return 0;
 }
 
 bool PlayerInput::HandleJumpingInput(){
     if(player == nullptr)return false;
-    if(player->movement->lock_jump){return false;}
-    if(player->movement->can_jump){
+    if(player->move_state->can_jump){
         if(Controller::GetButton(Controller::A).IsJustPressed()){
-            player->movement->jump_goal=true;
+            player->move_state->jump_goal=true;
             return true;
         }
     }
     else{
         if(Controller::GetButton(Controller::A).IsJustReleased()){
-            player->movement->jump_goal = false;
+            player->move_state->jump_goal = false;
             return true;
         }
     }
@@ -49,7 +47,10 @@ bool PlayerInput::HandleJumpingInput(){
 bool PlayerInput::HandleActionInput(){
     if(player == nullptr)return false;
 
-    player->movement->action_goal=Controller::GetButton(Controller::B).IsJustPressed();
+    player->action_state->action_impulse=Controller::GetButton(Controller::B).IsJustPressed();
+    if(player->action_state->action_impulse){
+        player->action_state->current_action = 0;//TODO action context
+    }
     return true;
 }
 

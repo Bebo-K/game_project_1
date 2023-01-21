@@ -3,7 +3,13 @@
 #include <math.h>
 
 
-void Movement::ServerUpdate(BaseEntity* e, float delta){
+void Combat::ServerUpdate(BaseEntity* e, float delta){
+    if(e->colliders == null){return;}
+     
+
+}
+
+void Combat::ClientUpdate(ClientEntity* e, float delta){
     if(e->colliders == null){return;}
      
 

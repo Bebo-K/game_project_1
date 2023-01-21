@@ -8,7 +8,7 @@
 #include <game_project_1/io/serializer.hpp>
 
 //Component for entities that physics act upon
-class PhysBody{
+class PhysicsProperties{
     public:
     Ellipse_t world_hitsphere;
 	bool	world_collision_enabled = true;
@@ -20,22 +20,14 @@ class PhysBody{
 	float	ground_velocity_damper = 0.9999f;
 	float	y_velocity_damper = 0;
 
-    PhysBody();
-    ~PhysBody();
+    PhysicsProperties();
+    PhysicsProperties(PhysicsProperties* copy);
+    ~PhysicsProperties();
 
-    vec3 GetPosition();
-    void SetPosition(vec3 new_pos);
-    vec3 GetVelocity();
-    void SetVelocity(vec3 new_vel);
-    bool IsInBounds();
-    void SetInBounds(bool in_bounds);
-    bool IsMidair();
-    void SetMidair(bool midair);
-
+    inline int ComponentID(){return 2;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(PhysBody* p2);
 };
 
 //Component container for hitboxes
@@ -43,16 +35,17 @@ class ColliderSet : public Pool<ShapeCollider>{
     public:
     float bounds_xz;
     float bounds_y;
+    ColliderSet();
+    ColliderSet(ColliderSet* copy);
     ~ColliderSet();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(ColliderSet* p2);
 };
 
 //Information about how an entity can move: move/jump speeds, run/walk, etc. 
-class MoveParams{
+class MoveProperties{
 	public:
     float	base_speed;
     float	jump_speed;
@@ -66,14 +59,15 @@ class MoveParams{
 
 
     float MaxSpeed();
+    float WalkSpeed();
 
-    MoveParams();
-    ~MoveParams();
+    MoveProperties();
+    MoveProperties(MoveProperties* copy);
+    ~MoveProperties();
 
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(MoveParams* p2);
 };
 
 #endif

@@ -9,63 +9,52 @@
 #include <game_project_1/io/serializer.hpp>
 
 
-namespace ComponentChunk{
-    enum ID{
-        POSITION=0,
-        MOVE=1,
-        STATE=2,
-        PHYS=3,
-        COLLIDERS=4,
-        IDS=5,
-        STATS=6,
-        EQUIP=7,  
-        INVENTORY=8,
-        CHARACTER=9,
-    };
-    typedef int Mask;
-    const int COMPONENT_COUNT=10;
-    const Mask BASIC_COMPONENTS= (1) | (1 << IDS);
-};
-
 typedef int EntityClass;
 
 class BaseEntity{
     public:
-    int             id;
-    EntityClass     type;
-    int             last_update[ComponentChunk::COMPONENT_COUNT];
-    wchar*          name;
-    float           x,y,z;
-    vec3            velocity;
-    vec3            scale;
-    vec3            rotation;
+    int                 id;
+    //Considered the "Identity" component, ID=0, not nullable
+    EntityClass         type;
+    wchar*              name;
 
-    //nullable
-    PhysBody*       phys_data;
-    ColliderSet*    colliders;
-    MovementState*  move_state;
-    ActionState*    action_state;
-    MoveParams*     movement;
-    StatBlock*      stats;
-    Equip*          equip;
-    Inventory*      inventory;
-    Character*      char_data;
+    //Considered the "Position" component, ID=1, not nullable
+    float               x,y,z;
+    vec3                velocity;
+    vec3                scale;
+    vec3                rotation;
+
+    //Rest of the components, nullable
+    PhysicsProperties*  phys_props;         //ID = 2
+    MoveProperties*     move_props;         //ID = 3
+    //ActionProperties*   action_props;     //ID = 4
+    PhysicsState*       phys_state;         //ID = 5
+    MovementState*      move_state;         //ID = 6
+    ActionState*        action_state;       //ID = 7
+    ColliderSet*        colliders;          //ID = 8
+    StatBlock*          stats;              //ID = 9
+    Equip*              equip;              //ID = 10
+    Inventory*          inventory;         //ID = 11
+    Character*          char_data;          //ID = 12
+
+
+    //metadata
+    const static int    COMPONENT_COUNT = 13;
+    int                 last_update[COMPONENT_COUNT];
 
     BaseEntity(int id);
     virtual ~BaseEntity();
+    void Duplicate(BaseEntity* copy);
+
+    bool HasComponent(int component_id);
+    int  ComponentSize(int component_id);//Serialized length of component
+    void WriteComponent(int component_id,Serializer& dat);
+    void ReadComponent(int component_id,Deserializer& dat);
     void Clear();
+
     vec3 GetPos();
     Location GetLocation();
     float GetTurnAngle();
-    ComponentChunk::Mask AllExistingComponents();//Mask needed to create all non-null components
-    int ChunkLength(ComponentChunk::ID ChunkID);
-    void WriteChunk(ComponentChunk::ID ChunkID,Serializer& dat);
-    void ReadChunk(ComponentChunk::ID ChunkID,Deserializer& dat);
-    void Serialize(ComponentChunk::Mask delta_mask,Serializer& dat);
-    void Deserialize(Deserializer& dat,int timestamp);
-    int SerializedLength(ComponentChunk::Mask delta_mask);
-    void Skip(Deserializer& dat);
-    void CopyFrom(BaseEntity* e);
 };
 
 class ClientEntity: public BaseEntity{
@@ -76,7 +65,6 @@ class ClientEntity: public BaseEntity{
 
     ClientEntity(int entity_id);
     ~ClientEntity();
-    vec3 GetPos();
 };
 
 struct ServerEntity: public BaseEntity{

@@ -3,6 +3,7 @@
 
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/content/base_content.hpp>
+#include <game_project_1/game/entity_serializer.hpp>
 
 
 Map<EntityClass,ServerEntityBuilder> ServerScene::entity_builders;
@@ -65,7 +66,7 @@ void ServerScene::BuildEntity(ServerEntity* e,Location pos){
     e->x=pos.position.x; e->y=pos.position.y; e->z=pos.position.z;
     e->rotation = pos.rotation;
     e->scale = pos.scale;
-    e->delta_mask |= ComponentChunk::BASIC_COMPONENTS;
+    e->delta_mask |= EntitySerializer::GUARENTEED_COMPONENTS;
     e->spawn_mode = SpawnType::APPEAR;
 
     ServerEntityBuilder builder = GetEntityBuilder(e->type);
@@ -80,7 +81,7 @@ void ServerScene::HandleSpawn(ServerEntity* e){
     switch(e->spawn_mode){
         default:{ //you just exist there
             e->velocity = {0,0,0};
-            if(e->state != null){e->state->Set(IDLE);}
+            if(e->move_state != null){e->move_state->current_movement = MovementTypeID::IDLE;}
             break;}
     }
     if(just_spawned.GetIndex(e) == -1){just_spawned.Add(e);}

@@ -13,6 +13,9 @@ namespace AnimationController{
     void RegisterAnimationControllerCallback(AnimationControllerType type,AnimationControllerCallback);
     AnimationControllerCallback GetAnimationControllerCallback(AnimationControllerType type);
 
+    void SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop);
+
+    
 };
 
 

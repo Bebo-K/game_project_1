@@ -189,12 +189,12 @@ HeightMapCollider MakeDeathPlane(float z_pos){
 }
 
 void MeshCollider::CheckCollisions(BaseEntity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_data->world_hitsphere.radius))return;
+    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
         if(tris[t].IsZeroArea())continue;
         CollisionResult new_instance = 
-            TriangleHandler::DoCollision(e,&surface,step_pos,step_velocity,e->phys_data->world_hitsphere,tris[t]);
+            TriangleHandler::DoCollision(e,&surface,step_pos,step_velocity,e->phys_props->world_hitsphere,tris[t]);
 
         if(!new_instance.isNone()){
             for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
@@ -206,12 +206,12 @@ void MeshCollider::CheckCollisions(BaseEntity* e,vec3 step_pos,vec3 step_velocit
 
 void MeshCollider::CheckOOB(BaseEntity* e){
     vec3 step_pos = e->GetPos();
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_data->world_hitsphere.radius))return;
+    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
         if(tris[t].IsZeroArea())continue;
-        if(TriangleHandler::CheckTriangleBounds(step_pos,tris[t])){
-            e->phys_data->SetInBounds(true);
+        if(e->phys_state &&  TriangleHandler::CheckTriangleBounds(step_pos,tris[t])){
+            e->phys_state->in_bounds=true;
         }
     }
 }

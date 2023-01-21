@@ -49,8 +49,10 @@ void LevelCollision::RunCollisionStep(BaseEntity* e,Array<MeshCollider> meshes, 
     vec3 step_position = start_position+step_velocity;
     
     //Mark as OOB before step. If we're not marked in-bounds at end of step, we'll cancel that step.
-    e->phys_data->SetInBounds(false);
-    e->phys_data->SetMidair(true);
+    if(e->phys_state){
+        e->phys_state->in_bounds=false;
+        e->phys_state->midair=true;
+    }
 
     for(MeshCollider* mesh:meshes){
         mesh->CheckCollisions(e,step_position,step_velocity,list);
@@ -59,7 +61,7 @@ void LevelCollision::RunCollisionStep(BaseEntity* e,Array<MeshCollider> meshes, 
     //Get our total movement including this step's velocity and any shunting out of a wall
     vec3 total_movement = HandleSolidStepCollisions(e,step_velocity,list);
 
-    if(!ENFORCE_BOUNDS || e->phys_data->IsInBounds()) {   
+    if(!ENFORCE_BOUNDS || (e->phys_state && e->phys_state->in_bounds)) {   
         e->x += total_movement.x;
         e->y += total_movement.y;
         e->z += total_movement.z;

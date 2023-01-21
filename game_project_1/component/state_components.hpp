@@ -22,6 +22,19 @@ namespace ActionID{
 	PICKUP=5;
 };
 
+//State information for entity phys simulation
+struct PhysicsState{
+	bool in_bounds;
+	bool midair;
+	
+	PhysicsState();
+    PhysicsState(PhysicsState* copy);
+	~PhysicsState();
+	int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+};
+
 //State information for entity movement (other than basic physbody info like velocity)
 struct MovementState{
 	int		current_movement;
@@ -35,10 +48,11 @@ struct MovementState{
     bool	is_jumping;
 
 	MovementState();
+    MovementState(MovementState* copy);
+	~MovementState();
 	int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(MovementState* p2);
 };
 
 //State information for entity actions (attacking, taking damage, talking)
@@ -49,10 +63,12 @@ struct ActionState{
 	//int target_entity
 	//vec3 target_direction
 
+	ActionState();
+    ActionState(ActionState* copy);
+	~ActionState();
 	int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
-    void Copy(ActionState* p2);
 };
 
 /*
