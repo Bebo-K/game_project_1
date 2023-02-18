@@ -104,6 +104,7 @@ void Server::StartShutdown(){
     for(ServerScene* scene:active_scenes){
         scene->Unload();
     }
+    active_scenes.Clear();
     state=EXITING;
     ServerNetwork::ShutdownListener();
 }

@@ -20,13 +20,17 @@ void Movement::Update(BaseEntity* e, float delta){
     e->velocity.z = movement_direction.z*move->base_speed;
     */
     
+    vec2 horizontal_goal = move_state->move_goal.xz();
     vec2 horizontal_velocity = e->velocity.xz();
+
+    if(horizontal_goal.length_sqr() > 0){
+        float accel_speed = (airborne)?move_props->jump_accel_speed:move_props->accel_speed;
+
+        horizontal_velocity.x += move_state->move_goal.x*accel_speed*delta;
+        horizontal_velocity.y += move_state->move_goal.z*accel_speed*delta;
+    }
+
     float max_speed_sqr = move_props->MaxSpeed(); max_speed_sqr *= max_speed_sqr;
-    float accel_speed = (airborne)?move_props->jump_accel_speed:move_props->accel_speed;
-
-    horizontal_velocity.x += move_state->move_goal.x*accel_speed*delta;
-    horizontal_velocity.y += move_state->move_goal.z*accel_speed*delta;
-
     if(horizontal_velocity.length_sqr() > max_speed_sqr){
             horizontal_velocity.normalize();
             horizontal_velocity.x *= move_props->MaxSpeed();
@@ -37,10 +41,13 @@ void Movement::Update(BaseEntity* e, float delta){
     e->velocity.z = horizontal_velocity.y;
 
     if(horizontal_velocity.length_sqr() > 0){
+        move_state->is_moving = true;
         horizontal_velocity.normalize();
         e->rotation.y = atan2(-horizontal_velocity.x, horizontal_velocity.y) /(PI_OVER_180);
     }
-    move_state->is_moving = (horizontal_velocity.length_sqr() > 0);
+    else{
+        move_state->is_moving = false;
+    }
 
     if(airborne){
         //todo: coyote time

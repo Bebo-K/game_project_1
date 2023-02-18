@@ -104,6 +104,6 @@ void Physics::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
 
     if((e->lastupdate_position - e->GetPos()).length_sqr() > 3.0 ||
         (e->lastupdate_velocity - e->velocity).length_sqr() > 0.1){
-        e->delta_mask |= 1;
+        e->MarkComponentUpdated(1);
     }
 } 

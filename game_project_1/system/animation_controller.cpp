@@ -28,7 +28,7 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
 
 
 void AnimationController::Update(ClientEntity* e, float delta){
-    if(e->anim_state != null){return;}
+    if(e->anim_state == null){return;}
     AnimationControllerCallback callback = GetAnimationControllerCallback(e->anim_state->controller_type);
     callback(e,delta);
 }

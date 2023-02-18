@@ -15,6 +15,10 @@ typedef unsigned char byte;
 
 void* i_to_p(int ptr);//Convention exception to match "atof",etc
 
+float randf();//Random number between 0 and 1
+float randf(float min,float max);
+
+
 union value
 {
     int i;

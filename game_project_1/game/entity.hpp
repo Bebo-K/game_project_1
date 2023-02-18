@@ -82,6 +82,7 @@ struct ServerEntity: public BaseEntity{
     Persistance*        persist;
     NPCControllerState* npc_state;
 
+    void MarkComponentUpdated(int component_id);
     ServerEntity(int entity_id);
     ~ServerEntity();
 };

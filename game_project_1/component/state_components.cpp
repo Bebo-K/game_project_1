@@ -30,7 +30,7 @@ MovementState::MovementState(){
     move_goal={0,0,0};
     jump_goal=false;
 
-    can_move=false;
+    can_move=true;
     can_jump=false;
 
     is_moving=false;

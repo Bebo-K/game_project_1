@@ -52,19 +52,25 @@ void Serializer::PutFloat(float f){
 }
 void Serializer::PutString(char* str){
     char* ptr = (char*)&raw_data[place];
-    int len = cstr::len(str)+1;
-    if(place + len > data_length){
+    int str_len = cstr::len(str);
+    int write_len = (str_len > 0)? (str_len+1)*sizeof(char) : sizeof(char);    
+    if(place + write_len > data_length){
         logger::exception("Serializer.PutString(%s) writes past the end of the data buffer (pos:%d,len%d)",str,place,data_length);}
-    memcpy(ptr,str,len);
-    place += len;
+
+    if(str_len > 0){ memcpy(ptr,str,write_len); }
+    else{ptr[0] = (char)0;}
+    place += write_len;
 }
 void Serializer::PutWString(wchar* str){
     wchar* ptr = (wchar*)&raw_data[place];
-    int len = (wstr::len(str)+1)*sizeof(wchar);
-    if(place + len > data_length){
+    int str_len = wstr::len(str);
+    int write_len = (str_len > 0)? (str_len+1)*sizeof(wchar) : sizeof(wchar);    
+    if(place + write_len > data_length){
         logger::exception("Serializer.PutWString(%S) writes past the end of the data buffer (pos:%d,len%d)",str,place,data_length);}
-    memcpy(ptr,str,len);
-    place += len;
+
+    if(str_len > 0){ memcpy(ptr,str,write_len); }
+    else{ptr[0] = (wchar)0;}
+    place += write_len;
 }
 void Serializer::WriteBytes(byte* dat,int len){
     if(place + len > data_length){

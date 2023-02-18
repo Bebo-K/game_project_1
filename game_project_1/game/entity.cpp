@@ -194,5 +194,16 @@ ServerEntity::ServerEntity(int entity_id):BaseEntity(entity_id){
     lastupdate_position = {x,y,z};
     lastupdate_velocity = velocity;
     persist=null;
+    npc_state=null;
 }
-ServerEntity::~ServerEntity(){}
+ServerEntity::~ServerEntity(){
+    if(persist != null){delete persist;persist=null;}
+    if(npc_state != null){delete npc_state;npc_state=null;}
+}
+
+void ServerEntity::MarkComponentUpdated(int component_id){
+    //last_update[component_id] = OS::time_ms();
+
+    delta_mask |= (1 << component_id);
+
+}
