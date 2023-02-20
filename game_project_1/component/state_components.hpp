@@ -1,7 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include <game_project_1/io/serializer.hpp>
+#include <game_project_1/component/component.hpp>
 #include <game_project_1/types/3d_types.hpp>
 
 namespace MovementTypeID{
