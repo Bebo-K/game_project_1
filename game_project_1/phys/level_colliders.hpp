@@ -56,8 +56,8 @@ class MeshCollider{
     void SetVertices(MeshGroup* mesh);
     void SetSurface(LevelCollision::Surface* surface);
 
-    void CheckCollisions(BaseEntity* e,vec3 step_pos,vec3 step_velocity,LevelCollision::CollisionResult* results);
-    void CheckOOB(BaseEntity* e);
+    void CheckCollisions(SharedEntity* e,vec3 step_pos,vec3 step_velocity,LevelCollision::CollisionResult* results);
+    void CheckOOB(SharedEntity* e);
 };
 
 class HeightMapCollider{
@@ -72,8 +72,8 @@ class HeightMapCollider{
     HeightMapCollider(float width, float height, float depth, Image* img,LevelCollision::Surface* surface);
     //~HeightMap();
 
-    void CheckCollisions(BaseEntity* e,vec3 step_pos,LevelCollision::CollisionResult* list);
-    //void CheckOOB(BaseEntity* e);
+    void CheckCollisions(SharedEntity* e,vec3 step_pos,LevelCollision::CollisionResult* list);
+    //void CheckOOB(SharedEntity* e);
 };
 HeightMapCollider MakeDeathPlane(float z_pos);
 

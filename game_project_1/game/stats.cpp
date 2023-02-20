@@ -54,7 +54,7 @@ int ActiveStats::SerializedLength(){return sizeof(ActiveStats);}
 
 CharacterAppearance::CharacterAppearance(){
     style1=0;style2=0;style3=0;
-    color1.from_bytes(0,0,0,255);
+    color1.rgba(0,0,0,255);
 }
 CharacterAppearance::~CharacterAppearance(){}
 void CharacterAppearance::Copy(CharacterAppearance* a2){

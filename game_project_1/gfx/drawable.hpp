@@ -31,7 +31,7 @@ struct VBO{
     //void CreateEmpty(GLuint type,int per_vertex,int count,GLuint buffer_type);
     void CreateEmptyWeights(GLuint type,int per_vertex,int count,GLuint buffer_type);
     void Bind(int attrib_slot);
-    void Bind(int attrib_slot, int stride, int start);
+    void Bind(int attrib_slot, int stride, int offset);
     void Destroy();
 };
 
@@ -42,7 +42,7 @@ class ShapePrimitive : public Drawable{
     VBO         vertices,tex_coords,normals;
     Material    mat;
 	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
-    float       color[4];
+    color_f     color;
 
     ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d);
     ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d);
@@ -57,7 +57,7 @@ class WirePrimitive : public Drawable{
     VBO         vertices,tex_coords,normals;
     Material    mat;
 	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
-    float       color[4];
+    color_f     color;
 	
     WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d);
     ~WirePrimitive();

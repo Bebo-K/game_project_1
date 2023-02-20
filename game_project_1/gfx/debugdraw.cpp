@@ -6,11 +6,11 @@ void DebugDraw::Init(){
 
 
 }
-void DebugDraw::DrawRect(int x,int y,int w,int h,vec4 color){
+void DebugDraw::DrawRect(int x,int y,int w,int h,color_f color){
 
 
 }
-void DebugDraw::Draw3DRect(int x,int y,int z,int w,int h,int d,vec4 color){
+void DebugDraw::Draw3DRect(int x,int y,int z,int w,int h,int d,color_f color){
 
 
 }

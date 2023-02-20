@@ -124,11 +124,14 @@ void VBO::Bind(int attrib_slot){
     CheckForGLError("VBO.Bind: GL Error %d\n");
 }
 
-void VBO::Bind(int attrib_slot, int stride, int start){
+/**/
+void VBO::Bind(int attrib_slot, int stride, int offset){
+    byte* ofs = null + offset;
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
-    glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,i_to_p(start));
+    glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,(void*)ofs);
     CheckForGLError("VBO.Bind: GL Error %d\n");
 }
+
 
 void VBO::Destroy(){
     if(Valid())glDeleteBuffers(1,&buffer_id);

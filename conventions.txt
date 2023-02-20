@@ -12,6 +12,8 @@ Code:
         Macros are ALWAYS_CAPS, they don't get to look sleek
         
         Exceptions are structs to be treated as extended primitive types: methods and fields are all lowercase
+        - bitmask
+        - color
         - vec2,3,4
         - mat3,4
         - point_i/f, rect_i/f

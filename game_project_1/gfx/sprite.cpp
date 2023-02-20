@@ -15,7 +15,7 @@ Sprite::Sprite(char* ui_texturename){
     x=y=0;
     width=img_width;
     height=img_height;
-    color={1.0f,1.0f,1.0f,1.0f};
+    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }
@@ -28,7 +28,7 @@ Sprite::Sprite(Texture spritesheet){
     x=y=0;
     width=img_width;
     height=img_height;
-    color={1.0f,1.0f,1.0f,1.0f};
+    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }
@@ -42,7 +42,7 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips){
     x=y=0;
     width=img_width/max_frames;
     height=img_height/max_strips;
-    color={1.0f,1.0f,1.0f,1.0f};
+    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }

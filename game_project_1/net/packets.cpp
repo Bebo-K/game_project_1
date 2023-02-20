@@ -82,7 +82,7 @@ Payload CHAT::GetPayload(){
 
 SNPS::SNPS(){
     save_id=race_id=class_id=style_1=style_2=style_3=0;
-    color_1.from_int(0);color_2.from_int(0);color_3.from_int(0);
+    color_1.rgba(0);color_2.rgba(0);color_3.rgba(0);
     memset(player_name,0,sizeof(wchar)*(PLAYERNAME_MAX+1));
 }
 SNPS::SNPS(Payload p){memcpy(this,p.data,p.length);}

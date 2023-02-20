@@ -23,20 +23,28 @@ namespace ActionID{
 };
 
 //State information for entity phys simulation
-struct PhysicsState{
+class PhysicsState: public SharedComponent{
+	public:
+    static int ComponentID = 5;
+
 	bool in_bounds;
 	bool midair;
 	
 	PhysicsState();
     PhysicsState(PhysicsState* copy);
 	~PhysicsState();
+
+	inline int ID(){return PhysicsState::ComponentID;}
 	int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
 //State information for entity movement (other than basic physbody info like velocity)
-struct MovementState{
+class MovementState: public SharedComponent{
+	public:
+    static int ComponentID = 6;
+
 	int		current_movement;
     vec3	move_goal;
     bool	jump_goal;
@@ -50,13 +58,18 @@ struct MovementState{
 	MovementState();
     MovementState(MovementState* copy);
 	~MovementState();
+	
+	inline int ID(){return MovementState::ComponentID;}
 	int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
 //State information for entity actions (attacking, taking damage, talking)
-struct ActionState{
+class ActionState: public SharedComponent{
+	public:
+    static int ComponentID = 7;
+	
 	int		current_action;
 	int		action_timer;
 	bool	action_impulse;
@@ -66,6 +79,8 @@ struct ActionState{
 	ActionState();
     ActionState(ActionState* copy);
 	~ActionState();
+	
+	inline int ID(){return ActionState::ComponentID;}
 	int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);

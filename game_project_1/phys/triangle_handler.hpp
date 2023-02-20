@@ -16,10 +16,10 @@ namespace TriangleHandler{
     //MIN_EDGE_NORMAL_COS prevents the edge of a single wall from pushing us more than X degrees away from the way the wall actually faces.
 
     bool           CheckTriangleBounds(vec3 step_position,Triangle triangle);
-    LevelCollision::CollisionResult DoCollision(BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
-    LevelCollision::CollisionResult  HandleFloorCase(BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
-    LevelCollision::CollisionResult  HandleWallCase(BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
-    LevelCollision::CollisionResult  HandleCeilingCase(BaseEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
+    LevelCollision::CollisionResult DoCollision(SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
+    LevelCollision::CollisionResult  HandleFloorCase(SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
+    LevelCollision::CollisionResult  HandleWallCase(SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
+    LevelCollision::CollisionResult  HandleCeilingCase(SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle);
 }
 
 

@@ -18,20 +18,20 @@ MenuBackground::~MenuBackground(){}
 
 void SimpleButtonHighlightEffect(Widget* w){
     SimpleButton* button = (SimpleButton*)w;
-    vec4 old_color = button->rects[0]->color;
-    old_color.x += 0.1f;
-    old_color.y += 0.1f;
-    old_color.z += 0.1f;
-    old_color.w += 0.1f;
+    color_f old_color = button->rects[0]->color;
+    old_color.r += 0.1f;
+    old_color.g += 0.1f;
+    old_color.b += 0.1f;
+    old_color.a += 0.1f;
     button->rects[0]->color = old_color;
 }
 void SimpleButtonUnhighlightEffect(Widget* w){
     SimpleButton* button = (SimpleButton*)w;
-    vec4 old_color = button->rects[0]->color;
-    old_color.x -= 0.1f;
-    old_color.y -= 0.1f;
-    old_color.z -= 0.1f;
-    old_color.w -= 0.1f;
+    color_f old_color = button->rects[0]->color;
+    old_color.r -= 0.1f;
+    old_color.g -= 0.1f;
+    old_color.b -= 0.1f;
+    old_color.a -= 0.1f;
     button->rects[0]->color = old_color;
 }
 bool SimpleButtonSelectedInputCallback(Widget* w, Input::Event event_type){
@@ -47,7 +47,7 @@ void SimpleButtonOnClickCallback(Widget* w){
     button->select_callback();
 }
 
-SimpleButton::SimpleButton(char* name, wchar* label, float w, float h, vec4 color, void (*callback)()):Widget(name){
+SimpleButton::SimpleButton(char* name, wchar* label, float w, float h, color_f color, void (*callback)()):Widget(name){
     FontID simple_button_font = FontManager::LoadFontFace("SourceSansPro-Regular",32);
     layout.width = w;
     layout.height = h;

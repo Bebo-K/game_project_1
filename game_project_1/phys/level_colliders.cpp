@@ -188,7 +188,7 @@ HeightMapCollider MakeDeathPlane(float z_pos){
     return ret;
 }
 
-void MeshCollider::CheckCollisions(BaseEntity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
+void MeshCollider::CheckCollisions(SharedEntity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
     if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
@@ -204,7 +204,7 @@ void MeshCollider::CheckCollisions(BaseEntity* e,vec3 step_pos,vec3 step_velocit
     }
 }
 
-void MeshCollider::CheckOOB(BaseEntity* e){
+void MeshCollider::CheckOOB(SharedEntity* e){
     vec3 step_pos = e->GetPos();
     if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
 	
@@ -216,4 +216,4 @@ void MeshCollider::CheckOOB(BaseEntity* e){
     }
 }
 
-void HeightMapCollider::CheckCollisions(BaseEntity* e,vec3 step_pos,CollisionResult* list){}
+void HeightMapCollider::CheckCollisions(SharedEntity* e,vec3 step_pos,CollisionResult* list){}

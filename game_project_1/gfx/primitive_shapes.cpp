@@ -86,12 +86,8 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h
 ShapePrimitive::~ShapePrimitive(){
 }
 
-WirePrimitive::WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d):mat(){
-    color[0] = prim_color.x;
-    color[1] = prim_color.y;
-    color[2] = prim_color.z;
-    color[3] = 1.0f;
-
+WirePrimitive::WirePrimitive(EPrimitiveShape shape,color_f prim_color,float w,float h,float d):mat(){
+    color=prim_color;
     scale.x=w;
     scale.y=h;
     scale.z=d;

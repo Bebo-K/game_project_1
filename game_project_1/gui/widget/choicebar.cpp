@@ -39,20 +39,20 @@ void ChoiceBarOnClickAction(Widget* w){
 
 void TextChoiceBarHighlightEffect(Widget* w){
     TextChoiceBar* choicebar = (TextChoiceBar*)w;
-    vec4 new_color = choicebar->sprites[0]->color;
-    new_color.x += 0.2f;
-    new_color.y += 0.2f;
-    new_color.z += 0.2f;
-    new_color.w += 0.2f;
+    color_f new_color = choicebar->sprites[0]->color;
+    new_color.r += 0.2f;
+    new_color.g += 0.2f;
+    new_color.b += 0.2f;
+    new_color.a += 0.2f;
     choicebar->sprites[0]->color =new_color;
 }
 void TextChoiceBarUnhighlightEffect(Widget* w){
     TextChoiceBar* choicebar = (TextChoiceBar*)w;
-    vec4 new_color = choicebar->sprites[0]->color;
-    new_color.x -= 0.2f;
-    new_color.y -= 0.2f;
-    new_color.z -= 0.2f;
-    new_color.w -= 0.2f;
+    color_f new_color = choicebar->sprites[0]->color;
+    new_color.r -= 0.2f;
+    new_color.g -= 0.2f;
+    new_color.b -= 0.2f;
+    new_color.a -= 0.2f;
     choicebar->sprites[0]->color =new_color;
 }
 

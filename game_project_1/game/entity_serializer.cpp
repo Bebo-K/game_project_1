@@ -3,80 +3,57 @@
 using namespace EntitySerializer;
 
 
-void EntitySerializer::Serialize(BaseEntity* e,ComponentMask delta_mask,Serializer& dat){
-    ComponentMask write_mask = delta_mask & EntitySerializer::AllExistingComponents(e);
-    ComponentMask chunk_mask = 1;
-    dat.PutInt(write_mask);
-    for(int i=0;i<BaseEntity::COMPONENT_COUNT;i++){
-        if(chunk_mask & write_mask){
-            int len = e->ComponentSize(i);
-            dat.PutInt(len);
+void EntitySerializer::Serialize(SharedEntity* e,bitmask delta_mask,Serializer& dat){
+    bitmask write_mask = delta_mask;
+    write_mask.val &= EntitySerializer::AllExistingComponents(e).val;
+    dat.PutInt(write_mask.val);
+    for(int i=0;i<SharedEntity::COMPONENT_COUNT;i++){
+        if(write_mask.get_bit(i)){
+            int chunk_len = e->components[i]->SerializedLength();
             int start_place = dat.place;
-            e->WriteComponent(i,dat);
-            if(start_place+len != dat.place){
+            dat.PutInt(chunk_len);
+            e->components[i]->Write(dat);
+            if(start_place+chunk_len != dat.place){
                 logger::exception("Serialization failed for entity ID %d, expected %d, was %d\n",e->id,len,dat.place-start_place);
             }
         }
-        chunk_mask = chunk_mask << 1;
     }
 }
 
-void EntitySerializer::Deserialize(BaseEntity* e,Deserializer& dat,int timestamp){
-    ComponentMask read_mask = dat.GetInt();
-    ComponentMask chunk_mask = 1;
-    for(int i=0;i<BaseEntity::COMPONENT_COUNT;i++){
-        if(chunk_mask & read_mask){
-            if(e->last_update[i] <= timestamp){
+void EntitySerializer::Deserialize(SharedEntity* e,Deserializer& dat,int timestamp){
+    bitmask components(dat.GetInt());
+    for(int i=0;i<SharedEntity::COMPONENT_COUNT;i++){
+        if(components.get_bit(i)){
+            if(e->components[i] == null){e->NewComponent(i);}
+            if(e->components[i]->last_update <= timestamp){
                 int len = dat.GetInt();//chunk_length
                 int start_place = dat.place;
-                e->ReadComponent(i,dat);
+                e->components[i]->Read(dat);
+                e->components[i]->last_update = timestamp;
                 if(dat.place-start_place != len){
                     logger::exception("Deserialization failed for entity ID %d, expected %d, was %d\n",e->id,len,dat.place-start_place); 
                 }
-                e->last_update[i] = timestamp;
             }
             else{//skip, it's older data
                 dat.place+=dat.GetInt();
             }
         }
-        chunk_mask = chunk_mask << 1;
-    } 
+    }
 }
 
-ComponentMask EntitySerializer::AllExistingComponents(BaseEntity* e){
-    ComponentMask mask = GUARENTEED_COMPONENTS;
-    
-    if(e->phys_props != nullptr){mask |= (1 << 2);}
-    if(e->move_props  != nullptr){mask |= (1 << 3);}
-    //if(move_props != nullptr){mask |= (1 << 4);}
-    if(e->phys_state != nullptr){mask |= (1 << 5);}
-    if(e->move_state != nullptr){mask |= (1 << 6);}
-    if(e->action_state != nullptr){mask |= (1 << 7);}
-    if(e->colliders != nullptr){mask |= (1 << 8);}
-    if(e->stats != nullptr){mask |= (1 << 9);}
-    if(e->equip != nullptr){mask |= (1 << 10);}
-    if(e->inventory != nullptr){mask |= (1 << 11);}
-    if(e->char_data != nullptr){mask |= (1 << 12);}
-    
-    return mask;
-}
-
-int EntitySerializer::SerializedLength(BaseEntity* e,ComponentMask mask){
-    int length = sizeof(ComponentMask);
-    ComponentMask write_mask = mask & EntitySerializer::AllExistingComponents(e);
-    ComponentMask chunk_mask = 1;
-    for(int i=0;i<BaseEntity::COMPONENT_COUNT;i++){
-        if(chunk_mask & write_mask){ length += sizeof(int) + e->ComponentSize(i);}
-        chunk_mask = chunk_mask << 1;
+int EntitySerializer::SerializedLength(SharedEntity* e,bitmask mask){
+    int length = sizeof(bitmask);
+    for(int i=0;i<SharedEntity::COMPONENT_COUNT;i++){
+        if(mask.get_bit(i) && e->components[i] != null){length += (sizeof(int) + e->components[i]->SerializedLength());}
     }
     return length;
 }
 
 void EntitySerializer::Skip(Deserializer& dat){
-    ComponentMask read_mask = dat.GetInt();
-    ComponentMask chunk_mask = 1;
-    for(int i=0;i<BaseEntity::COMPONENT_COUNT;i++){
-        if((chunk_mask & read_mask)){dat.place+=dat.GetInt();}
-        chunk_mask = chunk_mask << 1;
+    bitmask components(dat.GetInt());
+    for(int i=0;i<SharedEntity::COMPONENT_COUNT;i++){
+        if(components.get_bit(i)){
+            dat.place += dat.GetInt();
+        }
     }
 }

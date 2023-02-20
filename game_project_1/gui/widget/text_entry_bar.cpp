@@ -32,20 +32,20 @@ void TextEntryBarOnClickAction(Widget* w){
 
 void TextEntryBarHighlightEffect(Widget* w){
     TextEntryBar* entry_bar = (TextEntryBar*)w;
-    vec4 new_color = entry_bar->sprites[0]->color;
-    new_color.x += 0.2f;
-    new_color.y += 0.2f;
-    new_color.z += 0.2f;
-    new_color.w += 0.2f;
+    color_f new_color = entry_bar->sprites[0]->color;
+    new_color.r += 0.2f;
+    new_color.g += 0.2f;
+    new_color.b += 0.2f;
+    new_color.a += 0.2f;
     entry_bar->sprites[0]->color =new_color;
 }
 void TextEntryBarUnhighlightEffect(Widget* w){
     TextEntryBar* entry_bar = (TextEntryBar*)w;
-    vec4 new_color = entry_bar->sprites[0]->color;
-    new_color.x -= 0.2f;
-    new_color.y -= 0.2f;
-    new_color.z -= 0.2f;
-    new_color.w -= 0.2f;
+    color_f new_color = entry_bar->sprites[0]->color;
+    new_color.r -= 0.2f;
+    new_color.g -= 0.2f;
+    new_color.b -= 0.2f;
+    new_color.a -= 0.2f;
     entry_bar->sprites[0]->color =new_color;
 }
 

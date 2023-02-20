@@ -12,7 +12,7 @@
 #define CAMPAIGN_DEMO 0
 
 
-class SaveEntity: public BaseEntity {
+class SaveEntity: public SharedEntity {
     public:
     wchar* name;
     int global_id;

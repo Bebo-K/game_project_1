@@ -1,15 +1,16 @@
 #ifndef PHYS_COMPONENTS_H
 #define PHYS_COMPONENTS_H
 
+#include <game_project_1/component/component.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/types/3d_types.hpp>
 #include <game_project_1/phys/collision_types.hpp>
 #include <game_project_1/phys/collider.hpp>
-#include <game_project_1/io/serializer.hpp>
 
 //Component for entities that physics act upon
-class PhysicsProperties{
+class PhysicsProperties: public SharedComponent{
     public:
+    static int ComponentID = 2;
     Ellipse_t world_hitsphere;
 	bool	world_collision_enabled = true;
 	
@@ -24,29 +25,34 @@ class PhysicsProperties{
     PhysicsProperties(PhysicsProperties* copy);
     ~PhysicsProperties();
 
-    inline int ComponentID(){return 2;}
+    inline int ID(){return PhysicsProperties::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
 //Component container for hitboxes
-class ColliderSet : public Pool<ShapeCollider>{
+class ColliderSet: public SharedComponent public Pool<ShapeCollider>{
     public:
+    static int ComponentID = 8;
+
     float bounds_xz;
     float bounds_y;
     ColliderSet();
     ColliderSet(ColliderSet* copy);
     ~ColliderSet();
 
+    inline int ID(){return ColliderSet::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
 //Information about how an entity can move: move/jump speeds, run/walk, etc. 
-class MoveProperties{
+class MoveProperties: public SharedComponent{
 	public:
+    static int ComponentID = 3;
+
     float	base_speed;
     float	jump_speed;
 
@@ -65,6 +71,7 @@ class MoveProperties{
     MoveProperties(MoveProperties* copy);
     ~MoveProperties();
 
+    inline int ID(){return MoveProperties::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);

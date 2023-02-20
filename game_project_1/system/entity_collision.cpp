@@ -15,7 +15,7 @@ bool EntityClassPair::operator==(int b){//for null comparison. Pair {0,0} is nul
 Map<EntityClassPair,ClientHandlerCallback> EntityPairClientCollisionHandlers;
 Map<EntityClassPair,ServerHandlerCallback> EntityPairServerCollisionHandlers;
 
-CollisionResult EntityCollision::CheckCollision(BaseEntity* e1, BaseEntity* e2){
+CollisionResult EntityCollision::CheckCollision(SharedEntity* e1, SharedEntity* e2){
     if(e1->colliders == null || e2->colliders == null)return CollisionResult(false);
     vec3 point={0,0,0};
     for(ShapeCollider* c1:*(e1->colliders)){

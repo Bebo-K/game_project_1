@@ -9,11 +9,11 @@
 
 struct Glyph{
     float x,y;
-    Texture glyph_texture;
-    float rotation;
-    vec4  color;
-    vec2  offset;//individual letter offset to center it.
-    int   codepoint;
+    Texture     glyph_texture;
+    float       rotation;
+    color_f     color;
+    vec2        offset;//individual letter offset to center it.
+    int         codepoint;
 
     point_i Set(int codepoint);//Sets this letter, texture, and offset. Returns pen offset to next letter.
     void Draw(point_i offset);

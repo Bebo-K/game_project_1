@@ -9,7 +9,7 @@ class SimpleButton:public Widget{
     public:
     void (*select_callback)();
 
-    SimpleButton(char* name, wchar* label, float w, float h, vec4 color, void (*callback)());
+    SimpleButton(char* name, wchar* label, float w, float h, color_f color, void (*callback)());
     ~SimpleButton();
 
 };

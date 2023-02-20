@@ -30,7 +30,7 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 /////////                               SAVE ENTITY                                     /////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SaveEntity::SaveEntity(int gid):BaseEntity(-1){global_id = gid;}
+SaveEntity::SaveEntity(int gid):SharedEntity(-1){global_id = gid;}
 int SaveEntity::SavedLength(){
     int len=sizeof(int)*3;
     for(int i=0;i<COMPONENT_COUNT;i++){

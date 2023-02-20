@@ -5,7 +5,7 @@
 
 namespace Combat{
 
-    void ServerUpdate(BaseEntity* e, float delta);
+    void ServerUpdate(SharedEntity* e, float delta);
     void ClientUpdate(ClientEntity* e, float delta);
 
 };

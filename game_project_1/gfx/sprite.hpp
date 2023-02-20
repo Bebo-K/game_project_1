@@ -8,14 +8,14 @@ class Sprite{
     public:
     Texture     texture;
 	
-    int         x,y,width,height;
-    int         img_width,img_height;
-    int         frame,strip;
-    int         max_frames,max_strips;
-	bool		x_flip=false,y_flip=false;
-	vec2		rotate_center;//offset from image's top left for the center of rotation.
-    vec4        color;
-    float       rotation;
+    int     x,y,width,height;
+    int     img_width,img_height;
+    int     frame,strip;
+    int     max_frames,max_strips;
+	bool    x_flip=false,y_flip=false;
+	vec2    rotate_center;//offset from image's top left for the center of rotation.
+    color_f color;
+    float   rotation;
     
     Sprite(char* ui_texturename);
     Sprite(Texture spritesheet);

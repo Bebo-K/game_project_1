@@ -1,6 +1,7 @@
 #ifndef LOGIC_COMPONENTS_H
 #define LOGIC_COMPONENTS_H
 
+#include <game_project_1/component/component.hpp>
 #include <game_project_1/game/item.hpp>
 #include <game_project_1/game/stats.hpp>
 #include <game_project_1/game/races_and_classes.hpp>
@@ -8,8 +9,10 @@
 
 
 //RPG stat block
-class StatBlock{
-    public:
+class StatBlock: public SharedComponent{
+	public:
+    static int ComponentID = 9;
+
     int level;
     BaseStats base_stats;
 
@@ -18,14 +21,17 @@ class StatBlock{
     StatBlock(StatBlock* s2);
     ~StatBlock();
 
+    inline int ID(){return StatBlock::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
  //Only equipment is sent thru client delta
-class Equip{
-    public:
+class Equip: public SharedComponent{
+	public:
+    static int ComponentID = 10;
+
     ItemInstance head;
     ItemInstance body;
     ItemInstance gloves;
@@ -37,14 +43,17 @@ class Equip{
     Equip(Equip* s2);
     ~Equip();
 
+    inline int ID(){return Equip::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 };
 
 //Inventory is private unless requested
-class Inventory{
-    public:
+class Inventory: public SharedComponent{
+	public:
+    static int ComponentID = 11;
+
     int inventory_slots;
     ItemInstance* items;
 
@@ -52,6 +61,7 @@ class Inventory{
     Inventory(Inventory* i2);
     ~Inventory();
 
+    inline int ID(){return Inventory::ComponentID;}
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
@@ -60,7 +70,7 @@ class Inventory{
 
 
 //Public character info: race, character class, appearance
-class Character{
+class Character: public SharedComponent{
     public:
     RaceID race_id;
     ClassID class_id;
@@ -76,17 +86,24 @@ class Character{
 };
 
 
-//A ServerEntity only component that assigns a globally unique ID
-class Persistance{
-    public:
+//Assigns a globally unique ID 
+class Persistance: public ServerComponent{
+    public: 
+    const static int ServerComponentID = 1;
+
     int global_id;//unique across all scenes+entities, corresponds to a SaveEntity
+
     Persistance();
+    ~Persistance();
+    inline int ID(){return Persistance::ServerComponentID;}
 };
 
-//Server-side NPC "brains"
+//NPC "brains"
 typedef int NPCControllerType;
-class NPCControllerState{
-    public:
+class NPCControllerState: public ServerComponent{
+    public: 
+    const static int ServerComponentID = 2;
+
     NPCControllerType controller_type;
     bool init;//1-time-init control path flag that the controller callback can optionally use
     int current_action;
@@ -96,6 +113,8 @@ class NPCControllerState{
     Array<value> parameters;
 
     NPCControllerState(NPCControllerType type);
+    ~NPCControllerState();
+    inline int ID(){return Persistance::ServerComponentID;}
 };
 
 

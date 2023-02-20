@@ -11,7 +11,7 @@ class UI_Rect{
     public:
     rect_i      rect;
     point_f     center;
-    vec4        color={1.0f,1.0f,1.0f,1.0f};
+    color_f     color;
     float       rotation;
     float       scale;
     

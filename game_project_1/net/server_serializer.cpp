@@ -1,7 +1,7 @@
 #include <game_project_1/net/server_serializer.hpp>
 #include <game_project_1/game/entity_serializer.hpp>
 
-ComponentMask server_delta_client_mask = ~(1 << 11/*Inventory*/);
+bitmask server_delta_client_mask(~(1 << Inventory::ComponentID));
 
 Payload ServerSerializer::FullScene(Player* player_for,ServerScene* scene){
     int scene_size = sizeof(int)*3;//area_id, player_entity, num_entities

@@ -28,7 +28,6 @@ void StatBlock::Write(Serializer& dat){
 }
 
 
-
 Equip::Equip(){}
 Equip::Equip(Equip* e2){
     head = e2->head;
@@ -56,7 +55,6 @@ void Equip::Write(Serializer& dat){
     right_hand.Write(dat);
     left_hand.Write(dat);
 }
-
 
 
 Inventory::Inventory(){
@@ -88,13 +86,13 @@ void Inventory::Write(Serializer& dat){
 }
 
 
-
 Character::Character(){race_id=0;class_id=0;}
 Character::Character(Character* c2){
     race_id = c2->race_id;
     class_id = c2->class_id;
     appearance = c2->appearance;
 }
+Character::~Character(){}
 
 int Character::SerializedLength(){return sizeof(int)*2 + sizeof(CharacterAppearance);}
 void Character::Read(Deserializer& dat){
@@ -103,7 +101,7 @@ void Character::Read(Deserializer& dat){
     appearance.style1 = dat.GetInt();
     appearance.style2 = dat.GetInt();
     appearance.style3 = dat.GetInt();
-    appearance.color1.from_int(dat.GetInt());
+    appearance.color1.rgba(dat.GetInt());
 }
 void Character::Write(Serializer& dat){
     dat.PutInt(race_id);
@@ -111,8 +109,9 @@ void Character::Write(Serializer& dat){
     dat.PutInt(appearance.style1);
     dat.PutInt(appearance.style2);
     dat.PutInt(appearance.style3);
-    dat.PutInt(appearance.color1.to_int());
+    dat.PutInt(appearance.color1.as_code());
 }
+
 
 
 NPCControllerState::NPCControllerState(NPCControllerType type){
@@ -121,5 +120,7 @@ NPCControllerState::NPCControllerState(NPCControllerType type){
     action_counter=0;
     controller_type = type;
 }
+NPCControllerState::~NPCControllerState(){}
 
 Persistance::Persistance(){global_id =0;}
+Persistance::~Persistance(){}

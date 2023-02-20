@@ -3,11 +3,8 @@
 #include <game_project_1/game/spawn.hpp>
 #include <game_project_1/game/entity_serializer.hpp>
 
-ComponentMask player_delta_mask =
-    (1 << 1) | //Position
-    (1 << 5) | //Phys state
-    (1 << 6) | //Move state
-    (1 << 7);  //Action state
+bitmask player_delta_mask = bitmask::of_bits(
+    {Position::ComponentID, PhysicsState::ComponentID, MovementState::ComponentID, ActionState::ComponentID} ,4);
 
 Client* client;
 byte delta_buffer[Datagram::MAX_DATA_LENGTH];

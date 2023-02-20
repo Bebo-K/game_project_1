@@ -359,10 +359,10 @@ Material GLTFScene::GetMaterial(int mat_id){
 		JSONObject* PBRMaterial = material->GetJObject("pbrMetallicRoughness");
 		if(PBRMaterial->HasArray("baseColorFactor")){
 			JSONArray* baseColor=PBRMaterial->GetArray("baseColorFactor");	
-				ret.base_color[0] = baseColor->At(0)->FloatValue();
-				ret.base_color[1] = baseColor->At(1)->FloatValue();
-				ret.base_color[2] = baseColor->At(2)->FloatValue();
-				ret.base_color[3] = baseColor->At(3)->FloatValue();
+				ret.base_color.r = baseColor->At(0)->FloatValue();
+				ret.base_color.g = baseColor->At(1)->FloatValue();
+				ret.base_color.b = baseColor->At(2)->FloatValue();
+				ret.base_color.a = baseColor->At(3)->FloatValue();
 		}
 		if(PBRMaterial->HasJObject("baseColorTexture")){
 			JSONObject* baseColorTexture=PBRMaterial->GetJObject("baseColorTexture");
@@ -433,7 +433,7 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 		//if(attribs->HasInt("TEXCOORD_1")){mesh->texcoord_0_buffer=BuildAccessorBuffer(attribs->GetInt("TEXCOORD_1"));}
 		if(primitive->HasInt("material")){prim->mat = GetMaterial(primitive->GetInt("material"));}
 		else{
-			prim->mat.base_color[0]=prim->mat.base_color[1]=prim->mat.base_color[2]=prim->mat.base_color[3]=1.0f;
+			prim->mat.base_color  = color_f::rgba(1.0f,1.0f,1.0f,1.0f);
 			prim->mat.texture=TextureManager::DefaultTexture();
 			prim->mat.metallic_factor=0;
 			prim->mat.roughness_factor=0;
