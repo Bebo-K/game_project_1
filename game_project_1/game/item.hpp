@@ -16,6 +16,7 @@ class ItemInstance{
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
+    void Clear();
 };
 
 class ItemClass{

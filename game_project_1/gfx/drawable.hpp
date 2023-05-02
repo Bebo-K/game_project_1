@@ -11,7 +11,7 @@ class Drawable{
     vec3  scale;
     char layer;
     bool hidden;
-    char* shader_name;
+    char* shader_name;//Instances are shared
 
     Drawable();
     virtual void Draw(Camera* cam)=0;

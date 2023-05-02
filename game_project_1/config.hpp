@@ -5,8 +5,6 @@
 
 
 
-
-
 namespace config{
     enum ConfigEntryType{INT,FLOAT,BOOL,STRING,WSTRING};
     

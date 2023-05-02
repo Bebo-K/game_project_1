@@ -3,6 +3,8 @@
 
 #include <game_project_1/server/server.hpp>
 #include <game_project_1/net/packets.hpp>
+#include <game_project_1/core/entity.hpp>
+#include <game_project_1/core/player.hpp>
 
 namespace ServerNetHandler{
     extern Server* server;
@@ -24,6 +26,14 @@ namespace ServerNetHandler{
     //Async methods
     void OnPlayerConnect(int player_slot,Payload request);
     void OnPlayerDisconnect(int player_slot,wchar* reason);
+
+
+    //Packet handlers
+    Payload WriteFullScene(Player* player_for,ServerScene* scene);
+    Payload WriteSceneNewEntities(ServerScene* scene);
+    Payload WriteSceneDeletedEntities(ServerScene* scene);
+    Payload WriteSceneDelta(ServerScene* scene);
+    void ParseClientDelta(Player* player_from,ServerScene* scene,Payload p);
 }
 
 

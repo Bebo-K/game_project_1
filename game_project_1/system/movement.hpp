@@ -5,7 +5,7 @@
 
 namespace Movement{
 
-    void Update(SharedEntity* e, float delta);
+    void Update(Entity* e, float delta);
 
 };
 

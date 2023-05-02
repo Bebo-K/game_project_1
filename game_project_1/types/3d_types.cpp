@@ -121,11 +121,15 @@ vec3 vec3::clip(vec3 direction){
         return vec3(x,y,z) - (direction * paralell_component);
     }
     else return {x,y,z};
- }
+}
 
 vec2 vec3::xz(){
     return {x,z};
 }
+
+vec3 vec3::zero(){return {0.0f,0.0f,0.0f};}
+
+
 
 vec2::vec2(){
     x=y=0;

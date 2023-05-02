@@ -1,7 +1,9 @@
 #ifndef SERVER_LEVEL_H
 #define SERVER_LEVEL_H
 
-#include <game_project_1/io/level.hpp>
+#include <game_project_1/core/level.hpp>
+#include <game_project_1/phys/level_colliders.hpp>
+#include <game_project_1/io/level_loader.hpp>
 
 
 
@@ -17,7 +19,7 @@ class ServerLevel{
 
     ServerLevel();
     ~ServerLevel();
-    void LoadArea(int area_id);
+    void Load(LevelLoader& loader);
     void Unload();
 };
 

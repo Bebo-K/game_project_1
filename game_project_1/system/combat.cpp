@@ -3,7 +3,7 @@
 #include <math.h>
 
 
-void Combat::ServerUpdate(SharedEntity* e, float delta){
+void Combat::ServerUpdate(Entity* e, float delta){
     if(e->colliders == null){return;}
      
 

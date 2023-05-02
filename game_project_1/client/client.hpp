@@ -4,7 +4,7 @@
 #include <game_project_1/gui/gui.hpp>
 #include <game_project_1/signal.hpp>
 #include <game_project_1/gfx/renderer.hpp>
-#include <game_project_1/game/player.hpp>
+#include <game_project_1/core/player.hpp>
 #include <game_project_1/client/client_scene.hpp>
 
 class Client{

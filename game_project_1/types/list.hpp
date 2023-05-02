@@ -78,7 +78,8 @@ class List{
         return -1;
     }
     void Set(int index,T* dat){
-        if(index < 0 || index >= length){logger::exception("PArray::Set -> Index %d is out of range.",index);return;}
+        if(index < 0 || index >= length){logger::exception("List::Set -> Index %d is out of range.",index);}
+        if(data[index]==null)count++;
         data[index]=dat;
     }
     T* operator[](int index){
@@ -115,6 +116,12 @@ class List{
         }
         length=0;
         count=0;
+    }
+
+    int Last(){
+        int last=0;
+        for(int i=0;i<length;i++){if(data[i] != null){last=i;}}
+        return last;
     }
 
     //range-for loop iterator methods

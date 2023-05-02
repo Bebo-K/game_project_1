@@ -84,6 +84,61 @@ void BitArray::Clear(){
     int bytes = bits/8 + ((bits % 8) > 0);
     memset(data,0,bytes);
 }
+void BitArray::Print(){
+    for(int bit=0;bit<bits;bit++){
+        int byte = bit/8;
+        int bit_indx = bit%8;
+        logger::info("%s:%c ",bit, ((data[byte] & (1 << bit_indx)) != 0)? 'T':'F');
+    }
+}
+
+/////////////////////////////
+//////***IntegerSet***//////
+///////////////////////////
+IntegerSet::IntegerSet(){
+    allocated=2;
+    data=malloc(sizeof(int)*allocated);
+    length=0;
+}
+IntegerSet::IntegerSet(int size){
+    allocated=size;
+    length=size;
+    data= (size==0)? null:malloc(sizeof(int)*allocated);
+}
+IntegerSet::~IntegerSet(){Clear();}
+
+void IntegerSet::Add(int entry){
+    if(Has(entry)){return;}
+    if(length+1 > allocated){
+        allocated= (allocated==0)? 2:allocated*2;
+        int* new_data = malloc(sizeof(int)*allocated);
+        for(int i=0;i<length;i++){new_data[i] = data[i];}
+        free(data);
+        data=new_data;
+    }
+    data[length]=entry;
+    length++;
+}
+bool IntegerSet::Has(int entry){
+    for(int i=0;i<length;i++){if(data[i]==entry){return true;}}
+    return false;
+}
+void IntegerSet::Remove(int entry){
+    if(!Has(entry)){return;}
+    int index =0;
+    for(int i=0;i<length;i++){if(data[i]==entry){index=i;}}
+    if(index != length-1){data[index]=data[length-1];}
+    length--;
+}
+void IntegerSet::Clear(){
+    if(data != null){free(data);data=null;}
+    length=0;
+    allocated=0;
+}
+
+int IntegerSet::operator[](int index){
+    return data[index];
+}
 
 
 /////////////////////////////

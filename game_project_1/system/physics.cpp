@@ -6,13 +6,13 @@
 const float GRAVITY_TERMINAL= -128.0f;
 const float GRAVITY_ACCEL = -64.0f;
 
-void ApplyGravity(SharedEntity* e, float delta){
+void ApplyGravity(Entity* e, float delta){
     if(e->velocity.y > GRAVITY_TERMINAL && e->phys_state->midair){
         e->velocity.y += delta*GRAVITY_ACCEL;
     }
 }
 
-void ApplyVelocityDampening(SharedEntity* e, float delta){
+void ApplyVelocityDampening(Entity* e, float delta){
     if(e->phys_state->midair){
         float damper_amount = (float) pow(1-e->phys_props->midair_velocity_damper,delta);
 		e->velocity.x *= damper_amount;
@@ -25,7 +25,7 @@ void ApplyVelocityDampening(SharedEntity* e, float delta){
     }
 }
 
-void UpdateMovementState(SharedEntity* e){
+void UpdateMovementState(Entity* e){
     if(e->phys_state->midair){
         if(e->move_state->is_jumping){
             e->move_state->current_movement = MovementTypeID::JUMPING;

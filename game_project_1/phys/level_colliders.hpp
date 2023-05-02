@@ -1,11 +1,12 @@
 #ifndef LEVEL_COLLIDERS_H
 #define LEVEL_COLLIDERS_H
 
+#include <game_project_1/gfx/model.hpp>
 #include <game_project_1/types/3d_types.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/phys/collider.hpp>
 #include <game_project_1/phys/collision_types.hpp>
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 
 namespace LevelCollision{
     enum SurfaceType{SOLID,NOCLIP,TRIGGER,WATER,DAMAGE,DEATH};
@@ -56,8 +57,8 @@ class MeshCollider{
     void SetVertices(MeshGroup* mesh);
     void SetSurface(LevelCollision::Surface* surface);
 
-    void CheckCollisions(SharedEntity* e,vec3 step_pos,vec3 step_velocity,LevelCollision::CollisionResult* results);
-    void CheckOOB(SharedEntity* e);
+    void CheckCollisions(Entity* e,vec3 step_pos,vec3 step_velocity,LevelCollision::CollisionResult* results);
+    void CheckOOB(Entity* e);
 };
 
 class HeightMapCollider{
@@ -72,8 +73,8 @@ class HeightMapCollider{
     HeightMapCollider(float width, float height, float depth, Image* img,LevelCollision::Surface* surface);
     //~HeightMap();
 
-    void CheckCollisions(SharedEntity* e,vec3 step_pos,LevelCollision::CollisionResult* list);
-    //void CheckOOB(SharedEntity* e);
+    void CheckCollisions(Entity* e,vec3 step_pos,LevelCollision::CollisionResult* list);
+    //void CheckOOB(Entity* e);
 };
 HeightMapCollider MakeDeathPlane(float z_pos);
 

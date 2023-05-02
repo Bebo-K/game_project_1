@@ -2,8 +2,8 @@
 #include <game_project_1/net/network.hpp>
 #include <game_project_1/net/payload.hpp>
 #include <game_project_1/net/packets.hpp>
-#include <game_project_1/net/server_serializer.hpp>
 #include <game_project_1/content/base_content.hpp>
+#include <game_project_1/component/shared/character.hpp>
 
 
 Server* ServerNetHandler::server=nullptr;
@@ -66,6 +66,7 @@ void ServerNetHandler::OnPlayerConnect(int player_slot,Payload request){
     if(player_save != nullptr){//If the player has an existing save, go ahead and continue it from the last entrance
         player_save = new_player->save;
         server->TransitionPlayer(0,player_save->last_scene,player_save->last_entrance,player_slot);
+        OnPlayerSceneTransition(player_slot,player_save->last_scene);
     }
 
     Packet::PLYR player_info;//send PLYR packets to all current players for the newly joined player
@@ -87,7 +88,7 @@ void ServerNetHandler::OnPlayerConnect(int player_slot,Payload request){
 }
 
 void ServerNetHandler::OnPlayerDisconnect(int player_slot,wchar* reason){
-    server->SaveAndRemovePlayer(player_slot);
+    server->scene_manager.SaveAndRemovePlayer(player_slot);
 
     Packet::PLDC dc_notification;
         dc_notification.player_id = player_slot;
@@ -100,18 +101,28 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
     server->players[player_slot].save = save;
 
     ServerEntity* player_base_entity = new ServerEntity(-1);
-        player_base_entity->type = BaseContent::HUMANOID;
-        player_base_entity->name = wstr::new_copy(new_save_info.player_name);
-        player_base_entity->char_data = new Character();
-            player_base_entity->char_data->class_id = new_save_info.class_id;
-            player_base_entity->char_data->race_id = new_save_info.race_id;
-            player_base_entity->char_data->appearance.color1 = new_save_info.color_1;
-            player_base_entity->char_data->appearance.style1 = new_save_info.style_1;
-            player_base_entity->char_data->appearance.style2 = new_save_info.style_2;
-            player_base_entity->char_data->appearance.style3 = new_save_info.style_3; 
+
+
+    Identity* identity = new Identity();
+        identity->name = wstr::new_copy(new_save_info.player_name);
+        identity->type = BaseContent::HUMANOID;
+
+    Character* char_data = new Character();
+        char_data->class_id = new_save_info.class_id;
+        char_data->race_id = new_save_info.race_id;
+        char_data->appearance.color1 = new_save_info.color_1;
+        char_data->appearance.style1 = new_save_info.style_1;
+        char_data->appearance.style2 = new_save_info.style_2;
+        char_data->appearance.style3 = new_save_info.style_3; 
+
+    player_base_entity->AddComponent(identity);
+    player_base_entity->AddComponent(char_data);
+
     dummy_scene.BuildEntity(player_base_entity,Location());
+
     save->character_global_id = server->save.PersistEntity(player_base_entity);
-    server->TransitionPlayer(0,save->last_scene,save->last_entrance,player_slot);
+    server->scene_manager.TransitionPlayer(0,save->last_scene,save->last_entrance,&server->players[player_slot]);
+    OnPlayerSceneTransition(player_slot,save->last_scene);
     delete player_base_entity;
 }
 
@@ -127,7 +138,7 @@ void ServerNetHandler::OnPlayerInfoUpdate(int player_slot){
 
 void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
     logger::debug("Sending player %d scene transition to area %d\n",player_slot,area_id);
-    Payload new_scene_payload = ServerSerializer::FullScene(&server->players[player_slot],server->GetActiveScene(area_id));
+    Payload new_scene_payload = WriteFullScene(&server->players[player_slot],server->GetActiveScene(area_id));
 
     ServerNetwork::SendToPlayer(player_slot,new_scene_payload);
     free(new_scene_payload.data);
@@ -136,13 +147,13 @@ void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
 
 void ServerNetHandler::OnClientDelta(int player_slot,Payload delta){
     Player* player = &server->players[player_slot];
-    ServerSerializer::DeserializeClientDelta(player,server->GetActiveScene(player->entity_scene),delta);
+    ParseClientDelta(player,server->GetActiveScene(player->entity_scene),delta);
 }
 
 void ServerNetHandler::SendEntityDeltas(ServerScene* s){
-    Payload delta_payload = ServerSerializer::SceneDelta(s);
-    Payload spawn_payload = ServerSerializer::SceneNewEntities(s);
-    Payload despawn_payload = ServerSerializer::SceneDeletedEntities(s);
+    Payload delta_payload = WriteSceneDelta(s);
+    Payload spawn_payload = WriteSceneNewEntities(s);
+    Payload despawn_payload = WriteSceneDeletedEntities(s);
 
     if(delta_payload.data != null){
         SendToPlayersInArea(delta_payload,s->area_id);

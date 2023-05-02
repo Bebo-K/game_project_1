@@ -50,6 +50,15 @@ void Serializer::PutFloat(float f){
     *ptr =  f;
     place += sizeof(float);
 }
+void Serializer::PutVec3(vec3 v){
+    if((int)(place + sizeof(vec3)) > data_length){
+        logger::exception("Serializer.PutVec3(%f) writes past the end of the data buffer (pos:%d,len%d)",f,place,data_length);}
+    vec3* ptr = (vec3*)&raw_data[place];
+    *ptr =  f;
+    place += sizeof(vec3);
+}
+
+
 void Serializer::PutString(char* str){
     char* ptr = (char*)&raw_data[place];
     int str_len = cstr::len(str);
@@ -64,7 +73,7 @@ void Serializer::PutString(char* str){
 void Serializer::PutWString(wchar* str){
     wchar* ptr = (wchar*)&raw_data[place];
     int str_len = wstr::len(str);
-    int write_len = (str_len > 0)? (str_len+1)*sizeof(wchar) : sizeof(wchar);    
+    int write_len = (str_len+1)*sizeof(wchar);   
     if(place + write_len > data_length){
         logger::exception("Serializer.PutWString(%S) writes past the end of the data buffer (pos:%d,len%d)",str,place,data_length);}
 
@@ -99,6 +108,11 @@ float Deserializer::GetFloat(){
     place += sizeof(float);
     return *ret;
 }
+vec3 Deserializer::GetVec3(){
+    vec3* ret = (vec3*)&raw_data[place];
+    place += sizeof(vec3);
+    return *ret;
+}
 char* Deserializer::GetString(){
     char* str = cstr::new_copy((char*)&raw_data[place]);
     place += cstr::len(str)+1;
@@ -115,6 +129,11 @@ byte* Deserializer::CopyBytes(int bytes){
     memcpy(ret,&raw_data[place],bytes);
     place += bytes;
     return ret;
+}
+
+void Deserializer::CopyBytesTo(byte* dest,int bytes){
+    memcpy(dest,&raw_data[place],bytes);
+    place += bytes;
 }
 
 int Deserializer::AmountRead(){return place;}

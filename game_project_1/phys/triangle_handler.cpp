@@ -1,7 +1,7 @@
 #include <game_project_1/phys/triangle_handler.hpp>
 
 LevelCollision::CollisionResult TriangleHandler::DoCollision(
-    SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     float plane_y_component = triangle.face.normal.y;
 
     if(e->phys_state && CheckTriangleBounds(step_position,triangle)){
@@ -30,7 +30,7 @@ bool TriangleHandler::CheckTriangleBounds(vec3 step_position,Triangle triangle){
 }
 
 LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
-    SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     float vertical_intersect = triangle.face.YIntersect(step_position.x, step_position.z);
@@ -72,7 +72,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
 }
 		
 LevelCollision::CollisionResult TriangleHandler::HandleWallCase(
-    SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     vec3 center = step_position;
@@ -142,7 +142,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleWallCase(
 }
 	
 LevelCollision::CollisionResult TriangleHandler::HandleCeilingCase(
-    SharedEntity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
+    Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     LevelCollision::CollisionResult ret =LevelCollision::CollisionResult::None();
     
     vec3 top = step_position;

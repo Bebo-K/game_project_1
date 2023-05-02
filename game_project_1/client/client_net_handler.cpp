@@ -1,13 +1,21 @@
 #include <game_project_1/client/client_net_handler.hpp>
+#include <game_project_1/core/entity.hpp>
+#include <game_project_1/component/component_ids.hpp>
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/net/network.hpp>
 #include <game_project_1/net/client_serializer.hpp>
+#include <game_project_1/game/races_and_classes.hpp>
+
 
 Client* ClientNetHandler::client=nullptr;
 
+bitmask player_delta_mask = bitmask::of_bits(
+    {SharedComponent::TypeID<PhysicsState>,SharedComponent::TypeID<MovementState>,SharedComponent::TypeID<ActionState>} ,3);
 
-void ClientNetHandler::Init(Client* c){client = c;ClientSerializer::Init(c);}
-void ClientNetHandler::Free(){client=nullptr;ClientSerializer::Free();}
+byte delta_buffer[Datagram::MAX_DATA_LENGTH];
+
+void ClientNetHandler::Init(Client* c){client = c;}
+void ClientNetHandler::Free(){client=nullptr;}
 
 void ClientNetHandler::Update(int frames){
     if(ClientNetwork::IsRunning()){
@@ -77,36 +85,26 @@ void ClientNetHandler::HandlePayload(Payload payload){
             break;
         }
         case PacketID::DLTA:{
-            ClientSerializer::DeserializeServerDelta(&client->scene,payload);
+            ParseServerDeltaPacket(&client->scene,payload);
             break;
         }
         case PacketID::SPWN:{
-            ClientSerializer::DeserializeSpawnEntities(&client->scene,payload);
+            ParseSpawnEntitiesPacket(&client->scene,payload);
             break;
         }
         case PacketID::DSPN:{
-            ClientSerializer::DeserializeDespawnEntities(&client->scene,payload);
+            ParseDespawnEntitiesPacket(&client->scene,payload);
             break;
         }
         case PacketID::SCNE:{
-            ClientSerializer::DeserializeNewScene(&client->scene,payload);
+            ParseNewScenePacket(&client->scene,payload);
             break;
         }
         default:break;
     }
 }
 
-void ClientNetHandler::SendPlayerDelta(){
-    if(ClientNetwork::IsRunning()){
-        ClientEntity* player = client->scene.GetEntity(client->Me()->entity_id);
-        Payload delta = ClientSerializer::ClientDelta(player);
-        if(delta.data != nullptr){
-            ClientNetwork::Send(delta);
-        }
-    }
-}
-
-void ClientNetHandler::CreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3){
+void ClientNetHandler::SendCreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3){
     Packet::SNPS start_new_player_save;
         start_new_player_save.SetPlayerName(playername);
         start_new_player_save.save_id=client->my_save_id;
@@ -120,7 +118,23 @@ void ClientNetHandler::CreatePlayer(wchar* playername,int player_race, int playe
     client->Me()->character_name = wstr::new_copy(playername);
 
     ClientNetwork::Send(start_new_player_save.GetPayload());
-    client->ui.ingame_menu->Open();
+    client->ui.loading_menu->Open();
     client->ui.character_create_menu->Close();
 }
+
+void ClientNetHandler::SendPlayerDelta(){
+    if(ClientNetwork::IsRunning()){
+        ClientEntity* player = client->scene.GetEntity(client->Me()->entity_id);
+        int delta_len = sizeof(int) + player->SerializedLength(player_delta_mask);
+        if(delta_len > sizeof(int)){
+            Payload delta(PacketID::CDLT,delta_len,delta_buffer);
+            Serializer delta_out(ret.data,ret.length);
+                delta_out.PutInt(entity->id);
+                entity->Write(delta_out,player_delta_mask); 
+            ClientNetwork::Send(delta);
+        }
+    }
+}
+
+
 

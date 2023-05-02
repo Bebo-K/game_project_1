@@ -43,7 +43,7 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     } 
 }
 
-void LevelCollision::RunCollisionStep(SharedEntity* e,Array<MeshCollider> meshes, float step_delta,CollisionResult* list){
+void LevelCollision::RunCollisionStep(Entity* e,Array<MeshCollider> meshes, float step_delta,CollisionResult* list){
     vec3 start_position = e->GetPos();
     vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
@@ -71,7 +71,7 @@ void LevelCollision::RunCollisionStep(SharedEntity* e,Array<MeshCollider> meshes
 }
 
 //Sub-step collision handling for solid collisions only.
-vec3 LevelCollision::HandleSolidStepCollisions(SharedEntity* e, vec3 step_movement, CollisionResult* list){
+vec3 LevelCollision::HandleSolidStepCollisions(Entity* e, vec3 step_movement, CollisionResult* list){
     CollisionResult* floor_instance=nullptr;
     vec3 movement = step_movement;
     vec3 shunt = {0,0,0};

@@ -49,6 +49,8 @@ struct vec3{
     vec2 xz();
     vec3 clip(vec3 direction);
 
+    static vec3::zero();
+
 };
 
 struct vec4{

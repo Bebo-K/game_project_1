@@ -6,8 +6,7 @@
 #include <game_project_1/log.hpp>
 
 
-//A simple iterable array that allocates memory but does not track it's state. 
-//Pass by value safe +s allocation/deallocation must be done manually
+
 template <typename T>
 class Array;
 template <typename T>
@@ -19,6 +18,8 @@ struct ArrayIterator{
     bool operator==(ArrayIterator<T>& l2);
     bool operator!=(ArrayIterator<T>& l2);
 };
+
+//A simple iterable array that can be resized (via manual call) + does not track what memory is in use
 template <typename T>
 struct Array{ 
     friend struct ArrayIterator<T>;
@@ -38,13 +39,15 @@ struct Array{
     ~Array(){}
 
     void Allocate(int size){
-        if(data != nullptr){
-            logger::warn("Array::Allocate -> Data was already allocated for this array\n");
-        }
         if(size <= 0){
             logger::exception("Array::Allocate -> Cannot allocate an array of <= 0 length\n");
         }
+        T* old_data = data;
         data=(T*)calloc(size,sizeof(T));
+        if(old_data != nullptr){
+            memcpy(data,old_data, sizeof(T)*((length < size)?length:size));
+            free(old_data);
+        }
         length=size;
     }
 
@@ -130,6 +133,28 @@ struct BitArray{
     void Unset(int index);
     bool Toggle(int index);//returns new value;
     void Clear();
+};
+
+//A resizeable array of unique integers. Order is not guaranteed as things may shift 
+class IntegerSet{
+    private:
+    int     allocated;
+    public:
+    int     length;
+    int*    data;
+
+    IntegerSet();
+    IntegerSet(int length);
+    ~IntegerSet();
+
+    void Add(int entry);
+    bool Has(int entry);
+    void Remove(int entry);
+    void Clear();
+
+
+    int operator[](int index);
+    //int* Harden();
 };
 
 //A resizeable array of data blocks and corresponding BitArray of block occupancy.

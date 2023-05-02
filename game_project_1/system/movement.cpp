@@ -3,7 +3,7 @@
 #include <math.h>
 
 
-void Movement::Update(SharedEntity* e, float delta){
+void Movement::Update(Entity* e, float delta){
     if(!e->move_props || !e->move_state){return;}
     MoveProperties* move_props = e->move_props;
     MovementState* move_state = e->move_state;

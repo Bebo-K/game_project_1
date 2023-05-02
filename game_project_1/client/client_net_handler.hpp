@@ -13,8 +13,14 @@ namespace ClientNetHandler{
     void Free();
     void Update(int frames);
     void HandlePayload(Payload p);
-    void CreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3);
+    void SendCreatePlayer(wchar* playername,int player_race, int player_class,color color1,int style1,int style2,int style3);
     void SendPlayerDelta();
+    
+    //Packet handlers
+    void ParseNewScenePacket(ClientScene* scene, Payload payload);
+    void ParseServerDeltaPacket(ClientScene* scene, Payload payload);
+    void ParseSpawnEntitiesPacket(ClientScene* scene, Payload payload);
+    void ParseDespawnEntitiesPacket(ClientScene* scene, Payload payload);
 
 };
 

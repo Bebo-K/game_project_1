@@ -74,4 +74,3 @@ Stream* AssetManager::Level(int area_id){
     free(filename);
     return level_stream;
 }
-

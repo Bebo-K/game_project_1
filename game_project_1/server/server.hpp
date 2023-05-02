@@ -2,10 +2,10 @@
 #define SERVER_H
 
 #include <game_project_1/types/list.hpp>
-#include <game_project_1/server/server_scene.hpp>
 #include <game_project_1/game/savefile.hpp>
 #include <game_project_1/game/player.hpp>
 #include <game_project_1/signal.hpp>
+#include <game_project_1/server/scene_manager.hpp>
 
 class Server{
     private:
@@ -18,32 +18,19 @@ class Server{
     int current_players;
     int max_players;
     Player* players;
-    Pool<ServerScene> active_scenes;
-    SaveFile save;
+    SceneManager scene_manager;
 
     Server();
     ~Server();
     void Start();
     void StartShutdown();
-    
-    ServerScene* LoadScene(int area_id);
-    void UnloadScene(int area_id);
-    ServerScene* GetActiveScene(int area_id);//returns the scene if it's active, otherwise returns null.
-    bool SceneIsActive(int area_id);
 
     void Update(int frames);
-    void UpdateScene(ServerScene* s,int frames);
-
-    void UpdateNetwork(int frames);
     void UpdatePlayers();
 
     void HandleSignals();
     static void Signal(EventSignal val);
     static Server* GetServer();
-
-    ServerEntity* TransitionPlayer(int from_area, int to_area, int entrance_id,int player_slot);
-    ServerEntity* TransitionGlobalEntity(int from_area, int to_area, int entrance_id,int global_id);
-    void SaveAndRemovePlayer(int player_slot);
 };
 
 void ServerMain();

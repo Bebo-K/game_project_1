@@ -12,7 +12,7 @@ CharacterCreateMenu* charmenu = nullptr;
 
 void StartCharacterCallback(){
     if(charmenu->player_name != nullptr && wstr::len(charmenu->player_name)!= 0){
-        ClientNetHandler::CreatePlayer(charmenu->player_name,charmenu->race_id,charmenu->class_id,charmenu->color1,charmenu->styles[0],charmenu->styles[1],charmenu->styles[2]);
+        ClientNetHandler::SendCreatePlayer(charmenu->player_name,charmenu->race_id,charmenu->class_id,charmenu->color1,charmenu->styles[0],charmenu->styles[1],charmenu->styles[2]);
     }
 }
 

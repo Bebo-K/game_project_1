@@ -44,6 +44,12 @@ Code:
         short method:
         void FooBar(param){1-2 statements;}
 
+    -File size:
+        - As a rule of thumb, try to keep ~200 lines of code or under
+        - Not hard and fast rule, exceptions include
+            - self-enclosed systems that don't make sense to break apart (Reading complex file types, etc.)
+        - Re-evaluate code for duplicate work, for example
+            - non-trivial memory management mixed with functional code
 
 
 

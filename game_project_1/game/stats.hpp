@@ -2,6 +2,7 @@
 #define STATS_H
 
 #include <game_project_1/types/data_types.hpp>
+#include <game_project_1/io/serializer.hpp>
 
 //RPG stat block
 class BaseStats{
@@ -18,6 +19,10 @@ class BaseStats{
     ~BaseStats();
 
     int SerializedLength();
+    void Read(Deserializer& dat);
+    void Write(Serializer& dat);
+    void Clear();
+
     void Add(BaseStats* s2);
     void Copy(BaseStats* s2);
     void AddRandomizedBonus(int max_bonus);
@@ -64,6 +69,7 @@ struct CharacterAppearance{
     ~CharacterAppearance();
 
     void Copy(CharacterAppearance* a2);
+    void Clear();
 };
 
 #endif

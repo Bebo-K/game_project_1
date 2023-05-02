@@ -14,3 +14,7 @@ void ItemInstance::Write(Serializer& dat){
     dat.PutInt(type);
     dat.PutInt(stack_count);
 }
+void ItemInstance::Clear(){
+    type=0;
+    stack_count=0;
+}

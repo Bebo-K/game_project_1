@@ -2,6 +2,7 @@
 #define SERIALIZER_H
 
 #include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/3d_types.hpp>
 #include <game_project_1/types/str.hpp>
 
 class Serializer{
@@ -21,6 +22,7 @@ class Serializer{
     void PutByte(byte b);
     void PutInt(int i);
     void PutFloat(float f);
+    void PutVec3(vec3 v);
     void PutString(char* str);
     void PutWString(wchar* str);
     void WriteBytes(byte* dat,int len);
@@ -37,13 +39,14 @@ class Deserializer{
     byte GetByte();
     int GetInt();
     float GetFloat();
+    vec3 GetVec3();
     char* GetString();
     wchar* GetWString();
     byte* CopyBytes(int bytes);
+    void CopyBytesTo(byte* dest,int bytes);
     int  AmountRead();
 
 };
-
 
 
 

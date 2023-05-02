@@ -2,9 +2,6 @@
 #include <game_project_1/io/asset_manager.hpp>
 
 
-Map<EntityClass,ClientEntityBuilder> ClientScene::entity_builders;
-
-
 ClientScene::ClientScene():renderer(),level(),entities(8){
     area_id=-1;
     global_timer=0;
@@ -50,8 +47,8 @@ ClientEntity* ClientScene::GetEntity(int eid){
 void ClientScene::DestroyEntity(int eid){
     for(int i=0;i<entities.Count();i++){
         if(entities[i]->id==eid){
-            if(entities[i]->models != null){renderer.Remove(entities[i]->models);}
-            if(entities[i]->sprites != null){renderer.Remove(entities[i]->sprites);}
+            if(entities[i]->Has<ModelSet>){renderer.Remove(e->ClientGet<ModelSet>());}
+            if(entities[i]->Has<SpriteSet>){renderer.Remove(e->ClientGet<SpriteSet>());}
             entities.Delete(i);break;
         }
     }
@@ -68,15 +65,19 @@ bool ClientScene::OnInput(Input::Event input){
     else return camera_manager.HandleCameraInput(input);
 }
 
-void ClientScene::SpawnEntity(ClientEntity* e,int spawn_type_id){
-    logger::debug("Spawning entity %s with ID %d\n",e->name,e->id);
+void ClientScene::SpawnEntity(ClientEntity* e){
+
+    logger::debug("Spawning entity id %d",e->id);
+    if(e->Has<Identity>()){logger::debug("(%s)\n",e->Get<Identity>()->name);}
+    else{logger::debug("\n");}
 
     if(entity_builders.Has(e->type)){
         ClientEntityBuilder builder = entity_builders.Get(e->type);
         builder(e,this);
     }
-    if(e->models != nullptr){renderer.Add(e->models);}
-    if(e->sprites != nullptr){renderer.Add(e->sprites);}
+    
+    if(e->Has<ModelSet>){renderer.Add(e->ClientGet<ModelSet>());}
+    if(e->Has<SpriteSet>){renderer.Add(e->ClientGet<SpriteSet>());}
     
     switch(spawn_type_id){//TODO:
         default:break;
@@ -85,11 +86,5 @@ void ClientScene::SpawnEntity(ClientEntity* e,int spawn_type_id){
 void ClientScene::DespawnEntity(int eid,int despawn_type_id){
     switch(despawn_type_id){//TODO:
         default: DestroyEntity(eid);break;//immediate mode
-    }
-}
-
-void ClientScene::RegisterEntityBuilder(EntityClass type, ClientEntityBuilder builder){
-    if(!entity_builders.Has(type)){
-        entity_builders.Add(type,builder);
     }
 }

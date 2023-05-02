@@ -1,7 +1,8 @@
 #include <game_project_1/phys/level_colliders.hpp>
 #include <game_project_1/phys/collision_types.hpp>
 #include <game_project_1/phys/triangle_handler.hpp>
-#include <game_project_1/component/phys_components.hpp>
+#include <game_project_1/component/shared/physics_properties.hpp>
+#include <game_project_1/component/shared/physics_state.hpp>
 #include <game_project_1/log.hpp>
 
 using namespace LevelCollision;
@@ -188,13 +189,14 @@ HeightMapCollider MakeDeathPlane(float z_pos){
     return ret;
 }
 
-void MeshCollider::CheckCollisions(SharedEntity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
+void MeshCollider::CheckCollisions(Entity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
+    PhysicsProperties phys_props = e->Get<PhysicsProperties>();
+    if(!bounds.ContainsCircle_XZ(step_pos,phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
         if(tris[t].IsZeroArea())continue;
         CollisionResult new_instance = 
-            TriangleHandler::DoCollision(e,&surface,step_pos,step_velocity,e->phys_props->world_hitsphere,tris[t]);
+            TriangleHandler::DoCollision(e,&surface,step_pos,step_velocity,phys_props->world_hitsphere,tris[t]);
 
         if(!new_instance.isNone()){
             for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
@@ -204,16 +206,17 @@ void MeshCollider::CheckCollisions(SharedEntity* e,vec3 step_pos,vec3 step_veloc
     }
 }
 
-void MeshCollider::CheckOOB(SharedEntity* e){
-    vec3 step_pos = e->GetPos();
+void MeshCollider::CheckOOB(Entity* e){
+    vec3 step_pos = e->Get<Position>()->GetPos();
+    PhysicsState phys_state = e->Get<PhysicsState>();
     if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
         if(tris[t].IsZeroArea())continue;
-        if(e->phys_state &&  TriangleHandler::CheckTriangleBounds(step_pos,tris[t])){
-            e->phys_state->in_bounds=true;
+        if(phys_state &&  TriangleHandler::CheckTriangleBounds(step_pos,tris[t])){
+            phys_state->in_bounds=true;
         }
     }
 }
 
-void HeightMapCollider::CheckCollisions(SharedEntity* e,vec3 step_pos,CollisionResult* list){}
+void HeightMapCollider::CheckCollisions(Entity* e,vec3 step_pos,CollisionResult* list){}

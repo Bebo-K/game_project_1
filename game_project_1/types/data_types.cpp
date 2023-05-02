@@ -19,7 +19,7 @@ bitmask bitmask::of_bits(int a, int b){return bitmask((1<<a)|(1<<b));}
 bitmask bitmask::of_bits(int a, int b, int c){return bitmask((1<<a)|(1<<b)|(1<<c));}
 //...
 bitmask bitmask::of_bits(int[] a,int l){
-    Bitmask mask(0);
+    bitmask mask(0);
     for(int i=0;i<l;i++){mask.Set(a);}
     return mask;
 }
@@ -27,7 +27,9 @@ void bitmask::set(int place){val |= bit(place);}
 void bitmask::clear(int place){val &= ~bit(place);}
 void bitmask::toggle_bit(int place){val ^= bit(place);}
 bool bitmask::get_bit(int place){return (val & bit(place)) != 0;}
-
+void bitmask::and_with(bitmask& b2){val &= b2.val;}
+void bitmask::or_with(bitmask& b2){val |= b2.val;}
+void bitmask::invert(bitmask& b2){b2.val = ~b2.val;}
 
 void color::rgba(byte R, byte G, byte B, byte A){
     r=R;b=B;g=G;a=A;

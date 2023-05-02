@@ -19,10 +19,10 @@ namespace LevelCollision {
 	void ClientFrame(ClientEntity* e,ClientScene* s,float delta);
 	void ServerFrame(ServerEntity* e,ServerScene* s,float delta);
 
-	void BaseFrame(SharedEntity* e,Array<MeshCollider>* meshes,float delta,bool server);
+	void BaseFrame(Entity* e,Array<MeshCollider>* meshes,float delta,bool server);
 	
-	void RunCollisionStep(SharedEntity* e, Array<MeshCollider> meshes,float step_delta,CollisionResult* list);
-	vec3 HandleSolidStepCollisions(SharedEntity* e, vec3 step_movement,CollisionResult* list);
+	void RunCollisionStep(Entity* e, Array<MeshCollider> meshes,float step_delta,CollisionResult* list);
+	vec3 HandleSolidStepCollisions(Entity* e, vec3 step_movement,CollisionResult* list);
 	
 	void RegisterClientEntityClassCallbacks(EntityClass type,ClientHandlerCallback client_callback);
 	void RegisterServerEntityClassCallbacks(EntityClass type,ServerHandlerCallback server_callback);

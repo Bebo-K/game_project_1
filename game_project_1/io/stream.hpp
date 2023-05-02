@@ -45,10 +45,6 @@ class StreamReader{
 };
 */
 
-byte* ReadStream(Stream* stream);
-
-
-
 
 
 #endif

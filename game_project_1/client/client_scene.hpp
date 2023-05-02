@@ -12,12 +12,7 @@
 #include <game_project_1/system/animation_controller.hpp>
 
 
-class ClientScene;
-typedef void (*ClientEntityBuilder)(ClientEntity*,ClientScene*);
-
 class ClientScene{
-    private:
-    static Map<int,ClientEntityBuilder> entity_builders;
     public:
     int  area_id;
     long long global_timer;//Frame count since the scene has been loaded.
@@ -45,8 +40,6 @@ class ClientScene{
 
     void SetPlayerControl(int eid);
     bool OnInput(Input::Event input);
-
-    static void RegisterEntityBuilder(EntityClass type, ClientEntityBuilder builder);
 };
 
 

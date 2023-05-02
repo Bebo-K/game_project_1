@@ -2,6 +2,7 @@
 #include <game_project_1/io/json.hpp>
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/io/asset_manager.hpp>
+#include <game_project_1/io/level_loader.hpp>
 #include <game_project_1/types/pool.hpp>
 
 char* ServerLevel::default_shader = "level_debug";
@@ -12,9 +13,7 @@ ServerLevel::~ServerLevel(){
     Unload();
 }
 
-void ServerLevel::LoadArea(int area_id){
-    LevelLoader loader(area_id);
-
+void ServerLevel::Load(LevelLoader& loader){
     collmeshes = loader.LoadCollisionMeshes();
     entrances = loader.LoadEntrances();
     exits = loader.LoadExits();

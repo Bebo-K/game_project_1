@@ -1,9 +1,12 @@
-#ifndef CONTENT_ANIMATION_CONTROLLERS_H
-#define CONTENT_ANIMATION_CONTROLLERS_H
+#ifndef BASE_CONTENT_ANIMATION_CONTROLLERS_H
+#define BASE_CONTENT_ANIMATION_CONTROLLERS_H
 
-#include <game_project_1/game/entity.hpp>
-#include <game_project_1/component/anim_components.hpp>
-#include <game_project_1/component/logic_components.hpp>
+#include <game_project_1/core/entity.hpp>
+
+#include <game_project_1/component/client/animation_state.hpp>
+#include <game_project_1/component/server/npc_properties.hpp>
+#include <game_project_1/gfx/model.hpp>
+
 #include <game_project_1/server/server_scene.hpp>
 
 

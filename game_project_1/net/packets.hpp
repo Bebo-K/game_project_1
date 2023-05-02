@@ -3,8 +3,6 @@
 
 #include <game_project_1/net/payload.hpp>
 #include <game_project_1/types/str.hpp>
-#include <game_project_1/game/savefile.hpp>
-#include <game_project_1/component/logic_components.hpp>
 
 //Packet structures are wrappers for a payload's data buffer
 namespace Packet{
