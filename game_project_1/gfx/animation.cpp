@@ -2,7 +2,7 @@
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/types/3d_types.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <string.h>
 #include <math.h>
 

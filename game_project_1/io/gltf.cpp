@@ -1,6 +1,6 @@
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/io/asset_manager.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/types/list.hpp>
 

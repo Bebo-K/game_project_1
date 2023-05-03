@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/camera.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 Camera::Camera(){
     x = 0.0f;

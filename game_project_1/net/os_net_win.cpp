@@ -15,7 +15,7 @@
 
 #include <game_project_1/net/os_net.hpp>
 #include <game_project_1/net/network.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/config.hpp>
 
 //using namespace OSNetwork;

@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/ui_quad.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 
 //Render 2d quads on one big triangle instead of 2 in a quad, to prevent diagonal seams.

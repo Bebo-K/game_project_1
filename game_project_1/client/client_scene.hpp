@@ -1,7 +1,7 @@
 #ifndef CLIENT_SCENE_H
 #define CLIENT_SCENE_H
 
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 #include <game_project_1/gfx/renderer.hpp>
 #include <game_project_1/client/client_level.hpp>
 

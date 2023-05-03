@@ -4,24 +4,18 @@
 
 using namespace EntityCollision;
 
-bool EntityClassPair::operator==(EntityClassPair& b){//if one class is set, a second key of '0' is a wildcard
-    return  (class_a==b.class_a && (class_b ==0 || class_b == b.class_b)) ||
-            (class_b==b.class_a && (class_a ==0 || class_a == b.class_b));
-}
-bool EntityClassPair::operator==(int b){//for null comparison. Pair {0,0} is null/catchall
-    return (class_a==b && class_b==b);
-}
-
-Map<EntityClassPair,ClientHandlerCallback> EntityPairClientCollisionHandlers;
-Map<EntityClassPair,ServerHandlerCallback> EntityPairServerCollisionHandlers;
+Map<int,ClientHandlerCallback> ClientCollisionHandlers;
+Map<int,ServerHandlerCallback> ServerCollisionHandlers;
 
 CollisionResult EntityCollision::CheckCollision(Entity* e1, Entity* e2){
-    if(e1->colliders == null || e2->colliders == null)return CollisionResult(false);
+    if(!e1->Has<ColliderSet>() || e2->Has<ColliderSet>())return CollisionResult(false);
     vec3 point={0,0,0};
-    for(ShapeCollider* c1:*(e1->colliders)){
-        for(ShapeCollider* c2:*(e2->colliders)){
+    ColliderSet* e1_coll = e1->Get<ColliderSet>();
+    ColliderSet* e2_coll = e2->Get<ColliderSet>();
+    for(ShapeCollider* c1:(*e1_coll)){
+        for(ShapeCollider* c2:(*e2_coll)){
             if(c1->Intersects(e1->GetLocation(),c2,e2->GetLocation(),&point)){
-                return CollisionResult(point,e1->colliders->IndexOf(c1),e2->colliders->IndexOf(c2));
+                return CollisionResult(point,e1_coll->IndexOf(c1),e2_coll->IndexOf(c2));
             }
         }
     }
@@ -33,18 +27,19 @@ void EntityCollision::ClientFrame(ClientEntity* e1,ClientScene* s,float delta){
         ClientEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);
         if(res.collided){
-            EntityClassPair collided_pair = {e1->type,e2->type};
-            int callback_map_index  = EntityPairClientCollisionHandlers.MatchIndex(collided_pair);
-            if(callback_map_index >= 0){
-                ClientHandlerCallback callback = EntityPairClientCollisionHandlers.Get(collided_pair);
-                EntityClassPair expected_pair = EntityPairClientCollisionHandlers.KeyAtIndex(callback_map_index);
-                //try to order entities the way they're registered.
-                if(expected_pair.class_a == collided_pair.class_a || expected_pair.class_b == collided_pair.class_b){ 
-                    callback(e1,(*e1->colliders)[res.collider_index_1],e2,(*e2->colliders)[res.collider_index_2],s,res.point);
-                }
-                else{
-                    callback(e2,(*e2->colliders)[res.collider_index_2],e1,(*e1->colliders)[res.collider_index_1],s,res.point);
-                }
+            ColliderSet* e1_coll = e1->Get<ColliderSet>();
+            ColliderSet* e2_coll = e2->Get<ColliderSet>();
+            int e1_callback = e1_coll->entity_collision_handler_id;
+            int e2_callback = e2_coll->entity_collision_handler_id;
+            ShapeCollider* e1_hit_collider = (*e1_coll)[res.collider_index_1];
+            ShapeCollider* e2_hit_collider = (*e2_coll)[res.collider_index_2];
+            if(ClientCollisionHandlers.Has(e1_callback)){
+                ClientHandlerCallback callback = ClientCollisionHandlers.Get(e1_callback);
+                callback(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
+            }
+            if(ClientCollisionHandlers.Has(e2_callback)){
+                ClientHandlerCallback callback = ClientCollisionHandlers.Get(e1_callback);
+                callback(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
             }
         }
     }
@@ -55,18 +50,19 @@ void EntityCollision::ServerFrame(ServerEntity* e1,ServerScene* s,float delta){
         ServerEntity* e2 = s->entities[i2];
         CollisionResult res = CheckCollision(e1,e2);
         if(res.collided){
-            EntityClassPair collided_pair = {e1->type,e2->type};
-            int callback_map_index  = EntityPairServerCollisionHandlers.MatchIndex(collided_pair);
-            if(callback_map_index >= 0){
-                ServerHandlerCallback callback = EntityPairServerCollisionHandlers.Get(collided_pair);
-                EntityClassPair expected_pair = EntityPairServerCollisionHandlers.KeyAtIndex(callback_map_index);
-                //try to order entities the way they're registered.
-                if(expected_pair.class_a == collided_pair.class_a || expected_pair.class_b == collided_pair.class_b){ 
-                    callback(e1,(*e1->colliders)[res.collider_index_1],e2,(*e2->colliders)[res.collider_index_2],s,res.point);
-                }
-                else{
-                    callback(e2,(*e2->colliders)[res.collider_index_2],e1,(*e1->colliders)[res.collider_index_1],s,res.point);
-                }
+            ColliderSet* e1_coll = e1->Get<ColliderSet>();
+            ColliderSet* e2_coll = e2->Get<ColliderSet>();
+            int e1_callback = e1_coll->entity_collision_handler_id;
+            int e2_callback = e2_coll->entity_collision_handler_id;
+            ShapeCollider* e1_hit_collider = (*e1_coll)[res.collider_index_1];
+            ShapeCollider* e2_hit_collider = (*e2_coll)[res.collider_index_2];
+            if(ClientCollisionHandlers.Has(e1_callback)){
+                ServerHandlerCallback callback = ServerCollisionHandlers.Get(e1_callback);
+                callback(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
+            }
+            if(ClientCollisionHandlers.Has(e2_callback)){
+                ServerHandlerCallback callback = ServerCollisionHandlers.Get(e1_callback);
+                callback(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
             }
         }
     }
@@ -85,10 +81,12 @@ CollisionResult::CollisionResult(vec3 intersect,int indx_1,int indx_2){
     collider_index_2=indx_2;
 }
 
-void EntityCollision::RegisterClientEntityClassCallbacks(EntityClassPair pair,ClientHandlerCallback client_callback){
-    EntityPairClientCollisionHandlers.Add(pair,client_callback);
+void EntityCollision::RegisterClientCollisionHandler(int id,ClientHandlerCallback client_callback){
+    if(id <= 0) return;
+    ClientCollisionHandlers.Add(id,client_callback);
 }
 
-void EntityCollision::RegisterServerEntityClassCallbacks(EntityClassPair pair,ServerHandlerCallback server_callback){
-    EntityPairServerCollisionHandlers.Add(pair,server_callback);
+void EntityCollision::RegisterServerCollisionHandler(int id,ServerHandlerCallback server_callback){
+    if(id <= 0)return;
+    ServerCollisionHandlers.Add(id,server_callback);
 }

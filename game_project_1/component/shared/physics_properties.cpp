@@ -5,14 +5,15 @@
 PhysicsProperties::PhysicsProperties():world_hitsphere(1.0f,1.0f){}
 PhysicsProperties::~PhysicsProperties(){}
 
-int PhysicsProperties::SerializedLength(){return sizeof(float)*5 + 1;}
+int PhysicsProperties::SerializedLength(){return sizeof(float)*5 + sizeof(int) + 1;}
 
 void PhysicsProperties::Read(Deserializer& dat){
     world_hitsphere.radius=dat.GetFloat();
     world_hitsphere.height=dat.GetFloat();
     midair_velocity_damper=dat.GetFloat();  
     ground_velocity_damper=dat.GetFloat();   
-    y_velocity_damper=dat.GetFloat();   
+    y_velocity_damper=dat.GetFloat();
+    world_collision_handler_id = dat.GetInt();   
 
     byte flags =dat.GetByte();
     world_collision_enabled = (flags & 1) > 0;
@@ -26,7 +27,8 @@ void PhysicsProperties::Write(Serializer& dat){
     dat.PutFloat(world_hitsphere.height);
     dat.PutFloat(midair_velocity_damper);  
     dat.PutFloat(ground_velocity_damper);   
-    dat.PutFloat(y_velocity_damper);   
+    dat.PutFloat(y_velocity_damper); 
+    dat.PutInt(world_collision_handler_id);  
 
     byte flags =0;
     if(world_collision_enabled){flags |= 1;}
@@ -39,6 +41,7 @@ void PhysicsProperties::Write(Serializer& dat){
 Component* PhysicsProperties::Clone(){
     PhysicsProperties* copy = new PhysicsProperties();
     copy->world_hitsphere = world_hitsphere;
+    copy->world_collision_handler_id = world_collision_handler_id;
 	copy->world_collision_enabled = world_collision_enabled;
 	copy->apply_gravity = apply_gravity;
 	copy->lock_rotation = lock_rotation;
@@ -52,6 +55,7 @@ Component* PhysicsProperties::Clone(){
 void PhysicsProperties::Clear(){
     world_hitsphere.height=world_hitsphere.radius=1.0f;
     world_collision_enabled=false;
+    world_collision_handler_id=0;
     apply_gravity=false;
     lock_rotation=false;
     dampen_velocity=false;

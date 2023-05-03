@@ -1,6 +1,6 @@
 #include <game_project_1/component/client/model_set.hpp>
 #include <game_project_1/types/math_types.hpp>
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 
 ModelSet::ModelSet(){}
 ModelSet::~ModelSet(){Clear();}

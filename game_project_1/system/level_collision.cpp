@@ -26,6 +26,7 @@ void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
 }
 
 void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
+    
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
@@ -43,16 +44,17 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     } 
 }
 
+
 void LevelCollision::RunCollisionStep(Entity* e,Array<MeshCollider> meshes, float step_delta,CollisionResult* list){
+    if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
     vec3 start_position = e->GetPos();
     vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
+    PhysicsState* phys_state = e->Get<PhysicsState>();
     
     //Mark as OOB before step. If we're not marked in-bounds at end of step, we'll cancel that step.
-    if(e->phys_state){
-        e->phys_state->in_bounds=false;
-        e->phys_state->midair=true;
-    }
+    phys_state->in_bounds=false;
+    phys_state->midair=true;
 
     for(MeshCollider* mesh:meshes){
         mesh->CheckCollisions(e,step_position,step_velocity,list);
@@ -61,7 +63,7 @@ void LevelCollision::RunCollisionStep(Entity* e,Array<MeshCollider> meshes, floa
     //Get our total movement including this step's velocity and any shunting out of a wall
     vec3 total_movement = HandleSolidStepCollisions(e,step_velocity,list);
 
-    if(!ENFORCE_BOUNDS || (e->phys_state && e->phys_state->in_bounds)) {   
+    if(!ENFORCE_BOUNDS || phys_state->in_bounds) {   
         e->x += total_movement.x;
         e->y += total_movement.y;
         e->z += total_movement.z;

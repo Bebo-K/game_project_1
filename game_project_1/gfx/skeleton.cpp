@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/skeleton.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <stdlib.h>
 
 Skeleton::Skeleton(int num_bones):bones(num_bones),animations(){

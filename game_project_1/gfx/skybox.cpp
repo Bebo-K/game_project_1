@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/skybox.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 float skybox_vert_data[] ={-1, 1, 0,  1, 1, 0,  1,-1, 0,   -1, 1, 0, -1,-1, 0,  1,-1, 0,};
 

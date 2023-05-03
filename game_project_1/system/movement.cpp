@@ -1,15 +1,19 @@
 #include <game_project_1/system/movement.hpp>
-#include <game_project_1/component/phys_components.hpp>
+#include <game_project_1/component/shared/movement_state.hpp>
+#include <game_project_1/component/shared/movement_properties.hpp>
+#include <game_project_1/component/shared/physics_state.hpp>
 #include <math.h>
 
 
 void Movement::Update(Entity* e, float delta){
-    if(!e->move_props || !e->move_state){return;}
-    MoveProperties* move_props = e->move_props;
-    MovementState* move_state = e->move_state;
+    if(!e->Has<MovementProperties>() || !e->Has<MovementState>()){return;}
+    MovementProperties* move_props = e->Get<MovementProperties>();
+    MovementState* move_state = e->Get<MovementState>();
     
     bool airborne = false;
-    if(e->phys_state!=null){airborne = e->phys_state->midair;}
+    if(e->Has<PhysicsState>()){
+        airborne = e->Get<PhysicsState>()->midair;
+    }
     
     /* Turn speeds, I'm scrapping this.
     float current_angle = e->rotation.y;
@@ -62,6 +66,6 @@ void Movement::Update(Entity* e, float delta){
         move_state->can_jump=false;
         move_state->is_jumping=true;
         e->velocity.y = move_props->jump_speed;
-        if(e->phys_state!=null){e->phys_state->midair=true;}
+        if(e->Has<PhysicsState>()){e->Get<PhysicsState>()->midair=true;}
     }
 }

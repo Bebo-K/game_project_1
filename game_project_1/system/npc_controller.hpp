@@ -1,7 +1,7 @@
 #ifndef NPC_CONTROLLER_H
 #define NPC_CONTROLLER_H
 
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 #include <game_project_1/server/server_scene.hpp>
 
 

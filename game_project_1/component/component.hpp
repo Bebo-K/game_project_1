@@ -4,7 +4,7 @@
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/types/3d_types.hpp>
 #include <game_project_1/types/list.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <typeinfo>
 
 

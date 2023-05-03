@@ -3,7 +3,7 @@
 #include <game_project_1/io/stream.hpp>
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/types/pool.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <string.h>
 
 

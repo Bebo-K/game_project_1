@@ -1,6 +1,6 @@
 #include <game_project_1/content/base_content.hpp>
 
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/component/server/npc_state.hpp>
 #include <game_project_1/component/shared/movement_state.hpp>
 

@@ -1,6 +1,6 @@
 #include <game_project_1/net/payload.hpp>
 #include <game_project_1/io/crc.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/os.hpp>
 #include <game_project_1/config.hpp>
 

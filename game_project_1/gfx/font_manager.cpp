@@ -2,7 +2,7 @@
 #include <game_project_1/gfx/drawable.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/io/asset_manager.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/os.hpp>
 #include <freetype/ftcolor.h>
 

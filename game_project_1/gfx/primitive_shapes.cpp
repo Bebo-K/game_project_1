@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/drawable.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 const float lo = 0.0f;
 const float hi = 1.0f;

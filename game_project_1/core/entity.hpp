@@ -26,6 +26,7 @@ class Entity{
 
     vec3 GetPos();
     void SetPos(vec3 pos);
+    Location GetLocation();
 
     void Clear();
     void CloneTo(Entity* copy);

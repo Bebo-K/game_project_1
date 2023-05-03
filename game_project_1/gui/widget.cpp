@@ -1,5 +1,5 @@
 #include <game_project_1/gui/widget.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/gui/gui.hpp>
 
 using namespace UI;

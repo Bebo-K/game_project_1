@@ -1,7 +1,7 @@
 #include <game_project_1/winmain.hpp>
 #include <game_project_1/io/file.hpp>
 #include <game_project_1/input.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/config.hpp>
 
 #ifdef _WINDOWS_

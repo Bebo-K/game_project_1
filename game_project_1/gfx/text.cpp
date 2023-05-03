@@ -2,7 +2,7 @@
 #include <game_project_1/gfx/ui_quad.hpp>
 #include <game_project_1/gfx/drawable.hpp>
 #include <game_project_1/gui/layout.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/os.hpp>
 
 char default_font_name[] = "SourceSansPro-Regular";

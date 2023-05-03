@@ -1,7 +1,7 @@
 #ifndef STATE_MANAGER_H
 #define STATE_MANAGER_H
 
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 
 namespace AnimationManager{
 

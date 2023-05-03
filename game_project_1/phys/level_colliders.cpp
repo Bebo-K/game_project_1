@@ -3,7 +3,7 @@
 #include <game_project_1/phys/triangle_handler.hpp>
 #include <game_project_1/component/shared/physics_properties.hpp>
 #include <game_project_1/component/shared/physics_state.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 using namespace LevelCollision;
 
@@ -190,7 +190,7 @@ HeightMapCollider MakeDeathPlane(float z_pos){
 }
 
 void MeshCollider::CheckCollisions(Entity* e,vec3 step_pos,vec3 step_velocity,CollisionResult* list){
-    PhysicsProperties phys_props = e->Get<PhysicsProperties>();
+    PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
     if(!bounds.ContainsCircle_XZ(step_pos,phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
@@ -207,9 +207,10 @@ void MeshCollider::CheckCollisions(Entity* e,vec3 step_pos,vec3 step_velocity,Co
 }
 
 void MeshCollider::CheckOOB(Entity* e){
-    vec3 step_pos = e->Get<Position>()->GetPos();
-    PhysicsState phys_state = e->Get<PhysicsState>();
-    if(!bounds.ContainsCircle_XZ(step_pos,e->phys_props->world_hitsphere.radius))return;
+    vec3 step_pos = e->GetPos();
+    PhysicsState* phys_state = e->Get<PhysicsState>();
+    PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
+    if(!bounds.ContainsCircle_XZ(step_pos,phys_props->world_hitsphere.radius))return;
 	
     for(int t=0;t < tri_count;t++){
         if(tris[t].IsZeroArea())continue;

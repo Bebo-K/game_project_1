@@ -1,5 +1,5 @@
 #include <game_project_1/gfx/gload.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <stdio.h>
 
 //since GLuints are unsigned, we're reserving the 0 buffer as "empty"

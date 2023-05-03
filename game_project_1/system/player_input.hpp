@@ -2,7 +2,7 @@
 #define PLAYER_INPUT_H
 
 #include <game_project_1/input.hpp>
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 #include <game_project_1/gfx/camera.hpp>
 
 

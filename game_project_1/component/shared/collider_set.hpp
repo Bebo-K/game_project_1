@@ -10,7 +10,8 @@
 //Component container for hitboxes
 class ColliderSet: public Component, public Pool<ShapeCollider>{
     public:
-    Ellipse_t bounds;
+    Ellipse_t   bounds;
+    int         entity_collision_handler_id;//handler ID for entity/entity collision
 
     ColliderSet();
     ~ColliderSet();

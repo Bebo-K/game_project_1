@@ -8,6 +8,7 @@
 class PhysicsProperties: public Component{
     public:
     Ellipse_t world_hitsphere;
+    int     world_collision_handler_id = 0;//handler ID for world collision
 	bool	world_collision_enabled = true;
 	
 	bool	apply_gravity = true;

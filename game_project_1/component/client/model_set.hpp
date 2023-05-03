@@ -12,7 +12,7 @@
 #include <game_project_1/gfx/drawable.hpp>
 
 
-class ModelSet:public Component, public Pool<Model> ,public Drawable{
+class ModelSet: public Pool<Model>,public Component,public Drawable{
 	public:
 	ModelSet();
 	~ModelSet();

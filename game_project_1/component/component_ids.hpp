@@ -1,5 +1,4 @@
-#include <game_project_1/component/base_components.hpp>
-
+#include <game_project_1/component/component.hpp>
 
 #include <game_project_1/component/client/animation_state.hpp>
 #include <game_project_1/component/client/model_set.hpp>

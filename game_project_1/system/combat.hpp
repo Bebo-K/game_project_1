@@ -1,7 +1,7 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 
 namespace Combat{
 

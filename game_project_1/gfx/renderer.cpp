@@ -1,6 +1,6 @@
 #include <game_project_1/gfx/renderer.hpp>
 #include <game_project_1/config.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 
 Renderer::Renderer():camera(),primitives(8){
     glClearColor(0.1, 0.1, 0.1, 1.0);

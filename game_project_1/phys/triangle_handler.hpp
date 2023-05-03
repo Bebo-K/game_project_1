@@ -3,7 +3,7 @@
 
 #include <game_project_1/phys/level_colliders.hpp>
 #include <game_project_1/phys/collision_types.hpp>
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 
 //Handles collision algorithm against single triangles.
 namespace TriangleHandler{

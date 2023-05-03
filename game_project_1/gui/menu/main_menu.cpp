@@ -1,6 +1,6 @@
 #include <game_project_1/gui/menu/main_menu.hpp>
 #include <game_project_1/gui/widget/standard_widgets.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <game_project_1/gui/gui.hpp>
 #include <game_project_1/game.hpp>
 

@@ -1,5 +1,5 @@
 #include <game_project_1/io/image.hpp>
-#include <game_project_1/log.hpp>
+#include <game_project_1/io/log.hpp>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
