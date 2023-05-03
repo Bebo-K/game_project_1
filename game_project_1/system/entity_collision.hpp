@@ -1,18 +1,11 @@
 #ifndef ENTITY_COLLISION_H
 #define ENTITY_COLLISION_H
 
-#include <game_project_1/game/entity.hpp>
+#include <game_project_1/core/entity.hpp>
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/server/server_scene.hpp>
 
 namespace EntityCollision{
-
-	struct EntityClassPair{
-		EntityClass class_a;
-		EntityClass class_b;
-		bool operator==(EntityClassPair& b);
-		bool operator==(int b);
-	};
 
 	typedef void (*ClientHandlerCallback)(ClientEntity*,ShapeCollider*, ClientEntity*,ShapeCollider*,ClientScene*,vec3);
 	typedef void (*ServerHandlerCallback)(ServerEntity*,ShapeCollider*, ServerEntity*,ShapeCollider*,ServerScene*,vec3);
@@ -34,9 +27,8 @@ namespace EntityCollision{
 	void ServerFrame(ServerEntity* e1,ServerScene* s,float delta);
 	CollisionResult CheckCollision(Entity* e1, Entity* e2);
 
-	void RegisterClientEntityClassCallbacks(EntityClassPair pair,ClientHandlerCallback client_callback);
-	void RegisterServerEntityClassCallbacks(EntityClassPair pair,ServerHandlerCallback server_callback);
-
+	void RegisterClientCollisionHandler(int id,ClientHandlerCallback client_callback);
+	void RegisterServerCollisionHandler(int id,ServerHandlerCallback server_callback);
 };
 
 

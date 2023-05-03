@@ -13,6 +13,14 @@ Entity::~Entity(){
     delete components;components=null;
 }
 
+vec3 Entity::GetPos(){return {x,y,z};}
+void Entity::SetPos(vec3 pos){
+    x=pos.x;y=pos.y;z=pos.z;
+}
+Location Entity::GetLocation(){
+    return Location({x,y,z},rotation,scale);
+}
+
 void Entity::Clear(){
     id=0;
     x=y=z=0;
