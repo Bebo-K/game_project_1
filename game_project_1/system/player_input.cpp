@@ -11,7 +11,9 @@ void PlayerInput::Detach(){player = null;}
 
 bool PlayerInput::HandleMovementInput(){
     if(player == nullptr)return false;
-    if(!player->move_state->can_move){return true;}
+    if(!player->Has<MovementState>()){return true;}
+    MovementState move_state = player->Get<MovementState>();
+    if(!move_state->can_move){return true;}
 
     Controller::Axis axis = Controller::GetAxis(Controller::Move);
     vec2 move_input = axis.GetNormalized();
@@ -19,25 +21,27 @@ bool PlayerInput::HandleMovementInput(){
     
     if(move_amount > 0){
         move_input.rotate(-camera->turn);
-        player->move_state->move_goal =  {move_input.x,0,-move_input.y};
+        move_state->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{
-        player->move_state->move_goal = {0,0,0};
+        move_state->move_goal = {0,0,0};
     }
     return 0;
 }
 
 bool PlayerInput::HandleJumpingInput(){
     if(player == nullptr)return false;
-    if(player->move_state->can_jump){
+    if(!player->Has<MovementState>()){return true;}
+    MovementState move_state = player->Get<MovementState>();
+    if(move_state->can_jump){
         if(Controller::GetButton(Controller::A).IsJustPressed()){
-            player->move_state->jump_goal=true;
+            move_state->jump_goal=true;
             return true;
         }
     }
     else{
         if(Controller::GetButton(Controller::A).IsJustReleased()){
-            player->move_state->jump_goal = false;
+            move_state->jump_goal = false;
             return true;
         }
     }
@@ -46,10 +50,12 @@ bool PlayerInput::HandleJumpingInput(){
 
 bool PlayerInput::HandleActionInput(){
     if(player == nullptr)return false;
+    if(!player->Has<ActionState>()){return true;}
+    ActionState action_state = player->Get<ActionState>();
 
-    player->action_state->action_impulse=Controller::GetButton(Controller::B).IsJustPressed();
-    if(player->action_state->action_impulse){
-        player->action_state->current_action = 0;//TODO action context
+    action_state->action_impulse=Controller::GetButton(Controller::B).IsJustPressed();
+    if(action_state->action_impulse){
+        action_state->current_action = 0;//TODO action context
     }
     return true;
 }
