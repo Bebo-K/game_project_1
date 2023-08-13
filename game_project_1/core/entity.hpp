@@ -3,7 +3,7 @@
 
 #include <game_project_1/types/str.hpp>
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/component/component_ids.hpp>
+#include <game_project_1/component/component_loader.hpp>
 
 
 class Entity{
@@ -45,7 +45,7 @@ class Entity{
     T* Get(){return (T*)components[SharedComponent::TypeID<T>];}
 
     template <typename T>
-    T* Has(){return components[SharedComponent::TypeID<T>]!=null;}
+    bool Has(){return components[SharedComponent::TypeID<T>]!=null;}
 
     template <typename T>
     void Add(T* comp){
@@ -79,7 +79,7 @@ class ClientEntity: public Entity{
     T* ClientGet(){return (T*)cli_components[ClientComponent::TypeID<T>];}
 
     template <typename T>
-    T* Has(){return Entity::Has<T>() || cli_components[ClientComponent::TypeID<T>]!=null;}
+    bool Has(){return Entity::Has<T>() || cli_components[ClientComponent::TypeID<T>]!=null;}
 
     template <typename T>
     void ClientAdd(T* comp){
@@ -126,7 +126,7 @@ struct ServerEntity: public Entity{
     T* ServerGet(){return (T*)svr_components[ServerComponent::TypeID<T>];}
 
     template <typename T>
-    T* Has(){return Entity::Has<T>() || svr_components[ServerComponent::TypeID<T>]!=null;}
+    bool Has(){return Entity::Has<T>() || (svr_components[ServerComponent::TypeID<T>]!=null);}
 
     template <typename T>
     void ServerAdd(T* comp){
@@ -141,7 +141,7 @@ struct ServerEntity: public Entity{
     inline void MarkMoved(){changed_components.set(0);}
     template <typename T>
     void MarkChanged(){changed_components.set(SharedComponent::TypeID<T> +1);}
-    inline void ClearDelta(){changed_components.clear();}
+    inline void ClearDelta(){changed_components.clearAll();}
 };
 
 
