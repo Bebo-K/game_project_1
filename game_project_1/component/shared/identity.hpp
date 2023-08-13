@@ -10,7 +10,7 @@
 typedef int EntityClass;
 
 //Unique identifying meta info for an entity
-class Identity: Component{
+class Identity: public Component{
 	public:
 
     EntityClass         type;
@@ -26,7 +26,7 @@ class Identity: Component{
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
 
-}
+};
 
 
 

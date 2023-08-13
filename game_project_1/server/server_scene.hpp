@@ -24,9 +24,9 @@ class ServerScene{
 
     ServerEntity*   NewEntity();
     void            DeleteEntity(int id);
-    void            GetEntity(int id);
+    ServerEntity*   GetEntity(int id);
 
-    void            Update(int frames)
+    void            Update(int frames);
 };
 
 

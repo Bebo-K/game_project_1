@@ -22,17 +22,19 @@ typedef unsigned char byte;
 struct bitmask{
     static int bit(int place);
     const static int all= -1;
+    const static int none = 0;
     int val;
     bitmask(int a);
     static bitmask of_bits(int a);
     static bitmask of_bits(int a, int b);
     static bitmask of_bits(int a, int b, int c);
-    static bitmask of_bits(int[] a,int l);
+    static bitmask of_bits(int a[],int l);
     void and_with(bitmask& b2);
     void or_with(bitmask& b2);
     static bitmask invert(bitmask& b2);
     void set(int place);
     void clear(int place);
+    void clearAll();
     void toggle_bit(int place);
     bool get_bit(int place);
 
@@ -59,7 +61,7 @@ struct color_f{
     void rgba(float R,float G,float B,float A);
     void from_color(color c);
     color to_color();
-}
+};
 
 
 

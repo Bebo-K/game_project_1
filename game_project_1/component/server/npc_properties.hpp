@@ -9,7 +9,7 @@ class NPCProperties: public Component{
     public: 
     NPCControllerType controller_type;
 
-	NPCProperties();
+	NPCProperties(int controller);
 	~NPCProperties();
 
     Component* Clone();

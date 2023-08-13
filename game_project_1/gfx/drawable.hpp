@@ -59,7 +59,7 @@ class WirePrimitive : public Drawable{
 	int		    vertex_count;// must be a multiple of 3 ('cause triangles)
     color_f     color;
 	
-    WirePrimitive(EPrimitiveShape shape,vec3 prim_color,float w,float h,float d);
+    WirePrimitive(EPrimitiveShape shape,color_f prim_color,float w,float h,float d);
     ~WirePrimitive();
  
     virtual void Draw(Camera* cam);

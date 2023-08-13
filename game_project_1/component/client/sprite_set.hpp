@@ -25,3 +25,6 @@ class SpriteSet: public Component, public Pool<Sprite>,public Drawable{
     inline void Read(Deserializer& dat){}
     inline void Write(Serializer& dat){}
 };
+
+
+#endif

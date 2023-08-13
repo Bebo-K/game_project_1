@@ -9,7 +9,19 @@
 Server* ServerNetHandler::server=nullptr;
 ServerScene dummy_scene = ServerScene();
 
-void ServerNetHandler::Init(Server* s){server = s;}
+//Components that should be sent to clients by default when loading into a scene or spawning new entities
+bitmask server_initial_sync_components= bitmask::none;
+//Components that should be seen by clients when updated server-side
+bitmask server_delta_components= bitmask::none;
+
+
+void ServerNetHandler::Init(Server* s){
+    server = s;
+    server_initial_sync_components = bitmask::of_bits(SharedComponent::TypeID<Inventory>);
+    bitmask::invert(server_initial_sync_components);
+    server_delta_components = bitmask::of_bits(SharedComponent::TypeID<Inventory>+1);
+    bitmask::invert(server_delta_components);
+}
 void ServerNetHandler::Free(){server = nullptr;}
 void ServerNetHandler::Update(int frames){
     if(!ServerNetwork::IsRunning())return;
@@ -49,23 +61,25 @@ void ServerNetHandler::OnPlayerConnect(int player_slot,Payload request){
     }
     Packet::JOIN join_info(request);
     server->current_players++;
-    SavePlayer* player_save = server->save.GetPlayer(join_info.player_save_id);
+
+    Player* new_player = &server->players[player_slot];
+        new_player->persona = wstr::new_copy(join_info.persona_buffer);
+    int player_save_id = join_info.player_save_id;
+    SavePlayer* player_save = server->scene_manager.save.GetPlayer(player_save_id);
+
+    if(player_save != null){new_player->save = player_save;}
+    else{player_save_id = server->scene_manager.save.NewPlayerSaveID();}
 
     Packet::ACPT accept_response;//Accept join request and send back server info and player IDs
         accept_response.ack_id = request.id;
         accept_response.player_count = server->current_players;
         accept_response.player_max =server->max_players;
         accept_response.player_slot_id = player_slot;
-        accept_response.player_save_id = (player_save==null)? server->save.GenerateSaveID():player_save->save_id;
+        accept_response.player_save_id = player_save_id;
     ServerNetwork::SendToPlayer(player_slot,accept_response.GetPayload());
 
-    Player* new_player = &server->players[player_slot];
-        new_player->persona = wstr::new_copy(join_info.persona_buffer);
-        new_player->save = player_save;
-
     if(player_save != nullptr){//If the player has an existing save, go ahead and continue it from the last entrance
-        player_save = new_player->save;
-        server->TransitionPlayer(0,player_save->last_scene,player_save->last_entrance,player_slot);
+        server->scene_manager.TransitionPlayer(0,player_save->last_scene,player_save->last_entrance,player_slot);
         OnPlayerSceneTransition(player_slot,player_save->last_scene);
     }
 
@@ -97,11 +111,12 @@ void ServerNetHandler::OnPlayerDisconnect(int player_slot,wchar* reason){
 }
 
 void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_save_info){
-    SavePlayer* save = server->save.NewPlayer(new_save_info.save_id);
-    server->players[player_slot].save = save;
+    SavePlayer* save_player = server->scene_manager.save.NewPlayer(new_save_info.save_id);
+    
+    Player* my_player = &server->players[player_slot];
+    my_player->save = save_player;
 
     ServerEntity* player_base_entity = new ServerEntity(-1);
-
 
     Identity* identity = new Identity();
         identity->name = wstr::new_copy(new_save_info.player_name);
@@ -115,14 +130,12 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
         char_data->appearance.style2 = new_save_info.style_2;
         char_data->appearance.style3 = new_save_info.style_3; 
 
-    player_base_entity->AddComponent(identity);
-    player_base_entity->AddComponent(char_data);
+    player_base_entity->Add<Identity>(identity);
+    player_base_entity->Add<Character>(char_data);
 
-    dummy_scene.BuildEntity(player_base_entity,Location());
-
-    save->character_global_id = server->save.PersistEntity(player_base_entity);
-    server->scene_manager.TransitionPlayer(0,save->last_scene,save->last_entrance,&server->players[player_slot]);
-    OnPlayerSceneTransition(player_slot,save->last_scene);
+    save_player->character.SetFromEntity(player_base_entity);
+    server->scene_manager.TransitionPlayer(my_player,0,save_player->last_scene,save_player->last_entrance);
+    OnPlayerSceneTransition(player_slot,save_player->last_scene);
     delete player_base_entity;
 }
 
@@ -138,7 +151,9 @@ void ServerNetHandler::OnPlayerInfoUpdate(int player_slot){
 
 void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
     logger::debug("Sending player %d scene transition to area %d\n",player_slot,area_id);
-    Payload new_scene_payload = WriteFullScene(&server->players[player_slot],server->GetActiveScene(area_id));
+    Payload new_scene_payload = WriteFullScene(
+        &server->players[player_slot],
+        server->scene_manager.GetActiveScene(area_id));
 
     ServerNetwork::SendToPlayer(player_slot,new_scene_payload);
     free(new_scene_payload.data);
@@ -147,7 +162,8 @@ void ServerNetHandler::OnPlayerSceneTransition(int player_slot,int area_id){
 
 void ServerNetHandler::OnClientDelta(int player_slot,Payload delta){
     Player* player = &server->players[player_slot];
-    ParseClientDelta(player,server->GetActiveScene(player->entity_scene),delta);
+    ParseClientDelta(player,
+        server->scene_manager.GetActiveScene(player->entity_scene),delta);
 }
 
 void ServerNetHandler::SendEntityDeltas(ServerScene* s){

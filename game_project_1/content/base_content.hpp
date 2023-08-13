@@ -23,6 +23,8 @@ namespace BaseContent{
 
     void LoadClient();
     void LoadServer();
+
+    void LoadTestArea(ServerScene* scene);
 };
 
 #endif

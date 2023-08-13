@@ -3,11 +3,6 @@
 
 PhysicsState::PhysicsState(){Clear();}
 
-PhysicsState::PhysicsState(PhysicsState* p2){
-    in_bounds=p2->in_bounds;
-    midair=p2->in_bounds;
-}
-
 PhysicsState::~PhysicsState(){}
 
 int PhysicsState::SerializedLength(){

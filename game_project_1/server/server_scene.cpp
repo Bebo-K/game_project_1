@@ -21,7 +21,7 @@ void ServerScene::Load(int area,bool saveExists){
     logger::info("loading server scene for area id %d\n",area);
     LevelLoader loader(area);
     level.Load(loader);
-    loader.LoadEntities(entities,saveExists);
+    loader.LoadEntities(&entities,saveExists);
     global_timer=1;
 }
 
@@ -49,19 +49,19 @@ ServerEntity* ServerScene::NewEntity(){
     while(unique_eid<=0 || GetEntity(unique_eid) != null){unique_eid = rand() & 0X9FFF;}
     ServerEntity* new_entity = new (entities.Allocate()) ServerEntity(unique_eid);
     just_spawned.Add(new_entity);
-    return new_entity
+    return new_entity;
 }
 
 void ServerScene::DeleteEntity(int id){
     for(ServerEntity* e:entities){
-        if(e->id == eid){
+        if(e->id == id){
             just_deleted.Add(e);
         }
     }
 }
 
 ServerEntity* ServerScene::GetEntity(int id){
-    for(ServerEntity* e:entities){if(e->id == eid)return e;}
+    for(ServerEntity* e:entities){if(e->id == id)return e;}
     return null;
 }
 

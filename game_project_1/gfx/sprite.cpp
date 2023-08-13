@@ -50,6 +50,23 @@ Sprite::~Sprite(){
     //remove one from texture user count?
 }
 
+void Sprite::CopyTo(Sprite* s){
+    s->texture = texture;
+    s->max_frames=max_frames;
+    s->max_strips=max_strips;
+    s->img_width=img_width;
+    s->img_height=img_height;
+    s->frame=frame;
+    s->strip=strip;
+    s->x=x;
+    s->y=y;
+    s->width=width;
+    s->height=height;
+    s->color=color;
+    s->rotate_center=rotate_center;
+    s->rotation=rotation;
+}
+
 void Sprite::Draw(){
     Shader* sprite_shader = ShaderManager::UseShader("ui_2d_quad");
     

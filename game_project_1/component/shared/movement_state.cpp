@@ -11,7 +11,7 @@ int MovementState::SerializedLength(){
 }
 
 void MovementState::Read(Deserializer& dat){
-    current_movement=dat.GetInt();
+    current_movement=(MovementType)dat.GetInt();
     move_goal={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
 
     int flags = dat.GetInt();
@@ -23,7 +23,7 @@ void MovementState::Read(Deserializer& dat){
 }
 
 void MovementState::Write(Serializer& dat){
-    dat.PutInt(current_movement);
+    dat.PutInt((MovementType)current_movement);
     dat.PutFloat(move_goal.x); dat.PutFloat(move_goal.y); dat.PutFloat(move_goal.z);
     int flags =0;
     if(jump_goal){flags |= 1;}
@@ -46,7 +46,7 @@ Component* MovementState::Clone(){
     return copy;
 }
 
-MovementState::Clear(){
+void MovementState::Clear(){
 	current_movement=IDLE;
     move_goal={0,0,0};
     jump_goal=false;

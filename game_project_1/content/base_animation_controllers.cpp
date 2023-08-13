@@ -12,10 +12,9 @@
 
 
 void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
-    Position* pos = e->Get<Position>();
     AnimationState* anim_state = e->Get<AnimationState>();
     MovementState* move_state = e->Get<MovementState>();
-    if(!pos || !anim_state || !move_state)return;
+    if(!anim_state || !move_state)return;
     ModelSet* models = e->ClientGet<ModelSet>();
     MovementProperties* move_props = e->Get<MovementProperties>();
 
@@ -23,7 +22,7 @@ void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
     bool loop=true;
     bool windup=false;
 
-    if(anim_state->movement_state != move_state->current_movement){
+    if(anim_state->movement_type != move_state->current_movement){
         switch(move_state->current_movement){
             case IDLE:{new_anim_name="idle";break;}
             case WALKING:{new_anim_name="walk";break;}
@@ -33,13 +32,13 @@ void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
             case LANDING:{new_anim_name="land";loop=false;break;}
             default: break;
         }
-        anim_state->movement_state = move_state->current_movement;
+        anim_state->movement_type = move_state->current_movement;
         AnimationController::SetAnimationForEntity(e,new_anim_name,windup,loop);
     }        
     
     if(models && move_props){
-        vec3 velocity = pos->velocity;
-        MovementState anim_movement = anim_state->movement_state;
+        vec3 velocity = e->velocity;
+        MovementType anim_movement = anim_state->movement_type;
         float anim_slow_cutoff = 0.5f;
         //Run/walk animation speed modulation (Only when moving at (anim_slow_cutoff*100)% run/walk speed or less)
         if(anim_movement==RUNNING || anim_movement==WALKING){

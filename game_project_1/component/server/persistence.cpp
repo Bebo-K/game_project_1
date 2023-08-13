@@ -4,7 +4,7 @@
 
 
 
-Persistence::Persistence(SaveEntity* e){save_entity=e;}
-Persistence::~Persistence(){}
-Component* Persistence::Clone(){return new Persistence(save_entity);}
-void Persistence::Clear(){save_entity=null;}
+Persistence::Persistence(int guid){global_id = guid;}
+Persistence::~Persistence(){global_id=-1;}
+Component* Persistence::Clone(){return new Persistence(global_id);}
+void Persistence::Clear(){global_id=-1;}

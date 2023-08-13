@@ -19,7 +19,7 @@ class LevelLoader{
 
     void                 LoadSkybox(Skybox* skybox);
     Array<ModelData>     LoadModels();
-    Array<MeshCollider> LoadCollisionMeshes();
+    Array<MeshCollider>  LoadCollisionMeshes();
     Array<HeightMapCollider> LoadHeightmaps();
     Array<LevelEntrance> LoadEntrances();
     Array<LevelExit> LoadExits();

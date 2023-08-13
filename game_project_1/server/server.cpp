@@ -10,6 +10,7 @@
 #include <game_project_1/server/server_net_handler.hpp>
 #include <game_project_1/server/server_signal.hpp>
 
+#include <game_project_1/content/base_content.hpp>
 
 
 
@@ -47,7 +48,7 @@ void ServerMain(){
     delete server;
 }
 
-Server::Server():scene_manager(){
+Server::Server():scene_manager(this){
     state = Server::INIT;
     instance = this;
     active_frames=0;
@@ -79,9 +80,10 @@ void Server::Signal(EventSignal val){ServerSignalHandler::Signal(val);}
 void Server::Start(){
     logger::info("Server is starting..\n");
 
-    save.LoadOrNew(server_config::save_name);
+    scene_manager.save.LoadOrNew(server_config::save_name);
 
     BaseContent::LoadServer();
+    BaseContent::LoadTestArea(scene_manager.LoadScene(0));
     Sleep(1000);//temp just so I can see the loading screen
 
     state=Server::READY;
@@ -99,9 +101,9 @@ void Server::Start(){
 
 void Server::StartShutdown(){
     logger::info("Server shutting down...\n");
-    save.Save(server_config::save_name);
+    scene_manager.save.Save(server_config::save_name);
     scene_manager.UnloadAllScenes();
-    active_scenes.Clear();
+    scene_manager.active_scenes.Clear();
     state=EXITING;
     ServerNetwork::ShutdownListener();
 }

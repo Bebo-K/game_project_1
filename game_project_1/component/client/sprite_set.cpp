@@ -21,7 +21,10 @@ Component* SpriteSet::Clone(){
     copy->layer = layer;
     copy->hidden = hidden;
     copy->shader_name = copy->shader_name;
-    for(Sprite* s: (*this)){copy->Add(s);}//We need to copy the sprite right?
+    for(Sprite* s: (*this)){
+        Sprite* s2 = new (copy->Allocate()) Sprite(s->texture);
+        s->CopyTo(s2);
+    }
     return copy;
 }
 void SpriteSet::Clear(){this->Pool::Clear();}

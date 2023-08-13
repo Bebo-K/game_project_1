@@ -3,12 +3,12 @@
 
 
 
-NPCProperties::NPCProperties(){Clear();}
+NPCProperties::NPCProperties(int controller){Clear();controller_type=controller;}
 
 NPCProperties::~NPCProperties(){Clear();}
 
 Component* NPCProperties::Clone(){
-    NPCProperties* prop = new NPCProperties();
+    NPCProperties* prop = new NPCProperties(controller_type);
     prop->controller_type=controller_type;
     return prop;
 }

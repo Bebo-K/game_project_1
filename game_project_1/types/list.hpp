@@ -79,7 +79,7 @@ class List{
     }
     void Set(int index,T* dat){
         if(index < 0 || index >= length){logger::exception("List::Set -> Index %d is out of range.",index);}
-        if(data[index]==null)count++;
+        if(data[index]==nullptr)count++;
         data[index]=dat;
     }
     T* operator[](int index){
@@ -120,7 +120,7 @@ class List{
 
     int Last(){
         int last=0;
-        for(int i=0;i<length;i++){if(data[i] != null){last=i;}}
+        for(int i=0;i<length;i++){if(data[i] != nullptr){last=i;}}
         return last;
     }
 

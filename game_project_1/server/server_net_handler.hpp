@@ -5,8 +5,14 @@
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/core/entity.hpp>
 #include <game_project_1/core/player.hpp>
+#include <game_project_1/types/data_types.hpp>
 
 namespace ServerNetHandler{
+    //Components that should be sent to clients by default when loading into a scene or spawning new entities
+    extern bitmask server_initial_sync_components;
+    //Components that should be seen by clients when updated server-side
+    extern bitmask server_delta_components;
+
     extern Server* server;
     
     void Init(Server* s);
@@ -26,7 +32,6 @@ namespace ServerNetHandler{
     //Async methods
     void OnPlayerConnect(int player_slot,Payload request);
     void OnPlayerDisconnect(int player_slot,wchar* reason);
-
 
     //Packet handlers
     Payload WriteFullScene(Player* player_for,ServerScene* scene);

@@ -237,7 +237,9 @@ void LevelLoader::LoadEntities(Pool<ServerEntity>* entities, bool firstLoad){
             JSONObject* current_entity = entity_array->At(i)->ObjectValue();
             if(!firstLoad && current_entity->HasBool("save") && current_entity->GetBool("save")){continue;}
             EntityLoader e_loader(current_entity);
-            e_loader.LoadTo(new (entities->Allocate()) ServerEntity(entityID););entityID++;
+            ServerEntity *serverEntity = new (entities->Allocate()) ServerEntity(entityID);
+            e_loader.LoadTo(serverEntity);
+            entityID++;
         }
     }
 }

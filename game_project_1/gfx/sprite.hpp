@@ -21,6 +21,8 @@ class Sprite{
     Sprite(Texture spritesheet);
     Sprite(Texture spritesheet,int frames,int strips);
     ~Sprite();
+
+    void CopyTo(Sprite* s);
  
     void Draw();
 };

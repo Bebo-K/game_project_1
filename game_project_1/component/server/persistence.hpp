@@ -1,14 +1,14 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
-#include <game_project_1/core/savefile.hpp>
 #include <game_project_1/component/component.hpp>
 
 class Persistence: public Component{
 
-    SaveEntity* save_entity;
+    public:
+    int global_id;
 
-    Persistence(SaveEntity* e);
+    Persistence(int guid);
     ~Persistence();
 
     Component* Clone();

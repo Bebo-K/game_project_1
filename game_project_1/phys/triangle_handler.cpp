@@ -4,8 +4,9 @@ LevelCollision::CollisionResult TriangleHandler::DoCollision(
     Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){
     float plane_y_component = triangle.face.normal.y;
 
-    if(e->phys_state && CheckTriangleBounds(step_position,triangle)){
-        e->phys_state->in_bounds=true;
+    PhysicsState* state = e->Get<PhysicsState>();
+    if(state && CheckTriangleBounds(step_position,triangle)){
+        state->in_bounds=true;
     }
 
     if(plane_y_component > 0.1f){
@@ -37,6 +38,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
     float vertical_shunt = vertical_intersect - step_position.y;
     float max_up_shunt = hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
     float max_down_shunt =  -hitsphere.height*FLOOR_SHUNT_HEIGHT_RATIO;
+    PhysicsState* phys_state = e->Get<PhysicsState>();
 
     if(step_velocity.y < 0 && -step_velocity.y > max_up_shunt){
         max_up_shunt = -step_velocity.y;
@@ -53,7 +55,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
             ret.floor_distance = vertical_shunt;
             ret.collision_case = LevelCollision::CollisionCase::FLOOR;
             //if we're close to, on, or under the floor, and not going up, it's safe to mark us as grounded.
-            if(e->phys_state && e->velocity.y <= 0){e->phys_state->midair=false;}
+            if(phys_state && e->velocity.y <= 0){phys_state->midair=false;}
             //If we're underneath by less than our max up-shunt height, move us up and out and set us grounded
             if(vertical_shunt >= 0 && vertical_shunt <= max_up_shunt){
                 ret.collision_case |= LevelCollision::CollisionCase::CANCEL_VELOCITY;
@@ -61,7 +63,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleFloorCase(
                 ret.shunt.y = vertical_shunt;
             }
             //If we're already grounded and floating over the floor by less than our max shunt height, move us down to ground.
-            else if(e->phys_state && !e->phys_state->midair && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
+            else if(phys_state && !phys_state->midair && vertical_shunt < 0 && vertical_shunt >= max_down_shunt){
                 ret.collision_case |= LevelCollision::CollisionCase::CANCEL_VELOCITY;
                 ret.velocity_cancel = {0,1,0};
                 ret.shunt.y = vertical_shunt;
@@ -80,6 +82,7 @@ LevelCollision::CollisionResult TriangleHandler::HandleWallCase(
     
     float bottom_cutoff = step_position.y;
     float top_cutoff = step_position.y+hitsphere.height;
+    PhysicsState* phys_state = e->Get<PhysicsState>();
 
     //Keeps grounded entitites from colliding with "knee high" walls before floor
     //if(!e->phys_data->is_midair){
@@ -122,9 +125,10 @@ LevelCollision::CollisionResult TriangleHandler::HandleWallCase(
                 float effective_radius = hitsphere.radius*EDGE_RAD_SHRINK;
                 //This shrinks our effective radius further in the case we're falling off a ledge. It smoothes out the push away from the wall we experience when falling next to a ledge.
                 //TODO: This case here would also be a good condition to proc "hanging off wall" animations
-                if(e->phys_state && e->phys_state->midair && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
+                if(phys_state && phys_state->midair && edge_offset.y >= 0 && edge_offset.y < hitsphere.height/2 ){				
                     effective_radius *= 1.0f-(2*edge_offset.y/hitsphere.height);
                 }
+                
                 
                 if(edge_horizontal_offset.length_sqr() < effective_radius*effective_radius && edge_normal_cos > MIN_EDGE_NORMAL_COS){
                     

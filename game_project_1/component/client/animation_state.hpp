@@ -5,9 +5,9 @@
 
 typedef int AnimationControllerType;
 //State information for coordinating animations for movement/action states
-class AnimationState: public ClientComponent{
+class AnimationState: public Component{
     public:
-    MovementState           movement_state;
+    MovementType            movement_type;
     int                     action_state;
     char*                   anim_name;//does not allocate/deallocate memory for this 
     AnimationControllerType controller_type;

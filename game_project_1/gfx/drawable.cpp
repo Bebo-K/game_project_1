@@ -126,7 +126,7 @@ void VBO::Bind(int attrib_slot){
 
 /**/
 void VBO::Bind(int attrib_slot, int stride, int offset){
-    byte* ofs = null + offset;
+    byte* ofs = (byte*)(null) + offset;
     glBindBuffer(GL_ARRAY_BUFFER,buffer_id);
     glVertexAttribPointer(attrib_slot,elements_per_vertex,element_type,false,stride,(void*)ofs);
     CheckForGLError("VBO.Bind: GL Error %d\n");

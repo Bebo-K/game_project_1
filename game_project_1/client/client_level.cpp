@@ -1,6 +1,5 @@
 #include <game_project_1/client/client_level.hpp>
-#include <game_project_1/io/level.hpp>
-
+#include <game_project_1/io/level_loader.hpp>
 char* ClientLevel::default_shader = "level_debug";
 
 ClientLevel::ClientLevel():Drawable(),skybox(),models(),collmeshes(){

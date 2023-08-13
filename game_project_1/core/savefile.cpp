@@ -34,7 +34,7 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 /////////                               SAVE ENTITY                                     /////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 SaveEntity::SaveEntity(int gid):ServerEntity(-1){global_id = gid;}
-SaveEntity::SaveEntity(int gid, ServerEntity* e){
+SaveEntity::SaveEntity(int gid, ServerEntity* e):ServerEntity(-1){
     global_id=gid;
     e->CloneTo(this);
 }
@@ -79,7 +79,7 @@ void SavePlayer::Load(Deserializer& dat){
     save_id = dat.GetInt();
     last_scene = dat.GetInt();
     last_entrance = dat.GetInt();
-    character.Read(dat);
+    character.Read(dat,0);
 }
 
 int SavePlayer::SavedLength(){
@@ -97,11 +97,11 @@ SaveScene::~SaveScene(){
     local_entities.Destroy();
 }
 
-void SaveScene::Save(Serializer& dat){
+void SaveScene::Save(Serializer& dat){    
     dat.PutInt(area_id);
     dat.PutInt(global_entities.length);
-    for(int i=0; i<global_entities.length;i++){
-        dat.PutInt(global_entities_in_area[i]);
+    for(int i=0;i<global_entities.length;i++){
+        dat.PutInt(global_entities[i]);
     }
     dat.PutInt(local_entities.length);
     for(SaveEntity* entity:local_entities){
@@ -142,24 +142,17 @@ SaveCampaign::~SaveCampaign(){}
 void SaveCampaign::Save(Serializer& dat){
     dat.PutInt(campaign_id);
     dat.PutInt(story_bits.bits);
-    int bitflag_size_bytes = (story_bits.bits/8);
-    bitflag_size_bytes += (bitflag_size_bytes%8 > 0)1:0;
-    dat.WriteBytes(story_bits.data,bitflag_size_bytes);
+    dat.WriteBytes(story_bits.data,story_bits.GetSizeInBytes());
 }
 
 void SaveCampaign::Load(Deserializer& dat){
     campaign_id = dat.GetInt();
     story_bits.Initialize(dat.GetInt());
-    int bitflag_size_bytes = (story_bits.bits/8);
-    bitflag_size_bytes += (bitflag_size_bytes%8 > 0)1:0;
-    dat.CopyBytesTo(story_bits.data,bitflag_size_bytes);
+    dat.CopyBytesTo(story_bits.data,story_bits.GetSizeInBytes());
 }
 
 int SaveCampaign::SavedLength(){
-    int bitflag_size_bytes = (story_bits.bits/8);
-    bitflag_size_bytes += (bitflag_size_bytes%8 > 0)1:0;
-
-    return sizeof(int)*2 + bitflag_size_bytes;
+    return sizeof(int)*2 + story_bits.GetSizeInBytes();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +200,7 @@ void SaveFile::Load(char* save_name){
 
     int campaign_count = data.GetInt();
     for(int i=0;i<campaign_count;i++){
-        SaveCampaign* campaign = new Campaign(0);
+        SaveCampaign* campaign = new SaveCampaign(0);
         campaign->Load(data);
         campaigns.Add(campaign);
     }
@@ -233,13 +226,13 @@ void SaveFile::Load(char* save_name){
 }
 
 void SaveFile::Save(char* save_name){
-    int serialized_length = SerializedLength();
+    int serialized_length = SavedLength();
     byte* buffer = (byte*)calloc(serialized_length,1);
     Serializer data(buffer,serialized_length);
 
     data.PutInt(campaigns.Count());
     for(SaveCampaign* campaign:campaigns){
-        campaign->Write(data);
+        campaign->Save(data);
     }
     data.PutInt(global_entities.Count());
     for(SaveEntity* entity:global_entities){
@@ -247,11 +240,11 @@ void SaveFile::Save(char* save_name){
     }
     data.PutInt(players.Count());
     for(SavePlayer* player:players){
-        player->Write(data);
+        player->Save(data);
     }
     data.PutInt(saved_scenes.Count());
     for(SaveScene* scene:saved_scenes){
-        scene->Write(data);
+        scene->Save(data);
     }
 
     UserFile save_file(GetSaveFilePath(save_name),'w');
@@ -263,13 +256,13 @@ void SaveFile::Save(char* save_name){
 
 int SaveFile::SavedLength(){
     int size=sizeof(int);//campaigns.length
-    for(SaveCampaign* campaigns:campaigns){size+= campaign->SerializedLength();}
+    for(SaveCampaign* campaign:campaigns){size+= campaign->SavedLength();}
     size+=sizeof(int);//global_entities.length
     for(SaveEntity* entity:global_entities){size += entity->SavedLength();}
     size+=sizeof(int);//players.length
-    for(SavePlayer* player:players){size += player->SerializedLength();}
+    for(SavePlayer* player:players){size += player->SavedLength();}
     size+=sizeof(int);//saved_scenes.length
-    for(SaveScene* scene:saved_scenes){size += scene->SerializedLength();}
+    for(SaveScene* scene:saved_scenes){size += scene->SavedLength();}
     return size;
 }
 
@@ -295,13 +288,10 @@ SaveEntity* SaveFile::GetGlobalEntity(int global_id){
     return nullptr;
 }
 
-SavePlayer* SaveFile::NewPlayer(){   
-    int save_id;
-    do{save_id= abs(rand());}while(save_id == 0||GetPlayer(save_id) != nullptr);
-
+SavePlayer* SaveFile::NewPlayer(int save_id){   
     SavePlayer* new_player = new SavePlayer(save_id);
-        new_player->last_scene =  Areas::save_start_id;
-        new_player->last_entrance =  Areas::save_start_entrance;
+        new_player->last_scene =  Areas::StartArea();
+        new_player->last_entrance =  Areas::StartAreaEntrance();
     players.Add(new_player);
     return new_player;
 }
@@ -330,8 +320,15 @@ int SaveFile::NewGlobalEntity(ServerEntity* e){
 
     SaveEntity* global_entity = new SaveEntity(new_global_id,e);
     global_entities.Add(global_entity);
-    e->ServerAdd<Persistence>(new Persistence(global_entity));
+    e->ServerAdd<Persistence>(new Persistence(new_global_id));
     return new_global_id;
+}
+
+
+int SaveFile::NewPlayerSaveID(){
+    int save_id;
+    do{save_id= abs(rand());}while(save_id == 0||GetPlayer(save_id) != nullptr);
+    return save_id;
 }
 
 SaveScene* SaveFile::GetOrNewScene(int area_id){
@@ -344,7 +341,7 @@ SaveScene* SaveFile::GetOrNewScene(int area_id){
 
 void SaveFile::AssignEntityToScene(int global_id, int area_id,bool one_instance){
     for(SaveScene* scene:saved_scenes){
-        if(one_instance){scene->RemoveGlobalID(global_id);}
-        if(area_id == scene->area_id){scene->AddGlobalEntity(global_id);}
+        if(one_instance){scene->global_entities.Remove(global_id);}
+        if(area_id == scene->area_id){scene->global_entities.Add(global_id);}
     }
 }

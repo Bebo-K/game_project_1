@@ -1,16 +1,17 @@
 #include <game_project_1/client/client_net_handler.hpp>
+
 #include <game_project_1/core/entity.hpp>
 #include <game_project_1/component/component_ids.hpp>
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/net/network.hpp>
-#include <game_project_1/net/client_serializer.hpp>
 #include <game_project_1/game/races_and_classes.hpp>
 
 
 Client* ClientNetHandler::client=nullptr;
 
-bitmask player_delta_mask = bitmask::of_bits(
-    {SharedComponent::TypeID<PhysicsState>,SharedComponent::TypeID<MovementState>,SharedComponent::TypeID<ActionState>} ,3);
+int player_delta_mask[] =  {SharedComponent::TypeID<PhysicsState>,SharedComponent::TypeID<MovementState>,SharedComponent::TypeID<ActionState>};
+
+bitmask player_delta_mask = bitmask::of_bits(player_delta_mask,3);
 
 byte delta_buffer[Datagram::MAX_DATA_LENGTH];
 

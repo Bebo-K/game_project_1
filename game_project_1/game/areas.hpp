@@ -11,6 +11,8 @@ namespace Areas{
     char* GetMap(int area_id);
     char* ErrorRoom();
     void RegisterMap(int area_id,char* filename);
+    inline int StartArea(){return 0;}
+    inline int StartAreaEntrance(){return 0;}
 };
 
 

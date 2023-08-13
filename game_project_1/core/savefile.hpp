@@ -94,19 +94,21 @@ class SaveFile{
     void Save(char* save_name);
     int SavedLength();
 
+    void AssignEntityToScene(int global_id, int area_id,bool one_instance);
 
     SaveCampaign*   GetCampaign(int campaign_id);
     SaveScene*      GetScene(int area_id);
     SavePlayer*     GetPlayer(int player_number);
-    ServerEntity*   GetGlobalEntity(int global_id);
+    SaveEntity*     GetGlobalEntity(int global_id);
 
-    //
     //int           GenerateGlobalEntityID();
-    SavePlayer*     NewPlayer();
+    SavePlayer*     NewPlayer(int save_id);
     SaveScene*      NewScene(int area_id);
     SaveCampaign*   NewCampaign(int campaign_id);
-    void            NewGlobalEntity(ServerEntity* e);
+    int             NewGlobalEntity(ServerEntity* e);
 
+
+    int             NewPlayerSaveID();
     SaveScene*      GetOrNewScene(int area_id);
 
 };

@@ -2,6 +2,7 @@
 #define STAT_BLOCK_H
 
 #include <game_project_1/game/stats.hpp>
+#include <game_project_1/component/component.hpp>
 
 //RPG stat block
 class StatBlock: public Component{

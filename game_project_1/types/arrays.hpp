@@ -133,6 +133,9 @@ struct BitArray{
     void Unset(int index);
     bool Toggle(int index);//returns new value;
     void Clear();
+
+    int GetSizeInBytes();
+    int GetSizeInInts();
 };
 
 //A resizeable array of unique integers. Order is not guaranteed as things may shift 

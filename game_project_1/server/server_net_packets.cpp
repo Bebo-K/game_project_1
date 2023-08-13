@@ -2,10 +2,7 @@
 
 #include <game_project_1/component/shared/inventory.hpp>
 
-//Components that should be sent to clients by default when loading into a scene or spawning new entities
-bitmask server_initial_sync_components = bitmask::invert(bitmask::of(SharedComponent::TypeID<Inventory>()));
-//Components that should be seen by clients when updated server-side
-bitmask server_delta_components = bitmask::invert(bitmask::of(SharedComponent::TypeID<Inventory>()+1));
+
 
 Payload ServerNetHandler::WriteFullScene(Player* player_for,ServerScene* scene){
     int scene_size = sizeof(int)*3;//area_id, player_entity, num_entities
@@ -63,7 +60,7 @@ Payload ServerNetHandler::WriteSceneDeletedEntities(ServerScene* scene){
 
     for(ServerEntity* e:scene->just_deleted){
         delete_out.PutInt(e->id);
-        scene->ClearEntity(e);
+        scene->DeleteEntity(e->id);
     }
     scene->just_deleted.Clear();
     return delete_payload;
@@ -74,7 +71,8 @@ Payload ServerNetHandler::WriteSceneDelta(ServerScene* scene){
     int updated_entities=0;
 
     for(ServerEntity* e:scene->entities){//First loop through to count changed entities and size
-        bitmask client_visible_delta_mask = server_delta_components.and_with(e->changed_components);
+        bitmask client_visible_delta_mask = server_delta_components;
+        client_visible_delta_mask.and_with(e->changed_components);
         if(client_visible_delta_mask.val){
             delta_size += sizeof(int);//id
             delta_size += e->SerializedLength(client_visible_delta_mask);
@@ -88,7 +86,8 @@ Payload ServerNetHandler::WriteSceneDelta(ServerScene* scene){
         delta_out.PutInt(updated_entities);
 
     for(ServerEntity* e:scene->entities){//Second loop to populate with delta info
-        bitmask client_visible_delta_mask = server_delta_components.and_with(e->changed_components);
+        bitmask client_visible_delta_mask = server_delta_components;
+        client_visible_delta_mask.and_with(e->changed_components);
         if(client_visible_delta_mask.val){
             delta_out.PutInt(e->id);
             e->Write(delta_out,client_visible_delta_mask);

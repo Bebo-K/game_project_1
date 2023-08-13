@@ -1,6 +1,7 @@
 #ifndef PHYSICS_STATE_H
 #define PHYSICS_STATE_H
 
+#include <game_project_1/component/component.hpp>
 
 //State information for entity phys simulation
 class PhysicsState: public Component{

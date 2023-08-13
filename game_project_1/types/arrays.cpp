@@ -92,18 +92,29 @@ void BitArray::Print(){
     }
 }
 
+int BitArray::GetSizeInBytes(){
+    int bitflag_size_bytes = (bits/8);
+    bitflag_size_bytes += (bitflag_size_bytes%8 > 0)?1:0;
+    return bitflag_size_bytes;
+}
+int BitArray::GetSizeInInts(){
+    int bitflag_size_ints = (bits/32);
+    bitflag_size_ints += (bitflag_size_ints%32 > 0)?1:0;
+    return bitflag_size_ints;
+}
+
 /////////////////////////////
 //////***IntegerSet***//////
 ///////////////////////////
 IntegerSet::IntegerSet(){
     allocated=2;
-    data=malloc(sizeof(int)*allocated);
+    data=(int*)malloc(sizeof(int)*allocated);
     length=0;
 }
 IntegerSet::IntegerSet(int size){
     allocated=size;
     length=size;
-    data= (size==0)? null:malloc(sizeof(int)*allocated);
+    data= (size==0)? null:(int*)malloc(sizeof(int)*allocated);
 }
 IntegerSet::~IntegerSet(){Clear();}
 
@@ -111,7 +122,7 @@ void IntegerSet::Add(int entry){
     if(Has(entry)){return;}
     if(length+1 > allocated){
         allocated= (allocated==0)? 2:allocated*2;
-        int* new_data = malloc(sizeof(int)*allocated);
+        int* new_data = (int*)malloc(sizeof(int)*allocated);
         for(int i=0;i<length;i++){new_data[i] = data[i];}
         free(data);
         data=new_data;

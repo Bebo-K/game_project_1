@@ -21,9 +21,9 @@ Component* NPCState::Clone(){
     s2->action_counter=action_counter;
     s2->constants.Allocate(constants.length);
     //
-    for(int i=0;i<constants.length;i++){s2->constants[i]=constants[i];}
+    for(int i=0;i<constants.length;i++){(*s2->constants[i])=*constants[i];}
     s2->parameters.Allocate(parameters.length);
-    for(int i=0;i<parameters.length;i++){s2->parameters[i]=parameters[i];}
+    for(int i=0;i<parameters.length;i++){(*s2->parameters[i])=*parameters[i];}
     //UNSAFE- constants/parameters[i] may be a void* that is not expected to be shared
     return s2;
 }

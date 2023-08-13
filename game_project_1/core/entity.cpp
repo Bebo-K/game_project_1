@@ -149,8 +149,7 @@ bool ClientEntity::HasClientComponents(bitmask mask){
 
 
 
-
-ServerEntity::ServerEntity(int id):Entity(id){
+ServerEntity::ServerEntity(int id):Entity(id),changed_components(bitmask::all){
     svr_component_count = ServerComponent::Count;
     svr_components = new Component*[svr_component_count];
     for(int i=0;i<svr_component_count;i++){svr_components[i]=null;}
@@ -164,14 +163,14 @@ ServerEntity::~ServerEntity(){
 
 void ServerEntity::Clear(){
     Entity::Clear();
-    delta.Clear();
+    changed_components = bitmask::none;
     for(int i=1;i<svr_component_count;i++){
         if(svr_components[i]!=null){delete svr_components[i]; svr_components[i]=null;};
     }
 }
 void ServerEntity::CloneTo(ServerEntity* copy){
     Entity::CloneTo((Entity*)copy);
-    copy->delta=delta;
+    copy->changed_components=changed_components;
     for(int i=1;i<svr_component_count;i++){
         if(svr_components[i]!=null){copy->svr_components[i]=svr_components[i]->Clone();};
     }

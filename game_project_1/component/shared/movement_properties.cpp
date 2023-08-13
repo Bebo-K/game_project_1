@@ -1,4 +1,4 @@
-#include <game_project_1/component/shared/move_properties.hpp>
+#include <game_project_1/component/shared/movement_properties.hpp>
 
 
 MovementProperties::MovementProperties(){
