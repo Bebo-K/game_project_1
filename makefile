@@ -7,7 +7,7 @@ RESOURCE_ARCH = pe-x86-64
 
 CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
 #FINAL BUILD: add -static-libgcc -static-libstdc++
-LIBS =  -lgdi32 -lglew32 -lWs2_32 -lwinmm -lopengl32  -lz -lfreetype.dll -lole32 -luuid
+LIBS =  -lgdi32 -lglew32 -lWs2_32 -lwinmm -lopengl32 -lz -lfreetype -lole32 -luuid 
 
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))

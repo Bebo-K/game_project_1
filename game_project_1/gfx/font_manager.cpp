@@ -4,7 +4,6 @@
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/os.hpp>
-#include <freetype/ftcolor.h>
 
 FT_Library   ft_library;
 FontID       default_font_id,current_font_id;
@@ -219,7 +218,7 @@ void FontManager::FontCache::BuildAtlas(){
     for(int i=0;i < precached_codepoints_range;i++){
         int codepoint = precached_codepoints_range_lo+i;
         int glyph = FT_Get_Char_Index(fontface,codepoint);
-        int err = FT_Load_Glyph(fontface,glyph,FT_LOAD_COLOR);
+        int err = FT_Load_Glyph(fontface,glyph,FT_LOAD_DEFAULT);
         if(err != 0){logger::warn("Unable to load glyph. Code:%d\n",err);}        
         err = FT_Render_Glyph(fontface->glyph,FT_RENDER_MODE_NORMAL);
         if(err != 0){logger::warn("Unable to render glyph. Code:%d\n",err);}
