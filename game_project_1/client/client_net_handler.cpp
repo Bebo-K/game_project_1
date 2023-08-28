@@ -1,17 +1,18 @@
 #include <game_project_1/client/client_net_handler.hpp>
 
 #include <game_project_1/core/entity.hpp>
-#include <game_project_1/component/component_ids.hpp>
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/net/network.hpp>
 #include <game_project_1/game/races_and_classes.hpp>
 
+#include <game_project_1/component/shared/physics_state.hpp>
+#include <game_project_1/component/shared/movement_state.hpp>
+#include <game_project_1/component/shared/action_state.hpp>
+
 
 Client* ClientNetHandler::client=nullptr;
 
-int player_delta_mask[] =  {SharedComponent::TypeID<PhysicsState>,SharedComponent::TypeID<MovementState>,SharedComponent::TypeID<ActionState>};
-
-bitmask player_delta_mask = bitmask::of_bits(player_delta_mask,3);
+ClientComponentMask player_delta_mask = ClientComponentMask().With<PhysicsState>().With<MovementState>().With<ActionState>();
 
 byte delta_buffer[Datagram::MAX_DATA_LENGTH];
 
@@ -126,12 +127,12 @@ void ClientNetHandler::SendCreatePlayer(wchar* playername,int player_race, int p
 void ClientNetHandler::SendPlayerDelta(){
     if(ClientNetwork::IsRunning()){
         ClientEntity* player = client->scene.GetEntity(client->Me()->entity_id);
-        int delta_len = sizeof(int) + player->SerializedLength(player_delta_mask);
-        if(delta_len > sizeof(int)){
+        int delta_len = sizeof(int) + player->SerializedLength(player_delta_mask.Mask());
+        if(delta_len > (int)sizeof(int)){
             Payload delta(PacketID::CDLT,delta_len,delta_buffer);
-            Serializer delta_out(ret.data,ret.length);
-                delta_out.PutInt(entity->id);
-                entity->Write(delta_out,player_delta_mask); 
+            Serializer delta_out(delta.data,delta.length);
+                delta_out.PutInt(player->id);
+                player->Write(delta_out,player_delta_mask.Mask()); 
             ClientNetwork::Send(delta);
         }
     }

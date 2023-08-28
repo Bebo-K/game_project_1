@@ -43,7 +43,7 @@ void ClientLevel::Draw(Camera* cam){
     }
 }
 void ClientLevel::Unload(){
-    models.Destroy();
-    collmeshes.Destroy();
+    models.Clear();
+    collmeshes.Clear();
     skybox.SetTexture(TextureManager::DefaultTexture());
 }

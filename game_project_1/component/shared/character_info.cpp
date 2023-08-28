@@ -1,13 +1,13 @@
-#include <game_project_1/component/shared/character.hpp>
+#include <game_project_1/component/shared/character_info.hpp>
 #include <game_project_1/game/dice.hpp>
 
-Character::Character(){Clear();}
+CharacterInfo::CharacterInfo(){Clear();}
 
-Character::~Character(){Clear();}
+CharacterInfo::~CharacterInfo(){Clear();}
 
-int Character::SerializedLength(){return sizeof(int)*2 + sizeof(CharacterAppearance);}
+int CharacterInfo::SerializedLength(){return sizeof(int)*2 + sizeof(CharacterAppearance);}
 
-void Character::Read(Deserializer& dat){
+void CharacterInfo::Read(Deserializer& dat){
     race_id = dat.GetInt();
     class_id = dat.GetInt();
     appearance.style1 = dat.GetInt();
@@ -16,7 +16,7 @@ void Character::Read(Deserializer& dat){
     appearance.color1.rgba(dat.GetInt());
 }
 
-void Character::Write(Serializer& dat){
+void CharacterInfo::Write(Serializer& dat){
     dat.PutInt(race_id);
     dat.PutInt(class_id);
     dat.PutInt(appearance.style1);
@@ -25,15 +25,15 @@ void Character::Write(Serializer& dat){
     dat.PutInt(appearance.color1.as_code());
 }
 
-Component* Character::Clone(){
-    Character* copy = new Character();
+Component* CharacterInfo::Clone(){
+    CharacterInfo* copy = new CharacterInfo();
     copy->race_id = race_id;
     copy->class_id = class_id;
     copy->appearance = appearance;
     return copy;
 }
 
-void Character::Clear(){
+void CharacterInfo::Clear(){
     race_id=0;
     class_id=0;
     appearance.Clear();

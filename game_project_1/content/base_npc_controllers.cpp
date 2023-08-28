@@ -5,7 +5,7 @@
 #include <game_project_1/component/shared/movement_state.hpp>
 
 void BaseContent::NPCController_Wander(ServerEntity* e, ServerScene* s){
-    NPCState* npc_state = e->ServerGet<NPCState>();
+    NPCState* npc_state = e->Get<NPCState>();
     MovementState* move_state = e->Get<MovementState>();
     if(!npc_state->init){   
         npc_state->current_action=0;

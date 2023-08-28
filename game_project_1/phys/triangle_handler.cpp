@@ -1,4 +1,5 @@
 #include <game_project_1/phys/triangle_handler.hpp>
+#include <game_project_1/component/shared/physics_state.hpp>
 
 LevelCollision::CollisionResult TriangleHandler::DoCollision(
     Entity* e,LevelCollision::Surface* surface,vec3 step_position,vec3 step_velocity,Ellipse_t hitsphere,Triangle triangle){

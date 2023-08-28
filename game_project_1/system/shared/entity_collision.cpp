@@ -1,6 +1,8 @@
-#include <game_project_1/system/entity_collision.hpp>
+#include <game_project_1/system/shared/entity_collision.hpp>
 #include <game_project_1/phys/collider.hpp>
 #include <game_project_1/types/map.hpp>
+
+#include <game_project_1/component/shared/collider_set.hpp>
 
 using namespace EntityCollision;
 
@@ -14,7 +16,7 @@ CollisionResult EntityCollision::CheckCollision(Entity* e1, Entity* e2){
     ColliderSet* e2_coll = e2->Get<ColliderSet>();
     for(ShapeCollider* c1:(*e1_coll)){
         for(ShapeCollider* c2:(*e2_coll)){
-            if(c1->Intersects(e1->GetLocation(),c2,e2->GetLocation(),&point)){
+            if(c1->Intersects(e1->GetLocation(),e1->scale,c2,e2->GetLocation(),e2->scale,&point)){
                 return CollisionResult(point,e1_coll->IndexOf(c1),e2_coll->IndexOf(c2));
             }
         }

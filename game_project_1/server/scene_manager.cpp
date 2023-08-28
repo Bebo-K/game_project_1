@@ -2,9 +2,11 @@
 #include <game_project_1/server/server.hpp>
 
 
-#include <game_project_1/system/npc_controller.hpp>
-#include <game_project_1/system/movement.hpp>
-#include <game_project_1/system/physics.hpp>
+#include <game_project_1/system/server/npc_controller.hpp>
+#include <game_project_1/system/shared/movement.hpp>
+#include <game_project_1/system/shared/physics.hpp>
+
+#include <game_project_1/component/server/persistence.hpp>
 
 #include <game_project_1/content/base_content.hpp>
 #include <game_project_1/game/areas.hpp>
@@ -173,7 +175,7 @@ ServerEntity* SceneManager::TransitionGlobalEntity(ServerEntity* e,int from_area
     //else just deload, will be loaded on next scene load.
 
     LevelEntrance* entrance = to->level.entrances[entrance_id];
-    Location spawn_location({0,0,0},{0,0,0},{1,1,1});
+    Location spawn_location({0,0,0},{0,0,0});
     int spawn_type = 0;
     if(entrance != null){
         spawn_location = entrance->GenerateLocation();
@@ -184,9 +186,7 @@ ServerEntity* SceneManager::TransitionGlobalEntity(ServerEntity* e,int from_area
     save_entity->Instantiate(target);
 
     //Overwrite with position
-    target->SetPos(spawn_location.position);
-    target->rotation = spawn_location.rotation;
-    target->scale = spawn_location.scale;
+    target->SetLocation(spawn_location);
     if(spawn_type == -1){target->rotation.z=180.0f;}//TODO: actually use spawn type
     
     //build, then

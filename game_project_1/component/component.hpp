@@ -11,12 +11,9 @@
 
 class Component{
     public: 
-
     int last_updated;
-    inline void MarkUpdated(int timestamp){last_updated=timestamp;}
-    inline void MarkUpdated(){last_updated=OS::time_ms();}
 
-    virtual ~Component()=0;
+    virtual ~Component(){}
 
     virtual Component* Clone() =0;
     virtual void Clear()=0;
@@ -24,6 +21,9 @@ class Component{
     virtual int SerializedLength()=0;
     virtual void Read(Deserializer& dat)=0;
     virtual void Write(Serializer& dat)=0;
+    
+    void MarkUpdated(int timestamp);
+    void MarkUpdated();
 };
 
 

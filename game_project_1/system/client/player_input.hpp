@@ -1,8 +1,8 @@
 #ifndef PLAYER_INPUT_H
 #define PLAYER_INPUT_H
 
+#include <game_project_1/core/client_entity.hpp>
 #include <game_project_1/input.hpp>
-#include <game_project_1/core/entity.hpp>
 #include <game_project_1/gfx/camera.hpp>
 
 

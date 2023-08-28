@@ -15,7 +15,7 @@ class Drawable{
 
     Drawable();
     virtual void Draw(Camera* cam)=0;
-    void SetLocation(Location l);
+    void SetTransform(Location l,vec3 scale);
     virtual ~Drawable();
 };
 

@@ -1,6 +1,10 @@
 #include <game_project_1/component/client/animation_state.hpp>
 
 
+AnimationState::AnimationState(){
+    movement_type=IDLE;
+    controller_type=0;
+}
 AnimationState::AnimationState(AnimationControllerType type){
     movement_type=IDLE;
     controller_type=type;

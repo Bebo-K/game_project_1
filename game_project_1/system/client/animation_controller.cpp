@@ -1,4 +1,4 @@
-#include <game_project_1/system/animation_controller.hpp>
+#include <game_project_1/system/client/animation_controller.hpp>
 #include <game_project_1/types/map.hpp>
 
 #include <game_project_1/component/client/model_set.hpp>
@@ -11,8 +11,8 @@ void EmptyAnimationControllerCallback(ClientEntity* e, float delta){}
 
 
 void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop){
-    ModelSet* models = e->ClientGet<ModelSet>();
-    AnimationState* anim_state = e->ClientGet<AnimationState>();
+    ModelSet* models = e->Get<ModelSet>();
+    AnimationState* anim_state = e->Get<AnimationState>();
     if(anim_state && anim_name && anim_name != anim_state->anim_name){
         anim_state->anim_name = anim_name;
         if(has_windup){
@@ -38,7 +38,7 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
 
 //Modifies the play speed of the current clip only 
 void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float percent){
-    ModelSet* models = e->ClientGet<ModelSet>();
+    ModelSet* models = e->Get<ModelSet>();
     for(Model* m:(*models)){
         if(m->pose != null && m->pose->anim_hook.active_clip != null){
             m->pose->anim_hook.active_clip->timescale = percent;
@@ -49,7 +49,7 @@ void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float perce
 
 void AnimationController::Update(ClientEntity* e, float delta){
     if(!e->Has<AnimationState>()){return;}
-    AnimationState* anim_state = e->ClientGet<AnimationState>();
+    AnimationState* anim_state = e->Get<AnimationState>();
     AnimationControllerCallback callback = GetAnimationControllerCallback(anim_state->controller_type);
     callback(e,delta);
 }

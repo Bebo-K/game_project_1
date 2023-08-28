@@ -461,6 +461,6 @@ void Transform::Clear(){
 
 
 
-Location::Location(){position={0,0,0};rotation={0,0,0};scale={1,1,1};}
-Location::Location(vec3 pos,vec3 rot,vec3 scl){position=pos;rotation=rot;scale=scl;}
+Location::Location(){position={0,0,0};rotation={0,0,0};}
+Location::Location(vec3 pos,vec3 rot){position=pos;rotation=rot;}
 //Transform Location::ToTransform(){}

@@ -14,12 +14,12 @@ Drawable::Drawable(){
 Drawable::~Drawable(){}
 
 
-void Drawable::SetLocation(Location l){
+void Drawable::SetTransform(Location l,vec3 scale){
     x=l.position.x;
     y=l.position.y;
     z=l.position.z;
     rotation = l.rotation;
-    scale = l.scale;
+    this->scale=scale;
 }
 
 VBO::VBO(){

@@ -1,85 +1,116 @@
+
+
 #include <game_project_1/core/entity.hpp>
 
+ComponentMask::ComponentMask():ids(0){}
+ComponentMask::ComponentMask(bitmask val):ids(0){ids=val;}
+Entity ComponentMask::dummy = Entity(-1);
 
-Entity::Entity(int id){
-    this->id = id;
-    component_count = SharedComponent::Count;
-    components = new Component*[component_count];
-    for(int i=0;i<component_count;i++){components[i]=null;}
+template<> int Entity::IdOf<Identity>()               {return 1;}
+template<> int Entity::IdOf<PhysicsProperties>()      {return 2;}
+template<> int Entity::IdOf<MovementProperties>()     {return 3;}
+//template<> int Entity::IdOf<ActionProperties>()     {return 4;}
+template<> int Entity::IdOf<PhysicsState>()           {return 5;}
+template<> int Entity::IdOf<MovementState>()          {return 6;}
+template<> int Entity::IdOf<ActionState>()            {return 7;}
+template<> int Entity::IdOf<ColliderSet>()            {return 8;}
+template<> int Entity::IdOf<StatBlock>()              {return 9;}
+template<> int Entity::IdOf<Equip>()                  {return 10;}
+template<> int Entity::IdOf<Inventory>()              {return 11;}
+template<> int Entity::IdOf<CharacterInfo>()          {return 12;}
+
+void Entity::Add(int slot){
+    switch(slot){
+        case 0: components[slot] = new Identity();
+        case 1: components[slot] = new PhysicsProperties();
+        case 2: components[slot] = new MovementProperties();
+        //case 3: components[slot] = new ActionProperties();
+        case 4: components[slot] = new PhysicsState();
+        case 5: components[slot] = new MovementState();
+        case 6: components[slot] = new ActionState();
+        case 7: components[slot] = new ColliderSet();
+        case 8: components[slot] = new StatBlock();
+        case 9: components[slot] = new Equip();
+        case 10: components[slot] = new Inventory();
+        case 11: components[slot] = new CharacterInfo();
+        default: 
+            logger::warn("Could not add component ID %d to entity ID %d, id is invalid",Id(slot),id);
+        break;
+    }
 }
 
-Entity::~Entity(){
-    Clear();
-    delete components;components=null;
+Entity::Entity(int eid){
+    id=eid;
+    x=0;y=0;z=0;
+    rotation={0,0,0};
+    scale={1,1,1};
+    for(int i=0;i<component_slots;i++){components[i]=nullptr;}
 }
+Entity::~Entity(){Clear();}
 
 vec3 Entity::GetPos(){return {x,y,z};}
+Location Entity::GetLocation(){
+    return Location({x,y,z},rotation);
+}
 void Entity::SetPos(vec3 pos){
     x=pos.x;y=pos.y;z=pos.z;
 }
-Location Entity::GetLocation(){
-    return Location({x,y,z},rotation,scale);
+void Entity::SetLocation(Location loc){
+    x = loc.position.x; y = loc.position.y; z = loc.position.z;
+    rotation = loc.rotation;
 }
 
+
 void Entity::Clear(){
-    id=0;
-    x=y=z=0;
-    rotation = vec3::zero();
-    scale = {1,1,1};
-    velocity = vec3::zero();
-    for(int i=0;i<component_count;i++){
-        if(components[i]!=null){
-            delete components[i]; 
-            components[i]=null;
+    for(int i=0;i<component_slots;i++){
+        if(components[i]!=nullptr){
+            delete components[i];
+            components[i] = nullptr;
         }
     }
 }
+
 void Entity::CloneTo(Entity* copy){
     copy->id = id;
     copy->SetPos({x,y,z});
     copy->rotation = rotation;
     copy->scale = scale;
     copy->velocity = velocity;
-    for(int i=0;i<component_count;i++){
+    for(int i=0;i<component_slots;i++){
         if(components[i]!=null){copy->components[i]=components[i]->Clone();};
     }
 }
-void Entity::NewComponent(int component_id){
-    DeleteComponent(component_id);
-    components[component_id]=SharedComponent::NewInstance<component_id>();
-}
-void Entity::DeleteComponent(int component_id){
-    if(component_id < 0 || component_id > component_count){logger::exception("Invalid Entity component index %d",component_id);}
-    if(components[component_id] != null){delete components[component_id];}
-}
+
 bitmask Entity::AllExistingComponents(){
-    bitmask mask(0);
-    for(int i=0;i<component_count;i++){if(components[i] != null){mask.set(i);}}
-    return mask;
+    bitmask id_mask(1);
+    for(int slot=0;slot<component_slots;slot++){if(components[slot] != null){id_mask.set(Id(slot));}}
+    return id_mask;
 }
-bool Entity::HasComponent(int componentID){
-    return (components[componentID]!=null);
-}
-bool Entity::HasComponents(bitmask mask){
-    for(int i=0;i<component_count;i++){if(mask.get_bit(i) && components[i] == null){return false;}}
+
+bool Entity::HasComponents(bitmask id_mask){
+    for(int slot=0;slot<component_slots;slot++){if(id_mask.get_bit(Id(slot)) && components[slot] == null){return false;}}
     return true;
 }
 
-int Entity::SerializedLength(bitmask mask){
+bool Entity::HasAll(ComponentMask mask){return HasComponents(mask.Mask());}
+
+int  Entity::SerializedLength(bitmask mask){
     int length = sizeof(bitmask);
     if(mask.get_bit(0)){ length += sizeof(float)*3 + sizeof(vec3)*3; }
-    for(int i=0;i<component_count;i++){
-        if(mask.get_bit(i+1) && components[i] != null){length += (sizeof(int) + components[i]->SerializedLength());}
+    for(int slot=0;slot<component_slots;slot++){
+        if(mask.get_bit(Id(slot)) && components[slot] != null){length += (sizeof(int) + components[slot]->SerializedLength());}
     }
     return length;
 }
-void Entity::Write(Serializer& dat, bitmask mask){
+
+void Entity::Write(Serializer& dat, bitmask id_mask){
     dat.PutInt(sizeof(bitmask));
-    if(mask.get_bit(0)){ dat.PutVec3({x,y,z});dat.PutVec3(rotation);dat.PutVec3(scale);dat.PutVec3(velocity);}
-    for(int i=0;i<component_count;i++){
-        if(mask.get_bit(i+1) && components[i] != null){components[i]->Write(dat);}
+    if(id_mask.get_bit(0)){ dat.PutVec3({x,y,z});dat.PutVec3(rotation);dat.PutVec3(scale);dat.PutVec3(velocity);}
+    for(int slot=0;slot<component_slots;slot++){
+        if(id_mask.get_bit(Id(slot)) && components[slot] != null){components[slot]->Write(dat);}
     }
 }
+
 void Entity::Read(Deserializer& dat, int timestamp){
     bitmask read_mask(dat.GetInt());
     if(read_mask.get_bit(0) ){
@@ -88,107 +119,24 @@ void Entity::Read(Deserializer& dat, int timestamp){
         scale = dat.GetVec3();
         velocity = dat.GetVec3();
     }
-    for(int i=0;i<component_count;i++){
-        if(read_mask.get_bit(i+1)){
-            if(components[i]==null){NewComponent(i);}
-            if(components[i]->last_updated < timestamp){
-                components[i]->Read(dat);
-                components[i]->MarkUpdated(timestamp);
+    for(int slot=0;slot<component_slots;slot++){
+        if(read_mask.get_bit(Id(slot))){
+            if(components[slot]==null){Add(slot);}
+            if(components[slot]->last_updated < timestamp){
+                components[slot]->Read(dat);
+                components[slot]->MarkUpdated(timestamp);
             }
             else{
-                Component* temp = components[i]->Clone();
-                temp->Read(dat);
-                delete temp;
+                Component* skip = components[slot]->Clone();
+                skip->Read(dat);
+                delete skip;
             }
         }
     }
 }
 
-
-
-
-ClientEntity::ClientEntity(int id):Entity(id){
-    cli_component_count = ClientComponent::Count;
-    cli_components = new Component*[cli_component_count];
-    for(int i=0;i<cli_component_count;i++){cli_components[i]=null;}
-}
-ClientEntity::~ClientEntity(){
-    Clear();
-    delete cli_components;cli_components=null;
-}
-
-void ClientEntity::Clear(){
-    Entity::Clear();
-    for(int i=0;i<cli_component_count;i++){
-        if(cli_components[i]!=null){delete cli_components[i]; cli_components[i]=null;};
-    }
-}
-void ClientEntity::CloneTo(ClientEntity* copy){
-    Entity::CloneTo((Entity*)copy);
-    for(int i=0;i<cli_component_count;i++){
-        if(cli_components[i]!=null){copy->cli_components[i]=cli_components[i]->Clone();};
-    }
-}
-void ClientEntity::NewClientComponent(int component_id){
-    DeleteClientComponent(component_id);
-    cli_components[component_id] = ClientComponent::NewInstance<component_id>();
-}
-void ClientEntity::DeleteClientComponent(int component_id){
-    if(component_id < 0 || component_id > cli_component_count){
-        logger::exception("Invalid ClientEntity component index %d",component_id);
-    }
-    if(cli_components[component_id] != null){delete cli_components[component_id];}
-}
-bool ClientEntity::HasClientComponent(int component_id){
-    return (cli_components[component_id] != null);
-}
-bool ClientEntity::HasClientComponents(bitmask mask){
-    for(int i=0;i<cli_component_count;i++){if(mask.get_bit(i) && cli_components[i] == null){return false;}}
-    return true;
-}
-
-
-
-ServerEntity::ServerEntity(int id):Entity(id),changed_components(bitmask::all){
-    svr_component_count = ServerComponent::Count;
-    svr_components = new Component*[svr_component_count];
-    for(int i=0;i<svr_component_count;i++){svr_components[i]=null;}
-    changed_components.val=0;
-    save_to_scene=false;
-}
-ServerEntity::~ServerEntity(){
-    Clear();
-    delete svr_components;svr_components=null;
-}
-
-void ServerEntity::Clear(){
-    Entity::Clear();
-    changed_components = bitmask::none;
-    for(int i=1;i<svr_component_count;i++){
-        if(svr_components[i]!=null){delete svr_components[i]; svr_components[i]=null;};
-    }
-}
-void ServerEntity::CloneTo(ServerEntity* copy){
-    Entity::CloneTo((Entity*)copy);
-    copy->changed_components=changed_components;
-    for(int i=1;i<svr_component_count;i++){
-        if(svr_components[i]!=null){copy->svr_components[i]=svr_components[i]->Clone();};
-    }
-}
-void ServerEntity::NewServerComponent(int component_id){
-    DeleteServerComponent(component_id);
-    svr_components[component_id] = ServerComponent::NewInstance<component_id>();
-}
-void ServerEntity::DeleteServerComponent(int component_id){
-    if(component_id < 1 || component_id > svr_component_count){
-        logger::exception("Invalid ServerEntity component index %d",component_id);
-    }
-    if(svr_components[component_id] != null){delete svr_components[component_id];}
-}
-bool ServerEntity::HasServerComponent(int component_id){
-    return (svr_components[component_id] != null);
-}
-bool ServerEntity::HasServerComponents(bitmask mask){
-    for(int i=0;i<svr_component_count;i++){if(mask.get_bit(i) && svr_components[i] == null){return false;}}
-    return true;
+void Entity::SkipRead(Deserializer& dat){
+    //TODO: less lazy memory mgmt
+    Entity temp(-1);
+    temp.Read(dat,0);
 }

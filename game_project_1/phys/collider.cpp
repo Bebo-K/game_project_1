@@ -41,7 +41,8 @@ ShapeCollider::ShapeCollider(vec3 center,float h,float r,float arc_angle,float t
 }
 
 using namespace Collider;
-bool ShapeCollider::Intersects(Location base,ShapeCollider *c2,Location base2){return Intersects(base,c2,base2,nullptr);}
+bool ShapeCollider::Intersects(Location base, vec3 base_scale,ShapeCollider *c2,Location base2, vec3 base2_scale){
+            return Intersects(base,base_scale,c2,base2,base2_scale,nullptr);}
 
 
 bool CapsuleIntersect(vec3 size_1,vec3 size_2,vec3 offset,vec3& intersect_point){
@@ -74,19 +75,21 @@ bool SphereIntersect(vec3 size_1,vec3 size_2,vec3 offset,vec3& intersect_point){
     return true;
 }
 
-bool ShapeCollider::Intersects(Location base,ShapeCollider *c2,Location base2,vec3* intersect_point){
+bool ShapeCollider::Intersects(Location base, vec3 base_scale, ShapeCollider *c2,
+     Location base2, vec3 base2_scale, vec3* intersect_point){
+        
     vec3 intersect;
 
-    vec3 scaled_origin_1 = base.position + (center_offset * base.scale);
-    vec3 scaled_origin_2 = base2.position + (c2->center_offset * base2.scale);
+    vec3 scaled_origin_1 = base.position + (center_offset * base_scale);
+    vec3 scaled_origin_2 = base2.position + (c2->center_offset * base2_scale);
 
     vec3 size_1 = scale;
-    if(shape != ARC){size_1 = size_1 * base.scale;}
-    else{size_1.x *= base.scale.x; size_1.y *= base.scale.y;}
+    if(shape != ARC){size_1 = size_1 * base_scale;}
+    else{size_1.x *= base_scale.x; size_1.y *= base_scale.y;}
     
     vec3 size_2 = c2->scale;
-    if(c2->shape != ARC){size_2 = size_2 * base2.scale;}
-    else{size_2.x *= base2.scale.x; size_2.y *= base2.scale.y;}
+    if(c2->shape != ARC){size_2 = size_2 * base2_scale;}
+    else{size_2.x *= base2_scale.x; size_2.y *= base2_scale.y;}
 
     vec3 offset = scaled_origin_2 - scaled_origin_1;
 

@@ -6,8 +6,8 @@
 #include <game_project_1/client/client_signal.hpp>
 #include <game_project_1/client/client_net_handler.hpp>
 
-#include <game_project_1/system/physics.hpp>
-#include <game_project_1/system/movement.hpp>
+#include <game_project_1/system/shared/physics.hpp>
+#include <game_project_1/system/shared/movement.hpp>
 
 #include <game_project_1/content/base_content.hpp>
 

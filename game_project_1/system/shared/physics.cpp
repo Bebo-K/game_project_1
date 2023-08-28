@@ -1,21 +1,26 @@
-#include <game_project_1/system/physics.hpp>
-#include <game_project_1/system/level_collision.hpp>
-#include <game_project_1/system/entity_collision.hpp>
+#include <game_project_1/system/shared/physics.hpp>
+#include <game_project_1/system/shared/level_collision.hpp>
+#include <game_project_1/system/shared/entity_collision.hpp>
+
+
+#include <game_project_1/component/shared/physics_state.hpp>
+#include <game_project_1/component/shared/physics_properties.hpp>
+
 #include <math.h>
 
 const float GRAVITY_TERMINAL= -128.0f;
 const float GRAVITY_ACCEL = -64.0f;
 
 void ApplyGravity(Entity* e, float delta){
-    PhysicsState phys_state = e->Get<PhysicsState>();
+    PhysicsState* phys_state = e->Get<PhysicsState>();
     if(e->velocity.y > GRAVITY_TERMINAL && phys_state->midair){
         e->velocity.y += delta*GRAVITY_ACCEL;
     }
 }
 
 void ApplyVelocityDampening(Entity* e, float delta){
-    PhysicsState phys_state = e->Get<PhysicsState>();
-    PhysicsProperties phys_props = e->Get<PhysicsProperties>();
+    PhysicsState* phys_state = e->Get<PhysicsState>();
+    PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
     if(phys_state->midair){
         float damper_amount = (float) pow(1-phys_props->midair_velocity_damper,delta);
 		e->velocity.x *= damper_amount;
@@ -29,11 +34,11 @@ void ApplyVelocityDampening(Entity* e, float delta){
 }
 
 void UpdateMovementState(Entity* e){
-    PhysicsState phys_state = e->Get<PhysicsState>();
-    MovementState move_state = e->Get<MovementState>();
+    PhysicsState* phys_state = e->Get<PhysicsState>();
+    MovementState* move_state = e->Get<MovementState>();
     if(phys_state->midair){
         if(move_state->is_jumping){
-            move_state->current_movement = MovementTypeID::JUMPING;
+            move_state->current_movement = MovementType::JUMPING;
             //if(e->velocity.y < 0.5f){
             //    move_state->current_movement = MovementTypeID::JUMP_APEX;
             //}
@@ -42,14 +47,14 @@ void UpdateMovementState(Entity* e){
             }
         }
         else{
-            move_state->current_movement = MovementTypeID::FALLING;
+            move_state->current_movement = MovementType::FALLING;
         }
     }
     else{
         float current_speed_2 = e->velocity.xz().length_sqr();
         move_state->can_jump=true;
         if(current_speed_2 > 0.1){
-            move_state->current_movement = MovementTypeID::RUNNING;
+            move_state->current_movement = MovementType::RUNNING;
             //if(e->movement != null){
             //    float walk_speed = e->movement->base_speed*0.25;
             //    if(current_speed_2 < walk_speed*walk_speed){
@@ -58,7 +63,7 @@ void UpdateMovementState(Entity* e){
             //}
         }
         else{
-            move_state->current_movement = MovementTypeID::IDLE;
+            move_state->current_movement = MovementType::IDLE;
         }
     }
 }

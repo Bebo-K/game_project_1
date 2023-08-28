@@ -26,8 +26,8 @@ class ShapeCollider{
 	ShapeCollider(vec3 center,vec3 size);//assumes AABB
 	ShapeCollider(vec3 center,float h,float r,float arc_angle,float turn);//assumes ARC
 	
-    bool Intersects(Location base,ShapeCollider *c2,Location base2);
-    bool Intersects(Location base,ShapeCollider *c2,Location base2,vec3* intersect_point);
+    bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale);
+    bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale,vec3* intersect_point);
 };
 
 

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/io/log.hpp>
-
+#include <game_project_1/types/iterator.h>
 
 
 template <typename T>
@@ -166,20 +166,14 @@ class IntegerSet{
 //Add(),Allocate() and Remove() must be used to add/remove elements to maintain the vacancy bit array.
 //Though Get(),GetArray() and the subscript operator([]) all are ways to access data, they handle vacant object slots differently
 class DynamicArray;
-struct DynamicArrayIterator{
-    DynamicArray* parent;
-    int          index;
-    byte* operator*();
-    DynamicArrayIterator operator++();
-    bool operator==(DynamicArrayIterator& l2);
-    bool operator!=(DynamicArrayIterator& l2);
-};
+typedef Iterator<DynamicArray,byte*> DynamicArrayIterator;
+
 class DynamicArray{
     private:
     BitArray occupancy;
     byte* data;
     
-    friend class DynamicArrayIterator;
+    friend DynamicArrayIterator;
     public:
     int slots;
     int slot_size;
@@ -203,5 +197,15 @@ class DynamicArray{
     DynamicArrayIterator begin();
     DynamicArrayIterator end();
 };
+
+template<>
+byte* DynamicArrayIterator::GetResult(){
+    return (byte*)parent->Get(index);
+}
+
+template<>
+int DynamicArrayIterator::Next(){
+    return parent->NextNonEmpty(index);
+}
 
 #endif

@@ -4,10 +4,10 @@
 #include <game_project_1/component/component.hpp>
 
 class Persistence: public Component{
-
     public:
     int global_id;
 
+    Persistence();
     Persistence(int guid);
     ~Persistence();
 

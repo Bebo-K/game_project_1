@@ -8,10 +8,8 @@
 #include <game_project_1/types/data_types.hpp>
 
 namespace ServerNetHandler{
-    //Components that should be sent to clients by default when loading into a scene or spawning new entities
-    extern bitmask server_initial_sync_components;
-    //Components that should be seen by clients when updated server-side
-    extern bitmask server_delta_components;
+    extern ServerComponentMask initial_sync_components;
+    extern ServerComponentMask delta_components;
 
     extern Server* server;
     

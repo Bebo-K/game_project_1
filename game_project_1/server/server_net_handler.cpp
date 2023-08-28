@@ -3,25 +3,20 @@
 #include <game_project_1/net/payload.hpp>
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/content/base_content.hpp>
-#include <game_project_1/component/shared/character.hpp>
+#include <game_project_1/component/shared/character_info.hpp>
+#include <game_project_1/component/shared/inventory.hpp>
 
 
 Server* ServerNetHandler::server=nullptr;
 ServerScene dummy_scene = ServerScene();
 
 //Components that should be sent to clients by default when loading into a scene or spawning new entities
-bitmask server_initial_sync_components= bitmask::none;
+ServerComponentMask ServerNetHandler::initial_sync_components = ServerComponentMask(bitmask::all).Without<Inventory>();
 //Components that should be seen by clients when updated server-side
-bitmask server_delta_components= bitmask::none;
+ServerComponentMask ServerNetHandler::delta_components = ServerComponentMask(bitmask::all).Without<Inventory>();
 
 
-void ServerNetHandler::Init(Server* s){
-    server = s;
-    server_initial_sync_components = bitmask::of_bits(SharedComponent::TypeID<Inventory>);
-    bitmask::invert(server_initial_sync_components);
-    server_delta_components = bitmask::of_bits(SharedComponent::TypeID<Inventory>+1);
-    bitmask::invert(server_delta_components);
-}
+void ServerNetHandler::Init(Server* s){server = s;}
 void ServerNetHandler::Free(){server = nullptr;}
 void ServerNetHandler::Update(int frames){
     if(!ServerNetwork::IsRunning())return;
@@ -122,7 +117,7 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
         identity->name = wstr::new_copy(new_save_info.player_name);
         identity->type = BaseContent::HUMANOID;
 
-    Character* char_data = new Character();
+    CharacterInfo* char_data = new CharacterInfo();
         char_data->class_id = new_save_info.class_id;
         char_data->race_id = new_save_info.race_id;
         char_data->appearance.color1 = new_save_info.color_1;
@@ -130,8 +125,8 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
         char_data->appearance.style2 = new_save_info.style_2;
         char_data->appearance.style3 = new_save_info.style_3; 
 
-    player_base_entity->Add<Identity>(identity);
-    player_base_entity->Add<Character>(char_data);
+    player_base_entity->Set(identity);
+    player_base_entity->Set(char_data);
 
     save_player->character.SetFromEntity(player_base_entity);
     server->scene_manager.TransitionPlayer(my_player,0,save_player->last_scene,save_player->last_entrance);

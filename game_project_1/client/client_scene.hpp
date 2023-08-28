@@ -1,15 +1,16 @@
 #ifndef CLIENT_SCENE_H
 #define CLIENT_SCENE_H
 
-#include <game_project_1/core/entity.hpp>
+#include <game_project_1/core/client_entity.hpp>
 #include <game_project_1/gfx/renderer.hpp>
 #include <game_project_1/client/client_level.hpp>
 
 #include <game_project_1/types/map.hpp>
+#include <game_project_1/types/pool.hpp>
 
-#include <game_project_1/system/camera_manager.hpp>
-#include <game_project_1/system/player_input.hpp>
-#include <game_project_1/system/animation_controller.hpp>
+#include <game_project_1/system/client/camera_manager.hpp>
+#include <game_project_1/system/client/player_input.hpp>
+#include <game_project_1/system/client/animation_controller.hpp>
 
 
 class ClientScene{
@@ -35,8 +36,8 @@ class ClientScene{
     ClientEntity* GetEntity(int eid);
     void          DestroyEntity(int eid);
 
-    void SpawnEntity(ClientEntity* e,int spawn_type_id);
-    void DespawnEntity(int eid,int despawn_type_id);
+    void AddToRender(ClientEntity* e);
+    void RemoveFromRender(ClientEntity* e);
 
     void SetPlayerControl(int eid);
     bool OnInput(Input::Event input);

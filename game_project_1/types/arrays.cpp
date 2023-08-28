@@ -215,16 +215,7 @@ void DynamicArray::Clear(){
     memset(data,0,slot_size*slots);
     occupancy.Clear();
 }
+
 DynamicArrayIterator DynamicArray::begin(){return {this,NextNonEmpty(-1)};}
 DynamicArrayIterator DynamicArray::end(){return {this,slots};}
 
-
-byte* DynamicArrayIterator::operator*(){
-    return &parent->data[index*parent->slot_size];
-}
-DynamicArrayIterator DynamicArrayIterator::operator++(){
-    index = parent->NextNonEmpty(index);
-    return (*this);
-}
-bool DynamicArrayIterator::operator==(DynamicArrayIterator& l2){return index ==l2.index;}
-bool DynamicArrayIterator::operator!=(DynamicArrayIterator& l2){return index !=l2.index;}

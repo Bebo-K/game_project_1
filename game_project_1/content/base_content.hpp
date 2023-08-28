@@ -1,7 +1,8 @@
 #ifndef BASE_CONTENT_ANIMATION_CONTROLLERS_H
 #define BASE_CONTENT_ANIMATION_CONTROLLERS_H
 
-#include <game_project_1/core/entity.hpp>
+#include <game_project_1/core/client_entity.hpp>
+#include <game_project_1/component/shared/identity.hpp>
 
 #include <game_project_1/component/client/animation_state.hpp>
 #include <game_project_1/component/server/npc_properties.hpp>
@@ -12,7 +13,6 @@
 
 namespace BaseContent{
     const EntityClass HUMANOID = 1;
-
     const AnimationControllerType GROUND_UNIT = 1;
     void AnimationController_GroundUnit(ClientEntity* e,float ms);
 
@@ -21,6 +21,7 @@ namespace BaseContent{
 
     const ModelID HUMAN_1 =1;
 
+    void LoadCommon();
     void LoadClient();
     void LoadServer();
 

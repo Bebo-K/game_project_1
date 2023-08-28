@@ -68,7 +68,7 @@ Stream* AssetManager::FragmentShader(char* uri){
     return shader_stream;
 }
 Stream* AssetManager::Level(int area_id){
-    char* uri = Areas::GetMapName(area_id);
+    char* uri = Areas::GetMap(area_id);
     char* filename = BuildFileName("levels/",uri,".lvl");
     FileStream* level_stream = new FileStream(filename);
     free(filename);

@@ -5,7 +5,7 @@
 RESOURCE_ARCH = pe-x86-64
 #RESOURCE_ARCH = pe-i386
 
-CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wno-write-strings
+CFLAGS =  -g -Wall -std=c++11 -Wfatal-errors -Wwrite-strings -Wclass-memaccess
 #FINAL BUILD: add -static-libgcc -static-libstdc++
 LIBS =  -lgdi32 -lglew32 -lWs2_32 -lwinmm -lopengl32 -lz -lfreetype -lole32 -luuid 
 

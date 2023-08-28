@@ -1,6 +1,12 @@
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/io/asset_manager.hpp>
 
+#include <game_project_1/core/entity_template.hpp>
+
+#include <game_project_1/component/shared/identity.hpp>
+#include <game_project_1/component/client/model_set.hpp>
+#include <game_project_1/component/client/sprite_set.hpp>
+
 
 ClientScene::ClientScene():renderer(),level(),entities(8){
     area_id=-1;
@@ -28,7 +34,8 @@ void ClientScene::Unload(){
 void ClientScene::Draw(){
     camera_manager.PreDraw();
     for(ClientEntity* e:entities){        
-        if(e->models != null){e->models->SetLocation(e->GetLocation());}
+        if(e->Has<ModelSet>()){e->Get<ModelSet>()->SetTransform(e->GetLocation(),e->scale);}
+        if(e->Has<SpriteSet>()){e->Get<SpriteSet>()->SetTransform(e->GetLocation(),e->scale);}
     }
     renderer.Draw();
 }
@@ -47,13 +54,21 @@ ClientEntity* ClientScene::GetEntity(int eid){
 void ClientScene::DestroyEntity(int eid){
     for(int i=0;i<entities.Count();i++){
         if(entities[i]->id==eid){
-            if(entities[i]->Has<ModelSet>){renderer.Remove(e->ClientGet<ModelSet>());}
-            if(entities[i]->Has<SpriteSet>){renderer.Remove(e->ClientGet<SpriteSet>());}
+            RemoveFromRender(entities[i]);
             entities.Delete(i);break;
         }
     }
 }
 
+void ClientScene::AddToRender(ClientEntity* e){
+    if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
+    if(e->Has<SpriteSet>()){renderer.Add(e->Get<SpriteSet>());}
+}
+
+void ClientScene::RemoveFromRender(ClientEntity* e){
+    if(e->Has<ModelSet>()){renderer.Remove(e->Get<ModelSet>());}
+    if(e->Has<SpriteSet>()){renderer.Remove(e->Get<SpriteSet>());}
+}
 
 void ClientScene::SetPlayerControl(int entity_id){
     ClientEntity* player = GetEntity(entity_id);
@@ -63,28 +78,4 @@ void ClientScene::SetPlayerControl(int entity_id){
 bool ClientScene::OnInput(Input::Event input){
     if(player_input.HandleInput(input)){return true;}
     else return camera_manager.HandleCameraInput(input);
-}
-
-void ClientScene::SpawnEntity(ClientEntity* e){
-
-    logger::debug("Spawning entity id %d",e->id);
-    if(e->Has<Identity>()){logger::debug("(%s)\n",e->Get<Identity>()->name);}
-    else{logger::debug("\n");}
-
-    if(entity_builders.Has(e->type)){
-        ClientEntityBuilder builder = entity_builders.Get(e->type);
-        builder(e,this);
-    }
-    
-    if(e->Has<ModelSet>){renderer.Add(e->ClientGet<ModelSet>());}
-    if(e->Has<SpriteSet>){renderer.Add(e->ClientGet<SpriteSet>());}
-    
-    switch(spawn_type_id){//TODO:
-        default:break;
-    }
-}
-void ClientScene::DespawnEntity(int eid,int despawn_type_id){
-    switch(despawn_type_id){//TODO:
-        default: DestroyEntity(eid);break;//immediate mode
-    }
 }

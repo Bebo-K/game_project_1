@@ -3,6 +3,7 @@
 
 
 
+NPCProperties::NPCProperties(){controller_type=0;}
 NPCProperties::NPCProperties(int controller){Clear();controller_type=controller;}
 
 NPCProperties::~NPCProperties(){Clear();}

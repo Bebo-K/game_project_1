@@ -1,4 +1,4 @@
-#include <game_project_1/system/camera_manager.hpp>
+#include <game_project_1/system/client/camera_manager.hpp>
 #include <game_project_1/input.hpp>
 
 CameraManager::CameraManager(){

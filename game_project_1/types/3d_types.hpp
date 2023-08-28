@@ -134,19 +134,17 @@ struct Transform{
 
 
 
-// Location is a combination of a position, rotation, and scale. Different from Transforms mainly because the rotation
-// hasn't been converted down to a quaternion yet. Game logic should happen using Location objects as:
-// rotation.x = forward/backward pitch of the object
-// rotation.y = turn of the object
-// rotation.z = left/right yaw of the object
+// Game object representation of a place in space- generally scale is constant or managed separately
+// rotation.x = pitch of the object (tilt forward being positive axis)
+// rotation.y = turn of the object (clockwise being positive axis)
+// rotation.z = yaw of the object (towards object's right side being positive axis)
 // Where Transform.rotation has no such mappings
 struct Location{
     vec3 position;
     vec3 rotation;
-    vec3 scale;
 
     Location();
-    Location(vec3 pos,vec3 rot,vec3 scale);
+    Location(vec3 pos,vec3 rot);
     //Transform ToTransform();
 };
 

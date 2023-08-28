@@ -1,6 +1,5 @@
 #include <game_project_1/client/client_net_handler.hpp>
 #include <game_project_1/io/serializer.hpp>
-#include <game_project_1/game/spawn.hpp>
 
 using namespace ClientNetHandler;
 
@@ -16,7 +15,7 @@ void ClientNetHandler::ParseNewScenePacket(ClientScene* scene, Payload payload){
     for(int i=0;i<entity_count;i++){
         ClientEntity* new_entity = scene->AddEntity(scene_in.GetInt());
         new_entity->Read(scene_in,payload.timestamp);
-        scene->SpawnEntity(new_entity,SpawnType::APPEAR);
+        scene->AddToRender(new_entity);
         if(new_entity->id == me->entity_id){client->OnSpawnPlayer(new_entity);}
     }
 }
@@ -33,7 +32,7 @@ void ClientNetHandler::ParseServerDeltaPacket(ClientScene* scene, Payload payloa
                 Entity::SkipRead(delta_in);//don't overwrite my player
             }
             else{
-                e->Read(delta_in,,payload.timestamp);
+                e->Read(delta_in,payload.timestamp);
             }
         }
         else{
@@ -53,7 +52,7 @@ void ClientNetHandler::ParseSpawnEntitiesPacket(ClientScene* scene, Payload payl
         if(entity == nullptr){
             entity = scene->AddEntity(entity_id);
             entity->Read(spawn_in,payload.timestamp);
-            scene->SpawnEntity(entity,spawn_type);  
+            scene->AddToRender(entity);  
             if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
         }
         else{
@@ -70,6 +69,6 @@ void ClientNetHandler::ParseDespawnEntitiesPacket(ClientScene* scene, Payload pa
         int entity_id = despawn_in.GetInt();
         int despawn_type_id = despawn_in.GetInt();
         //what to do if this is my entity? Unload scene?
-        scene->DespawnEntity(entity_id,despawn_type_id);
+        scene->DestroyEntity(entity_id);
     }
 }

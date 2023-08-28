@@ -58,7 +58,7 @@ struct color{
 
 struct color_f{
     float r,g,b,a;
-    void rgba(float R,float G,float B,float A);
+    static color_f rgba(float R,float G,float B,float A);
     void from_color(color c);
     color to_color();
 };

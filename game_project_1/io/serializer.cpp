@@ -52,9 +52,9 @@ void Serializer::PutFloat(float f){
 }
 void Serializer::PutVec3(vec3 v){
     if((int)(place + sizeof(vec3)) > data_length){
-        logger::exception("Serializer.PutVec3(%f) writes past the end of the data buffer (pos:%d,len%d)",f,place,data_length);}
+        logger::exception("Serializer.PutVec3(%f,%f,%f) writes past the end of the data buffer (pos:%d,len%d)",v.x,v.y,v.z,place,data_length);}
     vec3* ptr = (vec3*)&raw_data[place];
-    *ptr =  f;
+    *ptr =  v;
     place += sizeof(vec3);
 }
 

@@ -1,7 +1,8 @@
 #ifndef PHYSICS_SYSTEM_H
 #define PHYSICS_SYSTEM_H
 
-#include <game_project_1/core/entity.hpp>
+#include <game_project_1/core/client_entity.hpp>
+#include <game_project_1/core/server_entity.hpp>
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/server/server_scene.hpp>
 

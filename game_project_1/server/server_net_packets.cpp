@@ -10,7 +10,7 @@ Payload ServerNetHandler::WriteFullScene(Player* player_for,ServerScene* scene){
 
     for(ServerEntity* e:scene->entities){//First loop through to count entities and size
         scene_size += sizeof(int);//id
-        scene_size += e->SerializedLength(server_initial_sync_components);
+        scene_size += e->SerializedLength(initial_sync_components.Mask());
         current_entities++;
     }
 
@@ -22,7 +22,7 @@ Payload ServerNetHandler::WriteFullScene(Player* player_for,ServerScene* scene){
 
     for(ServerEntity* e:scene->entities){//Second loop to populate with spawn info
         scene_out.PutInt(e->id);
-        e->Write(scene_out,server_initial_sync_components);
+        e->Write(scene_out,initial_sync_components.Mask());
     }
     return scene_payload;
 }
@@ -34,7 +34,7 @@ Payload ServerNetHandler::WriteSceneNewEntities(ServerScene* scene){
     int spawn_size = sizeof(int);//num_entities
     for(ServerEntity* e:scene->just_spawned){//First loop through to count spawned entities and size
         spawn_size += sizeof(int);//id
-        spawn_size += e->SerializedLength(server_initial_sync_components);
+        spawn_size += e->SerializedLength(initial_sync_components.Mask());
     }
 
     Payload spawn_payload(PacketID::SPWN,spawn_size,(byte*)calloc(spawn_size,1));
@@ -42,7 +42,7 @@ Payload ServerNetHandler::WriteSceneNewEntities(ServerScene* scene){
         spawn_out.PutInt(spawned_entities);
     for(ServerEntity* e:scene->just_spawned){//Second loop to populate with spawn info
         spawn_out.PutInt(e->id);
-        e->Write(spawn_out,server_initial_sync_components);
+        e->Write(spawn_out,initial_sync_components.Mask());
     }
     scene->just_spawned.Clear();
     return spawn_payload;
@@ -71,8 +71,8 @@ Payload ServerNetHandler::WriteSceneDelta(ServerScene* scene){
     int updated_entities=0;
 
     for(ServerEntity* e:scene->entities){//First loop through to count changed entities and size
-        bitmask client_visible_delta_mask = server_delta_components;
-        client_visible_delta_mask.and_with(e->changed_components);
+        bitmask client_visible_delta_mask = delta_components.Mask();
+        client_visible_delta_mask.and_with(e->changed_component_ids);
         if(client_visible_delta_mask.val){
             delta_size += sizeof(int);//id
             delta_size += e->SerializedLength(client_visible_delta_mask);
@@ -86,8 +86,8 @@ Payload ServerNetHandler::WriteSceneDelta(ServerScene* scene){
         delta_out.PutInt(updated_entities);
 
     for(ServerEntity* e:scene->entities){//Second loop to populate with delta info
-        bitmask client_visible_delta_mask = server_delta_components;
-        client_visible_delta_mask.and_with(e->changed_components);
+        bitmask client_visible_delta_mask = delta_components.Mask();
+        client_visible_delta_mask.and_with(e->changed_component_ids);
         if(client_visible_delta_mask.val){
             delta_out.PutInt(e->id);
             e->Write(delta_out,client_visible_delta_mask);

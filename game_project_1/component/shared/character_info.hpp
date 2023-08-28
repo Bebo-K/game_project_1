@@ -5,14 +5,14 @@
 #include <game_project_1/game/races_and_classes.hpp>
 
 //Public character info: race, character class, appearance
-class Character: public Component{
+class CharacterInfo: public Component{
     public:
     RaceID race_id;
     ClassID class_id;
     CharacterAppearance appearance;
 
-    Character();
-    ~Character();
+    CharacterInfo();
+    ~CharacterInfo();
     
     Component* Clone();
     virtual void Clear();

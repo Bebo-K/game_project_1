@@ -11,8 +11,8 @@ class ClientLevel:public Drawable{
     static char* default_shader;
     public:
     Skybox skybox;
-    Array<ModelData>     models;
-    Array<MeshCollider> collmeshes;
+    List<ModelData>     models;
+    List<MeshCollider> collmeshes;
 
 
     ClientLevel();

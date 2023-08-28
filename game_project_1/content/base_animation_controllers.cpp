@@ -1,5 +1,4 @@
 #include <game_project_1/content/base_content.hpp>
-#include <game_project_1/system/animation_controller.hpp>
 
 #include <game_project_1/types/3d_types.hpp>
 
@@ -10,12 +9,14 @@
 #include <game_project_1/component/shared/movement_state.hpp>
 #include <game_project_1/component/shared/movement_properties.hpp>
 
+#include <game_project_1/system/client/animation_controller.hpp>
+
 
 void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
     AnimationState* anim_state = e->Get<AnimationState>();
     MovementState* move_state = e->Get<MovementState>();
     if(!anim_state || !move_state)return;
-    ModelSet* models = e->ClientGet<ModelSet>();
+    ModelSet* models = e->Get<ModelSet>();
     MovementProperties* move_props = e->Get<MovementProperties>();
 
     char* new_anim_name = null;

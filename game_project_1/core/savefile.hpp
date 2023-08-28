@@ -6,13 +6,14 @@
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/core/entity.hpp>
+#include <game_project_1/core/server_entity.hpp>
 
 
 #define CAMPAIGN_COUNT 1
 #define CAMPAIGN_DEMO 0
 
 
-class SaveEntity: ServerEntity{
+class SaveEntity:public ServerEntity{
     public:
     int global_id;
     //TODO: wchar** tags for scripting lookups

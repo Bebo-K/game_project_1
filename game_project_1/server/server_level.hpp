@@ -6,20 +6,19 @@
 #include <game_project_1/io/level_loader.hpp>
 
 
-
 class ServerLevel{
     private:
     static char* default_shader;
     public:
 
-    Array<MeshCollider> collmeshes;
-    Array<LevelEntrance> entrances;
-    Array<LevelExit> exits;
-    Array<LevelTrigger> triggers;
+    List<MeshCollider> collmeshes;
+    List<LevelEntrance> entrances;
+    List<LevelExit> exits;
+    List<LevelTrigger> triggers;
 
     ServerLevel();
     ~ServerLevel();
-    void Load(LevelLoader& loader);
+    void Load(LevelLoader loader);
     void Unload();
 };
 

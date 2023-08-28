@@ -1,13 +1,20 @@
-#include <game_project_1/system/level_collision.hpp>
+#include <game_project_1/system/shared/level_collision.hpp>
 #include <game_project_1/types/map.hpp>
+
+
+#include <game_project_1/component/shared/physics_properties.hpp>
+#include <game_project_1/component/shared/physics_state.hpp>
 
 using namespace LevelCollision;
 
-Map<EntityClass,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
-Map<EntityClass,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
+Map<int,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
+Map<int,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
 
 
 void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
+    if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
+    PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
+
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
@@ -17,16 +24,18 @@ void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        if(ClientEntityClassCollisionHandlers.Has(e->type)){
-            ClientHandlerCallback on_collide = ClientEntityClassCollisionHandlers.Get(e->type);
-            on_collide(e,collision_results[i],s);
+        int collision_handler = phys_props->world_collision_handler_id;
+        if(collision_handler != 0 && ClientEntityClassCollisionHandlers.Has(collision_handler)){
+            ClientEntityClassCollisionHandlers.Get(collision_handler)(e,collision_results[i],s);
         }
         collision_results[i].Clear();
     }  
 }
 
 void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
-    
+    if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
+    PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
+
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
     float step_delta = delta/VELOCITY_STEPS;
@@ -36,17 +45,16 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        if(ServerEntityClassCollisionHandlers.Has(e->type)){
-            ServerHandlerCallback on_collide = ServerEntityClassCollisionHandlers.Get(e->type);
-            on_collide(e,collision_results[i],s);
+        int collision_handler = phys_props->world_collision_handler_id;
+        if(collision_handler != 0 && ServerEntityClassCollisionHandlers.Has(collision_handler)){
+            ServerEntityClassCollisionHandlers.Get(collision_handler)(e,collision_results[i],s);
         }
         collision_results[i].Clear();
     } 
 }
 
 
-void LevelCollision::RunCollisionStep(Entity* e,Array<MeshCollider> meshes, float step_delta,CollisionResult* list){
-    if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
+void LevelCollision::RunCollisionStep(Entity* e,List<MeshCollider> meshes, float step_delta,CollisionResult* list){
     vec3 start_position = e->GetPos();
     vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
@@ -118,9 +126,9 @@ vec3 LevelCollision::HandleSolidStepCollisions(Entity* e, vec3 step_movement, Co
 }
 
 
-void LevelCollision::RegisterClientEntityClassCallbacks(EntityClass type,ClientHandlerCallback client_callback){
+void LevelCollision::RegisterClientEntityClassCallbacks(int type,ClientHandlerCallback client_callback){
     ClientEntityClassCollisionHandlers.Add(type,client_callback);
 }
-void LevelCollision::RegisterServerEntityClassCallbacks(EntityClass type,ServerHandlerCallback server_callback){
+void LevelCollision::RegisterServerEntityClassCallbacks(int type,ServerHandlerCallback server_callback){
     ServerEntityClassCollisionHandlers.Add(type,server_callback);
 }

@@ -1,4 +1,7 @@
-#include <game_project_1/system/player_input.hpp>
+#include <game_project_1/system/client/player_input.hpp>
+#include <game_project_1/component/shared/movement_properties.hpp>
+#include <game_project_1/component/shared/movement_state.hpp>
+#include <game_project_1/component/shared/action_state.hpp>
 #include <math.h>
 
 
@@ -12,7 +15,7 @@ void PlayerInput::Detach(){player = null;}
 bool PlayerInput::HandleMovementInput(){
     if(player == nullptr)return false;
     if(!player->Has<MovementState>()){return true;}
-    MovementState move_state = player->Get<MovementState>();
+    MovementState* move_state = player->Get<MovementState>();
     if(!move_state->can_move){return true;}
 
     Controller::Axis axis = Controller::GetAxis(Controller::Move);
@@ -32,7 +35,7 @@ bool PlayerInput::HandleMovementInput(){
 bool PlayerInput::HandleJumpingInput(){
     if(player == nullptr)return false;
     if(!player->Has<MovementState>()){return true;}
-    MovementState move_state = player->Get<MovementState>();
+    MovementState* move_state = player->Get<MovementState>();
     if(move_state->can_jump){
         if(Controller::GetButton(Controller::A).IsJustPressed()){
             move_state->jump_goal=true;
@@ -51,11 +54,11 @@ bool PlayerInput::HandleJumpingInput(){
 bool PlayerInput::HandleActionInput(){
     if(player == nullptr)return false;
     if(!player->Has<ActionState>()){return true;}
-    ActionState action_state = player->Get<ActionState>();
+    ActionState* action_state = player->Get<ActionState>();
 
     action_state->action_impulse=Controller::GetButton(Controller::B).IsJustPressed();
     if(action_state->action_impulse){
-        action_state->current_action = 0;//TODO action context
+        action_state->action_id = 0;//TODO action context
     }
     return true;
 }

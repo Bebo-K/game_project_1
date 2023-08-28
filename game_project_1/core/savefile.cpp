@@ -320,7 +320,7 @@ int SaveFile::NewGlobalEntity(ServerEntity* e){
 
     SaveEntity* global_entity = new SaveEntity(new_global_id,e);
     global_entities.Add(global_entity);
-    e->ServerAdd<Persistence>(new Persistence(new_global_id));
+    e->Set(new Persistence(new_global_id));
     return new_global_id;
 }
 

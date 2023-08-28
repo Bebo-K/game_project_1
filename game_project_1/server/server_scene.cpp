@@ -4,9 +4,9 @@
 
 #include <game_project_1/io/level_loader.hpp>
 
-#include <game_project_1/system/npc_controller.hpp>
-#include <game_project_1/system/movement.hpp>
-#include <game_project_1/system/physics.hpp>
+#include <game_project_1/system/server/npc_controller.hpp>
+#include <game_project_1/system/shared/movement.hpp>
+#include <game_project_1/system/shared/physics.hpp>
 
 
 
@@ -19,9 +19,9 @@ ServerScene::~ServerScene(){Unload();}
 void ServerScene::Load(int area,bool saveExists){
     area_id=area;
     logger::info("loading server scene for area id %d\n",area);
-    LevelLoader loader(area);
+    LevelLoader loader(area_id);
     level.Load(loader);
-    loader.LoadEntities(&entities,saveExists);
+    loader.LoadEntities(this,saveExists);
     global_timer=1;
 }
 

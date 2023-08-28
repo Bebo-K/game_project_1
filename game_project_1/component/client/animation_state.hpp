@@ -12,6 +12,7 @@ class AnimationState: public Component{
     char*                   anim_name;//does not allocate/deallocate memory for this 
     AnimationControllerType controller_type;
     
+    AnimationState();
     AnimationState(AnimationControllerType type);
     ~AnimationState();
 
