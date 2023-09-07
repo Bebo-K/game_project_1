@@ -219,3 +219,14 @@ void DynamicArray::Clear(){
 DynamicArrayIterator DynamicArray::begin(){return {this,NextNonEmpty(-1)};}
 DynamicArrayIterator DynamicArray::end(){return {this,slots};}
 
+
+
+template<>
+byte* DynamicArrayIterator::GetResult(){
+    return (byte*)parent->Get(index);
+}
+
+template<>
+int DynamicArrayIterator::Next(){
+    return parent->NextNonEmpty(index);
+}

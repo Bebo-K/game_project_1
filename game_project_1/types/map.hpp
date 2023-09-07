@@ -183,4 +183,101 @@ bool MapIterator<K,V>::operator!=(MapIterator<K,V>& l2){
     return !(index ==l2.index);
 }
 
+class IdMap{
+    protected:
+        char**  keys;
+        int*    values;
+        int     slots;
+        int     count;
+
+    void UnsetKey(int slot){
+        if(keys[slot]==nullptr)return;
+        free(keys[slot]);
+        keys[slot]=nullptr;
+    }
+    friend class MapIterator<char*,int>;
+    public:
+
+    IdMap(){
+        slots=1;
+        count=0;
+        keys=(char**)calloc(slots,sizeof(char*));
+        values=(int*)calloc(slots,sizeof(int));
+    }
+    IdMap(int size){
+        slots=size;
+        count=0;
+        keys=(char**)calloc(slots,sizeof(char*));
+        values=(int*)calloc(slots,sizeof(int));
+    }
+    ~IdMap(){
+        for(int i=0;i< slots;i++){
+            UnsetKey(i);
+        }
+        free(keys);keys=nullptr;
+        free(values);values=nullptr;
+    }
+    int Get(char* key){
+        for(int i=0;i< slots;i++){
+            if(KeyNull(keys[i]))continue;
+            if(CompareKey(key,keys[i])){return values[i];}
+        }
+        return -1;
+    }
+    bool Has(char* key){
+        for(int i=0;i< slots;i++){
+            if(KeyNull(keys[i]))continue;
+            if(CompareKey(key,keys[i])){return true;}
+        }
+        return false;
+    }
+    bool Add(char* key,int value){
+        if(Has(key))return false;
+        int slot_to_add=0;
+        while(slot_to_add < slots && !KeyNull(keys[slot_to_add])){slot_to_add++;}
+        if(slot_to_add == slots){Resize(slots*2);}
+        keys[slot_to_add] = cstr::new_copy(key);
+        values[slot_to_add] = value;
+        count++;
+        return slot_to_add;
+    }
+    void Remove(char* key){
+        for(int i=0;i< slots;i++){
+            if(keys[i]==nullptr)continue;
+            if(cstr::compare(key,keys[i])){
+                UnsetKey(i);
+                values[i]=-1;
+                count--;
+            }
+        }
+    }
+    int NextIndex(int start_index){
+        int next=start_index;
+        while( ++next < slots && KeyNull(keys[next]));
+        return next;
+    }
+    int Count(){return count;}
+    void Resize(int newsize){
+        if(newsize == 0){Clear();return;}
+        int* newvalues = (int*)calloc(newsize,sizeof(int));
+        char** newkeys = (char**)calloc(newsize,sizeof(char*));
+        int slots_to_copy = (slots < newsize)?slots:newsize;
+        memcpy(newkeys,keys,sizeof(char*)*slots_to_copy);
+        memcpy(newvalues,values,sizeof(int)*slots_to_copy);
+        free(keys);
+        free(values);
+        slots=newsize;
+        keys=newkeys;
+        values=newvalues;
+    }
+    void Clear(){
+        for(int i=0;i<slots;i++){
+            UnsetKey(i);
+            values[i]=0;
+        }
+        slots=0;
+        count=0;
+    }
+};
+
 #endif

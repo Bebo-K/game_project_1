@@ -73,8 +73,6 @@ class Entity{
     static void SkipRead(Deserializer& dat);
 };
 
-
-
 template<> int Entity::IdOf<Identity>();
 template<> int Entity::IdOf<PhysicsProperties>();
 template<> int Entity::IdOf<MovementProperties>();

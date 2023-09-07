@@ -15,45 +15,48 @@
 using namespace BaseContent;
 
 void BaseContent::LoadCommon(){
-    EntityTemplate::Register("HUMANOID",HumanoidServerBuilder,HumanoidClientBuilder);
-
+    EntityTemplate::Register("Humanoid",1);
+    EntityTemplate::RegisterBuilders(humanoid_collision,HumanoidServerBuilder,HumanoidClientBuilder); 
 }
 
 void BaseContent::LoadClient(){
+    if(!EntityTemplate::template_ids.Has("Humanoid")){LoadCommon();}
     Areas::RegisterMap(1,"default");
     ModelManager::Register(HUMAN_1,"human");
 
-    LevelCollision::RegisterClientEntityClassCallbacks(HUMANOID,HumanoidLevelClientCollisionHandler);
-    EntityCollision::RegisterClientCollisionHandler(HUMANOID,HumanoidEntityClientCollisionHandler);
+    LevelCollision::RegisterClientLevelCollisionHandler(humanoid_collision,
+            HumanoidLevelClientCollisionHandler);
+    EntityCollision::RegisterClientLevelCollisionHandler(humanoid_collision,
+            HumanoidEntityClientCollisionHandler);
 
     AnimationController::RegisterAnimationControllerCallback(GROUND_UNIT,AnimationController_GroundUnit);
 }
 
 void BaseContent::LoadServer(){
+    if(!EntityTemplate::template_ids.Has("Humanoid")){LoadCommon();}
     Areas::RegisterMap(1,"default");
 
-    LevelCollision::RegisterServerEntityClassCallbacks(HUMANOID,
-        HumanoidLevelServerCollisionHandler);
-    EntityCollision::RegisterServerCollisionHandler(HUMANOID,
-        HumanoidEntityServerCollisionHandler);
+    LevelCollision::RegisterServerLevelCollisionHandler(humanoid_collision,
+            HumanoidLevelServerCollisionHandler);
+    EntityCollision::RegisterServerLevelCollisionHandler(humanoid_collision,
+            HumanoidEntityServerCollisionHandler);
 
     NPCController::RegisterNPCControllerCallback(NPC_WANDER,NPCController_Wander);
 }
 
 
 void BaseContent::LoadTestArea(ServerScene* scene){
-    ServerEntity* friendly = scene->NewEntity();
-        Identity* friendly_id = friendly->Get<Identity>();
+    ServerEntity* friendly = scene->NewEntity(humanoid_template);
+        Identity* friendly_id = friendly->GetOrAdd<Identity>();
             friendly_id->name = wstr::new_copy(L"friendly");
-            friendly_id->type = BaseContent::HUMANOID;
-        CharacterInfo* friendly_char = new CharacterInfo();
+            friendly_id->type = BaseContent::humanoid_template;
+        CharacterInfo* friendly_char = friendly->GetOrAdd<CharacterInfo>();
             friendly_char->race_id=Races::Human.id;
             friendly_char->class_id=Classes::Archer.id;
-        friendly->Set(friendly_char);
+
         friendly->Set(new NPCProperties(BaseContent::NPC_WANDER));
         friendly->Set(new NPCState());
-        
-    
+
     friendly->SetPos({7,4,1});
     friendly->rotation = {0,183,0};
 }

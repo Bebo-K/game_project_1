@@ -11,8 +11,8 @@
 
 namespace LevelCollision {
 
-	typedef void (*ClientHandlerCallback)(ClientEntity*,CollisionResult,ClientScene*);
-	typedef void (*ServerHandlerCallback)(ServerEntity*,CollisionResult,ServerScene*);
+	typedef void (*ClientHandler)(ClientEntity*,CollisionResult,ClientScene*);
+	typedef void (*ServerHandler)(ServerEntity*,CollisionResult,ServerScene*);
 
     const int	VELOCITY_STEPS	= 4;
 	const bool ENFORCE_BOUNDS 	= true;//for debug
@@ -23,11 +23,11 @@ namespace LevelCollision {
 	void ClientFrame(ClientEntity* e,ClientScene* s,float delta);
 	void ServerFrame(ServerEntity* e,ServerScene* s,float delta);
 	
-	void RunCollisionStep(Entity* e, List<MeshCollider> meshes,float step_delta,CollisionResult* list);
+	void RunCollisionStep(Entity* e, List<MeshCollider>* meshes,float step_delta,CollisionResult* list);
 	vec3 HandleSolidStepCollisions(Entity* e, vec3 step_movement,CollisionResult* list);
 	
-	void RegisterClientEntityClassCallbacks(EntityClass type,ClientHandlerCallback client_callback);
-	void RegisterServerEntityClassCallbacks(EntityClass type,ServerHandlerCallback server_callback);
+	void RegisterClientLevelCollisionHandler(CollisionType coll_type, ClientHandler client_callback);
+	void RegisterServerLevelCollisionHandler(CollisionType coll_type, ServerHandler server_callback);
 };
 
 

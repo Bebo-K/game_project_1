@@ -15,8 +15,10 @@ void ClientNetHandler::ParseNewScenePacket(ClientScene* scene, Payload payload){
     for(int i=0;i<entity_count;i++){
         ClientEntity* new_entity = scene->AddEntity(scene_in.GetInt());
         new_entity->Read(scene_in,payload.timestamp);
+        scene->BuildEntity(new_entity);
         scene->AddToRender(new_entity);
         if(new_entity->id == me->entity_id){client->OnSpawnPlayer(new_entity);}
+        logger::info("Client: new scene has entity %d\n",new_entity->id);
     }
 }
 
@@ -47,18 +49,22 @@ void ClientNetHandler::ParseSpawnEntitiesPacket(ClientScene* scene, Payload payl
     int create_count = spawn_in.GetInt();
     for(int i=0;i<create_count;i++){
         int entity_id = spawn_in.GetInt();
-        int spawn_type = spawn_in.GetInt();
+        
+        logger::info("Client: Spawn entity %d\n",entity_id);
         ClientEntity* entity = scene->GetEntity(entity_id);
         if(entity == nullptr){
             entity = scene->AddEntity(entity_id);
             entity->Read(spawn_in,payload.timestamp);
+            scene->BuildEntity(entity);
             scene->AddToRender(entity);  
-            if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
-        }
+        }        
         else{
             logger::debug("Entity ID collision on spawn: %d\n",entity_id);
-            Entity::SkipRead(spawn_in);
+            //TODO: system to resolve entities spawned during connect, or temp delta entities
         }
+
+        if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
+
     }
 }
 

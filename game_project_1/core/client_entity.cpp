@@ -11,9 +11,9 @@ template<> int ClientEntity::IdOf<SpriteSet>(){return -3;}
 
 void ClientEntity::Add(int cid){
     switch(cid){
-        case -1: cli_components[-cid]= new AnimationState();
-        case -2: cli_components[-cid]= new ModelSet();
-        case -3: cli_components[-cid]= new SpriteSet();
+        case -1: cli_components[-cid]= new AnimationState(); break;
+        case -2: cli_components[-cid]= new ModelSet(); break;
+        case -3: cli_components[-cid]= new SpriteSet(); break;
         default: 
             logger::warn("Could not add component ID %d to client entity ID %d, id is invalid",-cid,id);
         break;

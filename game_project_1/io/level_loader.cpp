@@ -14,8 +14,7 @@ LevelLoader::~LevelLoader(){
     if(json != nullptr){delete json;json=nullptr;}
 }
 
-List<ModelData> LevelLoader::LoadModels(){
-    List<ModelData> models;
+void LevelLoader::LoadModels(List<ModelData>& models){
     if(json->HasArray("models")){
         JSONArray* model_array = json->GetArray("models");
 
@@ -36,11 +35,9 @@ List<ModelData> LevelLoader::LoadModels(){
             delete model_file;
         }
     }
-    return models;
 }
 
-List<MeshCollider> LevelLoader::LoadCollisionMeshes(){
-    List<MeshCollider> collmeshes;
+void LevelLoader::LoadCollisionMeshes(List<MeshCollider>& collmeshes){
     List<MeshCollider> loaded_collmeshes(1);
 
     if(json->HasArray("models")){
@@ -94,7 +91,6 @@ List<MeshCollider> LevelLoader::LoadCollisionMeshes(){
         free(mesh);
         collmesh_index++;
     }
-    return collmeshes;
 }
 
 void LevelLoader::LoadSkybox(Skybox* skybox){
@@ -103,21 +99,17 @@ void LevelLoader::LoadSkybox(Skybox* skybox){
     }
 }
 
-List<HeightMapCollider> LevelLoader::LoadHeightmaps(){
-    List<HeightMapCollider> hmaps;
-
+void LevelLoader::LoadHeightmaps(List<HeightMapCollider>& heightmaps){
     if(json->HasArray("heightmaps")){
-        JSONArray* heightmaps = json->GetArray("heightmaps");
-        hmaps.Resize(heightmaps->count);
-        for(int i=0;i<heightmaps->count;i++){
+        JSONArray* hmaps = json->GetArray("heightmaps");
+        heightmaps.Resize(hmaps->count);
+        for(int i=0;i<hmaps->count;i++){
             //TODO: load heightmaps
         }
     }
-    return hmaps;
 }
 
-List<LevelEntrance> LevelLoader::LoadEntrances(){
-    List<LevelEntrance> entrances;
+void LevelLoader::LoadEntrances(List<LevelEntrance>& entrances){
     if(json->HasArray("entrances")){
         JSONArray* entrance_array = json->GetArray("entrances");
         entrances.Resize(entrance_array->count);
@@ -160,11 +152,9 @@ List<LevelEntrance> LevelLoader::LoadEntrances(){
             entrance->style=style_id;
         }
     }
-    return entrances;
 }
 
-List<LevelExit> LevelLoader::LoadExits(){
-    List<LevelExit> exits;
+void LevelLoader::LoadExits(List<LevelExit>& exits){
     if(json->HasArray("exits")){
         JSONArray* exit_array = json->GetArray("exits");
         exits.Resize(exit_array->count);
@@ -206,11 +196,9 @@ List<LevelExit> LevelLoader::LoadExits(){
             lvl_exit->style=style_id;
         }
     }
-    return exits;
 }
 
-List<LevelTrigger> LevelLoader::LoadTriggers(){
-   List<LevelTrigger> triggers;
+void LevelLoader::LoadTriggers(List<LevelTrigger>& triggers){
     if(json->HasArray("triggers")){
         JSONArray* trigger_array = json->GetArray("triggers");
         triggers.Resize(trigger_array->count);
@@ -230,7 +218,6 @@ List<LevelTrigger> LevelLoader::LoadTriggers(){
             }
         }
     }
-    return triggers;
 }
 
 void LevelLoader::LoadEntities(ServerScene* scene, bool firstLoad){

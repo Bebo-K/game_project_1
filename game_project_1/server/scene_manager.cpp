@@ -27,13 +27,14 @@ ServerScene* SceneManager::LoadScene(int area_id){
         if(active_scene->area_id == area_id){return active_scene;/*already loaded!*/}
     }
     ServerScene* new_scene = new (active_scenes.Allocate()) ServerScene();
+    new_scene->area_id = area_id;
     InitSceneFromSavefile(new_scene);
     return new_scene;
 }
 
 void SceneManager::InitSceneFromSavefile(ServerScene* scene){
     int area_id = scene->area_id;
-    
+     
     SaveScene* new_scene_save = save.GetScene(scene->area_id);
     scene->Load(area_id,(new_scene_save != nullptr));
 
@@ -126,7 +127,9 @@ ServerEntity* SceneManager::TransitionPlayer(Player* player,int from_area, int t
     else{to = LoadScene(to_area);}
 
     ServerEntity* player_entity = to->NewEntity();
-    player_save->character.Instantiate(player_entity);
+    int entity_id = player_entity->id;         
+    player_save->character.Instantiate(player_entity);  
+    player_entity->id=entity_id;         
 
     //Update player stats and save
     player->entity_scene=to_area;
@@ -141,6 +144,7 @@ ServerEntity* SceneManager::TransitionPlayer(Player* player,int from_area, int t
 
     player_entity->MarkChanged<Identity>();
     player_entity->MarkMoved();
+    player_entity->changed_component_ids = player_entity->AllExistingComponents();
     
     return player_entity;
 }

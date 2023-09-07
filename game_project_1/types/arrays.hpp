@@ -199,13 +199,9 @@ class DynamicArray{
 };
 
 template<>
-byte* DynamicArrayIterator::GetResult(){
-    return (byte*)parent->Get(index);
-}
+byte* DynamicArrayIterator::GetResult();
 
 template<>
-int DynamicArrayIterator::Next(){
-    return parent->NextNonEmpty(index);
-}
+int DynamicArrayIterator::Next();
 
 #endif

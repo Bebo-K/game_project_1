@@ -6,11 +6,11 @@
 
 using namespace EntityCollision;
 
-Map<int,ClientHandlerCallback> ClientCollisionHandlers;
-Map<int,ServerHandlerCallback> ServerCollisionHandlers;
+Map<CollisionType,ClientHandler> ClientCollisionHandlers;
+Map<CollisionType,ServerHandler> ServerCollisionHandlers;
 
 CollisionResult EntityCollision::CheckCollision(Entity* e1, Entity* e2){
-    if(!e1->Has<ColliderSet>() || e2->Has<ColliderSet>())return CollisionResult(false);
+    if(!e1->Has<ColliderSet>() || !e2->Has<ColliderSet>())return CollisionResult(false);
     vec3 point={0,0,0};
     ColliderSet* e1_coll = e1->Get<ColliderSet>();
     ColliderSet* e2_coll = e2->Get<ColliderSet>();
@@ -36,12 +36,12 @@ void EntityCollision::ClientFrame(ClientEntity* e1,ClientScene* s,float delta){
             ShapeCollider* e1_hit_collider = (*e1_coll)[res.collider_index_1];
             ShapeCollider* e2_hit_collider = (*e2_coll)[res.collider_index_2];
             if(ClientCollisionHandlers.Has(e1_callback)){
-                ClientHandlerCallback callback = ClientCollisionHandlers.Get(e1_callback);
-                callback(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
+                ClientHandler handler = ClientCollisionHandlers.Get(e1_callback);
+                handler(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
             }
             if(ClientCollisionHandlers.Has(e2_callback)){
-                ClientHandlerCallback callback = ClientCollisionHandlers.Get(e1_callback);
-                callback(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
+                ClientHandler handler = ClientCollisionHandlers.Get(e1_callback);
+                handler(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
             }
         }
     }
@@ -58,13 +58,13 @@ void EntityCollision::ServerFrame(ServerEntity* e1,ServerScene* s,float delta){
             int e2_callback = e2_coll->entity_collision_handler_id;
             ShapeCollider* e1_hit_collider = (*e1_coll)[res.collider_index_1];
             ShapeCollider* e2_hit_collider = (*e2_coll)[res.collider_index_2];
-            if(ClientCollisionHandlers.Has(e1_callback)){
-                ServerHandlerCallback callback = ServerCollisionHandlers.Get(e1_callback);
-                callback(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
+            if(ServerCollisionHandlers.Has(e1_callback)){
+                ServerHandler handler = ServerCollisionHandlers.Get(e1_callback);
+                handler(e1,e1_hit_collider,e2,e2_hit_collider,s,res.point);
             }
-            if(ClientCollisionHandlers.Has(e2_callback)){
-                ServerHandlerCallback callback = ServerCollisionHandlers.Get(e1_callback);
-                callback(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
+            if(ServerCollisionHandlers.Has(e2_callback)){
+                ServerHandler handler = ServerCollisionHandlers.Get(e1_callback);
+                handler(e2,e2_hit_collider,e1,e1_hit_collider,s,res.point);
             }
         }
     }
@@ -83,12 +83,12 @@ CollisionResult::CollisionResult(vec3 intersect,int indx_1,int indx_2){
     collider_index_2=indx_2;
 }
 
-void EntityCollision::RegisterClientCollisionHandler(int id,ClientHandlerCallback client_callback){
-    if(id <= 0) return;
-    ClientCollisionHandlers.Add(id,client_callback);
+void EntityCollision::RegisterClientLevelCollisionHandler(CollisionType coll_type, ClientHandler client_callback){
+    if(coll_type <= 0) return;
+    ClientCollisionHandlers.Add(coll_type,client_callback);
 }
 
-void EntityCollision::RegisterServerCollisionHandler(int id,ServerHandlerCallback server_callback){
-    if(id <= 0)return;
-    ServerCollisionHandlers.Add(id,server_callback);
+void EntityCollision::RegisterServerLevelCollisionHandler(CollisionType coll_type, ServerHandler server_callback){
+    if(coll_type <= 0)return;
+    ServerCollisionHandlers.Add(coll_type,server_callback);
 }

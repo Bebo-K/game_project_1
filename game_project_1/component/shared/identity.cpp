@@ -20,7 +20,7 @@ void Identity::Clear(){
 }
 
 int Identity::SerializedLength(){
-    return sizeof(EntityClass) + sizeof(wchar)*(1+wstr::len(name));
+    return sizeof(EntityType) + sizeof(wchar)*(1+wstr::len(name));
 }
 void Identity::Read(Deserializer& dat){
     type = dat.GetInt();

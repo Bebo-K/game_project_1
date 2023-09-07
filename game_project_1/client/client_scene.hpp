@@ -36,6 +36,7 @@ class ClientScene{
     ClientEntity* GetEntity(int eid);
     void          DestroyEntity(int eid);
 
+    void BuildEntity(ClientEntity* e);
     void AddToRender(ClientEntity* e);
     void RemoveFromRender(ClientEntity* e);
 

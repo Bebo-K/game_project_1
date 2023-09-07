@@ -6,18 +6,18 @@ ClientLevel::ClientLevel():Drawable(),skybox(),models(),collmeshes(){
     layer = 120;
     shader_name = default_shader;
 }
+
 ClientLevel::~ClientLevel(){
     Unload();
     if(shader_name != default_shader){free(shader_name);shader_name=default_shader;}
 }
 
-
 void ClientLevel::LoadArea(int area_id){
     LevelLoader loader(area_id);
 
     loader.LoadSkybox(&skybox);
-    models = loader.LoadModels();
-    collmeshes = loader.LoadCollisionMeshes();
+    loader.LoadModels(models);
+    loader.LoadCollisionMeshes(collmeshes);
 }
 
 void ClientLevel::Draw(Camera* cam){

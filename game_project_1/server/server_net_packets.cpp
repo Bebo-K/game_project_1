@@ -41,6 +41,7 @@ Payload ServerNetHandler::WriteSceneNewEntities(ServerScene* scene){
     Serializer spawn_out(spawn_payload.data,spawn_size);
         spawn_out.PutInt(spawned_entities);
     for(ServerEntity* e:scene->just_spawned){//Second loop to populate with spawn info
+        e->changed_component_ids = e->AllExistingComponents();
         spawn_out.PutInt(e->id);
         e->Write(spawn_out,initial_sync_components.Mask());
     }

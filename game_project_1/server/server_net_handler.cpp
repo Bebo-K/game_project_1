@@ -6,6 +6,8 @@
 #include <game_project_1/component/shared/character_info.hpp>
 #include <game_project_1/component/shared/inventory.hpp>
 
+#include <game_project_1/core/entity_template.hpp>
+
 
 Server* ServerNetHandler::server=nullptr;
 ServerScene dummy_scene = ServerScene();
@@ -74,7 +76,7 @@ void ServerNetHandler::OnPlayerConnect(int player_slot,Payload request){
     ServerNetwork::SendToPlayer(player_slot,accept_response.GetPayload());
 
     if(player_save != nullptr){//If the player has an existing save, go ahead and continue it from the last entrance
-        server->scene_manager.TransitionPlayer(0,player_save->last_scene,player_save->last_entrance,player_slot);
+        server->scene_manager.TransitionPlayer(new_player,0,player_save->last_scene,player_save->last_entrance);
         OnPlayerSceneTransition(player_slot,player_save->last_scene);
     }
 
@@ -115,7 +117,7 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
 
     Identity* identity = new Identity();
         identity->name = wstr::new_copy(new_save_info.player_name);
-        identity->type = BaseContent::HUMANOID;
+        identity->type = BaseContent::humanoid_template;
 
     CharacterInfo* char_data = new CharacterInfo();
         char_data->class_id = new_save_info.class_id;
@@ -127,6 +129,7 @@ void ServerNetHandler::OnStartNewPlayerSave(int player_slot,Packet::SNPS new_sav
 
     player_base_entity->Set(identity);
     player_base_entity->Set(char_data);
+    EntityTemplate::Build(BaseContent::humanoid_template,player_base_entity,null);
 
     save_player->character.SetFromEntity(player_base_entity);
     server->scene_manager.TransitionPlayer(my_player,0,save_player->last_scene,save_player->last_entrance);

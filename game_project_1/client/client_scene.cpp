@@ -48,7 +48,9 @@ ClientEntity* ClientScene::AddEntity(int eid){
     return entity;
 }
 ClientEntity* ClientScene::GetEntity(int eid){
-    for(ClientEntity* e:entities){if(e->id == eid)return e;}
+    for(ClientEntity* e:entities){
+        if(e->id == eid)return e;
+         }
     return null;
 }
 void ClientScene::DestroyEntity(int eid){
@@ -60,8 +62,15 @@ void ClientScene::DestroyEntity(int eid){
     }
 }
 
+void ClientScene::BuildEntity(ClientEntity* e){
+    Identity* identity = e->Get<Identity>();
+    if(identity != null && identity->type != 0){
+        EntityTemplate::Build(identity->type,e,this);
+    }
+}
+
 void ClientScene::AddToRender(ClientEntity* e){
-    if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
+     if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
     if(e->Has<SpriteSet>()){renderer.Add(e->Get<SpriteSet>());}
 }
 

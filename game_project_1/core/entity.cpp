@@ -21,20 +21,20 @@ template<> int Entity::IdOf<CharacterInfo>()          {return 12;}
 
 void Entity::Add(int slot){
     switch(slot){
-        case 0: components[slot] = new Identity();
-        case 1: components[slot] = new PhysicsProperties();
-        case 2: components[slot] = new MovementProperties();
-        //case 3: components[slot] = new ActionProperties();
-        case 4: components[slot] = new PhysicsState();
-        case 5: components[slot] = new MovementState();
-        case 6: components[slot] = new ActionState();
-        case 7: components[slot] = new ColliderSet();
-        case 8: components[slot] = new StatBlock();
-        case 9: components[slot] = new Equip();
-        case 10: components[slot] = new Inventory();
-        case 11: components[slot] = new CharacterInfo();
+        case 0: components[slot] = new Identity();break;
+        case 1: components[slot] = new PhysicsProperties();break;
+        case 2: components[slot] = new MovementProperties();break;
+        //case 3: components[slot] = new ActionProperties();break;
+        case 4: components[slot] = new PhysicsState();break;
+        case 5: components[slot] = new MovementState();break;
+        case 6: components[slot] = new ActionState();break;
+        case 7: components[slot] = new ColliderSet();break;
+        case 8: components[slot] = new StatBlock();break;
+        case 9: components[slot] = new Equip();break;
+        case 10: components[slot] = new Inventory();break;
+        case 11: components[slot] = new CharacterInfo();break;
         default: 
-            logger::warn("Could not add component ID %d to entity ID %d, id is invalid",Id(slot),id);
+            logger::warn("Could not add component ID %d to entity ID %d, id is invalid\n",Id(slot),id);
         break;
     }
 }
@@ -104,7 +104,8 @@ int  Entity::SerializedLength(bitmask mask){
 }
 
 void Entity::Write(Serializer& dat, bitmask id_mask){
-    dat.PutInt(sizeof(bitmask));
+    bitmask write_mask = AllExistingComponents();write_mask.and_with(id_mask);
+    dat.PutInt(write_mask.val);
     if(id_mask.get_bit(0)){ dat.PutVec3({x,y,z});dat.PutVec3(rotation);dat.PutVec3(scale);dat.PutVec3(velocity);}
     for(int slot=0;slot<component_slots;slot++){
         if(id_mask.get_bit(Id(slot)) && components[slot] != null){components[slot]->Write(dat);}

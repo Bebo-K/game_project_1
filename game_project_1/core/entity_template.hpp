@@ -9,13 +9,18 @@
 typedef void (*ServerEntityBuilder)(ServerEntity*,ServerScene*);
 typedef void (*ClientEntityBuilder)(ClientEntity*,ClientScene*);
 
-namespace EntityTemplate{
-    extern Map<char*,ServerEntityBuilder> server_entity_builders;
-    extern Map<char*,ClientEntityBuilder> client_entity_builders;
 
-    void Register(char* type, ServerEntityBuilder server_builder,ClientEntityBuilder client_builder);
-    void Build(char* type,ServerEntity* e,ServerScene* s);
-    void Build(char* type,ClientEntity* e,ClientScene* s);
+namespace EntityTemplate{
+    extern IdMap template_ids;
+    extern Map<EntityType,ServerEntityBuilder> server_entity_builders;
+    extern Map<EntityType,ClientEntityBuilder> client_entity_builders;
+
+    void Register(char* name, EntityType id);
+    EntityType FromName(char* name);
+
+    void RegisterBuilders(EntityType type, ServerEntityBuilder server_builder,ClientEntityBuilder client_builder);
+    void Build(EntityType type,ServerEntity* e,ServerScene* s);
+    void Build(EntityType type,ClientEntity* e,ClientScene* s);
 };
 
 

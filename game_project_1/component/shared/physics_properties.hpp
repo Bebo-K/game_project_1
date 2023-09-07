@@ -4,11 +4,13 @@
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/phys/collision_types.hpp>
 
+typedef int CollisionType;
+
 //Component for entities that physics act upon
 class PhysicsProperties: public Component{
     public:
     Ellipse_t world_hitsphere;
-    int     world_collision_handler_id = 0;//handler ID for world collision
+    CollisionType collision_type = 0;//handlers for world/entity collision
 	bool	world_collision_enabled = true;
 	
 	bool	apply_gravity = true;

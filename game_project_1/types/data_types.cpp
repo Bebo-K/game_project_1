@@ -54,7 +54,7 @@ int color::as_code(){
     return color_code;
 }
 
-color_f color_f::rgba(float R,float G,float B,float A){return {R,G,B,A};}
+void color_f::rgba(float R,float G,float B,float A){r=R;g=G;b=B;a=A;}
 void color_f::from_color(color c){
     r = c.r/255.0f;
     g = c.g/255.0f;

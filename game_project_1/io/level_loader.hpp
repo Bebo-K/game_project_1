@@ -20,12 +20,12 @@ class LevelLoader{
     ~LevelLoader();
 
     void                 LoadSkybox(Skybox* skybox);
-    List<ModelData>     LoadModels();
-    List<MeshCollider>  LoadCollisionMeshes();
-    List<HeightMapCollider> LoadHeightmaps();
-    List<LevelEntrance> LoadEntrances();
-    List<LevelExit> LoadExits();
-    List<LevelTrigger> LoadTriggers();
+    void LoadModels(List<ModelData>& models);
+    void LoadCollisionMeshes(List<MeshCollider>& collmeshes);
+    void LoadHeightmaps(List<HeightMapCollider>& heightmaps);
+    void LoadEntrances(List<LevelEntrance>& entrances);
+    void LoadExits(List<LevelExit>& exits);
+    void LoadTriggers(List<LevelTrigger>& triggers);
 
     void LoadEntities(ServerScene* scene, bool firstLoad);
 

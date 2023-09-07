@@ -61,6 +61,7 @@ void ClientNetHandler::HandlePayload(Payload payload){
             if(player_id < 0 || player_id > client->players.length){logger::exception("Recieved data for bad player index %d!",player_id);}
             client->players[player_id]->persona = wstr::new_copy(new_player_data.persona_buffer);
             client->current_players++;
+            logger::infoW(L"Client: New player %s\n",client->players[player_id]->persona);
             break;
         }
         case PacketID::PINF:{
@@ -70,6 +71,7 @@ void ClientNetHandler::HandlePayload(Payload payload){
             client->players[player_id]->character_name = wstr::new_copy(player_info.character_name_buffer);
             client->players[player_id]->entity_id = player_info.player_entity;
             client->players[player_id]->entity_scene = player_info.player_area_id;
+            logger::infoW(L"Client: Player Info for %s\n",client->players[player_id]->persona);
             break;
         }
         case PacketID::PLDC:{
@@ -126,14 +128,17 @@ void ClientNetHandler::SendCreatePlayer(wchar* playername,int player_race, int p
 
 void ClientNetHandler::SendPlayerDelta(){
     if(ClientNetwork::IsRunning()){
-        ClientEntity* player = client->scene.GetEntity(client->Me()->entity_id);
-        int delta_len = sizeof(int) + player->SerializedLength(player_delta_mask.Mask());
-        if(delta_len > (int)sizeof(int)){
-            Payload delta(PacketID::CDLT,delta_len,delta_buffer);
-            Serializer delta_out(delta.data,delta.length);
-                delta_out.PutInt(player->id);
-                player->Write(delta_out,player_delta_mask.Mask()); 
-            ClientNetwork::Send(delta);
+        int client_entity = client->Me()->entity_id;
+        ClientEntity* player = client->scene.GetEntity(client_entity);
+        if(player != null){
+            int delta_len = sizeof(int) + player->SerializedLength(player_delta_mask.Mask());
+            if(delta_len > (int)sizeof(int)){
+                Payload delta(PacketID::CDLT,delta_len,delta_buffer);
+                Serializer delta_out(delta.data,delta.length);
+                    delta_out.PutInt(player->id);
+                    player->Write(delta_out,player_delta_mask.Mask()); 
+                ClientNetwork::Send(delta);
+            }
         }
     }
 }

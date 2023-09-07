@@ -32,24 +32,24 @@ struct ServerEntity: public Entity{
     template <typename T>
     bool Has(){
         int cid = IdOf<T>(),slot = SvrSlot(cid);
-        return(id > 0)?Entity::Has<T>():svr_components[slot]!=null;
+        return(cid > 0)?Entity::Has<T>():svr_components[slot]!=null;
     }
     template<typename T>
     inline void Set(T* obj){
         int cid = IdOf<T>(),slot = SvrSlot(cid);
-        if(id >= 0) return Entity::Set<T>(obj);
+        if(cid >= 0) return Entity::Set<T>(obj);
         if(svr_components[slot] != nullptr){delete svr_components[slot];}
         svr_components[slot]=obj;
     }
     template<typename T>
     inline T* GetOrAdd(){
         int cid = IdOf<T>(),slot = SvrSlot(cid);
-        if(id >= 0){return Entity::GetOrAdd<T>();}
+        if(cid >= 0){return Entity::GetOrAdd<T>();}
         if(svr_components[slot] == nullptr){Add(id);} return (T*)svr_components[slot];}
     template<typename T>
     inline void Remove(){
         int cid = IdOf<T>(),slot = SvrSlot(cid);
-        if(id >= 0){Entity::Remove<T>();return;}
+        if(cid >= 0){Entity::Remove<T>();return;}
         if(svr_components[slot] != nullptr){delete svr_components[slot];svr_components[slot]=nullptr;}}
     
     inline void MarkMoved(){changed_component_ids.set(0);}
@@ -82,13 +82,17 @@ class ServerComponentMask{
     inline ServerComponentMask With(){
         int cid = dummy.IdOf<T>();
         if(cid < 0){cid = -cid;cid += dummy.component_slots;}
-        ids.set(cid);return ServerComponentMask(ids);}
+        ids.set(cid);
+        return ServerComponentMask(ids);
+    }
         
     template<typename T>
     inline ServerComponentMask Without(){
         int cid = dummy.IdOf<T>();
         if(cid < 0){cid = -cid;cid += dummy.component_slots;}
-        ids.clear(cid);return ServerComponentMask(ids);}
+        ids.clear(cid);
+        return ServerComponentMask(ids);
+    }
 
     inline bitmask Mask(){return ids;}
 };

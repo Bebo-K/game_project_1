@@ -14,7 +14,8 @@ void AssignIfExists(JSONObject* e_pos,char* prop,float* field){
 
 void EntityLoader::LoadTo(ServerEntity* entity,ServerScene* scene){
     if(e->HasString("template")){
-        EntityTemplate::Build(e->GetString("template")->string,entity,scene);
+        EntityType type = EntityTemplate::FromName(e->GetString("template")->string);
+        EntityTemplate::Build(type,entity,scene);
     }
     if(e->HasJObject("pos")){
         JSONObject* e_pos = e->GetJObject("pos");
@@ -34,7 +35,7 @@ void EntityLoader::LoadTo(ServerEntity* entity,ServerScene* scene){
         JSONObject* id = e->GetJObject("id");
         Identity* identity = new Identity();
         if(id->HasString("name")){identity->name = wstr::from_cstr(id->GetString("name")->string);}
-        if(id->HasInt("type")){identity->type = (EntityClass)id->GetInt("type");}
+        if(id->HasInt("type")){identity->type = (EntityType)id->GetInt("type");}
         entity->Set(identity);
     }
     //TODO: finish me

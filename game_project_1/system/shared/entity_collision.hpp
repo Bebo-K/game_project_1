@@ -6,9 +6,9 @@
 #include <game_project_1/server/server_scene.hpp>
 
 namespace EntityCollision{
-
-	typedef void (*ClientHandlerCallback)(ClientEntity*,ShapeCollider*, ClientEntity*,ShapeCollider*,ClientScene*,vec3);
-	typedef void (*ServerHandlerCallback)(ServerEntity*,ShapeCollider*, ServerEntity*,ShapeCollider*,ServerScene*,vec3);
+	
+	typedef void (*ClientHandler)(ClientEntity*,ShapeCollider*, ClientEntity*,ShapeCollider*,ClientScene*,vec3);
+	typedef void (*ServerHandler)(ServerEntity*,ShapeCollider*, ServerEntity*,ShapeCollider*,ServerScene*,vec3);
 
 	struct CollisionResult{
 		bool collided;
@@ -26,9 +26,9 @@ namespace EntityCollision{
 	void ClientFrame(ClientEntity* e1,ClientScene* s,float delta);
 	void ServerFrame(ServerEntity* e1,ServerScene* s,float delta);
 	CollisionResult CheckCollision(Entity* e1, Entity* e2);
-
-	void RegisterClientCollisionHandler(int id,ClientHandlerCallback client_callback);
-	void RegisterServerCollisionHandler(int id,ServerHandlerCallback server_callback);
+	
+	void RegisterClientLevelCollisionHandler(CollisionType coll_type, ClientHandler client_callback);
+	void RegisterServerLevelCollisionHandler(CollisionType coll_type, ServerHandler server_callback);
 };
 
 

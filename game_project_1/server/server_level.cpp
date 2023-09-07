@@ -12,11 +12,11 @@ ServerLevel::~ServerLevel(){
     Unload();
 }
 
-void ServerLevel::Load(LevelLoader loader){
-    collmeshes = loader.LoadCollisionMeshes();
-    entrances = loader.LoadEntrances();
-    exits = loader.LoadExits();
-    triggers = loader.LoadTriggers();
+void ServerLevel::Load(LevelLoader& loader){
+    loader.LoadCollisionMeshes(collmeshes);
+    loader.LoadEntrances(entrances);
+    loader.LoadExits(exits);
+    loader.LoadTriggers(triggers);
 
     for(int i=0;i<exits.length;i++){
         LevelExit* exit = exits[i];

@@ -12,7 +12,8 @@
 
 
 namespace BaseContent{
-    const EntityClass HUMANOID = 1;
+    const EntityType humanoid_template = 1;
+    const CollisionType humanoid_collision = 1;
     const AnimationControllerType GROUND_UNIT = 1;
     void AnimationController_GroundUnit(ClientEntity* e,float ms);
 

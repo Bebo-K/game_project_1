@@ -12,10 +12,10 @@ template<> int ServerEntity::IdOf<NPCState>(){return -4;}
 
 void ServerEntity::Add(int cid){
     switch(cid){
-        case -1: svr_components[-cid]= new PlayerOwner();
-        case -2: svr_components[-cid]= new Persistence();
-        case -3: svr_components[-cid]= new NPCProperties();
-        case -4: svr_components[-cid]= new NPCState();
+        case -1: svr_components[-cid]= new PlayerOwner(); break;
+        case -2: svr_components[-cid]= new Persistence(); break;
+        case -3: svr_components[-cid]= new NPCProperties(); break;
+        case -4: svr_components[-cid]= new NPCState(); break;
         default: 
             logger::warn("Could not add component ID %d to server entity ID %d, id is invalid",-cid,id);
         break;

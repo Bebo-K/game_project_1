@@ -13,12 +13,12 @@ class ServerLevel{
 
     List<MeshCollider> collmeshes;
     List<LevelEntrance> entrances;
-    List<LevelExit> exits;
+    List<LevelExit> exits; 
     List<LevelTrigger> triggers;
 
     ServerLevel();
     ~ServerLevel();
-    void Load(LevelLoader loader);
+    void Load(LevelLoader& loader);
     void Unload();
 };
 

@@ -23,10 +23,14 @@ class ServerScene{
     void Unload();
 
     ServerEntity*   NewEntity();
+    ServerEntity*   NewEntity(EntityType templateId);
     void            DeleteEntity(int id);
     ServerEntity*   GetEntity(int id);
 
     void            Update(int frames);
+
+    private:
+    int GenerateEntityID();
 };
 
 

@@ -7,13 +7,14 @@
 
 
 
-typedef int EntityClass;
+typedef int EntityType;
+
 
 //Unique identifying meta info for an entity
 class Identity: public Component{
 	public:
 
-    EntityClass         type;
+    EntityType          type;
     wchar*              name;
 
     Identity();

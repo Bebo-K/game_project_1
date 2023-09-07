@@ -8,6 +8,7 @@
 #include <game_project_1/system/shared/movement.hpp>
 #include <game_project_1/system/shared/physics.hpp>
 
+#include <game_project_1/core/entity_template.hpp>
 
 
 ServerScene::ServerScene():entities(8),just_spawned(8),just_deleted(8){
@@ -44,10 +45,21 @@ void ServerScene::Update(int frames){
     }
 }
 
-ServerEntity* ServerScene::NewEntity(){
+int ServerScene::GenerateEntityID(){
     int unique_eid = rand() & 0X9FFF;
     while(unique_eid<=0 || GetEntity(unique_eid) != null){unique_eid = rand() & 0X9FFF;}
-    ServerEntity* new_entity = new (entities.Allocate()) ServerEntity(unique_eid);
+    return unique_eid;
+}
+
+ServerEntity* ServerScene::NewEntity(){
+    ServerEntity* new_entity = new (entities.Allocate()) ServerEntity(GenerateEntityID());
+    just_spawned.Add(new_entity);
+    return new_entity;
+}
+
+ServerEntity* ServerScene::NewEntity(EntityType type){
+    ServerEntity* new_entity = new (entities.Allocate()) ServerEntity(GenerateEntityID());
+    EntityTemplate::Build(type,new_entity,this);
     just_spawned.Add(new_entity);
     return new_entity;
 }

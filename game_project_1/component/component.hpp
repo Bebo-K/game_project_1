@@ -13,6 +13,7 @@ class Component{
     public: 
     int last_updated;
 
+    Component(){last_updated=0;}
     virtual ~Component(){}
 
     virtual Component* Clone() =0;

@@ -7,8 +7,8 @@
 
 using namespace LevelCollision;
 
-Map<int,ClientHandlerCallback> ClientEntityClassCollisionHandlers;
-Map<int,ServerHandlerCallback> ServerEntityClassCollisionHandlers;
+Map<CollisionType,ClientHandler> ClientEntityClassCollisionHandlers;
+Map<CollisionType,ServerHandler> ServerEntityClassCollisionHandlers;
 
 
 void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
@@ -20,11 +20,11 @@ void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
     float step_delta = delta/VELOCITY_STEPS;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
-        RunCollisionStep(e,s->level.collmeshes,step_delta,collision_results);
+        RunCollisionStep(e,&s->level.collmeshes,step_delta,collision_results);
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        int collision_handler = phys_props->world_collision_handler_id;
+        int collision_handler = phys_props->collision_type;
         if(collision_handler != 0 && ClientEntityClassCollisionHandlers.Has(collision_handler)){
             ClientEntityClassCollisionHandlers.Get(collision_handler)(e,collision_results[i],s);
         }
@@ -41,11 +41,11 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
     float step_delta = delta/VELOCITY_STEPS;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
-        RunCollisionStep(e,s->level.collmeshes,step_delta,collision_results);
+        RunCollisionStep(e,&s->level.collmeshes,step_delta,collision_results);
     }
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){
         if(collision_results[i].isNone())break;
-        int collision_handler = phys_props->world_collision_handler_id;
+        int collision_handler = phys_props->collision_type;
         if(collision_handler != 0 && ServerEntityClassCollisionHandlers.Has(collision_handler)){
             ServerEntityClassCollisionHandlers.Get(collision_handler)(e,collision_results[i],s);
         }
@@ -54,7 +54,7 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
 }
 
 
-void LevelCollision::RunCollisionStep(Entity* e,List<MeshCollider> meshes, float step_delta,CollisionResult* list){
+void LevelCollision::RunCollisionStep(Entity* e,List<MeshCollider>* meshes, float step_delta,CollisionResult* list){
     vec3 start_position = e->GetPos();
     vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
@@ -64,7 +64,7 @@ void LevelCollision::RunCollisionStep(Entity* e,List<MeshCollider> meshes, float
     phys_state->in_bounds=false;
     phys_state->midair=true;
 
-    for(MeshCollider* mesh:meshes){
+    for(MeshCollider* mesh:*meshes){
         mesh->CheckCollisions(e,step_position,step_velocity,list);
     }
     
@@ -125,10 +125,9 @@ vec3 LevelCollision::HandleSolidStepCollisions(Entity* e, vec3 step_movement, Co
     return movement + shunt;
 }
 
-
-void LevelCollision::RegisterClientEntityClassCallbacks(int type,ClientHandlerCallback client_callback){
-    ClientEntityClassCollisionHandlers.Add(type,client_callback);
+void LevelCollision::RegisterClientLevelCollisionHandler(CollisionType coll_type, ClientHandler client_callback){
+    ClientEntityClassCollisionHandlers.Add(coll_type,client_callback);
 }
-void LevelCollision::RegisterServerEntityClassCallbacks(int type,ServerHandlerCallback server_callback){
-    ServerEntityClassCollisionHandlers.Add(type,server_callback);
+void LevelCollision::RegisterServerLevelCollisionHandler(CollisionType coll_type, ServerHandler server_callback){
+    ServerEntityClassCollisionHandlers.Add(coll_type,server_callback);
 }

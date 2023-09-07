@@ -83,7 +83,7 @@ void Server::Start(){
     scene_manager.save.LoadOrNew(server_config::save_name);
 
     BaseContent::LoadServer();
-    BaseContent::LoadTestArea(scene_manager.LoadScene(0));
+    BaseContent::LoadTestArea(scene_manager.LoadScene(1));
     Sleep(1000);//temp just so I can see the loading screen
 
     state=Server::READY;
