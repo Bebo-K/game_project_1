@@ -23,6 +23,7 @@ void BaseContent::LoadClient(){
     if(!EntityTemplate::template_ids.Has("Humanoid")){LoadCommon();}
     Areas::RegisterMap(1,"default");
     ModelManager::Register(HUMAN_1,"human");
+    //ModelManager::Register(GARGOYLE,"gargoyle");
 
     LevelCollision::RegisterClientLevelCollisionHandler(humanoid_collision,
             HumanoidLevelClientCollisionHandler);

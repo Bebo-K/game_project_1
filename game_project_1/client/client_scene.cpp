@@ -36,6 +36,7 @@ void ClientScene::Draw(){
     for(ClientEntity* e:entities){        
         if(e->Has<ModelSet>()){e->Get<ModelSet>()->SetTransform(e->GetLocation(),e->scale);}
         if(e->Has<SpriteSet>()){e->Get<SpriteSet>()->SetTransform(e->GetLocation(),e->scale);}
+        if(e->Has<ColliderSet>()){e->Get<ColliderSet>()->SetTransform(e->GetLocation(),e->scale);}
     }
     renderer.Draw();
 }
@@ -72,11 +73,13 @@ void ClientScene::BuildEntity(ClientEntity* e){
 void ClientScene::AddToRender(ClientEntity* e){
      if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
     if(e->Has<SpriteSet>()){renderer.Add(e->Get<SpriteSet>());}
+    if(config::debug_mode && e->Has<ColliderSet>()){renderer.Add(e->Get<ColliderSet>());}
 }
 
 void ClientScene::RemoveFromRender(ClientEntity* e){
     if(e->Has<ModelSet>()){renderer.Remove(e->Get<ModelSet>());}
     if(e->Has<SpriteSet>()){renderer.Remove(e->Get<SpriteSet>());}
+    if(e->Has<ColliderSet>()){renderer.Remove(e->Get<ColliderSet>());}
 }
 
 void ClientScene::SetPlayerControl(int entity_id){

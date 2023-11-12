@@ -7,37 +7,37 @@ ShapeCollider::ShapeCollider(){
     shape=Collider::SPHERE;
     center_offset={0,0,0};
     scale.x = scale.y = scale.z = 0;
-    turn_offset=0;
+    rotation={0,0,0};
 }
 ShapeCollider::ShapeCollider(ShapeCollider* c2){
     shape=c2->shape;
     center_offset=c2->center_offset;
     scale=c2->scale;
-    turn_offset=c2->turn_offset;
+    rotation=c2->rotation;
 }
 ShapeCollider::ShapeCollider(vec3 center,float r){
     shape=Collider::SPHERE;
     center_offset=center;
     scale.x = scale.y = scale.z = r;
-    turn_offset=0;
+    rotation={0,0,0};
 }
 ShapeCollider::ShapeCollider(vec3 center,float h, float r){
     shape=Collider::CAPSULE;
     center_offset=center;
     scale.x = scale.z = r;scale.y = h;
-    turn_offset=0;
+    rotation={0,0,0};
 }
 ShapeCollider::ShapeCollider(vec3 center,vec3 size){
     shape=Collider::AABB;
     center_offset=center;
     scale=size;
-    turn_offset=0;
+    rotation={0,0,0};
 }
-ShapeCollider::ShapeCollider(vec3 center,float h,float r,float arc_angle,float turn){
+ShapeCollider::ShapeCollider(vec3 center,float h,float r,float arc_angle,vec3 rotation){
     shape=Collider::ARC;
     center_offset=center;
     scale.x = r, scale.y = h, scale.z= arc_angle;
-    turn_offset=turn;
+    rotation=rotation;
 }
 
 using namespace Collider;

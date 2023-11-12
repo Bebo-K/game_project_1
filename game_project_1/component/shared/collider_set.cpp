@@ -1,4 +1,5 @@
 #include <game_project_1/component/shared/collider_set.hpp>
+#include <game_project_1/gfx/debugdraw.hpp>
 
 
 ColliderSet::ColliderSet():bounds(0,0){
@@ -22,7 +23,6 @@ void ColliderSet::Read(Deserializer& dat){
         c->shape = (Collider::Shape)dat.GetInt();
         c->center_offset={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
         c->scale={dat.GetFloat(),dat.GetFloat(),dat.GetFloat()};
-        c->turn_offset=dat.GetFloat();
     }
 }
 
@@ -36,7 +36,6 @@ void ColliderSet::Write(Serializer& dat){
         dat.PutInt(c->shape);
         dat.PutFloat(c->center_offset.x); dat.PutFloat(c->center_offset.y); dat.PutFloat(c->center_offset.z);
         dat.PutFloat(c->scale.x);dat.PutFloat(c->scale.y);dat.PutFloat(c->scale.z);
-        dat.PutFloat(c->turn_offset);
     }
 }
 
@@ -57,3 +56,32 @@ void ColliderSet::Clear(){
     entity_collision_handler_id=0;
 }
 
+void ColliderSet::Draw(Camera* cam){
+    Transform base_transform;
+        base_transform.x = x; base_transform.y = y; base_transform.z = z;
+        base_transform.rotation.set_euler(rotation.x,rotation.y,rotation.z);
+        base_transform.scale=scale;
+
+    Transform center_transform = base_transform;
+        center_transform.y += bounds.height/2.0f;
+    DebugDraw::DrawEllipse(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,1.0f} );
+
+    for(ShapeCollider* coll:(*this)){
+        Transform collider_transform = center_transform;
+        collider_transform.x += coll->center_offset.x;
+        collider_transform.y += coll->center_offset.y;
+        collider_transform.z += coll->center_offset.z;
+        collider_transform.rotation.rotate_by(coll->rotation.x,coll->rotation.y,coll->rotation.z);
+       
+        switch(coll->shape){
+            case Collider::Shape::AABB: DebugDraw::Draw3DRect(cam,center_transform,
+                coll->scale, {1.0f,1.0f,1.0f,1.0f} ); break;
+            case Collider::Shape::ARC:break;//?
+            case Collider::Shape::CAPSULE: DebugDraw::DrawCapsule(cam,center_transform,
+                coll->scale.y,coll->scale.x,{1.0f,1.0f,1.0f,1.0f} ); break;
+            case Collider::Shape::SPHERE: DebugDraw::DrawSphere(cam,center_transform,
+                coll->scale.x,{1.0f,1.0f,1.0f,1.0f} ); break;
+            default: break;
+        }
+    }
+}
