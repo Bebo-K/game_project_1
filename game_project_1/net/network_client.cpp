@@ -5,6 +5,7 @@
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/config.hpp>
 #include <game_project_1/os.hpp>
+#include <game_project_1/strings.hpp>
 
 #include <game_project_1/client/client_signal.hpp>
 
@@ -60,7 +61,7 @@ void ClientNetwork::Init(){
 
 void ClientNetwork::Free(){
     if(server_target.connection.IsConnected()){
-        server_target.SendDisconnect(L"Disconnect by user.");
+        server_target.SendDisconnect(TranslateW("Disconnect by user."));
     }
     last_ping=0;
     int join_timeout = 5000;

@@ -61,6 +61,7 @@ struct color_f{
     void rgba(float R,float G,float B,float A);
     void from_color(color c);
     color to_color();
+    color_f mult(color_f c2);
 };
 
 

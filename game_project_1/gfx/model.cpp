@@ -106,7 +106,7 @@ void Mesh::DebugPrint(){
     logger::info("....Indices ID: %d\n",index.buffer_id);
 }
 
-void Mesh::Draw(Shader* shader){
+void Mesh::Draw(Shader* shader,MeshGroupRenderOptions* mgro){
     glBindVertexArray(vertex_array_id);
     CheckForGLError("Mesh.Draw: GL Error %d binding vertex array\n");
 
@@ -115,6 +115,7 @@ void Mesh::Draw(Shader* shader){
     glUniform1i(shader->TEXTURE_0,0);
 
     glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    color_f base_color = mat.base_color.mult(mgro->color);
     glUniform4fv(shader->COLOR,1,(GLfloat*)&mat.base_color);
  
     if(index.Valid()){
@@ -148,6 +149,12 @@ void MeshGroup::DebugPrint(){
     }
 }
 
+
+MeshGroupRenderOptions::MeshGroupRenderOptions(){
+    hide=false;
+    color = {1.0f,1.0f,1.0f,1.0f};
+}
+
 ModelData::ModelData():mesh_groups(){
 	skeleton=null;
 }
@@ -179,6 +186,7 @@ Model::Model(ModelID type){
     shader_name = "model_dynamic_lighting";
     type_id = type;
     data = ModelManager::Use(type);
+    mgro.Init(data->mesh_groups.length);
     if(data->skeleton != null){
         pose = new Pose(data->skeleton);
     }
@@ -191,6 +199,7 @@ Model::Model(ModelData* dat){//Does not use cache.
     shader_name = "model_dynamic_lighting";
     type_id=0;
     data = dat;
+    mgro.Init(data->mesh_groups.length);
     if(data->skeleton != null){
         pose = new Pose(data->skeleton);
     }
@@ -240,10 +249,14 @@ void Model::Draw(Camera* cam){
     glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
+    int i=0;
     for(MeshGroup* group:data->mesh_groups){
         for(Mesh* mesh:group->meshes){
-            mesh->Draw(shader);
+            if(!mgro[i]->hide){
+                mesh->Draw(shader,mgro[i]);
+            }
         }
+        i++;
     }
 
     if(pose != null){
@@ -281,9 +294,9 @@ void ModelManager::Init(){
     empty_model.mesh_groups.data=nullptr;
     empty_model.skeleton= null;
     empty_model.bounds = {{-0.5f,-0.5f,-0.5f},{0.5f,0.5f,0.5f}};
-    empty_model.mesh_groups.Allocate(1);
+    empty_model.mesh_groups.Init(1);
     MeshGroup* empty_mesh_group = empty_model.mesh_groups[0];
-        empty_mesh_group->meshes.Allocate(1);
+        empty_mesh_group->meshes.Init(1);
         empty_mesh_group->name = cstr::new_copy("ErrorModel.MeshGroup");
     Mesh* empty_mesh = empty_mesh_group->meshes[0];
         empty_mesh->vertex_count = error_cube.vertex_count;
@@ -304,7 +317,7 @@ void ModelManager::Free(){
 }
 
 ModelData* ModelManager::Use(ModelID id){
-    if(id == 0){return ErrorModel();}
+    if(id < 0){return ErrorModel();}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             if(cache->data==null){
@@ -330,7 +343,7 @@ ModelData* ModelManager::Use(ModelID id){
 }
 
 void ModelManager::Return(ModelID id){
-    if(id == 0){return;}
+    if(id < 0){return;}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
             cache->users--;
@@ -354,6 +367,13 @@ void ModelManager::Register(ModelID id, char* uri){
     cache->uri=uri;
     cache->users=0;
     cache->id=id;
+}
+
+ModelID ModelManager::GetByName(char* name){
+    for(ModelCacheEntry* cache:model_registry){
+        if(cstr::compare(name,cache->uri)){return cache->id;}
+    }
+    return -1;
 }
 
 void ModelManager::Unregister(ModelID id){

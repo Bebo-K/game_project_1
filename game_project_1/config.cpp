@@ -1,4 +1,5 @@
 #include <game_project_1/config.hpp>
+#include <game_project_1/strings.hpp>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/types/str.hpp>
 #include <game_project_1/io/file.hpp>
@@ -30,19 +31,19 @@ bool config::show_fps_counter=false;
 bool config::debug_mode=true;
 bool config::debug_net=true;
 
-wchar_t* config::save_directory=L"/saves";
-wchar_t* config::player_persona=L"Chowzang";
+wchar_t* config::save_directory=TranslateW("/saves");
+wchar_t* config::player_persona=TranslateW("Chowzang");
 
 
-wchar* server_config::server_name=L"my server";
-wchar* server_config::server_description=L"a server";
-char* server_config::save_name="server";
+wchar* server_config::server_name=TranslateW("my server");
+wchar* server_config::server_description=TranslateW("a server");
+char* server_config::save_name=Translate("server");
 bool server_config::local_only=true;
 int server_config::player_count=1;
 unsigned short server_config::default_port=8380;
 
 
-ConfigEntry::ConfigEntry(char* entry_name,config::ConfigEntryType entry_type,void* entry_data){
+ConfigEntry::ConfigEntry(const char* entry_name,config::ConfigEntryType entry_type,void* entry_data){
     name = cstr::new_copy(entry_name);
     type = entry_type;
     primitive = entry_data;

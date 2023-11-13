@@ -15,6 +15,7 @@
 #include <game_project_1/game.hpp>
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/net/os_net.hpp>
+#include <game_project_1/strings.hpp>
 
 const TCHAR window_title[] = _T("Game");
 const TCHAR window_classname[] = _T("Game");
@@ -394,8 +395,8 @@ bool OS::BuildGameFolderPath(){
         return false;
     }
 
-    PWSTR my_games_path = append_wstrs(my_docs_path,L"\\My Games");
-    PWSTR full_game_path = append_wstrs(my_games_path,L"\\DemoGame");
+    PWSTR my_games_path = append_wstrs(my_docs_path,TranslateW("\\My Games"));
+    PWSTR full_game_path = append_wstrs(my_games_path,TranslateW("\\DemoGame"));
 
     if(CreateDirectoryW(my_games_path,NULL) || GetLastError() == ERROR_ALREADY_EXISTS){
         if(CreateDirectoryW(full_game_path,NULL)){

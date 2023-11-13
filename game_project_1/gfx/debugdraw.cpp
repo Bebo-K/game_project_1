@@ -27,19 +27,21 @@ void InitDebugVertexBuffer(GLuint* array,float* verts,int vert_count){
     if(gl_err != 0){logger::warn("GL error initializing primitive: %d",&gl_err);}
 }
 
-float* CalcualateCylinderVertices(){
-    cylinder_vert_count = 360 * 18;
+void CalcualateCylinderVertices(){
+    int segments = 18;
+    float segment_arc = PI_OVER_180 * 360/segments;
+    cylinder_vert_count = segments * 18;
     
     cylinder_vert_data = new float[cylinder_vert_count];
     vec3 face[] = { {0,0,0},{0,0,0},{0,0,0},  {0,0,0},{0,0,0},{0,0,0} };
 
-    for(int i=0;i<360;i++){
-        float x1 = 0.5f* sinf(PI_OVER_180 * (i));
-        float x2 = 0.5f* sinf(PI_OVER_180 * (i+1));
+    for(int i=0;i<segments;i++){
+        float x1 = 0.5f* sinf(i*segment_arc);
+        float x2 = 0.5f* sinf((i+1)*segment_arc);
         float y1 = 0.5f;
         float y2 = -0.5f;
-        float z1 = 0.5f* cosf(PI_OVER_180 * (i+1));
-        float z2 = 0.5f* cosf(PI_OVER_180 * (i+1));
+        float z1 = 0.5f* cosf(i*segment_arc);
+        float z2 = 0.5f* cosf((i+1)*segment_arc);
 
 
         face[0] = {x1,y1,z1}; face[1] = {x2,y1,z2};
@@ -51,30 +53,35 @@ float* CalcualateCylinderVertices(){
     }
 }
 
-float* CalcualateSphereVertices(){
-    int x_facets = 36;float x_degrees = 360/x_facets;
-    int z_facets = 36;float z_degrees = 360/z_facets;
-    cylinder_vert_count = 360 * 18;
+void CalcualateSphereVertices(){
+    int h_facets = 12;float h_seg_arc = PI_OVER_180 * 360/h_facets;
+    int v_facets = 8;float v_seg_arc = PI_OVER_180 * 360/v_facets;
+    cylinder_vert_count = h_facets * v_facets * 18;
     
     cylinder_vert_data = new float[cylinder_vert_count];
     vec3 face[] = { {0,0,0},{0,0,0},{0,0,0},  {0,0,0},{0,0,0},{0,0,0} };
 
-    for(int x=0;x<x_facets;x++){
-        for(int z=0;z<z_facets;z++){
-            float x1 = 0.5f* sinf(PI_OVER_180 * (x) * x_degrees );
-            float x2 = 0.5f* sinf(PI_OVER_180 * (x+1) * x_degrees );
-            float y1 = z/(float)z_facets - 0.5f;
-            float y2 = z+1/(float)z_facets - 0.5f;
-            float z1 = 0.5f* cosf(PI_OVER_180 * (z+1) * z_degrees );
-            float z2 = 0.5f* cosf(PI_OVER_180 * (z+1) * z_degrees );
+    for(int h=0;h<h_facets;h++){
+        for(int v=0;v<v_facets;v++){
+            float x1 = 0.5f* cos( v * v_seg_arc ) * cos( h * h_seg_arc );
+            float x2 = 0.5f* cos( v * v_seg_arc ) * cos( (h+1) * h_seg_arc);
+            float x3 = 0.5f* cos( (v+1) * v_seg_arc ) * cos( h * h_seg_arc );
+            float x4 = 0.5f* cos( (v+1) * v_seg_arc ) * cos( (h+1) * h_seg_arc);
 
+            float y1 = 0.5f* sinf( v * v_seg_arc );
+            float y2 = 0.5f* sinf( (v+1) * v_seg_arc );
+
+            float z1 = 0.5f* cos( v * v_seg_arc ) * sin( h * h_seg_arc );
+            float z2 = 0.5f* cos( v * v_seg_arc ) * sin( (h+1) * h_seg_arc);
+            float z3 = 0.5f* cos( (v+1) * v_seg_arc ) * sin( h * h_seg_arc );
+            float z4 = 0.5f* cos( (v+1) * v_seg_arc ) * sin( (h+1) * h_seg_arc);
 
             face[0] = {x1,y1,z1}; face[1] = {x2,y1,z2};
-            face[2] = {x1,y2,z1};
+            face[2] = {x3,y2,z3};
                                   face[3] = {x2,y1,z2};
-            face[5] = {x1,y2,z1}; face[4] = {x2,y2,z2};
+            face[5] = {x3,y2,z3}; face[4] = {x4,y2,z4};
 
-            memcpy(&cylinder_vert_data[ (x*z_facets + z) *18],(float*)face,sizeof(float)*18);
+            memcpy(&sphere_vert_data[ (v*v_facets + h) *18],(float*)face,sizeof(float)*18);
         }
     }
 }
@@ -85,6 +92,8 @@ void DebugDraw::Init(){
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    CalcualateCylinderVertices();
+    CalcualateSphereVertices();
 
     InitDebugVertexBuffer(&rect3d_vertex_array_id,rect3d_vert_data,rect3d_vert_count);
     InitDebugVertexBuffer(&sphere_vertex_array_id,sphere_vert_data,sphere_vert_count);

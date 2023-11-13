@@ -9,6 +9,7 @@
 #include <game_project_1/system/shared/physics.hpp>
 #include <game_project_1/system/shared/movement.hpp>
 
+#include <game_project_1/game/content.hpp>
 #include <game_project_1/content/base_content.hpp>
 
 
@@ -16,7 +17,7 @@ Client* Client::instance = nullptr;
 float Client::frame_interval=1;
 
 
-Client::Client() : scene(), ui(),players(0){
+Client::Client() : scene(), ui(),players(){
     logger::info("Initializing client\n");
     Client::instance = this;
     ShaderManager::Init();
@@ -65,6 +66,7 @@ void Client::Start(){
     FontID debug_font =FontManager::LoadFontFace("SourceSansPro-Regular",12);
     FontManager::SetActiveFont(debug_font);
 
+    OnContentLoad();
     BaseContent::LoadClient();
     
 

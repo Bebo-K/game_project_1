@@ -163,7 +163,7 @@ TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]
     int atlas_h = atlas_next[2];
     if(atlas_x + glyph.width <= FontManager::ATLAS_SIZE 
     && atlas_y + glyph.rows <= FontManager::ATLAS_SIZE){//Fits widthwise our row
-        atlas_h = (glyph.rows > (int)atlas_h)?glyph.rows:atlas_h;
+        atlas_h = (glyph.rows > (unsigned int)atlas_h)?glyph.rows:atlas_h;
     }
     else if(atlas_y + atlas_h + glyph.rows < FontManager::ATLAS_SIZE){//fits below our row
         atlas_x = 0;
@@ -171,8 +171,8 @@ TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]
         atlas_h = glyph.rows;
     }	
     unsigned char alpha;
-    for(int i=0;i<glyph.rows;i++){
-        for(int j=0; j<glyph.width;j++){
+    for(unsigned int i=0;i<glyph.rows;i++){
+        for(unsigned int j=0; j<glyph.width;j++){
             alpha=glyph.buffer[glyph.width*i + j];
             if(alpha > 16){//edge softening. Do I want this?
                 if(j==0 || glyph.buffer[glyph.width*i + j -1] < 16){alpha /= 2;}

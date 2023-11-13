@@ -2,7 +2,7 @@
 #define EQUIP_H
 
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/game/item.hpp>
+#include <game_project_1/game/items.hpp>
 
  //Only equipment is sent thru client delta
 class Equip: public Component{

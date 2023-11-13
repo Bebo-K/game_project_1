@@ -7,6 +7,13 @@
 #include <game_project_1/gfx/drawable.hpp>
 #include <game_project_1/gfx/skeleton.hpp>
 
+
+struct MeshGroupRenderOptions{
+    bool hide;
+    color_f color;
+    MeshGroupRenderOptions();
+};
+
 struct Mesh{
 	int		 vertex_count;
     int      tri_count;
@@ -24,7 +31,7 @@ struct Mesh{
     ~Mesh();
     void Init();
     void DebugPrint();
-    void Draw(Shader* s);//Assumes uniform matricies have already positioned the mesh
+    void Draw(Shader* s,MeshGroupRenderOptions* mgro);//Assumes uniform matricies have already positioned the mesh
 };
 
 struct MeshGroup{
@@ -49,13 +56,15 @@ class ModelData{
     void DebugPrint();
 };
 
+
 typedef int ModelID;//0 is reserved for no/error model
 class Model: public Drawable{
     public:
     ModelID     type_id;
     ModelData*  data;
     Pose*       pose;
-    //CONSIDER- MeshGroup visibility mask
+    Array<MeshGroupRenderOptions> mgro;
+
     Model(ModelID type);
     Model(ModelData* dat);
     ~Model();
@@ -78,6 +87,7 @@ namespace ModelManager{
     void Init();
     void Free();
     void Register(ModelID id,char* uri);
+    ModelID GetByName(char* name);
     ModelData* Use(ModelID type);
     void Return(ModelID type);
     void Clean();

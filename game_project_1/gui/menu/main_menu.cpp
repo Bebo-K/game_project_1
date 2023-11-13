@@ -7,7 +7,7 @@
 using namespace UI;
 
 void LaunchSingleplayerButtonCallback(){
-    logger::debug("Launching server!");
+    logger::debug("Launching server!\n");
     GUI* gui = GUI::GetGUI();
     gui->loading_menu->Open();
     gui->main_menu->Close();
@@ -16,7 +16,7 @@ void LaunchSingleplayerButtonCallback(){
 }
 
 void LaunchMultiplayerButtonCallback(){
-    logger::debug("Launching mp server!");
+    logger::debug("Launching mp server!\n");
 
 }
 

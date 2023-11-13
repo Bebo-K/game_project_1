@@ -17,7 +17,7 @@ class SaveEntity:public ServerEntity{
     public:
     int global_id;
     //TODO: wchar** tags for scripting lookups
-
+    SaveEntity();
     SaveEntity(int gid);
     SaveEntity(int gid, ServerEntity* e);
     ~SaveEntity();

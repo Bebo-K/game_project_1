@@ -10,6 +10,7 @@
 #include <game_project_1/server/server_net_handler.hpp>
 #include <game_project_1/server/server_signal.hpp>
 
+#include <game_project_1/game/content.hpp>
 #include <game_project_1/content/base_content.hpp>
 
 
@@ -82,6 +83,7 @@ void Server::Start(){
 
     scene_manager.save.LoadOrNew(server_config::save_name);
 
+    OnContentLoad();
     BaseContent::LoadServer();
     BaseContent::LoadTestArea(scene_manager.LoadScene(1));
     Sleep(1000);//temp just so I can see the loading screen

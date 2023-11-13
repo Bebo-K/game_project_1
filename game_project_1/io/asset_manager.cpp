@@ -56,20 +56,20 @@ Stream* AssetManager::UI_Font(char* font_name){
     return font_stream;
 }
 Stream* AssetManager::VertexShader(char* uri){
-    char* filename = BuildFileName("gfx/",uri,".vrt");
+    char* filename = BuildFileName("shaders/",uri,".vrt");
     FileStream* shader_stream = new FileStream(filename);
     free(filename);
     return shader_stream;
 }
 Stream* AssetManager::FragmentShader(char* uri){
-    char* filename = BuildFileName("gfx/",uri,".frg");
+    char* filename = BuildFileName("shaders/",uri,".frg");
     FileStream* shader_stream = new FileStream(filename);
     free(filename);
     return shader_stream;
 }
 Stream* AssetManager::Level(int area_id){
-    char* uri = Areas::GetMap(area_id);
-    char* filename = BuildFileName("levels/",uri,".lvl");
+    Area* area = Areas.Has(area_id)? Areas.Get(area_id) :ERROR_ROOM;
+    char* filename = BuildFileName("areas/",area->path,".lvl");
     FileStream* level_stream = new FileStream(filename);
     free(filename);
     return level_stream;

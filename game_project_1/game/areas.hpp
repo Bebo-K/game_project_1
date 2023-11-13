@@ -2,19 +2,19 @@
 #define GAME_CONSTANTS_H
 
 #include <game_project_1/types/map.hpp>
+#include <game_project_1/io/json.hpp>
+#include <game_project_1/types/map.hpp>
 
-namespace Areas{
-    extern Map<int,char*> map_names;
-    const int error_room =0;
-
-    bool ValidArea(int area_id);
-    char* GetMap(int area_id);
-    char* ErrorRoom();
-    void RegisterMap(int area_id,char* filename);
-    inline int StartArea(){return 1;}
-    inline int StartAreaEntrance(){return 0;}
+struct Area{
+    char* name;
+    char* path;
+    Area();
+    ~Area();
+    void FromJson(JSONObject* json);
 };
 
+extern Map<int,Area*> Areas;
+extern Area* ERROR_ROOM;
 
 
 

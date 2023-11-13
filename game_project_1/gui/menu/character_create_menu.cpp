@@ -17,11 +17,11 @@ void StartCharacterCallback(){
 }
 
 void RaceChangeCallback(int choice_id, wchar* choice_name){
-    charmenu->race_id = choice_id;
+    charmenu->race_id = choice_id+1;
 }
 
 void ClassChangeCallback(int choice_id,wchar* choice_name){
-    charmenu->class_id=choice_id;
+    charmenu->class_id=choice_id+1;
 }
               
 CharacterCreateMenu::CharacterCreateMenu() : Menu(){id = Menu::CHARACTER_CREATE;}
@@ -47,19 +47,28 @@ void CharacterCreateMenu::OnLoad(){
         header_text->MoveTo(nullptr,Top,Center_H,{0,28});
     AddWidget(header_text);
 
-    wchar** race_names = new wchar*[Races::Max];
-    for(int i=0;i<Races::Max;i++){race_names[i] = Races::GetRaceByID(i).name;}
+    
+    wchar** race_names = new wchar*[Races.Count()];
+    int i=0;
+    for(Tuple<int,EntityRace*> race_entry:Races){
+        race_names[i] = race_entry.value->name;
+        i++;
+    }
 
     TextChoiceBar* race_choice = new TextChoiceBar("race_choice",L"Race");
-        race_choice->SetChoiceList(race_names,Races::Max);
+        race_choice->SetChoiceList(race_names,Races.Count());
         race_choice->choice_change_callback = RaceChangeCallback;
     delete race_names;
 
-    wchar** class_names = new wchar*[Classes::Max];
-    for(int i=0;i<Classes::Max;i++){class_names[i] = Classes::GetClassByID(i).name;}
+    wchar** class_names = new wchar*[Classes.Count()];
+    i=0;
+    for(Tuple<int,EntityClass*> class_entry:Classes){
+        class_names[i] = class_entry.value->name;
+        i++;
+    }
 
     TextChoiceBar* class_choice = new TextChoiceBar("class_choice",L"Class");
-        class_choice->SetChoiceList(class_names,Classes::Max);
+        class_choice->SetChoiceList(class_names,Classes.Count());
         class_choice->choice_change_callback = ClassChangeCallback;
     delete class_names;
 

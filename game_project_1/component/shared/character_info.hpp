@@ -7,8 +7,8 @@
 //Public character info: race, character class, appearance
 class CharacterInfo: public Component{
     public:
-    RaceID race_id;
-    ClassID class_id;
+    int race_id;
+    int class_id;
     CharacterAppearance appearance;
 
     CharacterInfo();

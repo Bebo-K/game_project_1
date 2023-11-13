@@ -2,44 +2,62 @@
 #define RACES_AND_CLASSES_H
 
 #include <game_project_1/types/str.hpp>
+#include <game_project_1/types/map.hpp>
+#include <game_project_1/types/arrays.hpp>
 #include <game_project_1/game/stats.hpp>
+#include <game_project_1/io/json.hpp>
 
-typedef int RaceID;
-struct Race{
-    RaceID id;
+struct EntityRaceStyle{
     wchar* name;
-    int max_styles_1;
-    int max_styles_2;
-    int max_styles_3;
+    char* model_target;
+    int    style_count;
+
+    EntityRaceStyle();
+    ~EntityRaceStyle();
+    void FromJson(JSONObject* json);
+};
+
+struct EntityRaceColor{
+    int target_count;
+    char** model_targets;//todo- multiple groups at once
+
+    EntityRaceColor();
+    ~EntityRaceColor();
+    void FromJson(JSONObject* json);
+};
+
+struct EntityRaceModel{
+    char* model_name;
+    Array<EntityRaceStyle> styles;
+    Array<EntityRaceColor> colorable;
+    
+    EntityRaceModel();
+    ~EntityRaceModel();
+    void FromJson(JSONObject* json);
+};
+
+struct EntityRace{
+    wchar* name;
+    Array<EntityRaceModel> models;
     float hitsphere_height;
     float hitsphere_radius;
-    BaseStats stat_base;
+    StatLayer stat_base;
+
+    EntityRace();
+    ~EntityRace();
+    void FromJson(JSONObject* json);
 };
 
-typedef int ClassID;
-struct Class{
-    ClassID id;
+struct EntityClass{
     wchar* name;
-    BaseStats stat_bonus;
+    StatLayer stat_bonus;
+    
+    EntityClass();
+    ~EntityClass();
+    void FromJson(JSONObject* json);
 };
 
-namespace Races{
-    const Race Human = {0,L"Human",3,3,3, 3.0f,0.75f, {12,8,10,9,11}};
-    const Race Golem = {1,L"Golem",3,3,3, 3.0f,0.75f, {11,9,12,10,8}};
-    const Race Impkin = {2,L"Impkin",3,3,3, 3.0f,0.75f, {10,11,8,9,12}};
-    const Race Torag = {3,L"Torag",3,3,3, 3.0f,0.75f, {10,10,10,10,10}};
-    extern int Max;
-    Race GetRaceByID(RaceID id);
-};
-
-namespace Classes{
-    const Class Warrior = {0,L"Warrior",{2,0,2,0,0}};
-    const Class Archer = {1,L"Archer",{0,1,0,1,2}};
-    const Class Mage = {2,L"Mage",{0,2,0,2,0}};
-    const Class Thief = {3,L"Thief",{2,0,1,0,2} };
-    extern int Max;
-    Class GetClassByID(ClassID id);
-};
-
+extern Map<int,EntityClass*> Classes;
+extern Map<int,EntityRace*> Races;
 
 #endif

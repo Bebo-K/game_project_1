@@ -19,7 +19,7 @@ struct ArrayIterator{
     bool operator!=(ArrayIterator<T>& l2);
 };
 
-//A simple iterable array that can be resized (via manual call) + does not track what memory is in use
+//Wrapper class for {T* array;int arraySize;}. Safe for objects with no trivial copy-assignment.
 template <typename T>
 struct Array{ 
     friend struct ArrayIterator<T>;
@@ -32,39 +32,31 @@ struct Array{
     }
 
     Array(int size){
-        data=(T*)calloc(size,sizeof(T));
-        length=size;
+        data=nullptr;
+        length=0;
+        Init(size);
     }
 
-    ~Array(){}
+    ~Array(){Destroy();}
 
-    void Allocate(int size){
-        if(size <= 0){
-            logger::exception("Array::Allocate -> Cannot allocate an array of <= 0 length\n");
+    void Init(int size){
+        if(length > 0){
+            logger::exception("Array::Init -> Memory leak condition, array has already been allocated.");
         }
-        T* old_data = data;
-        data=(T*)calloc(size,sizeof(T));
-        if(old_data != nullptr){
-            memcpy(data,old_data, sizeof(T)*((length < size)?length:size));
-            free(old_data);
+        if(size == 0){ 
+            data=nullptr;
+            length=0;
         }
-        length=size;
-    }
-
-    void operator=(Array<T>& a2){
-        length=a2.length;
-        data=a2.data;
-    }
-
-    void operator=(Array<T> a2){
-        length=a2.length;
-        data=a2.data;
+        else{
+            data= new T[size];
+            length=size;
+        }
     }
 
     void Destroy(){
-        for(int i=0;i<length;i++){data[i].~T();}
-        if(data != nullptr){free(data);data=nullptr;}
+        delete[] data;
         length=0;
+        data=nullptr;
     };
 
     T* operator[](int index){
@@ -76,16 +68,6 @@ struct Array{
         int index = obj-data;
         if(index < 0 || index >= length){logger::exception("Array::Index of -> Index %d is out of range.",index);return 0;}
         return index;
-    }
-
-    void Resize(int new_size){
-        T* new_dat = (T*)calloc(new_size,sizeof(T));
-        if(data != nullptr){
-            memcpy((void*)new_dat,(void*)data,(new_size > length)? length*sizeof(T) : new_size*sizeof(T));
-            free(data);
-        }
-        data = new_dat;
-        length = new_size;
     }
 
     ArrayIterator<T> begin(){ return {this,0};}

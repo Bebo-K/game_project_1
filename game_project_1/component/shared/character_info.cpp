@@ -10,6 +10,7 @@ int CharacterInfo::SerializedLength(){return sizeof(int)*2 + sizeof(CharacterApp
 void CharacterInfo::Read(Deserializer& dat){
     race_id = dat.GetInt();
     class_id = dat.GetInt();
+    appearance.body_type = dat.GetInt();
     appearance.style1 = dat.GetInt();
     appearance.style2 = dat.GetInt();
     appearance.style3 = dat.GetInt();
@@ -19,6 +20,7 @@ void CharacterInfo::Read(Deserializer& dat){
 void CharacterInfo::Write(Serializer& dat){
     dat.PutInt(race_id);
     dat.PutInt(class_id);
+    dat.PutInt(appearance.body_type);
     dat.PutInt(appearance.style1);
     dat.PutInt(appearance.style2);
     dat.PutInt(appearance.style3);

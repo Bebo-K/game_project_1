@@ -33,6 +33,7 @@ wchar_t* SaveFile::GetSaveFilePath(char* save_name){
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////                               SAVE ENTITY                                     /////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+SaveEntity::SaveEntity():ServerEntity(-1){global_id = 0;}
 SaveEntity::SaveEntity(int gid):ServerEntity(-1){global_id = gid;}
 SaveEntity::SaveEntity(int gid, ServerEntity* e):ServerEntity(-1){
     global_id=gid;
@@ -115,7 +116,7 @@ void SaveScene::Load(Deserializer& dat){
     for(int i=0;i<num_global_entities;i++){
         global_entities.Add(dat.GetInt());
     }   
-    local_entities.Resize(dat.GetInt());
+    local_entities.Init(dat.GetInt());
     for(SaveEntity* entity:local_entities){
         entity->Load(dat);
     }
@@ -290,8 +291,8 @@ SaveEntity* SaveFile::GetGlobalEntity(int global_id){
 
 SavePlayer* SaveFile::NewPlayer(int save_id){   
     SavePlayer* new_player = new SavePlayer(save_id);
-        new_player->last_scene =  Areas::StartArea();
-        new_player->last_entrance =  Areas::StartAreaEntrance();
+        new_player->last_scene = 1;//Fixme: global config for game start area/entrance?
+        new_player->last_entrance =  0;//^
     players.Add(new_player);
     return new_player;
 }

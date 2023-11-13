@@ -3,9 +3,10 @@
 
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/io/serializer.hpp>
+#include <game_project_1/io/json.hpp>
 
 //RPG stat block
-class BaseStats{
+class StatLayer{
     public:
     int max_hp;
     int max_mp;
@@ -14,17 +15,18 @@ class BaseStats{
     int intelligence;
     int agility;
 
-    BaseStats();
-    BaseStats(int max_hp,int max_mp,int str,int intel,int agi);
-    ~BaseStats();
+    StatLayer();
+    StatLayer(int max_hp,int max_mp,int str,int intel,int agi);
+    ~StatLayer();
 
     int SerializedLength();
+    void FromJson(JSONObject* json);
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
     void Clear();
 
-    void Add(BaseStats* s2);
-    void Copy(BaseStats* s2);
+    void Add(StatLayer* s2);
+    void Copy(StatLayer* s2);
     void AddRandomizedBonus(int max_bonus);
 };
 
@@ -40,8 +42,8 @@ class ActiveStats{
 
     //StatModifierStack
 
-    ActiveStats(BaseStats* base);
-    void ResetFromBase(BaseStats* base);
+    ActiveStats(StatLayer* base);
+    void ResetFromBase(StatLayer* base);
     int SerializedLength();
 };
 
@@ -61,6 +63,7 @@ class EffectSet : public Pool<Effect>{
 
 
 struct CharacterAppearance{
+    int body_type;
     int style1,style2,style3;
     color color1;
     //float range1,range2,range3 //TODO: float sliders to adjust a character model

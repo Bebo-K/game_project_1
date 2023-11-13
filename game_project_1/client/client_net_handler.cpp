@@ -37,7 +37,7 @@ void ClientNetHandler::HandlePayload(Payload payload){
             Packet::ACPT accept_response(payload);
 
             client->current_players = accept_response.player_count;
-            client->players.Resize(accept_response.player_max);
+            client->players.Init(accept_response.player_max);
                 for(Player* p:client->players){p->Clear();}
             client->my_slot_id = accept_response.player_slot_id;
             client->Me()->persona = wstr::new_copy(config::player_persona);

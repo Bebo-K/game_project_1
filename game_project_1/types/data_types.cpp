@@ -64,3 +64,7 @@ void color_f::from_color(color c){
 color color_f::to_color(){
     return {(byte)(r*255.0f),(byte)(g*255.0f),(byte)(b*255.0f),(byte)(a*255.0f)};
 }
+
+color_f color_f::mult(color_f c2){
+    return {r*c2.r, g*c2.g, b*c2.b, a*c2.a};
+}

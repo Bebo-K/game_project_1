@@ -21,8 +21,7 @@ void BaseContent::LoadCommon(){
 
 void BaseContent::LoadClient(){
     if(!EntityTemplate::template_ids.Has("Humanoid")){LoadCommon();}
-    Areas::RegisterMap(1,"default");
-    ModelManager::Register(HUMAN_1,"human");
+    ModelManager::Register(HUMAN_1,"human_1");
     //ModelManager::Register(GARGOYLE,"gargoyle");
 
     LevelCollision::RegisterClientLevelCollisionHandler(humanoid_collision,
@@ -35,7 +34,6 @@ void BaseContent::LoadClient(){
 
 void BaseContent::LoadServer(){
     if(!EntityTemplate::template_ids.Has("Humanoid")){LoadCommon();}
-    Areas::RegisterMap(1,"default");
 
     LevelCollision::RegisterServerLevelCollisionHandler(humanoid_collision,
             HumanoidLevelServerCollisionHandler);
@@ -52,8 +50,8 @@ void BaseContent::LoadTestArea(ServerScene* scene){
             friendly_id->name = wstr::new_copy(L"friendly");
             friendly_id->type = BaseContent::humanoid_template;
         CharacterInfo* friendly_char = friendly->GetOrAdd<CharacterInfo>();
-            friendly_char->race_id=Races::Human.id;
-            friendly_char->class_id=Classes::Archer.id;
+            friendly_char->race_id=1;
+            friendly_char->class_id=2;
 
         friendly->Set(new NPCProperties(BaseContent::NPC_WANDER));
         friendly->Set(new NPCState());

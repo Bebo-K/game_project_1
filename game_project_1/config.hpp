@@ -55,7 +55,7 @@ struct ConfigEntry{
     void* primitive;
 
 
-    ConfigEntry(char* entry_name,config::ConfigEntryType entry_type,void* entry_data);
+    ConfigEntry(const char* entry_name,config::ConfigEntryType entry_type,void* entry_data);
     ~ConfigEntry();
 };
 

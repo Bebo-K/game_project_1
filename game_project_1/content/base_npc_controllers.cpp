@@ -3,14 +3,15 @@
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/component/server/npc_state.hpp>
 #include <game_project_1/component/shared/movement_state.hpp>
+#include <game_project_1/strings.hpp>
 
 void BaseContent::NPCController_Wander(ServerEntity* e, ServerScene* s){
     NPCState* npc_state = e->Get<NPCState>();
     MovementState* move_state = e->Get<MovementState>();
     if(!npc_state->init){   
         npc_state->current_action=0;
-        npc_state->parameters.Allocate(1);
-        npc_state->parameters[0]->wstr = L"Hello!";
+        npc_state->parameters.Init(1);
+        npc_state->parameters[0]->wstr = TranslateW("Hello!");
         npc_state->init=true;
     }
     npc_state->action_counter++;

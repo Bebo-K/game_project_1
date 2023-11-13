@@ -9,7 +9,7 @@ class StatBlock: public Component{
 	public:
 
     int level;
-    BaseStats base_stats;
+    StatLayer base_stats;
 
     StatBlock();
     StatBlock(int start_level);

@@ -34,10 +34,14 @@ void ClientLevel::Draw(Camera* cam){
     glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
+    MeshGroupRenderOptions default_mgro;
+    default_mgro.hide=false;
+    default_mgro.color={255,255,255,255};
+
     for(ModelData* model:models){
         for(MeshGroup* group:model->mesh_groups){
             for(Mesh* mesh:group->meshes){
-                mesh->Draw(shader);
+                mesh->Draw(shader,&default_mgro);
             }
         }
     }

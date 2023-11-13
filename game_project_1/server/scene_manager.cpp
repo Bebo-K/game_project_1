@@ -19,12 +19,11 @@ SceneManager::SceneManager(Server* server_instance):active_scenes(),save(){
 SceneManager::~SceneManager(){}
 
 ServerScene* SceneManager::LoadScene(int area_id){
-    if(!Areas::ValidArea(area_id)){
-        logger::warnW(L"SceneManager::LoadScene -> cannot load area_id %d",area_id);
-        return LoadScene(Areas::error_room);
-    } 
     for(ServerScene* active_scene:active_scenes){
         if(active_scene->area_id == area_id){return active_scene;/*already loaded!*/}
+    }
+    if(!Areas.Has(area_id)){
+        logger::warnW(L"SceneManager::LoadScene -> cannot load area_id %d",area_id);
     }
     ServerScene* new_scene = new (active_scenes.Allocate()) ServerScene();
     new_scene->area_id = area_id;
@@ -104,7 +103,7 @@ ServerScene* SceneManager::GetActiveScene(int area_id){
             return active_scene;
         }
     }
-    logger::warn("Looking for active area %s but it's not loaded.\n",Areas::GetMap(area_id));
+    logger::warn("Looking for active area %s but it's not loaded.\n",Areas.Get(area_id)->name);
     return null;
 }
 

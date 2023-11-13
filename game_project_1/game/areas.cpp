@@ -3,18 +3,22 @@
 #include <game_project_1/content/base_content.hpp>
 #include <game_project_1/core/entity.hpp>
 
-Map<int,char*> Areas::map_names;
+Map<int,Area*> Areas(4);
+Area* ERROR_ROOM=nullptr;
 
 
-bool Areas::ValidArea(int area_id){
-    if(area_id == Areas::error_room){return true;}
-    return map_names.Has(area_id);
+Area::Area(){
+    name=nullptr;
+    path=nullptr;
 }
-char* Areas::GetMap(int area_id){
-    if(area_id == Areas::error_room){return "error_room";}
-    return map_names.Get(area_id);
+Area::~Area(){
+    if(name != nullptr)free(name);
+    name=nullptr;
+    if(path != nullptr)free(path);
+    path=nullptr;
 }
-void Areas::RegisterMap(int area_id,char* map_name){
-    map_names.Add(area_id,cstr::new_copy(map_name));
+void Area::FromJson(JSONObject* json){
+    this->name = cstr::new_copy(json->GetString("name")->string);
+    this->path = cstr::new_copy(json->GetString("path")->string);
 }
 

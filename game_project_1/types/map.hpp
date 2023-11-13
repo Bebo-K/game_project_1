@@ -108,6 +108,8 @@ class Map{
     bool Has(K key){return Get(key)!=nullptr;}
     bool Add(K key,V value){
         if(Has(key))return false;
+        if(KeyNull(key)){logger::exception("Map::Add: Invalid Key");}
+
         int slot_to_add=0;
         while(slot_to_add < slots && !KeyNull(keys[slot_to_add])){slot_to_add++;}
         if(slot_to_add == slots){Resize(slots*2);}

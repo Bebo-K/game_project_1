@@ -175,7 +175,7 @@ void Shader::SetFeature(unsigned int feature_id,bool enabled){
 }
 
 void ShaderManager::Init(){
-    logger::debug("Loading default shader..");
+    logger::debug("Loading default shader..\n");
     DEFAULT_SHADER = new Shader("default","default");
     CACHED_SHADERS.Add("default",DEFAULT_SHADER);
     

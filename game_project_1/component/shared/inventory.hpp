@@ -2,7 +2,7 @@
 #define INVENTORY_H
 
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/game/item.hpp>
+#include <game_project_1/game/items.hpp>
 
 //Inventory is private unless requested
 class Inventory: public Component{

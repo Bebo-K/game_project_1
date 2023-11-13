@@ -400,7 +400,7 @@ void GLTFScene::GetMeshGroup(MeshGroup* group, int group_id){
 
 	group->name = FindMeshGroupName(group_id);
 	if(group->name== null){group->name = cstr::new_copy(mesh->GetString("name")->string);}
-	group->meshes.Allocate(primitives->count);
+	group->meshes.Init(primitives->count);
 
 	Mesh* prim = nullptr;
 	for(int i=0;i<primitives->count;i++){
@@ -720,14 +720,14 @@ void GLTFScene::GetModel(ModelData* model){
 			mesh_group_count++;
 		}
 	}
-	model->mesh_groups.Allocate(mesh_group_count);
+	model->mesh_groups.Init(mesh_group_count);
 	for(int i=0;i<mesh_group_count;i++){
 		GetMeshGroup(model->mesh_groups[i],mesh_ids[i]);
 		model->bounds.Union(model->mesh_groups[i]->bounds);
 	}
 	if(gltf_data->HasArray("animations") && model->skeleton != nullptr){
 		int anim_count = gltf_data->GetArray("animations")->count;
-		model->skeleton->animations.Allocate(anim_count);
+		model->skeleton->animations.Init(anim_count);
 		for(int i=0;i<anim_count;i++){
 			LoadAnimation(i,model->skeleton);
 		}

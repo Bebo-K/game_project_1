@@ -5,6 +5,7 @@
 #include <game_project_1/types/data_types.hpp>
 #include <game_project_1/config.hpp>
 #include <game_project_1/os.hpp>
+#include <game_project_1/strings.hpp>
 
 #include <game_project_1/client/client.hpp>
 #include <game_project_1/server/server_net_handler.hpp>
@@ -99,7 +100,7 @@ void ServerNetworkThreadEntryPoint(){
     }
 
     //Cleanup
-    packet_buffer.FromPayload(Packet::NOPE(L"Server is shutting down").GetPayload());
+    packet_buffer.FromPayload(Packet::NOPE(TranslateW("Server is shutting down")).GetPayload());
 
     if(local_listener && ClientNetwork::IsRunning()){//Unplug client local link
         ClientNetwork::GetNetTargetForLocal()->connection.Disconnect();
@@ -260,7 +261,7 @@ void ServerNetwork::HandleNewConnection(Payload request,NetAddress remote_addres
             break;
         }
         default: {
-            RejectResponse(L"Bad Request",remote_address);
+            RejectResponse(TranslateW("Bad Request"),remote_address);
         }
     }
 }
