@@ -10,24 +10,20 @@ VBO rect_vertices;
 VBO rect_texcoords;
 
 void BuildShapePrimitives(){
+    ShaderManager::UseShader("ui_shape");
+
     glGenVertexArrays(1,&rect_vertex_array_id);
     glBindVertexArray(rect_vertex_array_id);
 
-    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
-
-    ShaderManager::UseShader("ui_shape");
-    
     rect_vertices.Create(rect_vert_data,GL_FLOAT,3,18,GL_ARRAY_BUFFER);
     rect_texcoords.Create(rect_texcoord_data,GL_FLOAT,2,12,GL_ARRAY_BUFFER);
 
-    
     rect_vertices.Bind(Shader::ATTRIB_VERTEX);
     rect_texcoords.Bind(Shader::ATTRIB_TEXCOORD);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORD);
+
     int gl_err = glGetError();
     if(gl_err != 0){logger::warn("GL error initializing rect primitive: %d",&gl_err);}
 }

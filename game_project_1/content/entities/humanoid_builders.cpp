@@ -92,6 +92,8 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
     entity->Set(new MovementProperties());
     entity->Get<MovementProperties>()->base_speed=10;
     ColliderSet* colliders = new ColliderSet();
+        colliders->bounds.height=my_race->hitsphere_height;
+        colliders->bounds.radius=my_race->hitsphere_radius;
         new (colliders->Allocate()) ShapeCollider(
                 {0,my_race->hitsphere_height/2.0f,0},
                 my_race->hitsphere_height,my_race->hitsphere_radius);

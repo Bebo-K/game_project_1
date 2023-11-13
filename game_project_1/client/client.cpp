@@ -11,6 +11,7 @@
 
 #include <game_project_1/game/content.hpp>
 #include <game_project_1/content/base_content.hpp>
+#include <game_project_1/gfx/debugdraw.hpp>
 
 
 Client* Client::instance = nullptr;
@@ -27,6 +28,7 @@ Client::Client() : scene(), ui(),players(){
     FontManager::Init();
     ModelManager::Init();
     ClientNetwork::Init();
+    DebugDraw::Init();
     
     ClientNetHandler::Init(this);
     ClientSignalHandler::Init(this);

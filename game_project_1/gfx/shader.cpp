@@ -180,7 +180,7 @@ void ShaderManager::Init(){
     CACHED_SHADERS.Add("default",DEFAULT_SHADER);
     
     AddShader("level_debug");
-    AddShader("shape_debug");
+    AddShader("shape_debug")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
     AddShader("model_dynamic_lighting");
     AddShader("model_static_shadeless");
     AddShader("skybox");

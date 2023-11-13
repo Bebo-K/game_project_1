@@ -13,10 +13,10 @@ int ColliderSet::SerializedLength(){
 }
 
 void ColliderSet::Read(Deserializer& dat){
+    Clear();
     bounds.radius = dat.GetFloat();
     bounds.height = dat.GetFloat();
     entity_collision_handler_id = dat.GetInt();
-    Clear();
     int colliders = dat.GetInt();
     for(int i=0;i<colliders;i++){
         ShapeCollider* c = Add();
@@ -64,7 +64,8 @@ void ColliderSet::Draw(Camera* cam){
 
     Transform center_transform = base_transform;
         center_transform.y += bounds.height/2.0f;
-    DebugDraw::DrawEllipse(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,1.0f} );
+    
+    DebugDraw::DrawEllipse(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,0.3f} );
 
     for(ShapeCollider* coll:(*this)){
         Transform collider_transform = center_transform;
@@ -72,16 +73,17 @@ void ColliderSet::Draw(Camera* cam){
         collider_transform.y += coll->center_offset.y;
         collider_transform.z += coll->center_offset.z;
         collider_transform.rotation.rotate_by(coll->rotation.x,coll->rotation.y,coll->rotation.z);
-       
+
         switch(coll->shape){
-            case Collider::Shape::AABB: DebugDraw::Draw3DRect(cam,center_transform,
-                coll->scale, {1.0f,1.0f,1.0f,1.0f} ); break;
+            //case Collider::Shape::AABB:
+            case Collider::Shape::CAPSULE: DebugDraw::Draw3DRect(cam,center_transform,
+                coll->scale, {0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::ARC:break;//?
-            case Collider::Shape::CAPSULE: DebugDraw::DrawCapsule(cam,center_transform,
-                coll->scale.y,coll->scale.x,{1.0f,1.0f,1.0f,1.0f} ); break;
+            case Collider::Shape::AABB: DebugDraw::DrawCapsule(cam,center_transform,
+                coll->scale.y,coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::SPHERE: DebugDraw::DrawSphere(cam,center_transform,
-                coll->scale.x,{1.0f,1.0f,1.0f,1.0f} ); break;
+                coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
             default: break;
         }
-    }
+            }
 }
