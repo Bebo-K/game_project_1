@@ -7,7 +7,7 @@
 
 FT_Library   ft_library;
 FontID       default_font_id,current_font_id;
-List<FontManager::FontCache> cached_fonts;
+List<FontManager::FontCache> cached_fonts(4);
 
 
 void FontID::operator=(FontID f2){family_id = f2.family_id;size=f2.size;}

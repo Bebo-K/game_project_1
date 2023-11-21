@@ -4,6 +4,7 @@
 
 ColliderSet::ColliderSet():bounds(0,0){
     entity_collision_handler_id=0;
+    layer=0;
 }
 
 ColliderSet::~ColliderSet(){}
@@ -65,8 +66,6 @@ void ColliderSet::Draw(Camera* cam){
     Transform center_transform = base_transform;
         center_transform.y += bounds.height/2.0f;
     
-    DebugDraw::DrawEllipse(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,0.3f} );
-
     for(ShapeCollider* coll:(*this)){
         Transform collider_transform = center_transform;
         collider_transform.x += coll->center_offset.x;
@@ -75,15 +74,16 @@ void ColliderSet::Draw(Camera* cam){
         collider_transform.rotation.rotate_by(coll->rotation.x,coll->rotation.y,coll->rotation.z);
 
         switch(coll->shape){
-            //case Collider::Shape::AABB:
-            case Collider::Shape::CAPSULE: DebugDraw::Draw3DRect(cam,center_transform,
+            case Collider::Shape::AABB: DebugDraw::Draw3DRect(cam,center_transform,
                 coll->scale, {0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::ARC:break;//?
-            case Collider::Shape::AABB: DebugDraw::DrawCapsule(cam,center_transform,
+            case Collider::Shape::CAPSULE: DebugDraw::DrawCapsule(cam,center_transform,
                 coll->scale.y,coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::SPHERE: DebugDraw::DrawSphere(cam,center_transform,
                 coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
             default: break;
         }
-            }
+    }
+
+        //DebugDraw::DrawCapsule(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,0.3f} );
 }

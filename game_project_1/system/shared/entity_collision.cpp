@@ -72,7 +72,7 @@ void EntityCollision::ServerFrame(ServerEntity* e1,ServerScene* s,float delta){
 
 
 CollisionResult::CollisionResult(bool collided){
-    collided=false;
+    this->collided=collided;
     point={0,0,0};
     collider_index_1=collider_index_2=0;
 }

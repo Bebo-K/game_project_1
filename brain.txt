@@ -1,9 +1,14 @@
 Goal heirarchy:
 
+    - Interaction
+        -Talk / onInteract
+    - Combat
+        -   
+        -   
+        -   
     - Iron out movement + collision bugs
     - Multiplayer menu, widgets + connection
     - Multiple client test
-    - Combat
 
 
 

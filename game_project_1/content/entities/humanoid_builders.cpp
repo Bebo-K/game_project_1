@@ -92,6 +92,7 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
     entity->Set(new MovementProperties());
     entity->Get<MovementProperties>()->base_speed=10;
     ColliderSet* colliders = new ColliderSet();
+        colliders->entity_collision_handler_id = BaseContent::humanoid_collision;
         colliders->bounds.height=my_race->hitsphere_height;
         colliders->bounds.radius=my_race->hitsphere_radius;
         new (colliders->Allocate()) ShapeCollider(

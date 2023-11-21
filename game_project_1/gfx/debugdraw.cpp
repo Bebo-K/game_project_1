@@ -4,7 +4,7 @@
 #include <math.h>
 
 
-float rect3d_vert_data[36];
+float rect3d_vert_data[36*3];
 int rect3d_vert_count = 36;
 GLuint rect3d_vertex_array_id=0;
 VBO rect3d_vertices;
@@ -126,7 +126,7 @@ void DebugDraw::Draw3DRect(Camera* cam,Transform t,vec3 size,color_f color){
     mat4 view_matrix = cam->view_matrix.copy();
 
     view_matrix.translate(t.x,t.y,t.z);
-    view_matrix.rotate(t.rotation);
+    //view_matrix.rotate(t.rotation);
     view_matrix.scale(t.scale);
     view_matrix.scale(size);
 
@@ -148,7 +148,7 @@ void DebugDraw::DrawEllipse(Camera* cam,Transform t,float height,float radius,co
     mat4 view_matrix = cam->view_matrix.copy();
 
     view_matrix.translate(t.x,t.y,t.z);
-    view_matrix.rotate(t.rotation);
+    //view_matrix.rotate(t.rotation);
     view_matrix.scale(t.scale);
     view_matrix.scale(radius,height,radius);
 
@@ -168,7 +168,7 @@ void DebugDraw::DrawCapsule(Camera* cam,Transform t,float height,float radius,co
     mat4 view_matrix = cam->view_matrix.copy();
     
     view_matrix.translate(t.x,t.y,t.z);
-    view_matrix.rotate(t.rotation);
+    //view_matrix.rotate(t.rotation);
     view_matrix.scale(t.scale);
     view_matrix.scale(radius,height,radius);
 
