@@ -20,10 +20,9 @@ class ClientScene{
 
     Renderer renderer;
     CameraManager camera_manager;
-    PlayerInput player_input;
-
     ClientLevel level;
     Pool<ClientEntity> entities;
+    ClientEntity* my_player;
 
     ClientScene();
     ~ClientScene();

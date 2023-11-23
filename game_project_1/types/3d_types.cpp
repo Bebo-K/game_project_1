@@ -127,6 +127,14 @@ vec2 vec3::xz(){
     return {x,z};
 }
 
+
+//returns angle from +z axis of the horizontal component of this vector
+float vec3::xz_angle(){
+    float len = sqrtf(x*x+z*z);
+    float theta = atan2f(z/len,x/len)/PI_OVER_180;
+    return (theta > 0)? theta: theta+360.0f;
+}
+
 vec3 vec3::zero(){return {0.0f,0.0f,0.0f};}
 
 
@@ -170,6 +178,12 @@ void vec2::rotate(float theta){
     float _x = x*cos + y*sin;
     float _y = y*cos - x*sin;
     x = _x; y = _y; 
+}
+
+float vec2::angle(){
+    float len = sqrtf(x*x+y*y);
+    float theta = atan2f(x/len,y/len)/PI_OVER_180;
+    return (theta > 0)? theta: theta+360.0f;
 }
 
 void quaternion::clear(){

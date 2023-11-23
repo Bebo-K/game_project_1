@@ -5,6 +5,7 @@
 #include <game_project_1/types/3d_types.hpp>
 
 enum MovementType{
+    NONE,
 	IDLE,
 	WALKING,
 	RUNNING,

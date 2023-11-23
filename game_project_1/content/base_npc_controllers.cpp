@@ -5,6 +5,13 @@
 #include <game_project_1/component/shared/movement_state.hpp>
 #include <game_project_1/strings.hpp>
 
+
+void BaseContent::NPCController_Stand(ServerEntity* e, ServerScene* s){
+    MovementState* move_state = e->Get<MovementState>();
+        move_state->move_goal = vec3(0,0,0);
+        move_state->current_movement = MovementType::IDLE;
+}
+
 void BaseContent::NPCController_Wander(ServerEntity* e, ServerScene* s){
     NPCState* npc_state = e->Get<NPCState>();
     MovementState* move_state = e->Get<MovementState>();

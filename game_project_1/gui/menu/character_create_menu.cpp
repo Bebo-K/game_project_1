@@ -58,7 +58,7 @@ void CharacterCreateMenu::OnLoad(){
     TextChoiceBar* race_choice = new TextChoiceBar("race_choice",L"Race");
         race_choice->SetChoiceList(race_names,Races.Count());
         race_choice->choice_change_callback = RaceChangeCallback;
-    delete race_names;
+    delete[] race_names;
 
     wchar** class_names = new wchar*[Classes.Count()];
     i=0;
@@ -70,7 +70,7 @@ void CharacterCreateMenu::OnLoad(){
     TextChoiceBar* class_choice = new TextChoiceBar("class_choice",L"Class");
         class_choice->SetChoiceList(class_names,Classes.Count());
         class_choice->choice_change_callback = ClassChangeCallback;
-    delete class_names;
+    delete[] class_names;
 
     TextEntryBar* name_entry = new TextEntryBar("name_entry",L"Enter name:",&player_name);
 

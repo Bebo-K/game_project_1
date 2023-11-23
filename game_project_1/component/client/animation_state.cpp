@@ -2,11 +2,11 @@
 
 
 AnimationState::AnimationState(){
-    movement_type=IDLE;
+    movement_type=NONE;
     controller_type=0;
 }
 AnimationState::AnimationState(AnimationControllerType type){
-    movement_type=IDLE;
+    movement_type=NONE;
     controller_type=type;
 }
 

@@ -15,6 +15,9 @@
 void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
     AnimationState* anim_state = e->Get<AnimationState>();
     MovementState* move_state = e->Get<MovementState>();
+    if(wstr::compare(e->Get<Identity>()->name,L"talkative")){
+        move_state->can_jump=false;
+    }
     if(!anim_state || !move_state)return;
     ModelSet* models = e->Get<ModelSet>();
     MovementProperties* move_props = e->Get<MovementProperties>();

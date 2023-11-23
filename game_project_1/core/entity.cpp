@@ -18,6 +18,7 @@ template<> int Entity::IdOf<StatBlock>()              {return 9;}
 template<> int Entity::IdOf<Equip>()                  {return 10;}
 template<> int Entity::IdOf<Inventory>()              {return 11;}
 template<> int Entity::IdOf<CharacterInfo>()          {return 12;}
+template<> int Entity::IdOf<Interactable>()           {return 13;}
 
 void Entity::Add(int slot){
     switch(slot){
@@ -33,6 +34,7 @@ void Entity::Add(int slot){
         case 9: components[slot] = new Equip();break;
         case 10: components[slot] = new Inventory();break;
         case 11: components[slot] = new CharacterInfo();break;
+        case 12: components[slot] = new Interactable();break;
         default: 
             logger::warn("Could not add component ID %d to entity ID %d, id is invalid\n",Id(slot),id);
         break;

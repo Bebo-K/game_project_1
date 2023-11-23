@@ -19,6 +19,7 @@ struct vec2{
     void normalize();
     vec2 normalized();
     void rotate(float theta);
+    float angle();
 };
 
 struct vec3{
@@ -47,6 +48,7 @@ struct vec3{
     vec3 normalized();
     vec3 horizontal();
     vec2 xz();
+    float xz_angle();
     vec3 clip(vec3 direction);
 
     static vec3 zero();

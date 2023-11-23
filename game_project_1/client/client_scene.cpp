@@ -12,6 +12,7 @@ ClientScene::ClientScene():renderer(),level(),entities(8){
     area_id=-1;
     global_timer=0;
     renderer.camera.ortho=false;
+    my_player=nullptr;
 }
 ClientScene::~ClientScene(){Unload();}
 
@@ -25,9 +26,9 @@ void ClientScene::Load(int area){
 
 void ClientScene::Unload(){
     camera_manager.DetachCamera();
-    player_input.Detach();
     area_id=-1;
     global_timer=0;
+    my_player=nullptr;
     entities.Clear();
 }
 
@@ -85,9 +86,9 @@ void ClientScene::RemoveFromRender(ClientEntity* e){
 void ClientScene::SetPlayerControl(int entity_id){
     ClientEntity* player = GetEntity(entity_id);
     camera_manager.AttachCamera(&renderer.camera,player);
-    player_input.Attach(player,&renderer.camera);
+    my_player=player;
 }
 bool ClientScene::OnInput(Input::Event input){
-    if(player_input.HandleInput(input)){return true;}
+    if(my_player != null && PlayerInput::HandleInput(my_player,this,input)){return true;}
     else return camera_manager.HandleCameraInput(input);
 }

@@ -12,6 +12,7 @@
 #include <game_project_1/component/shared/collider_set.hpp>
 #include <game_project_1/component/shared/equip.hpp>
 #include <game_project_1/component/shared/identity.hpp>
+#include <game_project_1/component/shared/interactable.hpp>
 #include <game_project_1/component/shared/inventory.hpp>
 #include <game_project_1/component/shared/movement_properties.hpp>
 #include <game_project_1/component/shared/movement_state.hpp>

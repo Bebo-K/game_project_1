@@ -17,7 +17,9 @@ namespace BaseContent{
     const AnimationControllerType GROUND_UNIT = 1;
     void AnimationController_GroundUnit(ClientEntity* e,float ms);
 
-    const NPCControllerType NPC_WANDER = 1;
+    const NPCControllerType NPC_STAND = 1;
+    void NPCController_Stand(ServerEntity* e, ServerScene* s);
+    const NPCControllerType NPC_WANDER = 2;
     void NPCController_Wander(ServerEntity* e, ServerScene* s);
 
     const ModelID HUMAN_1 =1;

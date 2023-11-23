@@ -2,17 +2,10 @@
 #include <game_project_1/component/shared/movement_properties.hpp>
 #include <game_project_1/component/shared/movement_state.hpp>
 #include <game_project_1/component/shared/action_state.hpp>
+#include <game_project_1/system/shared/interact.hpp>
 #include <math.h>
 
-
-PlayerInput::PlayerInput(){
-    player=null;
-    camera=null;
-}
-void PlayerInput::Attach(ClientEntity* e,Camera* reference_cam){player = e;camera=reference_cam;}
-void PlayerInput::Detach(){player = null;}
-
-bool PlayerInput::HandleMovementInput(){
+bool PlayerInput::HandleMovementInput(ClientEntity* player,ClientScene* scene){
     if(player == nullptr)return false;
     if(!player->Has<MovementState>()){return true;}
     MovementState* move_state = player->Get<MovementState>();
@@ -23,7 +16,7 @@ bool PlayerInput::HandleMovementInput(){
     float move_amount = move_input.length_sqr();
     
     if(move_amount > 0){
-        move_input.rotate(-camera->turn);
+        move_input.rotate(-scene->renderer.camera.turn);
         move_state->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{
@@ -32,7 +25,7 @@ bool PlayerInput::HandleMovementInput(){
     return 0;
 }
 
-bool PlayerInput::HandleJumpingInput(){
+bool PlayerInput::HandleJumpingInput(ClientEntity* player){
     if(player == nullptr)return false;
     if(!player->Has<MovementState>()){return true;}
     MovementState* move_state = player->Get<MovementState>();
@@ -51,24 +44,23 @@ bool PlayerInput::HandleJumpingInput(){
     return false;
 }
 
-bool PlayerInput::HandleActionInput(){
-    if(player == nullptr)return false;
-    if(!player->Has<ActionState>()){return true;}
-    ActionState* action_state = player->Get<ActionState>();
-
-    action_state->action_impulse=Controller::GetButton(Controller::B).IsJustPressed();
-    if(action_state->action_impulse){
-        action_state->action_id = 0;//TODO action context
+bool PlayerInput::HandleActionInput(ClientEntity* player,ClientScene* scene){
+    if(Controller::GetButton(Controller::B).IsJustReleased()){
+        ClientEntity* interact_target = Interact::ClientPollInteract(player,scene);
+        if(interact_target != nullptr){
+            Interact::ClientTryInteract(player,interact_target,scene);
+        }
     }
     return true;
 }
 
-bool PlayerInput::HandleInput(Input::Event input){
+bool PlayerInput::HandleInput(ClientEntity* player,ClientScene* scene,Input::Event input){
+    if(player == nullptr){return false;}
     switch (input)
     {
-    case Input::Move:return HandleMovementInput();
-    case Input::A:return HandleJumpingInput();
-    case Input::B:return HandleActionInput();
+    case Input::Move:return HandleMovementInput(player,scene);
+    case Input::A:return HandleJumpingInput(player);
+    case Input::B:return HandleActionInput(player,scene);
     case Input::L1:
     case Input::R1:
     default:break;

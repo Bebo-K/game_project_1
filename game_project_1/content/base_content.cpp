@@ -40,6 +40,7 @@ void BaseContent::LoadServer(){
     EntityCollision::RegisterServerLevelCollisionHandler(humanoid_collision,
             HumanoidEntityServerCollisionHandler);
 
+    NPCController::RegisterNPCControllerCallback(NPC_STAND,NPCController_Stand);
     NPCController::RegisterNPCControllerCallback(NPC_WANDER,NPCController_Wander);
 }
 
@@ -58,4 +59,23 @@ void BaseContent::LoadTestArea(ServerScene* scene){
 
     friendly->SetPos({7,4,1});
     friendly->rotation = {0,183,0};
+
+    ServerEntity* talkative = scene->NewEntity(humanoid_template);
+        Identity* talkative_id = talkative->GetOrAdd<Identity>();
+            talkative_id->name = wstr::new_copy(L"talkative");
+            talkative_id->type = BaseContent::humanoid_template;
+        CharacterInfo* talkative_char = talkative->GetOrAdd<CharacterInfo>();
+            talkative_char->race_id=1;
+            talkative_char->class_id=2;
+        Interactable* talkative_interact = talkative->GetOrAdd<Interactable>();
+            talkative_interact->type=InteractionType::TALK;
+            talkative_interact->interact_range= 3.0f;
+            talkative_interact->interaction_content_id = 1;
+
+        talkative->Set(new NPCProperties(BaseContent::NPC_STAND));
+        talkative->Set(new NPCState());
+        
+
+    talkative->SetPos({-3,4,1});
+    talkative->rotation = {0,47,0};
 }

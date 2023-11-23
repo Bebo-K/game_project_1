@@ -95,8 +95,8 @@ void Client::Update(int frames){
     
     if(frames_to_run >0){
         for(Input::Event input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
-            if(scene.OnInput(input)){Input::ClearEvent(input);continue;}
-            if(ui.OnInput(input)){Input::ClearEvent(input);}
+            if(ui.OnInput(input)){Input::ClearEvent(input);continue;}
+            if(scene.OnInput(input)){Input::ClearEvent(input);}
         }
 
         if(scene.global_timer > 0){

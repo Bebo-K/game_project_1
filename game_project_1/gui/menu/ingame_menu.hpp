@@ -6,10 +6,15 @@
 
 class IngameMenu: public UI::Menu{
     public:
+    int current_dialogue_id;
 
     IngameMenu();
     
     void OnLoad();
+    bool OnInput(Input::Event event_type);
+
+    void StartDialogueBox(int dialogue_id);
+    void AdvanceDialogue();
 };
 
 

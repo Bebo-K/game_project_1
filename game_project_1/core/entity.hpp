@@ -11,7 +11,7 @@ class ServerComponentMask;
 
 class Entity{
     private:
-    const static int    component_slots = 12;
+    const static int    component_slots = 13;
     Component*          components[component_slots];
     inline int Id(int slot){return slot+1;}
     inline int Slot(int id){return id-1;}
@@ -85,6 +85,7 @@ template<> int Entity::IdOf<StatBlock>();
 template<> int Entity::IdOf<Equip>();
 template<> int Entity::IdOf<Inventory>();
 template<> int Entity::IdOf<CharacterInfo>();
+template<> int Entity::IdOf<Interactable>();
 
 class ComponentMask{
     static Entity dummy;

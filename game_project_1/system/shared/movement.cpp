@@ -41,8 +41,10 @@ void Movement::Update(Entity* e, float delta){
             horizontal_velocity.y *= move_props->MaxSpeed();
     }
 
-    e->velocity.x = horizontal_velocity.x;
-    e->velocity.z = horizontal_velocity.y;
+    if(move_state->can_move){
+        e->velocity.x = horizontal_velocity.x;
+        e->velocity.z = horizontal_velocity.y;
+    }
 
     if(horizontal_velocity.length_sqr() > 0){
         move_state->is_moving = true;
@@ -50,6 +52,7 @@ void Movement::Update(Entity* e, float delta){
         e->rotation.y = atan2(-horizontal_velocity.x, horizontal_velocity.y) /(PI_OVER_180);
     }
     else{
+        e->rotation.y = atan2(-horizontal_goal.x, horizontal_goal.y) /(PI_OVER_180);
         move_state->is_moving = false;
     }
 
