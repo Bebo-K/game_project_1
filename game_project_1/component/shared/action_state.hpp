@@ -4,22 +4,25 @@
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/types/3d_types.hpp>
 
+namespace Action{
+	enum ID : int{
+		NONE=0,
+		DAMAGED=1,
+		DEAD=2,
+		ATTACK=3,
+		TALK=4,
+		PICKUP=5
+	};
+}
 
-namespace ActionID{
-	const int NONE=0;
-	const int DAMAGED=1;
-	const int DEAD=2;
-	const int ATTACK=3;
-	const int TALK=4;
-	const int PICKUP=5;
-};//TODO: extensible enum
 
 //State information for entity actions (attacking, taking damage, talking)
 class ActionState: public Component{
 	public:
 	
-	int		action_id;
-	int		action_timer;
+	Action::ID action_id;
+	int		action_cooldown;//how long until another action can be taken (-1 for infinite)
+	int		action_timer;//how many frames action has been happening 
 	bool	action_impulse;
 	//int target_entity
 	//vec3 target_direction

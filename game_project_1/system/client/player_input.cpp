@@ -3,6 +3,7 @@
 #include <game_project_1/component/shared/movement_state.hpp>
 #include <game_project_1/component/shared/action_state.hpp>
 #include <game_project_1/system/shared/interact.hpp>
+#include <game_project_1/system/shared/combat.hpp>
 #include <math.h>
 
 bool PlayerInput::HandleMovementInput(ClientEntity* player,ClientScene* scene){
@@ -49,6 +50,9 @@ bool PlayerInput::HandleActionInput(ClientEntity* player,ClientScene* scene){
         ClientEntity* interact_target = Interact::ClientPollInteract(player,scene);
         if(interact_target != nullptr){
             Interact::ClientTryInteract(player,interact_target,scene);
+        }
+        else{
+            Combat::ClientStartAttack(player,scene);
         }
     }
     return true;

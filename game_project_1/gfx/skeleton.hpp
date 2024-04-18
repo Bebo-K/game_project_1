@@ -31,6 +31,8 @@ class Skeleton{
     void SetBoneName(int bone_id,char* bone_name);
     void DebugPrint();
 
+    static ChannelID
+
     //void Clone(Skeleton* dest);
     //void DestroySharedData();
     //void CalculatePose();
@@ -44,7 +46,7 @@ class Pose{
     Transform*      transforms;
     mat4*           matrices;
     Skeleton*       skeleton;
-    AnimationHook   anim_hook;
+    AnimationTarget anim_target;
     bool            animating;
 
 

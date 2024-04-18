@@ -5,22 +5,57 @@
 #include <game_project_1/io/log.hpp>
 #include <string.h>
 #include <math.h>
+#include <game_project_1/io/crc.hpp>
 
 List<ClipInfo> managed_clips(8);
 int active_layer=0;
 bool layer_is_active[ANIMATION_LAYER_COUNT];
 
+int WidthOfAnimationType(AnimationType type){//number of primitive types per value
+    switch(type){
+        case SINGLE_FLOAT: return 1;
+        case SINGLE_INT:return 1;
+        case VECTOR3:return 3;
+        case QUATERNION:return 4;
+        case VECTOR2:return 2;
+    }
+    return 1;
+}
+size_t SizeOfAnimationType(AnimationType type){
+    switch(type){
+        case SINGLE_FLOAT: return sizeof(float);
+        case SINGLE_INT:return sizeof(int);
+        case VECTOR3:return sizeof(vec3);
+        case QUATERNION:return sizeof(quaternion);
+        case VECTOR2:return sizeof(vec2);
+    }
+    return sizeof(float);
+}
 
-bool AnimationTarget::Compare(AnimationTarget other){
-    return  value_type == other.value_type && 
-            num_values == other.num_values &&
-            cstr::compare(object_name,other.object_name);
+bool AnimationTypeIsOfInteger(AnimationType type){
+    switch(type){
+        case SINGLE_FLOAT: return false;
+        case SINGLE_INT:return true;
+        case VECTOR3:return false;
+        case QUATERNION:return false;
+        case VECTOR2:return false;
+    }
+    return false;
+}
+
+ChannelID::ChannelID(char* name){
+    id= CRC((byte*)name,cstr::len(name));
+    optional_channel_name = name;
+}
+
+bool ChannelID::Compare(ChannelID& other){
+    return other.id==id;
 }
 
 
 ClipInfo::ClipInfo(){
     animation = null;
-    hook = null;
+    target = null;
     elapsed_time=0;
     timescale=0;
     end_action=0;
@@ -37,64 +72,51 @@ AnimationOptions::AnimationOptions(){
     end_action = AnimationEndAction::STOP;
 }
 
-
-AnimationChannel::AnimationChannel(){
-    target.object_name=null;
-    target.num_values=0;
-    target.value_type=0;
+AnimationChannel::AnimationChannel():id(nullptr){
+    value_type = SINGLE_FLOAT;
+    interpolate_mode = LINEAR;
 
     keyframe_count=0;
     keyframe_times=null;
-    keyframe_values=null;
-
-    interpolate_mode=LINEAR;
+    keyframe_values.fval=null;
 }
 
-AnimationChannel::AnimationChannel(AnimationTarget anim_target,int keyframes){
-    target=anim_target;
-    keyframe_count = keyframes;
+AnimationChannel::AnimationChannel(char* channel_name,AnimationType channel_type,int keyframes):id(channel_name){
+    value_type = channel_type;
     interpolate_mode=LINEAR;
     keyframe_times = (float*)calloc(keyframes,sizeof(float));
-    keyframe_values = (float*)calloc(keyframes,sizeof(float));
+    keyframe_values.fval = (float*)calloc(keyframes,SizeOfAnimationType(channel_type));
 }
 
 AnimationChannel::~AnimationChannel(){
-    if(keyframe_values != null){free(keyframe_values);keyframe_values=null;}
     if(keyframe_times != null){free(keyframe_times);keyframe_times=null;}
+    if(keyframe_values.fval != null){free(keyframe_values.fval);keyframe_values.fval=null;}
 }
 
-void   AnimationChannel::SetTarget(AnimationTarget anim_target){
-    target=anim_target;
-}
-
-void   AnimationChannel::SetKeyframeCount(int keyframes){
+void AnimationChannel::SetKeyframeCount(int keyframes){
+    if(keyframe_times != null){free(keyframe_times);keyframe_times=null;}
+    if(keyframe_values.fval != null){free(keyframe_values.fval);keyframe_values.fval=null;}
     keyframe_count = keyframes;
     keyframe_times = (float*)calloc(keyframes,sizeof(float));
-    keyframe_values = (float*)calloc(keyframes,sizeof(float));
+    keyframe_values.fval = (float*)calloc(keyframes,SizeOfAnimationType(value_type));
 }
 
 
-AnimationHook::AnimationHook(int target_count){
-    num_targets=target_count;
-    targets=new AnimationTarget[target_count];
-    values = (float**)calloc(target_count,sizeof(float*));
+AnimationTarget::AnimationTarget(int channel_count):values(channel_count){
     active_clip = null;
+    active=false;
 }
 
-AnimationHook::~AnimationHook(){
-    delete targets;targets=null;
+AnimationTarget::~AnimationTarget(){
     if(active_clip != null){delete active_clip; active_clip=null;}
-    free(values);values=null;
 }
 
-float* AnimationHook::GetTarget(AnimationTarget target){
-    for(int i=0;i< num_targets;i++){
-        if(targets[i].Compare(target)){
-            return values[i];
-        }
+ChannelValue* AnimationTarget::GetValueForChannel(ChannelID& id){
+    for(ChannelValue* val: values){
+        if(val->channel_id.Compare(id)) return val;
     }
     return null;
-} 
+}
 
 Animation::Animation(){
     name=null;
@@ -154,49 +176,49 @@ int AnimationManager::GetActiveLayer(){
     return active_layer;
 }
 
-void AnimationManager::StartClip(Animation* anim, AnimationHook* hook){
-    if(hook == null)return;
-    if(hook->active_clip != null){
-        delete hook->active_clip;
-        hook->active_clip = null;
+void AnimationManager::StartClip(Animation* anim, AnimationTarget* target){
+    if(target == null)return;
+    if(target->active_clip != null){
+        delete target->active_clip;
+        target->active_clip = null;
     }
     if(anim == null)return;//just stop active clip if no animation is supplied.
     ClipInfo* clip = new ClipInfo();
     
     clip->animation=anim;
-    clip->hook=hook;
+    clip->target=target;
     clip->elapsed_time=0.0f;
     clip->end_action=AnimationEndAction::STOP;
     clip->timescale=1.0f;
     clip->layer=active_layer; 
     clip->next_anim=null;
 
-    hook->active_clip = clip;
+    target->active_clip = clip;
     managed_clips.Add(clip);
 }
-void AnimationManager::StartClip(Animation* anim, AnimationHook* hook, AnimationOptions options){
-    if(hook == null)return;
-    if(hook->active_clip != null){
-        delete hook->active_clip;
-        hook->active_clip = null;
+void AnimationManager::StartClip(Animation* anim, AnimationTarget* target, AnimationOptions options){
+    if(target == null)return;
+    if(target->active_clip != null){
+        delete target->active_clip;
+        target->active_clip = null;
     }
     if(anim == null)return;//just stop active clip if no animation is supplied.
     ClipInfo* clip = new ClipInfo();
     
     clip->animation=anim;
-    clip->hook=hook;
+    clip->target=target;
     clip->elapsed_time=0.0f;
     clip->end_action=options.end_action;
     clip->timescale=options.timescale;
     clip->layer=active_layer; 
     clip->next_anim = options.next_anim;
 
-    hook->active_clip = clip;
+    target->active_clip = clip;
     managed_clips.Add(clip);
 }
 
-void AnimationManager::StopClip(AnimationHook* hook){
-    if(hook->active_clip != null){delete hook->active_clip;hook->active_clip=null;}
+void AnimationManager::StopClip(AnimationTarget* target){
+    if(target->active_clip != null){delete target->active_clip;target->active_clip=null;}
 }
 
 void LinearInterpolate(float* from, float* to, float weight, float* values, int values_count){
@@ -268,10 +290,12 @@ void QInterpolate(int type, float* from, float* to, float weight, float* values,
     }
 }
 
-void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channel){
+void UpdateChannel(ClipInfo* current_clip,valptr target,AnimationChannel* channel){
     int last_keyframe =0;
     int next_keyframe=0;
-    int channel_width=channel->target.num_values;
+    AnimationType value_type = channel->value_type;
+    int channel_width=WidthOfAnimationType(value_type);
+    bool value_type_is_integer = AnimationTypeIsOfInteger(value_type);
 
     for(int k=0;k < channel->keyframe_count; k++){
         if(channel->keyframe_times[k] < current_clip->elapsed_time){last_keyframe = k;}
@@ -282,13 +306,22 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
         //TODO: end of animation event
         switch(current_clip->end_action){
             case AnimationEndAction::END: //end animation and stop
-                memcpy(target,&channel->keyframe_values[last_keyframe*channel_width],sizeof(float)*channel_width);//set target to last keyframe position exactly
-                current_clip->hook->active=false;
-                AnimationManager::StopClip(current_clip->hook);
+                //set target to last keyframe position exactly
+                if(value_type_is_integer){
+                    //TODO: lazy dev doesn't care about animating integers 
+                }
+                else{
+                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
+                }
+                current_clip->target->active=false;
+                AnimationManager::StopClip(current_clip->target);
                 break;
             case AnimationEndAction::STOP: //end animation, pause on last frame.
-                memcpy(target,&channel->keyframe_values[last_keyframe*channel_width],sizeof(float)*channel_width);//set target to last keyframe position exactly
-                AnimationManager::StopClip(current_clip->hook);
+                if(value_type_is_integer){/* ^ */}
+                else{
+                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
+                }
+                AnimationManager::StopClip(current_clip->target);
                 break;
             case AnimationEndAction::LOOP: //loop animation.
                 while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
@@ -307,8 +340,11 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
                 
 
             default: //case 0
-                memcpy(target,&channel->keyframe_values[last_keyframe*channel_width],sizeof(float)*channel_width);//set target to last keyframe position exactly
-                AnimationManager::StopClip(current_clip->hook);
+                if(value_type_is_integer){/* ^ */}
+                else{
+                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
+                }
+                AnimationManager::StopClip(current_clip->target);
             break;
         } 
     }
@@ -320,22 +356,25 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
         if(weight < 0.0f){weight = 0.0f;}
         //weight = 0;
         //quaternion interpolation
-        if(channel->target.value_type == AnimationType::ROTATION && channel->target.num_values % 4 == 0){
+        if(value_type == AnimationType::QUATERNION){
             QInterpolate(channel->interpolate_mode,
-            &channel->keyframe_values[last_keyframe*channel_width],
-            &channel->keyframe_values[next_keyframe*channel_width],
+            &channel->keyframe_values.fval[last_keyframe*channel_width],
+            &channel->keyframe_values.fval[next_keyframe*channel_width],
             weight,
-            target,
+            target.fval,
             channel_width
             );
         }
-        //Everything else
+        else if(value_type_is_integer){
+            //IntInterpolate();//TODO: also how do you abbreviate "integer interpolation"?
+        }
         else{
+            //floating point interpolation(s)
             Interpolate(channel->interpolate_mode,
-                &channel->keyframe_values[last_keyframe*channel_width],
-                &channel->keyframe_values[next_keyframe*channel_width],
+                &channel->keyframe_values.fval[last_keyframe*channel_width],
+                &channel->keyframe_values.fval[next_keyframe*channel_width],
                 weight,
-                target,
+                target.fval,
                 channel_width
                 );
         }
@@ -344,26 +383,26 @@ void UpdateChannel(ClipInfo* current_clip,float* target,AnimationChannel* channe
 
 void AnimationManager::Update(float seconds){
     Animation *animation;
-    AnimationHook *hook;
+    AnimationTarget *target;
     AnimationChannel *channel;
-    float* value;
+    valptr value;
 
     for(ClipInfo* current_clip: managed_clips){
         if(!layer_is_active[current_clip->layer])continue;
 
         current_clip->elapsed_time += seconds*current_clip->timescale;
 
-        hook = current_clip->hook;
-        if(hook == null)continue;
-        hook->active=true;
+        target = current_clip->target;
+        if(target == null)continue;
+        target->active=true;
         
         animation = current_clip->animation;   
 
         for(int j=0;j<animation->channel_count;j++){
             channel = &animation->channels[j];
-            value = hook->GetTarget(channel->target);
+            value = target->GetValueForChannel(channel->id)->value;
             UpdateChannel(current_clip,value,channel);
-            if(hook->active_clip==null)break;
+            if(target->active_clip==null)break;
             if(animation != current_clip->animation){
                 animation = current_clip->animation;  
                 j=0;
@@ -381,7 +420,7 @@ void Animation::Destroy(){
     }
     if(channels != nullptr){free(channels);channels=nullptr;}
 }
-void AnimationHook::Destroy(){
+void AnimationTarget::Destroy(){
     if(targets != nullptr){
         for(int i=0;i<num_targets;i++){targets[i].Destroy();}
         free(targets);targets=nullptr;}

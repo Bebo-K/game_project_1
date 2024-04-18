@@ -1,6 +1,7 @@
 #include <game_project_1/component/client/animation_state.hpp>
 #include <game_project_1/component/client/model_set.hpp>
 #include <game_project_1/component/client/sprite_set.hpp>
+#include <game_project_1/component/client/hitboxes.hpp>
 
 #include <game_project_1/component/server/player_owner.hpp>
 #include <game_project_1/component/server/persistence.hpp>

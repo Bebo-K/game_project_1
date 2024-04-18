@@ -51,7 +51,7 @@ Animation* Skeleton::GetAnimation(char* name){
     return null;
 }
 
-Pose::Pose(Skeleton* target):anim_hook(target->bones.length*3){
+Pose::Pose(Skeleton* target):anim_target(target->bones.length*3){
     skeleton=target;
     bone_count=target->bones.length;
     transforms= (Transform*)calloc(bone_count,sizeof(Transform));
@@ -61,18 +61,17 @@ Pose::Pose(Skeleton* target):anim_hook(target->bones.length*3){
         transforms[i].Clear();
         matrices[i].identity();
         
-        anim_hook.targets[i*3].object_name = skeleton->bones[i]->name;
-        anim_hook.targets[i*3].value_type = AnimationType::TRANSLATION;
-        anim_hook.targets[i*3].num_values=3;
-        anim_hook.values[i*3]= &transforms[i].x;//,y,z
+        anim_target.values[i*3]->channel_id = {skeleton->bones[i]->name};
+        anim_target.values[i*3]->value_type = AnimationType::VECTOR3;
+        anim_target.values[i*3]->value.fval = &transforms[i].x;//,y,z
 
-        anim_hook.targets[i*3+1].object_name = skeleton->bones[i]->name;
-        anim_hook.targets[i*3+1].value_type = AnimationType::ROTATION;
+        anim_target.values[i*3+1]->channel_id(skeleton->bones[i]->name);
+        anim_hook.targets[i*3+1].value_type =  AnimationType::QUATERNION;
         anim_hook.targets[i*3+1].num_values=4;
-        anim_hook.values[i*3+1]= &transforms[i].rotation.x;//,y,z
+        anim_hook.values[i*3+1]= &transforms[i].rotation.x;//,y,z,w
 
         anim_hook.targets[i*3+2].object_name = skeleton->bones[i]->name;
-        anim_hook.targets[i*3+2].value_type = AnimationType::SCALE;
+        anim_hook.targets[i*3+2].value_type = AnimationType::VECTOR3;
         anim_hook.targets[i*3+2].num_values=3;
         anim_hook.values[i*3+2]= &transforms[i].scale.x;//,y,z
     }
@@ -119,11 +118,11 @@ void Pose::Calculate(){
 
 void Pose::StartAnimation(char* name){
     Animation* target_anim = skeleton->GetAnimation(name);
-    AnimationManager::StartClip(target_anim,&anim_hook);
+    AnimationManager::StartClip(target_anim,&anim_target);
 }
 void Pose::StartAnimation(char* name,AnimationOptions options){
     Animation* target_anim = skeleton->GetAnimation(name);
-    AnimationManager::StartClip(target_anim,&anim_hook, options);
+    AnimationManager::StartClip(target_anim,&anim_target, options);
 }
 
 

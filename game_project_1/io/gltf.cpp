@@ -646,19 +646,19 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 		}
 
 		if(cstr::compare(target_type,"translation")){
-			channel->target.value_type=AnimationType::TRANSLATION;
+			channel->target.value_type=AnimationType::VECTOR3;
 			channel->target.num_values=3;
 		}
 		else if(cstr::compare(target_type,"rotation")){
-			channel->target.value_type=AnimationType::ROTATION;
+			channel->target.value_type=AnimationType::QUATERNION;
 			channel->target.num_values=4;
 		}
 		else if(cstr::compare(target_type,"scale")){
-			channel->target.value_type=AnimationType::SCALE;
+			channel->target.value_type=AnimationType::VECTOR3;
 			channel->target.num_values=3;
 		}
 		else if(cstr::compare(target_type,"weight")){
-			channel->target.value_type=AnimationType::WEIGHT;
+			channel->target.value_type=AnimationType::SINGLE_FLOAT;
 			channel->target.num_values=1;
 		}
 		else{

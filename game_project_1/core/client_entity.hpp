@@ -59,6 +59,7 @@ class ClientEntity: public Entity{
 template<> int ClientEntity::IdOf<AnimationState>();
 template<> int ClientEntity::IdOf<ModelSet>();
 template<> int ClientEntity::IdOf<SpriteSet>();
+template<> int ClientEntity::IdOf<HitBoxes>();
 
 class ClientComponentMask{
     static ClientEntity dummy;

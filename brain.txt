@@ -1,15 +1,9 @@
-Goal heirarchy:
 
-    - Interaction
-        -Talk / onInteract
-    - Combat
-        -   
-        -   
-        -   
-    - Iron out movement + collision bugs
-    - Multiplayer menu, widgets + connection
-    - Multiple client test
+Combat
+...
+Unit-independent hit patterns
+Hit patterns as animations
+Collision object create/destroy frame
+> timescale as a float vs as a frame integer
 
-
-
-
+actually just cop out and use floats
