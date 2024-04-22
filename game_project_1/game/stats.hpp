@@ -1,7 +1,7 @@
 #ifndef STATS_H
 #define STATS_H
 
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/io/json.hpp>
 

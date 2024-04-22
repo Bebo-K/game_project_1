@@ -12,10 +12,8 @@ Area::Area(){
     path=nullptr;
 }
 Area::~Area(){
-    if(name != nullptr)free(name);
-    name=nullptr;
-    if(path != nullptr)free(path);
-    path=nullptr;
+    DEALLOCATE(name)
+    DEALLOCATE(path)
 }
 void Area::FromJson(JSONObject* json){
     this->name = cstr::new_copy(json->GetString("name")->string);

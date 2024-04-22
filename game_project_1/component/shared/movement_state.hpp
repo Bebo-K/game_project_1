@@ -2,7 +2,7 @@
 #define MOVEMENT_STATE_H
 
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 enum MovementType: int{
     NONE,

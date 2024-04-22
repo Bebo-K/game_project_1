@@ -15,7 +15,7 @@ Component* Identity::Clone(){
 }
 
 void Identity::Clear(){
-    if(name != null){free(name);name=null;}
+    DEALLOCATE(name)
     type=0;
 }
 

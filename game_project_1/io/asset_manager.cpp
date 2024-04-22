@@ -1,5 +1,5 @@
 #include <game_project_1/io/asset_manager.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/game/areas.hpp>
 

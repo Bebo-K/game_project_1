@@ -2,7 +2,7 @@
 #define UI_MENU_H
 
 #include <game_project_1/input.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/gui/layout.hpp>
 #include <game_project_1/gui/widget.hpp>

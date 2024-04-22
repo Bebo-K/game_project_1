@@ -7,16 +7,16 @@
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/types/pool.hpp>
 
-AnimationTarget* BuildAnimationTargetForShapeCollider(ShapeCollider* s);
+Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot);
 
 struct HitPath{
     ShapeCollider collider;
-    Animation* path;
+    Animation::Clip* path;
     float spawn_time;
     float despawn_time;
 
     HitPath();
-    HitPath(ShapeCollider collider,Animation* path,float spawn_t,float despawn_t);
+    HitPath(ShapeCollider collider,Animation::Clip* path,float spawn_t,float despawn_t);
 };
 
 class HitPattern {
@@ -34,7 +34,7 @@ class HitBoxes: public Component{
     float       current_pattern_active_time;
 
     Pool<ShapeCollider> hit_colliders;
-    Pool<AnimationTarget> hit_collider_targets;
+    Pool<Animation::Target> hit_collider_targets;
     //List<ShapeCollider> hittable_colliders; for now only the world hit capsule can recieve hits
     
 	public: 

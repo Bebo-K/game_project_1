@@ -1,15 +1,51 @@
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <math.h>
 
-
-vec4::vec4(){
-    x=y=z=w=0;
+vec2::vec2(){
+    x=y=0;
 }
-vec4::vec4(float _x,float _y,float _z,float _w){
-    x=_x;
-    y=_y;
-    z=_z;
-    w=_w;
+
+vec2::vec2(vec2* copy){
+    x=copy->x;y=copy->y;
+}
+
+vec2::vec2(float _x,float _y){
+    x=_x;y=_y;
+}
+
+float vec2::length(){
+    return sqrtf(x*x+y*y);
+}
+
+float vec2::length_sqr(){
+    return x*x+y*y;
+}
+
+void vec2::normalize(){
+    float len = sqrtf(x*x+y*y);
+    x /= len;
+    y /= len;
+}
+
+vec2 vec2::normalized(){
+    float len = length();
+    if(len ==0){return {0,0};}
+    return {x/len,y/len};
+}
+
+void vec2::rotate(float theta){
+    float angle = theta*PI_OVER_180;
+    float cos = cosf(angle);
+    float sin = sinf(angle);
+    float _x = x*cos + y*sin;
+    float _y = y*cos - x*sin;
+    x = _x; y = _y; 
+}
+
+float vec2::angle(){
+    float len = sqrtf(x*x+y*y);
+    float theta = atan2f(x/len,y/len)/PI_OVER_180;
+    return (theta > 0)? theta: theta+360.0f;
 }
 
 vec3::vec3(){
@@ -137,53 +173,14 @@ float vec3::xz_angle(){
 
 vec3 vec3::zero(){return {0.0f,0.0f,0.0f};}
 
-
-
-vec2::vec2(){
-    x=y=0;
+vec4::vec4(){
+    x=y=z=w=0;
 }
-
-vec2::vec2(vec2* copy){
-    x=copy->x;y=copy->y;
-}
-
-vec2::vec2(float _x,float _y){
-    x=_x;y=_y;
-}
-
-float vec2::length(){
-    return sqrtf(x*x+y*y);
-}
-
-float vec2::length_sqr(){
-    return x*x+y*y;
-}
-
-void vec2::normalize(){
-    float len = sqrtf(x*x+y*y);
-    x /= len;
-    y /= len;
-}
-
-vec2 vec2::normalized(){
-    float len = length();
-    if(len ==0){return {0,0};}
-    return {x/len,y/len};
-}
-
-void vec2::rotate(float theta){
-    float angle = theta*PI_OVER_180;
-    float cos = cosf(angle);
-    float sin = sinf(angle);
-    float _x = x*cos + y*sin;
-    float _y = y*cos - x*sin;
-    x = _x; y = _y; 
-}
-
-float vec2::angle(){
-    float len = sqrtf(x*x+y*y);
-    float theta = atan2f(x/len,y/len)/PI_OVER_180;
-    return (theta > 0)? theta: theta+360.0f;
+vec4::vec4(float _x,float _y,float _z,float _w){
+    x=_x;
+    y=_y;
+    z=_z;
+    w=_w;
 }
 
 void quaternion::clear(){
@@ -192,17 +189,33 @@ void quaternion::clear(){
 }
 
 void quaternion::set_euler(float x,float y,float z){
-    double cz = cosf(x * 0.5);
-    double sz = sinf(x * 0.5);
+    double cx = cosf(x * 0.5);
+    double sx = sinf(x * 0.5);
     double cy = cosf(y * 0.5);
     double sy = sinf(y * 0.5);
-    double cx = cosf(z * 0.5);
-    double sx = sinf(z * 0.5);
+    double cz = cosf(z * 0.5);
+    double sz = sinf(z * 0.5);
 
-    w = cz * cy * cx + sz * sy * sx;
-    x = cz * cy * sx - sz * sy * cx;
-    y = sz * cy * sx + cz * sy * cx;
-    z = sz * cy * cx - cz * sy * sx;
+    w = cx * cy * cz + sx * sy * sz;
+    x = sx * cy * cz - cx * sy * sz;
+    y = cx * sy * cz + sx * cy * sz;
+    z = cx * cy * sz - sx * sy * cz;
+}
+
+static quaternion of_euler(float x,float y,float z){
+    double cx = cosf(x * 0.5);
+    double sx = sinf(x * 0.5);
+    double cy = cosf(y * 0.5);
+    double sy = sinf(y * 0.5);
+    double cz = cosf(z * 0.5);
+    double sz = sinf(z * 0.5);
+
+    return{
+        cx * cy * cz + sx * sy * sz,
+        sx * cy * cz - cx * sy * sz,
+        cx * sy * cz + sx * cy * sz,
+        cx * cy * sz - sx * sy * cz
+    };
 }
 
 void quaternion::rotate_by(quaternion q2){
@@ -466,15 +479,95 @@ void mat3::invert(){
 }
 
 
-vec3 Transform::Position(){return {x,y,z};}
-void Transform::Clear(){
-    x=y=z=0;
-    rotation.x=rotation.y=rotation.z=0;
-    scale.x=scale.y=scale.z=1.0f;
+
+point_i point_i::operator+(point_i b){return {x+b.x,y+b.y};}
+point_i point_i::operator-(point_i b){return {x-b.x,y-b.y};}
+bool point_i::operator ==(point_i b){return x==b.x && y==b.y;}
+
+point_i point_f::to_point_i(){return {(int)x,(int)y};}
+
+rect_i::rect_i(){x=y=w=h=0;}
+rect_i::rect_i(int ix, int iy,int iw, int ih){x=ix;y=iy;w=iw;h=ih;}
+int rect_i::area(){return w*h;}
+point_i rect_i::center(){return {x+(w/2),y+(h/2)};}
+bool rect_i::contains(point_i b){
+    return  (b.x >= x) && (b.x <= x + w) &&
+            (b.y >= y) && (b.y <= y + h);
+}
+bool rect_i::intersects(rect_i b){
+    return  (b.x + b.w <= x) && (x + w <= b.x) &&  (x <= b.x + b.w) && (b.x <= x + w) &&
+            (b.y + b.h <= y) && (y + h <= b.y) &&  (y <= b.y + b.h) && (b.y <= y + h);
+}
+
+rect_f::rect_f(){x=y=w=h=0;}
+rect_f::rect_f(float fx, float fy,float fw, float fh){x=fx;y=fy;w=fw;h=fh;}
+float rect_f::area(){return w*h;}
+rect_i rect_f::to_integers(){return {(int)x,(int)y,(int)w,(int)h};}
+rect_f rect_f::ratio_of(rect_f b){return {x/b.w,y/b.h,w/b.w,h/b.h};}
+point_f rect_f::center(){return {x+(w/2),y+(h/2)};}
+bool rect_f::contains(point_f b){
+    return  (b.x >= x) && (b.x <= x + w) &&
+            (b.y >= y) && (b.y <= y + h);
+}
+bool rect_f::intersects(rect_f b){
+    return  (b.x + b.w <= x) && (x + w <= b.x) &&  (x <= b.x + b.w) && (b.x <= x + w) &&
+            (b.y + b.h <= y) && (y + h <= b.y) &&  (y <= b.y + b.h) && (b.y <= y + h);
 }
 
 
+int bitmask::bit(int place){return (1<<place);}
+bitmask::bitmask(int a){val =a;}
+bitmask bitmask::of_bits(int a){return bitmask(1<<a);}
+bitmask bitmask::of_bits(int a, int b){return bitmask((1<<a)|(1<<b));}
+bitmask bitmask::of_bits(int a, int b, int c){return bitmask((1<<a)|(1<<b)|(1<<c));}
+//...
+bitmask bitmask::of_bits(int a[],int l){
+    bitmask mask(0);
+    for(int i=0;i<l;i++){mask.set(a[i]);}
+    return mask;
+}
+void bitmask::set(int place){val |= bit(place);}
+void bitmask::clear(int place){val &= ~bit(place);}
+void bitmask::clearAll(){val=0;}
+void bitmask::toggle_bit(int place){val ^= bit(place);}
+bool bitmask::get_bit(int place){return (val & bit(place)) != 0;}
+void bitmask::and_with(bitmask& b2){val &= b2.val;}
+void bitmask::or_with(bitmask& b2){val |= b2.val;}
+bitmask bitmask::invert(bitmask& b2){return {~b2.val};}
 
-Location::Location(){position={0,0,0};rotation={0,0,0};}
-Location::Location(vec3 pos,vec3 rot){position=pos;rotation=rot;}
-//Transform Location::ToTransform(){}
+void color::rgba(byte R, byte G, byte B, byte A){
+    r=R;b=B;g=G;a=A;
+}
+void color::rgba(int color_code){
+    r = (color_code>>24) | 255;
+    g = (color_code>>16) | 255;
+    b = (color_code>>8) | 255;
+    a = (color_code) | 255;
+}
+int color::as_code(){
+    int color_code=0;
+    color_code |= r;
+    color_code = color_code << 8;
+    color_code |= g;
+    color_code = color_code << 8;
+    color_code |= b;
+    color_code = color_code << 8;
+    color_code |= a;
+
+    return color_code;
+}
+
+void color_f::rgba(float R,float G,float B,float A){r=R;g=G;b=B;a=A;}
+void color_f::from_color(color c){
+    r = c.r/255.0f;
+    g = c.g/255.0f;
+    b = c.b/255.0f;
+    a = c.a/255.0f;
+}
+color color_f::to_color(){
+    return {(byte)(r*255.0f),(byte)(g*255.0f),(byte)(b*255.0f),(byte)(a*255.0f)};
+}
+
+color_f color_f::mult(color_f c2){
+    return {r*c2.r, g*c2.g, b*c2.b, a*c2.a};
+}

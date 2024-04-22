@@ -18,8 +18,8 @@ bool Player::Active(){
 }
 
 void Player::Clear(){
-    if(persona != nullptr){free(persona); persona = nullptr;}
-    if(character_name != nullptr){free(character_name); character_name = nullptr;}
+    DEALLOCATE(persona)
+    DEALLOCATE(character_name)
     save=nullptr;
     entity_id=0;
     entity_scene=0;

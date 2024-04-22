@@ -2,7 +2,7 @@
 #define MODEL_H
 
 
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/gfx/drawable.hpp>
 #include <game_project_1/gfx/skeleton.hpp>
@@ -69,7 +69,7 @@ class Model: public Drawable{
     Model(ModelData* dat);
     ~Model();
     virtual void Draw(Camera* cam);
-    void StartAnimation(char* anim_name, bool loop);
+    void StartAnimation(char* anim_name);
     void StartAnimationWithWindup(char* start_anim,char* loop_anim);
     //void StartAnimationFromOffset(char* anim_name,AnimationOptions options, float elapsed);
 

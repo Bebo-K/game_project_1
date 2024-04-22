@@ -1,8 +1,10 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/arrays.hpp>
+#include <game_project_1/types/map.hpp>
+#include <game_project_1/types/list.hpp>
 
 const int ANIMATION_LAYER_COUNT = 4;
 
@@ -13,135 +15,144 @@ const int ANIMATION_LAYER_USER = 3;
 
 namespace Animation{
 
-    enum Type : short {
-        SINGLE_FLOAT,
-        SINGLE_INT,
+    enum ValueType : short {
+        FLOAT,
+        VECTOR2,
         VECTOR3,
         QUATERNION,
-        VECTOR2,
         OTHER,
     };
 
     enum InterpolateMode : short {
         LINEAR,
         STEP,
+        SPHERICAL,
         CUBICORSOMETHING
     };
 
-    enum EndAction : short{
-        END = 0,
-        STOP = 1,
-        LOOP = 2,
-        GOTO = 3
-    };
-    
-    //Pointer to a keyframe's worth of animation data. Length of datablock pointed to is known by owning AnimationChannel
-    union valptr{
-        float* fval;
-        int* ival;
-    };
-
-    struct ChannelID{
-        int id;
-        char* optional_channel_name;
-        ChannelID(char* channel_name);
-        bool Compare(ChannelID& id);
-    };
-
+    int ChannelID(char* name);
+    int ChannelID(char* name,char* context);
 
     // A channel contains keyframe data for a block of one or more float values
+    class ChannelBuilder;
     struct Channel{
-        ChannelID id;
-        Animation::Type value_type;
-        Animation::InterpolateMode interpolate_mode;
+        int id;
+        ValueType value_type;
+        InterpolateMode interpolate_mode;
         int keyframe_count;
         float *keyframe_times;
-        valptr keyframe_values;
+        float *keyframe_values;
         Channel();
-        Channel(char* channel_name,Type channel_type,int keyframes);
-        void SetKeyframeCount(int keyframes);
+        Channel(ChannelID id,ValueType channel_type,int keyframes);
         ~Channel();
+        static ChannelBuilder& Builder();
     };
 
-    struct ChannelValue{
-        ChannelID channel_id;
-        Animation::Type value_type;
-        valptr value;
-    };
-
-    struct ClipInfo;
-    struct Target
-    { // Contains information to hook float/int values to animation channels, and the current clip being applied to those values
-        Array<ChannelValue> values;
-        ClipInfo *active_clip;
-        bool active;
+    struct ActiveClip;
+    struct ChannelHook{
+        float* value;
+        char* name;
+        ValueType type;
+    }
+    struct Target{// Contains information to hook float values to animation channels, and the current clip being applied to those values
+        public:
+        bool enabled;//If not enabled running clips will not modify hooked values
+        Map<int,ChannelHook> hooks;
+        ActiveClip *active_clip;//TODO: store as list with blending info
 
         Target(int channel_count);
         ~Target();
-
-        ChannelValue* GetValueForChannel(ChannelID& id);
     };
 
+    class ClipBuilder;
     class Clip{
     public:
         char *name;
         float length;
+        bool loop;
         int channel_count;
         Channel *channels;
+        IdMap   channel_names;
 
         Clip();
         Clip(char *anim_name, int num_channels);
         ~Clip();
 
-        void SetName(char *anim_name);
         void SetChannelCount(int num_channels);
-        void DebugPrint();
+        static ClipBuilder& Builder();
     };
 
-    struct RunningClip
+    struct ActiveClip
     { // Info about the currently running animation
         Clip *clip;
         Target *target;
         float elapsed_time;
         float timescale;
-        int end_action;
-        Clip *next_clip;
-        int layer;
 
-        RunningClip();
-        ~RunningClip();
+        ActiveClip(Clip* clip,Target* target,float time,float timescale);
+        ~ActiveClip();
     };
 
+    struct KeyframeBuilder{
+        float time;
+        vec4 value;
+        KeyframeBuilder(float time,vec4 value);
+    };
+    class ChannelBuilder{
+        private:
+        int id;
+        ValueType value_type;
+        InterpolateMode interpolate_mode;
+        List<KeyframeBuilder> keyframes;
 
-    struct PlayOptions
-    {
-        float timescale;
-        EndAction end_action;
-        Clip *next_anim;
-
-        PlayOptions();
+        public:
+        ChannelBuilder();
+        ChannelBuilder& ID(int cid);
+        ChannelBuilder& Type(ValueType type);
+        ChannelBuilder& InterpolateMode(InterpolateMode mode);
+        ChannelBuilder& Keyframe(float time, float val);
+        ChannelBuilder& Keyframe(float time, vec2 val);
+        ChannelBuilder& Keyframe(float time, vec3 val);
+        ChannelBuilder& Keyframe(float time, vec4 val);
+        ChannelBuilder& Keyframe(float time, float* values);
+        Channel* Build();
+        void BuildTo(Channel* target);
     };
 
+    class ClipBuilder{
+        private:
+        char *name;
+        float length;
+        bool loop;
+        List<Channel> channels;
 
-    void InitManager();
-    void DestroyManager();
+        public:
+        ClipBuilder();
+        ClipBuilder& Name(char* name);
+        ClipBuilder& Duration(float length);
+        ClipBuilder& Loop(bool loop);
+        ClipBuilder& AddChannel(ChannelBuilder& channelbuilder);
+        Clip* Build();
+        void BuildTo(Clip* target);
+    };
 
-    void StartClip(Clip *clip, Target *target);
-    void StartClip(Clip *clip, Target *target, PlayOptions options);
-    // TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
-    // TODO: event system integration
-    // TODO: pause layer
-    RunningClip* GetClipInfo(Target *target);
-
-    void StopClip(Target *target);
-    void StopClip(RunningClip *target);
-
-    void SetActiveLayer(int layer); // So we don't have to pass a layer param every time we start a clip.
-    int GetActiveLayer();
-
-    void Update(float seconds);
-
+    void Start(Clip *clip, Target *target);
+    void StartAt(Clip* clip,Target* target,float start_time);
+    void StartAt(Clip* clip,Target* target,float start_time,float timescale);
+    void Queue(Clip* clip,ActiveClip* after);
+    void Stop(Target *target);
+    void Pause(Target *target);
 }
+
+class AnimationManager{
+    public:
+    static void Init();
+    static void Update(float seconds);
+    static void Destroy();
+};
+// TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
+// TODO: event system integration
+// TODO: pause layer
 
 
 
@@ -159,7 +170,9 @@ class AnimationBuilderChannel{
     DataArray Keyframes;
 
     void AddKeyframe(float time, float val);
-    void AddKeyframe(float time, float a, float b, float c);
+    void AddKeyframe(float time, vec2 val);
+    void AddKeyframe(float time, vec3 val);
+    void AddKeyframe(float time, vec4 val);
     void AddKeyframe(float time, float* values);
 
     void BuildTo(AnimationChannel* dest);

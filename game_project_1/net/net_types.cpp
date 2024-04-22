@@ -92,11 +92,11 @@ bool Connection::IsConnected(){
     return state > 0;
 }
 void Connection::Clear(){
-    if(hostname != null){free(hostname);hostname=null;}
+    DEALLOCATE(hostname)
     port=0;
     address={0};
     socket_handle=SOCKET_ERROR;
     buffer_link=null;
     state=NOT_CONNECTED;
-    if(message != null){free(message);message=null;}
+    DEALLOCATE(message)
 }

@@ -1,6 +1,6 @@
 #include <game_project_1/input.hpp>
 #include <math.h>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/types/map.hpp>
 #include <game_project_1/io/file.hpp>

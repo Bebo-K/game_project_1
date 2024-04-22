@@ -1,7 +1,7 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/math_types.hpp>
 
 namespace Collider{
 	enum Shape{

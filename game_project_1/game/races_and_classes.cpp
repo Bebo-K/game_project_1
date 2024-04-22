@@ -9,8 +9,7 @@ Map<int,EntityRace*> Races(4);
 
 EntityRace::EntityRace(){name=nullptr;}
 EntityRace::~EntityRace(){
-    if(name != nullptr)free(name);
-    name=nullptr;
+    DEALLOCATE(name)
 }
 void EntityRace::FromJson(JSONObject* json){
     name = wstr::from_cstr(json->GetString("name")->string);
@@ -26,8 +25,7 @@ void EntityRace::FromJson(JSONObject* json){
 
 EntityRaceModel::EntityRaceModel(){model_name=nullptr;}
 EntityRaceModel::~EntityRaceModel(){
-    if(model_name != nullptr)free(model_name);
-    model_name=nullptr;
+    DEALLOCATE(model_name)
 }
 void EntityRaceModel::FromJson(JSONObject* json){
     model_name = cstr::new_copy(json->GetString("id")->string);
@@ -45,10 +43,8 @@ void EntityRaceModel::FromJson(JSONObject* json){
 
 EntityRaceStyle::EntityRaceStyle(){name=nullptr;model_target=nullptr;}
 EntityRaceStyle::~EntityRaceStyle(){
-    if(name != nullptr)free(name);
-    name=nullptr;
-    if(model_target != nullptr)free(model_target);
-    model_target=nullptr;
+    DEALLOCATE(name)
+    DEALLOCATE(model_target)
 }
 void EntityRaceStyle::FromJson(JSONObject* json){
     name = wstr::from_cstr(json->GetString("name")->string);
@@ -80,8 +76,7 @@ void EntityRaceColor::FromJson(JSONObject* json){
 
 EntityClass::EntityClass(){name=nullptr;}
 EntityClass::~EntityClass(){
-    if(name != nullptr)free(name);
-    name=nullptr;
+    DEALLOCATE(name)
 }
 void EntityClass::FromJson(JSONObject* json){
     name = wstr::from_cstr(json->GetString("name")->string);

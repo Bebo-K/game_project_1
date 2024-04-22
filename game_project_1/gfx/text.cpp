@@ -37,10 +37,7 @@ DrawableText::DrawableText(wchar* str,FontID font_id){
 }
 
 void DrawableText::SetString(wchar* str){
-    if(string != null){
-        free(string);
-        string=null;
-    }
+    DEALLOCATE(string)
     string=wstr::new_copy(str);
     if(font.family_id < 0){font = FontManager::LoadFontFace(default_font_name,16);}
     BuildString();

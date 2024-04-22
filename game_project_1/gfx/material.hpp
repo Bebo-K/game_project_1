@@ -2,7 +2,7 @@
 #define MATERIAL_H
 
 #include <game_project_1/gfx/texture.hpp>
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 class Material{
     public:

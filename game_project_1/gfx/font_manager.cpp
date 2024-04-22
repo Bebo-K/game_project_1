@@ -153,7 +153,7 @@ FontManager::FontCache::~FontCache(){
     FT_Done_Face(fontface);
     glDeleteTextures(1,&atlas_gl_id);
     delete glyph_atlas;
-    if(font_name!=nullptr){free(font_name);font_name=nullptr;}
+    DEALLOCATE(font_name)
 }
 
 TextureRectangle BlitGlyphToAtlas(Image* atlas,FT_Bitmap glyph,int atlas_next[3]){
@@ -250,7 +250,7 @@ Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
 
 void FontManager::FontCache::ClearDynamicGlyphs(){
     for(Tuple<int,Texture*> t: glyph_dynamic_textures){
-        if(t.value != nullptr){free(t.value);}
+        DEALLOCATE(t.value)
     }
     glyph_dynamic_textures.Clear();
 }

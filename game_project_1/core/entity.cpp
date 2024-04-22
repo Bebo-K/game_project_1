@@ -51,14 +51,12 @@ Entity::Entity(int eid){
 Entity::~Entity(){Clear();}
 
 vec3 Entity::GetPos(){return {x,y,z};}
-Location Entity::GetLocation(){
-    return Location({x,y,z},rotation);
-}
+Location Entity::GetLocation(){return {x,y,z,rotation};}
 void Entity::SetPos(vec3 pos){
     x=pos.x;y=pos.y;z=pos.z;
 }
 void Entity::SetLocation(Location loc){
-    x = loc.position.x; y = loc.position.y; z = loc.position.z;
+    x = loc.x; y = loc.y; z = loc.z;
     rotation = loc.rotation;
 }
 

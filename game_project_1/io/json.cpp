@@ -273,7 +273,7 @@ JSONParser::JSONParser(char* JSON,int length){
 	end=length;
 }
 JSONParser::~JSONParser(){
-	if(data != nullptr){free(data);data=nullptr;}
+	DEALLOCATE(data)
 	end=0;
 }
 

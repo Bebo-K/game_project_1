@@ -20,9 +20,9 @@ Widget::Widget(char* widget_name) : layout(), sprites(),rects(),texts(){
 }
 
 Widget::~Widget(){
-    if(name != nullptr){free(name);}
-    if(selectable == nullptr){delete selectable;selectable=nullptr;}
-    if(clickable == nullptr){delete clickable;clickable=nullptr;}
+    DEALLOCATE(name)
+    SAFE_DELETE(selectable)
+    SAFE_DELETE(clickable)
 
     for(int i=0;i<sprites.length;i++){
         if(sprites[i] != nullptr){delete sprites[i];sprites.Set(i,nullptr);}

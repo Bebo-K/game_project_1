@@ -142,7 +142,7 @@ void IntegerSet::Remove(int entry){
     length--;
 }
 void IntegerSet::Clear(){
-    if(data != null){free(data);data=null;}
+    DEALLOCATE(data)
     length=0;
     allocated=0;
 }

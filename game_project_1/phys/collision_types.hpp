@@ -2,7 +2,7 @@
 #define COLLISION_TYPES_H
 
 #include <game_project_1/types/math_types.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 
 struct Ellipse_t{

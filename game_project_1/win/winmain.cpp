@@ -7,13 +7,13 @@
 #include <knownfolders.h>
 #include <synchapi.h>
 #include <shellapi.h>
-#include <game_project_1/winmain.hpp>
+#include <game_project_1/win/wininput.hpp>
 #include <game_project_1/os.hpp>
 #include <game_project_1/gfx/gload.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/config.hpp>
 #include <game_project_1/game.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/net/os_net.hpp>
 #include <game_project_1/strings.hpp>
 

@@ -107,7 +107,7 @@ OutboundReliablePayload::~OutboundReliablePayload(){
 void OutboundReliablePayload::Clear(){
     id=0; type=0; length=0;
     last_sent=0; retry_count=0;
-    if(data != nullptr){free(data);data=nullptr;}
+    DEALLOCATE(data)
 }
 bool OutboundReliablePayload::ShouldSend(){
     return (OS::time_ms()-last_sent) > config::network_resend_interval;
@@ -118,7 +118,7 @@ Payload OutboundReliablePayload::GetPayload(){
 
 InboundMultipartPayload::InboundMultipartPayload():packets_recieved(){}
 InboundMultipartPayload::~InboundMultipartPayload(){
-    if(assembled_payload != nullptr){free(assembled_payload);assembled_payload=nullptr;}
+    DEALLOCATE(assembled_payload)
 }
 void InboundMultipartPayload::Start(Datagram* p){
     if(!p->IsMultipart()){
@@ -153,7 +153,7 @@ Payload InboundMultipartPayload::Finish(){
 }
 void InboundMultipartPayload::Clear(){
     packets_recieved.Resize(0);
-    if(assembled_payload != nullptr){free(assembled_payload);assembled_payload=nullptr;}
+    DEALLOCATE(assembled_payload)
 }
 bool InboundMultipartPayload::IsFullyAssembled(){
     return (packets_recieved.CountBitsUnset()==0);

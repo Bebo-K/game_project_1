@@ -1,7 +1,7 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
-#include <game_project_1/types/2d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 namespace UI{
     enum HorizontalOrigin{Center_H,Right,Left,To_Right,To_Left};

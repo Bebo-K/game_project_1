@@ -2,7 +2,7 @@
 #define NPC_STATE_H
 
 #include <game_project_1/component/component.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/arrays.hpp>
 
 //NPC "brains"

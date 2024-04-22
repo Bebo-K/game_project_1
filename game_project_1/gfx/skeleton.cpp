@@ -19,7 +19,7 @@ Skeleton::~Skeleton(){
     for(Bone* bone:bones){free(bone->name);}
     bones.Destroy();
     animations.Destroy();
-    if(inverse_bind_mats != nullptr){free(inverse_bind_mats);inverse_bind_mats=null;}
+    DEALLOCATE(inverse_bind_mats)
 }
 
 void Skeleton::SetBoneName(int bone_id, char* bone_name){
@@ -36,7 +36,7 @@ void Skeleton::DebugPrint(){
     logger::info("..Animation Count: %d\n",animations.length);
     for(int i=0; i< animations.length;i++){
         logger::info("..Animation %d:\n",i);
-        animations[i]->DebugPrint();
+        //animations[i]->DebugPrint();
     }
 }
 
@@ -44,8 +44,8 @@ void Bone::DebugPrint(){
     logger::info("Name %s:\n",name);
 }
 
-Animation* Skeleton::GetAnimation(char* name){
-    for(Animation* anim:animations){
+Animation::Clip* Skeleton::GetAnimation(char* name){
+    for(Animation::Clip* anim:animations){
         if(cstr::compare(name,anim->name))return anim;
     }
     return null;
@@ -60,27 +60,31 @@ Pose::Pose(Skeleton* target):anim_target(target->bones.length*3){
     for(int i=0;i<bone_count;i++){
         transforms[i].Clear();
         matrices[i].identity();
-        
-        anim_target.values[i*3]->channel_id = {skeleton->bones[i]->name};
-        anim_target.values[i*3]->value_type = AnimationType::VECTOR3;
-        anim_target.values[i*3]->value.fval = &transforms[i].x;//,y,z
 
-        anim_target.values[i*3+1]->channel_id(skeleton->bones[i]->name);
-        anim_hook.targets[i*3+1].value_type =  AnimationType::QUATERNION;
-        anim_hook.targets[i*3+1].num_values=4;
-        anim_hook.values[i*3+1]= &transforms[i].rotation.x;//,y,z,w
+        anim_target.hooks.Add(
+            Animation::ChannelID(skeleton->bones[i]->name,"translation"),
+            {}
 
-        anim_hook.targets[i*3+2].object_name = skeleton->bones[i]->name;
-        anim_hook.targets[i*3+2].value_type = AnimationType::VECTOR3;
-        anim_hook.targets[i*3+2].num_values=3;
-        anim_hook.values[i*3+2]= &transforms[i].scale.x;//,y,z
+        )
+
+        int transform_channel_id =
+        anim_target.hooks.Add(transform_channel_id, &transforms[i].x);
+        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"translation"),transform_channel_id);
+
+        int rotate_channel_id = Animation::ChannelID(skeleton->bones[i]->name,"rotation");
+        anim_target.hooks.Add(rotate_channel_id, &transforms[i].rotation.x);
+        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"rotation"),rotate_channel_id);
+
+        int scale_channel_id = Animation::ChannelID(skeleton->bones[i]->name,"scale");
+        anim_target.hooks.Add(scale_channel_id, &transforms[i].scale.x);
+        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"scale"),scale_channel_id);
     }
 }
 
 Pose::~Pose(){
     if(skeleton != null){skeleton= null;}
-    if(transforms != null){free(transforms);transforms=null;}
-    if(matrices != null){free(matrices);matrices=null;}
+    DEALLOCATE(transforms)
+    DEALLOCATE(matrices)
 }
 
 void Pose::Calculate(){
@@ -117,12 +121,7 @@ void Pose::Calculate(){
 }
 
 void Pose::StartAnimation(char* name){
-    Animation* target_anim = skeleton->GetAnimation(name);
-    AnimationManager::StartClip(target_anim,&anim_target);
-}
-void Pose::StartAnimation(char* name,AnimationOptions options){
-    Animation* target_anim = skeleton->GetAnimation(name);
-    AnimationManager::StartClip(target_anim,&anim_target, options);
+    Animation::Start(skeleton->GetAnimation(name),anim_target);
 }
 
 

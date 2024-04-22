@@ -134,10 +134,7 @@ MeshGroup::MeshGroup():meshes(){
 }
 
 MeshGroup::~MeshGroup(){
-    if(name != null){
-        free(name);
-        name=null;
-    }
+    DEALLOCATE(name)
     meshes.Destroy();
 }
 
@@ -266,25 +263,14 @@ void Model::Draw(Camera* cam){
     }
 }
 
-void Model::StartAnimation(char* anim_name, bool loop){
-    AnimationOptions options;
-    options.end_action = (loop)? AnimationEndAction::LOOP : AnimationEndAction::STOP;
-    options.next_anim = nullptr;
-    options.timescale = 1.0f;
-    if(pose != null){pose->StartAnimation(anim_name,options);}
+void Model::StartAnimation(char* anim_name){
+    if(pose != null){pose->StartAnimation(anim_name);}
 }
 
 void Model::StartAnimationWithWindup(char* start_anim,char* loop_anim){
     if(pose == null){return;}
-    AnimationOptions anim_1_options;
-        anim_1_options.end_action=AnimationEndAction::GOTO;
-        anim_1_options.next_anim= data->skeleton->GetAnimation(loop_anim);
-        if(anim_1_options.next_anim == null){
-            logger::warn("cannot find follow up %s for windup animation %s\n",loop_anim,start_anim);
-            anim_1_options.end_action =AnimationEndAction::STOP;
-        }
-        anim_1_options.timescale = 1.0f;
-    pose->StartAnimation(start_anim,anim_1_options);
+    pose->StartAnimation(start_anim);
+    Animation::Queue(data->skeleton->GetAnimation(loop_anim),pose->anim_target.active_clip);
 }
 
 void ModelManager::Init(){
@@ -310,7 +296,7 @@ void ModelManager::Init(){
 
 void ModelManager::Free(){
     for(ModelCacheEntry* entry:model_registry){
-        if(entry->data){delete entry->data;entry->data=null;}
+        SAFE_DELETE(entry->data)
         //if(entry->uri){free(entry->uri);entry->uri=null;}
     }
     model_registry.Clear();

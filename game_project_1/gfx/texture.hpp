@@ -3,7 +3,7 @@
 
 #include <game_project_1/io/image.hpp>
 #include <game_project_1/gfx/gload.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 struct TextureRectangle{
     float x,y,w,h;

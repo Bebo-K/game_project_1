@@ -2,7 +2,7 @@
 #define ARRAYS_H
 
 #include <string.h>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/types/iterator.h>
 

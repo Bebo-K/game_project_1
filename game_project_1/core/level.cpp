@@ -8,10 +8,10 @@ Location LevelEntrance::GenerateLocation(){
 
 LevelExit::LevelExit(){trigger_collider=nullptr;}
 LevelExit::~LevelExit(){
-    if(trigger_collider != nullptr){free(trigger_collider);trigger_collider=nullptr;}
+    DEALLOCATE(trigger_collider)
 }
 
 LevelTrigger::LevelTrigger(){trigger_collider=nullptr;}
 LevelTrigger::~LevelTrigger(){
-    if(trigger_collider != nullptr){free(trigger_collider);trigger_collider=nullptr;}
+    DEALLOCATE(trigger_collider)
 }

@@ -1,23 +1,11 @@
 #include "game_project_1/component/client/hitboxes.hpp"
 
 
-AnimationTarget* BuildAnimationTargetForShapeCollider(ShapeCollider* s,AnimationTarget* slot){
-    AnimationTarget* hitbox_pos_target = new (slot) AnimationTarget(3);
-        ChannelValue* pos_channel = hitbox_pos_target->values[0];
-        ChannelValue* rot_channel = hitbox_pos_target->values[1];
-        ChannelValue* scale_channel = hitbox_pos_target->values[2];
-
-        pos_channel->channel_id = ChannelID("position");
-        pos_channel->value.fval = (float*)&s->center_offset.x;
-        pos_channel->value_type=AnimationType::VECTOR3;
-
-        rot_channel->channel_id = ChannelID("rotation");
-        rot_channel->value.fval = (float*)&s->rotation.x;
-        rot_channel->value_type=AnimationType::VECTOR3;
-
-        scale_channel->channel_id = ChannelID("scale");
-        scale_channel->value.fval = (float*)&s->scale.x;
-        scale_channel->value_type=AnimationType::VECTOR3;
+Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot){
+    Animation::Target* hitbox_pos_target = new (slot) Animation::Target(3);
+        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("position"),(float*)&s->center_offset.x);
+        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("rotation"),(float*)&s->rotation.x);
+        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("scale"),(float*)&s->scale.x);
 
     return hitbox_pos_target;
 }
@@ -27,7 +15,7 @@ HitPath::HitPath():collider(){
     spawn_time=0.0f;
     despawn_time=0.0f;
 }
-HitPath::HitPath(ShapeCollider hitcollider,Animation* animation_path,float spawn_time,float despawn_time){
+HitPath::HitPath(ShapeCollider hitcollider,Animation::Clip* animation_path,float spawn_time,float despawn_time){
     collider = hitcollider;
     path = animation_path;
     spawn_time = spawn_time;
@@ -54,8 +42,8 @@ void HitBoxes::CleanupPattern(){
     current_pattern=nullptr;
     current_pattern_active_time=0;
     hit_colliders.Clear();
-    for(AnimationTarget* active_collider_anim: hit_collider_targets){
-        AnimationManager::StopClip(active_collider_anim);
+    for(Animation::Target* active_collider_anim: hit_collider_targets){
+        Animation::Stop(active_collider_anim);
     }
     hit_collider_targets.Clear();
 }

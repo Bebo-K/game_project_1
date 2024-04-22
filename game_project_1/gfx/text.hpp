@@ -1,8 +1,7 @@
 #ifndef UI_TEXT_H
 #define UI_TEXT_H
 
-#include <game_project_1/types/3d_types.hpp>
-#include <game_project_1/types/2d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/gfx/font_manager.hpp>
 

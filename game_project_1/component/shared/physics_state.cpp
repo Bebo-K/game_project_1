@@ -1,5 +1,5 @@
 #include <game_project_1/component/shared/physics_state.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 PhysicsState::PhysicsState(){Clear();}
 

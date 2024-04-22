@@ -2,7 +2,7 @@
 #define THREADS_H
 
 #include <game_project_1/os.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 
 struct Mutex{

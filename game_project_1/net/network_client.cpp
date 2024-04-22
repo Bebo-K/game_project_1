@@ -2,7 +2,7 @@
 #include <game_project_1/net/os_net.hpp>
 #include <game_project_1/net/packets.hpp>
 
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/config.hpp>
 #include <game_project_1/os.hpp>
 #include <game_project_1/strings.hpp>

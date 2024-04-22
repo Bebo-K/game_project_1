@@ -3,6 +3,7 @@
 
 #include <game_project_1/gfx/camera.hpp>
 #include <game_project_1/gfx/material.hpp>
+#include <game_project_1/types/math_types.hpp>
 
 class Drawable{
     public:

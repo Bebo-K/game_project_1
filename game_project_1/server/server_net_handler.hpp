@@ -5,7 +5,7 @@
 #include <game_project_1/net/packets.hpp>
 #include <game_project_1/core/entity.hpp>
 #include <game_project_1/core/player.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 namespace ServerNetHandler{
     extern ServerComponentMask initial_sync_components;

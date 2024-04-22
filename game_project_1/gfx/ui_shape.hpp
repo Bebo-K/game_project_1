@@ -3,7 +3,7 @@
 //Simple flat shapes for use in drawing UI
 
 #include <game_project_1/gfx/drawable.hpp>
-#include <game_project_1/types/2d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 
 //UI_Rect: A UI primitive for drawing a colored rectangle to the screen

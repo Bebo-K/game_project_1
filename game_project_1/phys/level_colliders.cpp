@@ -67,8 +67,8 @@ MeshCollider::MeshCollider(MeshGroup* group,Surface* coll_surface){
 }
 
 MeshCollider::~MeshCollider(){
-    if(name != null){free(name);name=null;}
-    if(tris != null){free(tris);tris=null;}
+    DEALLOCATE(name)
+    DEALLOCATE(tris)
 }
 
 void MeshCollider::ShallowCopy(MeshCollider* m2){

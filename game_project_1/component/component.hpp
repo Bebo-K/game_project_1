@@ -2,7 +2,7 @@
 #define COMPONENT_H
 
 #include <game_project_1/io/serializer.hpp>
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/os.hpp>

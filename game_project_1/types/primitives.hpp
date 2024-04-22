@@ -1,10 +1,30 @@
-#ifndef _3D_TYPES_H
-#define _3D_TYPES_H
+#ifndef PRIMITIVES_H
+#define PRIMITIVES_H
+
+#ifndef null
+#define null nullptr
+#endif
 
 #define PI 3.1415926535f
 #define PI_OVER_180 (3.1415926535f/180.0f)
 #define FLOAT_IS_ZERO(x) (x == 0.0f)
 
+#define SET_BIT(val,place)   ((val) |=  (1<<(place)))
+#define CLEAR_BIT(val,place) ((val) &= ~(1<<(place)))
+#define TOGGLE_BIT(val,place)  ((val) ^=  (1<<(place)))
+#define GET_BIT(val,place) ((val & (1 << place)) != 0)
+
+#define DEALLOCATE(val) if(val!=nullptr){free(val);val=nullptr;}
+#define SAFE_DELETE(val) if(val!=nullptr){delete val;val=nullptr;}
+
+typedef unsigned int uint32;
+typedef unsigned char byte;
+
+union value{
+    int i;
+    float f;
+    wchar_t* wstr;
+};
 
 struct vec2{
     float x,y;
@@ -52,7 +72,6 @@ struct vec3{
     vec3 clip(vec3 direction);
 
     static vec3 zero();
-
 };
 
 struct vec4{
@@ -69,6 +88,7 @@ struct quaternion{
 
     void clear();
     void set_euler(float x,float y,float z);
+    static quaternion of_euler(float x,float y,float z);
     mat4 to_matrix();
     void rotate_by(quaternion q2);
     void rotate_by(float x,float y,float z);
@@ -82,7 +102,6 @@ struct quaternion{
 
 struct mat4{
     float m[16];
-
 
     void identity();
     void transpose();
@@ -122,33 +141,79 @@ struct mat3{
     float determinant();
 };
 
+struct point_i{
+    int x,y;
 
-//Transforms represent a transformation matrix consisting of a translation, rotation, and scale
-// They should be used for data close to the rendering pipeline, like skeleton animatiions
-struct Transform{
-    float x,y,z;
-    quaternion rotation;
-    vec3 scale;
-
-    vec3 Position();
-    void Clear();
+    point_i operator +(point_i b);
+    point_i operator -(point_i b);
+    bool operator ==(point_i b);
 };
 
+struct rect_i{
+    int x,y,w,h;
 
-
-// Game object representation of a place in space- generally scale is constant or managed separately
-// rotation.x = pitch of the object (tilt forward being positive axis)
-// rotation.y = turn of the object (clockwise being positive axis)
-// rotation.z = yaw of the object (towards object's right side being positive axis)
-// Where Transform.rotation has no such mappings
-struct Location{
-    vec3 position;
-    vec3 rotation;
-
-    Location();
-    Location(vec3 pos,vec3 rot);
-    //Transform ToTransform();
+    rect_i();
+    rect_i(int ix,int iy,int iw,int ih);
+    int area();
+    point_i center();
+    bool contains(point_i b);
+    bool intersects(rect_i b);
 };
 
+struct point_f{
+    float x,y;
+    point_i to_point_i();
+};
+
+struct rect_f{
+    float x,y,w,h;
+
+    rect_f();
+    rect_f(float fx,float fy,float fw,float fh);
+    float area();
+
+    rect_i to_integers();
+    rect_f ratio_of(rect_f);
+    point_f center();
+    bool contains(point_f b);
+    bool intersects(rect_f b);
+};
+
+struct color{
+    byte r,g,b,a;
+    void rgba(byte R, byte G, byte B, byte A);
+    void rgba(int color_code);
+    int as_code();
+};
+
+struct color_f{
+    float r,g,b,a;
+    void rgba(float R,float G,float B,float A);
+    void from_color(color c);
+    color to_color();
+    color_f mult(color_f c2);
+};
+
+struct bitmask{
+    static int bit(int place);
+    const static int all= -1;
+    const static int none = 0;
+    int val;
+    bitmask(int a);
+    void and_with(bitmask& b2);
+    void or_with(bitmask& b2);
+    void set(int place);
+    void clear(int place);
+    void clearAll();
+    void toggle_bit(int place);
+    bool get_bit(int place);
+
+    static bitmask invert(bitmask& b2);
+    static bitmask of_bits(int a);
+    static bitmask of_bits(int a, int b);
+    static bitmask of_bits(int a, int b, int c);
+    static bitmask of_bits(int a[],int l);
+};
 
 #endif
+

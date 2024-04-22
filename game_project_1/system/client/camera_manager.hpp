@@ -3,7 +3,7 @@
 
 #include <game_project_1/core/client_entity.hpp>
 #include <game_project_1/gfx/camera.hpp>
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/input.hpp>
 

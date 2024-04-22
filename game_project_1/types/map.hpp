@@ -3,12 +3,15 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/types/str.hpp>
 
 
 template <typename K,typename V>
 class Map;
+template <typename K,typename V>
+class Dictionary;
 
 template <typename K,typename V>
 struct Tuple{
@@ -16,37 +19,53 @@ struct Tuple{
     V value;
 };
 
-template <typename K>
-bool CompareKey(K k1, K k2){return k1==k2;}
-inline bool CompareKey(char* k1, char* k2){return cstr::compare(k1,k2);}
+namespace MapUtils{
+    template <typename K>
+    bool Compare(K k1, K k2){return k1==k2;}
+    inline bool Compare(char* k1, char* k2){return cstr::compare(k1,k2);}
 
-template <typename K>
-bool KeyNull(K k){return k==0;}
-inline bool KeyNull(char* k){return k==nullptr;}
+    template <typename K>
+    bool IsNull(K k){return k==0;}
+    inline bool IsNull(char* k){return k==nullptr;}
 
-template <typename K>
-K Map_SetValue(K k){return k;}
-inline char* Map_SetValue(char* k){return cstr::new_copy(k);}
+    template <typename T>
+    void Copy(T& t,T* dest){new(dest) T(t);}
+    inline void Copy(char*& t,char** dest){(*dest)=cstr::new_copy(t);}
+    inline void Copy(int& t,int* dest){(*dest)=t;}
 
-template <typename K>
-void Map_UnsetValue(K* k){memset(k,0,sizeof(K));}
-inline void Map_UnsetValue(char** k){
-    if((*k)==nullptr)return;
-    else{free((*k));(*k) = nullptr;}
+    template <typename T>
+    void Set(T* t,T* dest){*dest = *t;}
+
+    template <typename T>
+    void Unset(T* t){t->~T();}
+    inline void Unset(char** t){DEALLOCATE(*t)}
+    inline void Unset(int* t){(*t)=0;}
+
+    template <typename K,typename V>
+    struct MapIterator{
+        Map<K,V>*    parent;
+        int         index;
+        Tuple<K,V*> operator*();
+        MapIterator<K,V> operator++();
+        bool operator==(MapIterator<K,V>& l2);
+        bool operator!=(MapIterator<K,V>& l2);
+    };
+
+    template <typename K,typename V>
+    struct DictionaryIterator{
+        Dictionary<K,V>* parent;
+        int         index;
+        Tuple<K,V> operator*();
+        DictionaryIterator<K,V> operator++();
+        bool operator==(DictionaryIterator<K,V>& l2);
+        bool operator!=(DictionaryIterator<K,V>& l2);
+    };
 }
 
-template <typename K,typename V>
-struct MapIterator{
-    Map<K,V>*    parent;
-    int         index;
-    Tuple<K,V> operator*();
-    MapIterator<K,V> operator++();
-    bool operator==(MapIterator<K,V>& l2);
-    bool operator!=(MapIterator<K,V>& l2);
-};
-
-//A dynamic array of object pointers, accessable by an array of keys. 
-//Key values must be unique and non-key based access outside of iteration is discouraged.
+//Basic memory-managed associative array. 
+//keys (K) should be trivially copyable- only copies of key objects can be retrieved from the map
+//values (V) are considered as "owned" by the map, meaning references to the object stored on the map (V*) are retrieved and not copies.
+//For maps of trivially-copyable values (e.g. Map<Int,char*>), use Dictionary<K,V> instead
 template <typename K,typename V>
 class Map{
     protected:
@@ -55,13 +74,15 @@ class Map{
     int     slots;
     int     count;
 
-    void UnsetKey(int slot){
-        if(KeyNull(keys[slot]))return;
-        Map_UnsetValue(&keys[slot]);
+    void UnsetEntry(int slot){
+        if(MapUtils::IsNull(keys[slot]))return;
+        MapUtils::Unset(&keys[slot]);
+        MapUtils::Unset(&values[slot]);
     }
-    void SetKey(int slot,K value){keys[slot] = Map_SetValue(value);}
+    void SetKey(int slot,K key){MapUtils::Copy(key,&keys[slot]);}
+    void SetValue(int slot,V value){MapUtils::Set(value,&values[slot]);}
     
-    friend class MapIterator<K,V>;
+    friend class MapUtils::MapIterator<K,V>;
     public:
 
     Map(){
@@ -77,63 +98,41 @@ class Map{
         values= (V*)calloc(slots,sizeof(V));
     }
     ~Map(){
-        for(int i=0;i< slots;i++){
-            UnsetKey(i);
+        for(int i=0;i< slots;i++){ 
+            if(MapUtils::IsNull(keys[i]))continue;
+            UnsetEntry(i); 
         }
         free(keys);keys=nullptr;
         free(values);values=nullptr;
     }
-    V Get(K key){
+    V* Get(K key){
         for(int i=0;i< slots;i++){
-            if(KeyNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){return values[i];}
+            if(MapUtils::IsNull(keys[i]))continue;
+            if(MapUtils::Compare(key,keys[i])){return &values[i];}
         }
         return nullptr;
     }
-    int MatchIndex(K key){
-        for(int i=0;i< slots;i++){
-            if(KeyNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){return i;}
-        }
-        return -1;
-    }
-    K KeyAtIndex(int index){
-        if(index < 0 || index >= slots){logger::exception("Map::KeyAtIndex: Trying to access a map key with an invalid index:%d",index);}
-        return keys[index];
-    }
-    V ValueAtIndex(int index){
-        if(index < 0 || index >= slots){logger::exception("Map::ValueAtIndex: Trying to access a map value with an invalid index:%d",index);}
-        return values[index];
-    }
     bool Has(K key){return Get(key)!=nullptr;}
-    bool Add(K key,V value){
-        if(Has(key))return false;
-        if(KeyNull(key)){logger::exception("Map::Add: Invalid Key");}
-
+    V* Add(K key){
+        if(Has(key))return Get(key);
+        if(MapUtils::IsNull(key)){logger::exception("Map::Add: Invalid Key");}
         int slot_to_add=0;
-        while(slot_to_add < slots && !KeyNull(keys[slot_to_add])){slot_to_add++;}
+        while(slot_to_add < slots && !MapUtils::IsNull(keys[slot_to_add])){slot_to_add++;}
         if(slot_to_add == slots){Resize(slots*2);}
         SetKey(slot_to_add,key);
-        memcpy(&values[slot_to_add],&value,sizeof(V));
         count++;
-        return slot_to_add;
+        return &values[slot_to_add];
     }
     void Remove(K key){
         for(int i=0;i< slots;i++){
-            if(keys[i]==nullptr)continue;
-            if(cstr::compare(key,keys[i])){
-                UnsetKey(i);
-                memset(&values[i],0,sizeof(V));
-                count--;
+            if(MapUtils::IsNull(keys[i]))continue;
+            if(CompareKey(key,keys[i])){
+                UnsetEntry(i);
+                return;
             }
         }
     }
-    int NextIndex(int start_index){
-        int next=start_index;
-        while( ++next < slots && KeyNull(keys[next]));
-        return next;
-    }
-    int Count(){return count;}
+    int Count(){return count;}    
     void Resize(int newsize){
         if(newsize == 0){Clear();return;}
         V* newvalues = (V*)calloc(newsize,sizeof(V));
@@ -149,123 +148,122 @@ class Map{
     }
     void Clear(){
         for(int i=0;i<slots;i++){
-            UnsetKey(i);
-            memset(&values[i],0,sizeof(V));
+            UnsetEntry(i);
         }
         slots=0;
         count=0;
     }
 
     //range-for loop iterator methods
-    MapIterator<K,V> begin(){ return {this,NextIndex(-1)};}
-    MapIterator<K,V> end(){ return {this,slots};}
+    MapUtils::MapIterator<K,V> begin(){ return {this,NextIndex(-1)};}
+    MapUtils::MapIterator<K,V> end(){ return {this,slots};}
+
+    private:
+    int NextIndex(int start_index){
+        int next=start_index;
+        while( ++next < slots && MapUtils::IsNull(keys[next]));
+        return next;
+    }
 };
 
 
 template <typename K,typename V>
-Tuple<K,V> MapIterator<K,V>::operator*(){
+Tuple<K,V*> MapUtils::MapIterator<K,V>::operator*(){
     if(index < 0||index >= parent->slots){logger::exception("ListIterator::Operator* -> Index %d is out of range.",index);}
-    Tuple<K,V> ret;
-    ret.key = parent->keys[index];
-    memcpy(&ret.value,&parent->values[index],sizeof(V));
-    return ret;
-}
-
-template <typename K,typename V>
-MapIterator<K,V> MapIterator<K,V>::operator++(){
-    index = parent->NextIndex(index);
-    return (*this);
+    return {parent->keys[index], &parent->values[index]};
 }
 template <typename K,typename V>
-bool MapIterator<K,V>::operator==(MapIterator<K,V>& l2){
+MapUtils::MapIterator<K,V> MapUtils::MapIterator<K,V>::operator++(){
+    this->index=parent->NextIndex(index);
+    return *this;
+}
+template <typename K,typename V>
+bool MapUtils::MapIterator<K,V>::operator==(MapIterator<K,V>& l2){
     return index ==l2.index;
 }
 template <typename K,typename V>
-bool MapIterator<K,V>::operator!=(MapIterator<K,V>& l2){
+bool MapUtils::MapIterator<K,V>::operator!=(MapIterator<K,V>& l2){
     return !(index ==l2.index);
 }
 
-class IdMap{
-    protected:
-        char**  keys;
-        int*    values;
-        int     slots;
-        int     count;
 
-    void UnsetKey(int slot){
-        if(keys[slot]==nullptr)return;
-        free(keys[slot]);
-        keys[slot]=nullptr;
+
+//Unmodifyable associative array. Once stored, only copies of keys and values can be retrieved
+template <typename K,typename V>
+class Dictionary{
+    protected:
+    K*      keys;
+    V*      values;
+    int     slots;
+    int     count;
+
+    void UnsetEntry(int slot){
+        if(MapUtils::IsNull(keys[slot]))return;
+        MapUtils::Unset(&keys[slot]);
+        MapUtils::Unset(&values[slot]);
     }
-    friend class MapIterator<char*,int>;
+    void SetKey(int slot,K key){MapUtils::Copy(key,&keys[slot]);}
+    void SetValue(int slot,V value){MapUtils::Copy(value,&values[slot]);}
+    
+    friend class MapUtils::DictionaryIterator<K,V>;
     public:
 
-    IdMap(){
+    Dictionary(){
         slots=1;
         count=0;
-        keys=(char**)calloc(slots,sizeof(char*));
-        values=(int*)calloc(slots,sizeof(int));
+        keys=(K*)calloc(slots,sizeof(K));
+        values=(V*)calloc(slots,sizeof(V));
     }
-    IdMap(int size){
+    Dictionary(int size){
         slots=size;
         count=0;
-        keys=(char**)calloc(slots,sizeof(char*));
-        values=(int*)calloc(slots,sizeof(int));
+        keys=(K*)calloc(slots,sizeof(K));
+        values= (V*)calloc(slots,sizeof(V));
     }
-    ~IdMap(){
-        for(int i=0;i< slots;i++){
-            UnsetKey(i);
+    ~Dictionary(){
+        for(int i=0;i< slots;i++){ 
+            if(MapUtils::IsNull(keys[i]))continue;
+            UnsetEntry(i); 
         }
         free(keys);keys=nullptr;
         free(values);values=nullptr;
     }
-    int Get(char* key){
+    V Get(K key){
         for(int i=0;i< slots;i++){
-            if(KeyNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){return values[i];}
+            if(MapUtils::IsNull(keys[i]))continue;
+            if(MapUtils::Compare(key,keys[i])){return values[i];}
         }
-        return -1;
+        return nullptr;
     }
-    bool Has(char* key){
-        for(int i=0;i< slots;i++){
-            if(KeyNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){return true;}
-        }
-        return false;
-    }
-    bool Add(char* key,int value){
+    bool Has(K key){return Get(key)!=nullptr;}
+    bool Add(K key,V value){
         if(Has(key))return false;
+        if(MapUtils::IsNull(key)){logger::exception("Dictionary.Add: Invalid Key");}
         int slot_to_add=0;
-        while(slot_to_add < slots && !KeyNull(keys[slot_to_add])){slot_to_add++;}
+        while(slot_to_add < slots && !MapUtils::IsNull(keys[slot_to_add])){slot_to_add++;}
         if(slot_to_add == slots){Resize(slots*2);}
-        keys[slot_to_add] = cstr::new_copy(key);
-        values[slot_to_add] = value;
+        SetKey(slot_to_add,key);
+        SetValue(slot_to_add,value);
         count++;
         return slot_to_add;
     }
-    void Remove(char* key){
+    void Remove(K key){
         for(int i=0;i< slots;i++){
-            if(keys[i]==nullptr)continue;
-            if(cstr::compare(key,keys[i])){
-                UnsetKey(i);
-                values[i]=-1;
-                count--;
+            if(MapUtils::IsNull(keys[i]))continue;
+            if(CompareKey(key,keys[i])){
+                UnsetEntry(i);
+                return;
             }
         }
     }
-    int NextIndex(int start_index){
-        int next=start_index;
-        while( ++next < slots && KeyNull(keys[next]));
-        return next;
-    }
-    int Count(){return count;}
+    int Count(){return count;}    
     void Resize(int newsize){
         if(newsize == 0){Clear();return;}
-        int* newvalues = (int*)calloc(newsize,sizeof(int));
-        char** newkeys = (char**)calloc(newsize,sizeof(char*));
+        V* newvalues = (V*)calloc(newsize,sizeof(V));
+        K* newkeys = (K*)calloc(newsize,sizeof(K));
         int slots_to_copy = (slots < newsize)?slots:newsize;
-        memcpy(newkeys,keys,sizeof(char*)*slots_to_copy);
-        memcpy(newvalues,values,sizeof(int)*slots_to_copy);
+        memcpy(newkeys,keys,sizeof(K)*slots_to_copy);
+        memcpy(newvalues,values,sizeof(V)*slots_to_copy);
         free(keys);
         free(values);
         slots=newsize;
@@ -274,12 +272,42 @@ class IdMap{
     }
     void Clear(){
         for(int i=0;i<slots;i++){
-            UnsetKey(i);
-            values[i]=0;
+            UnsetEntry(i);
         }
         slots=0;
         count=0;
     }
+
+    //range-for loop iterator methods
+    MapUtils::DictionaryIterator<K,V> begin(){ return {this,NextIndex(-1)};}
+    MapUtils::DictionaryIterator<K,V> end(){ return {this,slots};}
+
+    private:
+    int NextIndex(int start_index){
+        int next=start_index;
+        while( ++next < slots && MapUtils::IsNull(keys[next]));
+        return next;
+    }
 };
+
+template <typename K,typename V>
+Tuple<K,V> MapUtils::DictionaryIterator<K,V>::operator*(){
+    if(index < 0||index >= parent->slots){logger::exception("ListIterator::Operator* -> Index %d is out of range.",index);}
+    return {parent->keys[index], parent->values[index]};
+}
+template <typename K,typename V>
+MapUtils::DictionaryIterator<K,V> MapUtils::DictionaryIterator<K,V>::operator++(){
+    this->index=parent->NextIndex(index);
+    return *this;
+}
+template <typename K,typename V>
+bool MapUtils::DictionaryIterator<K,V>::operator==(DictionaryIterator<K,V>& l2){
+    return index ==l2.index;
+}
+template <typename K,typename V>
+bool MapUtils::DictionaryIterator<K,V>::operator!=(DictionaryIterator<K,V>& l2){
+    return !(index ==l2.index);
+}
+
 
 #endif

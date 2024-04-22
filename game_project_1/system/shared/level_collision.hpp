@@ -5,7 +5,7 @@
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/server/server_scene.hpp>
 
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/component/shared/identity.hpp>
 
 

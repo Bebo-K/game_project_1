@@ -14,7 +14,7 @@
 
 #include <game_project_1/io/json.hpp>
 #include <game_project_1/io/stream.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/gfx/model.hpp>
 #include <game_project_1/phys/level_colliders.hpp>
@@ -33,7 +33,7 @@ class GLTFScene{
 	VBO  BuildAccessorBuffer(int id,GLuint bufferType);
 	float* BuildAccessorFloatArray(int id,int* count);
 	int* BuildAccessorIntArray(int id,int* count);
-	void LoadAnimation(int animation_id,Skeleton* target);
+	void LoadAnimationToClip(Animation::Clip* dest,Skeleton* target);
 	
 	Texture		GetTexture(int texture_id);
 	Material  	GetMaterial(int material_id);

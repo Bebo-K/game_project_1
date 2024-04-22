@@ -1,7 +1,7 @@
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/io/log.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/list.hpp>
 
 GLTFScene::GLTFScene(Stream* model_stream) :binary_buffers(1){
@@ -612,18 +612,16 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	return ret;
 }
 
-void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
+void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,Skeleton* target){
 	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
 	JSONArray* channels = animation->GetArray("channels");
-
-	Animation* dest = target->animations[animation_id];
-
+	 
 	dest->SetName(animation->GetString("name")->string);
 	dest->SetChannelCount(channels->count);
 	dest->length= 0.0f;
 
-	for(int i=0; i < dest->channel_count; i++){
-		AnimationChannel* channel = &dest->channels[i];
+	for(int i=0; i < channels->count; i++){
+		Animation::Channel* channel = &dest->channels[i];
 		JSONObject* gltf_channel =  channels->At(i)->ObjectValue();
 		JSONObject* channel_target = gltf_channel->GetJObject("target");
 		
@@ -632,37 +630,27 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 		char* target_node_name = target_node->GetString("name")->string;
 		char* target_type = channel_target->GetString("path")->string;
 
-		channel->target.object_name=null;
-		for(int b=0;b<target->bones.length;b++){
-			if(cstr::compare(target_node_name,target->bones[b]->name)){
-				channel->target.object_name=target->bones[b]->name;
-				break;
-			}
-		}
-		if(channel->target.object_name==null){
-			continue;
-			//TODO: Non bone channels
-			//channel->target.object_name=cstr::new_copy(target_node_name);
-		}
+		channel->id= (target_type != null) ?
+		 	Animation::ChannelID(target_node_name,target_type) : Animation::ChannelID(target_node_name);
+
+		dest->channel_names.Add( (target_type != null) ? 
+			cstr::append(target_node_name,'_',target_type) : cstr::new_copy(target_node_name),
+			channel->id);
 
 		if(cstr::compare(target_type,"translation")){
-			channel->target.value_type=AnimationType::VECTOR3;
-			channel->target.num_values=3;
+			channel->value_type= Animation::ValueType.VECTOR3;
 		}
 		else if(cstr::compare(target_type,"rotation")){
-			channel->target.value_type=AnimationType::QUATERNION;
-			channel->target.num_values=4;
+			channel->value_type= Animation::ValueType.QUATERNION;
 		}
 		else if(cstr::compare(target_type,"scale")){
-			channel->target.value_type=AnimationType::VECTOR3;
-			channel->target.num_values=3;
+			channel->value_type= Animation::ValueType.VECTOR3;
 		}
 		else if(cstr::compare(target_type,"weight")){
-			channel->target.value_type=AnimationType::SINGLE_FLOAT;
-			channel->target.num_values=1;
+			channel->value_type= Animation::ValueType.FLOAT;
 		}
 		else{
-			continue;
+			channel->value_type= Animation::ValueType.FLOAT;
 		}
 
 		int sampler_id = gltf_channel->GetInt("sampler");
@@ -672,13 +660,13 @@ void GLTFScene::LoadAnimation(int animation_id,Skeleton* target){
 
 		char* animation_type = sampler->GetString("interpolation")->string;
 		if(cstr::compare(animation_type,"LINEAR")){
-			channel->interpolate_mode = AnimationInterpolateMode::LINEAR;
+			channel->interpolate_mode = Animation::InterpolateMode.LINEAR;
 		}
 		else if(cstr::compare(animation_type,"STEP")){
-			channel->interpolate_mode = AnimationInterpolateMode::STEP;
+			channel->interpolate_mode = Animation::InterpolateMode.STEP;
 		}
 		else if(cstr::compare(animation_type,"CUBICSPLINE")){
-			channel->interpolate_mode = AnimationInterpolateMode::CUBICORSOMETHING;
+			channel->interpolate_mode = Animation::InterpolateMode.CUBICORSOMETHING;
 		}else{
 			continue;
 		}
@@ -729,7 +717,7 @@ void GLTFScene::GetModel(ModelData* model){
 		int anim_count = gltf_data->GetArray("animations")->count;
 		model->skeleton->animations.Init(anim_count);
 		for(int i=0;i<anim_count;i++){
-			LoadAnimation(i,model->skeleton);
+			LoadAnimationToClip(model->skeleton->animations[i],model->skeleton);
 		}
 	}
 

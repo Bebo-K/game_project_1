@@ -1,11 +1,396 @@
 #include <game_project_1/gfx/animation.hpp>
-#include <game_project_1/types/data_types.hpp>
-#include <game_project_1/types/list.hpp>
-#include <game_project_1/types/3d_types.hpp>
-#include <game_project_1/io/log.hpp>
-#include <string.h>
-#include <math.h>
 #include <game_project_1/io/crc.hpp>
+#include <game_project_1/io/log.hpp>
+#include <math.h>
+
+using namespace Animation;
+
+List<ActiveClip> active_clips(8);
+Map<ActiveClip*,Clip*> queued_clips(8);
+void AddActiveClip(ActiveClip* clip){
+    active_clips.Add(clip);
+    if(clip->target != null){
+        if(clip->target->active_clip != null && queued_clips.Has(clip->target->active_clip)){ 
+            queued_clips.Remove(clip->target->active_clip);
+        }
+        clip->target->active_clip=clip;
+    }
+}
+void QueueClip(ActiveClip* after,Clip* newClip){
+    if(active_clips.GetIndex(after) >= 0){
+        queued_clips.Add(after,newClip);
+    }
+}
+void RemoveActiveClip(ActiveClip* clip){
+    active_clips.Remove(clip);
+    if(clip->target != null && clip->target->active_clip==clip){clip->target->active_clip=nullptr;}
+    if(queued_clips.Has(clip)){
+        Clip* transition_clup = queued_clips.Get(clip);
+        AddActiveClip(new ActiveClip(queued_clips.Get(clip),clip->target,0,clip->timescale));
+        queued_clips.Remove(clip);
+    }
+}
+
+int WidthOfAnimationType(Animation::ValueType type){//number of primitive types per value
+    switch(type){
+        case FLOAT: return 1;
+        case VECTOR2:return 2;
+        case VECTOR3:return 3;
+        case QUATERNION:return 4;
+        case OTHER:
+        default: return 4:
+    }
+}
+
+int Animation::ChannelID(char* name){
+    return CRC((byte*)name,cstr::len(name));
+}
+int Animation::ChannelID(char* name,char* context){
+    return CRC((byte*)name,cstr::len(name)) + CRC((byte*)context,cstr::len(context));
+}
+
+Channel::Channel(){
+    id=0;
+    value_type=FLOAT;
+    interpolate_mode=LINEAR;
+    keyframe_count=0;
+    keyframe_times=nullptr;
+    keyframe_values=nullptr;
+}
+Channel::Channel(int cid,ValueType channel_type,int keyframes){
+    id=cid;
+    value_type=channel_type;
+    interpolate_mode=LINEAR;
+    keyframe_count=keyframes;
+    keyframe_times=malloc(sizeof(float)*WidthOfAnimationType(channel_type)*keyframes);
+    keyframe_values=malloc(sizeof(float)*keyframes);
+}
+Channel::~Channel(){
+    DEALLOCATE(keyframe_times)
+    DEALLOCATE(keyframe_values)
+}
+ChannelBuilder& Channel::Builder(){return *new ChannelBuilder();}
+
+
+Target::Target(int channel_count):hooks(channel_count),channel_names(channel_count){
+    enabled=true;
+    active_clip=nullptr;
+}
+Target::~Target(){}
+
+
+Clip::Clip(){
+    name=nullptr;
+    length=0;
+    loop=false;
+    channel_count=0;
+    channels=nullptr;
+}
+Clip::Clip(char *anim_name, int num_channels){
+    name = cstr::new_copy(anim_name);
+    length=0;
+    channel_count=num_channels;
+    channels = (num_channels==0)? null : new Channel[num_channels];
+}
+Clip::~Clip(){
+    DEALLOCATE(name);
+    SAFE_DELETE(channels);
+    channel_count=0;
+}
+void Clip::SetChannelCount(int num_channels){
+    SAFE_DELETE(channels);
+    channel_count=num_channels;
+    channels = new Channel[num_channels];
+}
+ClipBuilder& Clip::Builder(){return *new ClipBuilder();}
+
+ActiveClip::ActiveClip(Clip* clip,Target* target,float time,float timescale){
+    this->clip=clip;
+    this->target=target;
+    elapsed_time=time;
+    this->timescale=timescale;
+}
+ActiveClip::~ActiveClip(){ RemoveActiveClip(this);}
+
+
+//nlerp, consider slerp if appropriate
+void QuaternionLinearInterpolate(quaternion* from,quaternion* to, float weight,quaternion* values, int values_count){
+    for(int i=0;i<values_count;i++){ 
+        values[i].x = to[i].x*weight + from[i].x*(1.0f-weight);
+        values[i].y = to[i].y*weight + from[i].y*(1.0f-weight);
+        values[i].z = to[i].z*weight + from[i].z*(1.0f-weight);
+        values[i].w = to[i].w*weight + from[i].w*(1.0f-weight);
+        values[i].normalize();
+    }
+}
+void QuaternionSphericalInterpolate(quaternion* q1,quaternion* q2, float weight,quaternion* values, int values_count){
+    for(int i=0;i<values_count;i++){ 
+        quaternion from = q1[i];
+        quaternion to = q2[i];
+
+        float dot = to.dot(from);
+        if(dot < 0){
+            dot *= -1;
+            from = from*-1;
+        }
+        if(dot > 0.9995f){
+            QuaternionLinearInterpolate(&from,&to,weight,&values[i],1);
+            return;
+        } 
+
+        float theta_0 = acosf(dot);
+        float theta = theta_0*weight;
+        float sin_theta = sinf(theta);
+        float sin_theta_0 = sinf(theta_0);
+        float s0 = cos(theta) - dot * sin_theta / sin_theta_0;
+        float s1 = sin_theta / sin_theta_0;
+
+        values[i] = from*s0 + to*s1;
+    }
+}
+void QInterpolate(float* from, float* to, float weight, float* values, int values_count){
+    QuaternionSphericalInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
+}
+
+void Interpolate(float* from, float* to, float weight, float* values, int values_count){
+    for(int i=0;i<values_count;i++){
+        values[i] = to[i]*weight + from[i]*(1.0f-weight);
+    }
+}
+
+void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
+    if(hook->type != channel->value_type){
+        log::warning("Animation channel '%s' of clip '%s' does not have a matching value type with target channel '%s'",
+        current_clip->clip->channel_names.Get(channel->id),
+        current_clip->clip->name,
+        hook->name);
+        return;
+    }
+
+    int last_keyframe =0;
+    int next_keyframe=0;
+    float weight=0.0f;
+    int channel_width=WidthOfAnimationType(channel->value_type);
+    bool loop = current_clip->clip->loop;
+    float elapsed_time = current_clip->elapsed_time;
+    float clip_length = current_clip->clip->length;
+
+    while(loop && elapsed_time > clip_length){ elapsed_time -= clip_length; }
+
+    for(int i=0;i < channel->keyframe_count; i++){
+        if(channel->keyframe_times[i] < elapsed_time){last_keyframe = i;}
+    }
+    next_keyframe = last_keyframe+1;
+
+    if(next_keyframe >= channel->keyframe_count){
+        if(loop){
+            next_keyframe = 0;
+            float last_time = channel->keyframe_times[last_keyframe];
+            float next_time = clip_length;
+            weight = (elapsed_time - last_time) / (next_time-last_time);
+        }
+        else{ weight=0.0f; }
+    }
+    else{
+        float last_time = channel->keyframe_times[last_keyframe];
+        float next_time = channel->keyframe_times[next_keyframe];
+        weight = (elapsed_time - last_time) / (next_time-last_time);
+        if(weight > 1.0f){weight = 1.0f;}
+        if(weight < 0.0f){weight = 0.0f;}
+    }
+
+    switch(channel->interpolate_mode){
+        case QUATERNION:
+            QInterpolate(
+                &channel->keyframe_values[last_keyframe*channel_width],
+                &channel->keyframe_values[next_keyframe*channel_width],
+                weight,target,channel_width);
+            break;
+        case LINEAR:
+        default:
+            Interpolate(
+                &channel->keyframe_values[last_keyframe*channel_width],
+                &channel->keyframe_values[next_keyframe*channel_width],
+                weight,target,channel_width);
+            break;
+    }
+}
+
+///////////Animation / Animation Manager
+
+void AnimationManager::Init(){}
+void AnimationManager::Update(float seconds){
+    Clip* clip; 
+    Channel* channel;
+    for(ActiveClip* current_clip: active_clips){
+        current_clip->elapsed_time += seconds*current_clip->timescale;
+
+        if(current_clip->target != null &&
+         current_clip->target->enabled &&
+         current_clip->target->active_clip == current_clip){
+            clip = current_clip->clip;
+            for(int j=0;j<clip->channel_count;j++){
+                channel = &clip->channels[j];
+                ChannelHook* hook = current_clip->target->hooks.Get(&channel->id);
+                UpdateChannel(current_clip,channel,hook);
+            }
+        }
+        if(current_clip->elapsed_time > clip->length && !clip->loop){
+            //DoPostAnimAction(current_clip);
+            delete current_clip;
+        }
+    }
+}
+void AnimationManager::Destroy(){
+    active_clips.Clear();
+    queued_clips.Clear();
+}
+
+void Animation::Start(Clip *clip, Target *target){ StartAt(clip,target,0.0f); }
+void Animation::StartAt(Clip* clip,Target* target,float start_time){ StartAt(clip,target,start_time,1.0f); }
+void Animation::StartAt(Clip* clip,Target* target,float start_time,float timescale){
+    AddActiveClip(new ActiveClip(clip,target,start_time,timescale));
+}
+
+void Animation::Queue(Clip* clip,ActiveClip* after){
+    QueueClip(after,clip);
+}
+void Animation::Pause(Target *target){if(target->active_clip != null)target->active_clip->timescale=0.0f;}
+void Animation::Stop(Target *target){if(target->active_clip != null)delete target->active_clip;}
+
+
+KeyframeBuilder::KeyframeBuilder(float time,vec4 value){this->time=time;this->value=value;}
+ChannelBuilder::ChannelBuilder(){
+    id=0;
+    value_type = ValueType::FLOAT;
+    interpolate_mode = InterpolateMode::LINEAR;
+}
+ChannelBuilder& ChannelBuilder::ID(int cid){ id= cid;return *this;}
+ChannelBuilder& ChannelBuilder::Type(ValueType type){this->value_type=type;return *this;}
+ChannelBuilder& ChannelBuilder::InterpolateMode(Animation::InterpolateMode mode){this->interpolate_mode=mode;return *this;}
+ChannelBuilder& ChannelBuilder::Keyframe(float time, float val){
+    this->keyframes.Add(new KeyframeBuilder(time,{val,0,0,0}));return *this;}
+ChannelBuilder& ChannelBuilder::Keyframe(float time, vec2 val){
+    this->keyframes.Add(new KeyframeBuilder(time,{val.x,val.y,0,0}));return *this;}
+ChannelBuilder& ChannelBuilder::Keyframe(float time, vec3 val){
+    this->keyframes.Add(new KeyframeBuilder(time,{val.x,val.y,val.z,0}));return *this;}
+ChannelBuilder& ChannelBuilder::Keyframe(float time, vec4 val){
+    this->keyframes.Add(new KeyframeBuilder(time,val));return *this;}
+ChannelBuilder& ChannelBuilder::Keyframe(float time, float* values){
+    vec4 val= {0,0,0,0};
+    for(int i=0;i<WidthOfAnimationType(this->value_type);i++){ ((float*)&val.x)[i] = values[i];}
+    this->keyframes.Add(new KeyframeBuilder(time,val));return *this;}
+Channel* ChannelBuilder::Build(){
+    Channel* ret = new Channel(this->id,this->value_type,this->keyframes.Count());
+    ret->interpolate_mode = this->interpolate_mode;
+    int i=0;
+    int width = WidthOfAnimationType(ret->value_type);
+    for(KeyframeBuilder* frame: this->keyframes){
+        ret->keyframe_times[i] = frame->time;
+        for(int j=0;j<width;j++){
+            ret->keyframe_values[i*width+j] = ((float*)&frame->value)[j];
+        }
+        i++;
+    }
+    return ret;
+}
+void ChannelBuilder::BuildTo(Channel* target){
+    target->id=this->id;
+    target->value_type=this->value_type;
+    target->keyframe_count=this->keyframes.Count();
+    target->interpolate_mode=this->interpolate_mode;
+    target->keyframe_values=malloc(sizeof(float)*WidthOfAnimationType(channel_type)*keyframes);
+    target->keyframe_times=malloc(sizeof(float)*keyframes);
+    int i=0;
+    int width = WidthOfAnimationType(this->value_type);
+    for(KeyframeBuilder* frame: this->keyframes){
+        target->keyframe_times[i] = frame->time;
+        for(int j=0;j<width;j++){
+            target->keyframe_values[i*width+j] = ((float*)&frame->value)[j];
+        }
+        i++;
+    }
+}
+
+
+ClipBuilder::ClipBuilder(){name=nullptr; loop=false; length=0.0f;}
+ClipBuilder& ClipBuilder::Name(char* name){this->name = name;return *this;}
+ClipBuilder& ClipBuilder::Duration(float length){this->length = length;return *this;}
+ClipBuilder& ClipBuilder::Loop(bool loop){this->loop = loop;return *this;}
+ClipBuilder& ClipBuilder::AddChannel(ChannelBuilder& channelbuilder){this->channels.Add(channelbuilder.Build());return *this;}
+Clip* ClipBuilder::Build(){
+    Clip* ret = new Clip(this->name,this->channels.Count());
+    ret->loop=this->loop;
+    ret->length=this->length;
+    int i=0;
+    for(Channel* channel: this->channels){
+        ret->channels[i] = *channel;
+        i++;
+    }
+    return ret;
+}
+void ClipBuilder::BuildTo(Clip* target){
+    target->name=this->name;
+    target->SetChannelCount(this->channels.Count());
+    target->loop=this->loop;
+    target->length=this->length;
+    int i=0;
+    for(Channel* channel: this->channels){
+        target->channels[i] = *channel;
+        i++;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 
 List<ClipInfo> managed_clips(8);
 int active_layer=0;
@@ -89,8 +474,8 @@ AnimationChannel::AnimationChannel(char* channel_name,AnimationType channel_type
 }
 
 AnimationChannel::~AnimationChannel(){
-    if(keyframe_times != null){free(keyframe_times);keyframe_times=null;}
-    if(keyframe_values.fval != null){free(keyframe_values.fval);keyframe_values.fval=null;}
+    DEALLOCATE(keyframe_times)
+    DEALLOCATE(keyframe_values.fval)
 }
 
 void AnimationChannel::SetKeyframeCount(int keyframes){
@@ -221,75 +606,6 @@ void AnimationManager::StopClip(AnimationTarget* target){
     if(target->active_clip != null){delete target->active_clip;target->active_clip=null;}
 }
 
-void LinearInterpolate(float* from, float* to, float weight, float* values, int values_count){
-    for(int i=0;i<values_count;i++){
-        values[i] = to[i]*weight + from[i]*(1.0f-weight);
-    }
-}
-
-//nlerp, consider slerp if appropriate
-void QuaternionLinearInterpolate(quaternion* from,quaternion* to, float weight,quaternion* values, int values_count){
-    for(int i=0;i<values_count;i++){ 
-        values[i].x = to[i].x*weight + from[i].x*(1.0f-weight);
-        values[i].y = to[i].y*weight + from[i].y*(1.0f-weight);
-        values[i].z = to[i].z*weight + from[i].z*(1.0f-weight);
-        values[i].w = to[i].w*weight + from[i].w*(1.0f-weight);
-        values[i].normalize();
-    }
-}
-void QuaternionSphericalInterpolate(quaternion* q1,quaternion* q2, float weight,quaternion* values, int values_count){
-    for(int i=0;i<values_count;i++){ 
-        quaternion from = q1[i];
-        quaternion to = q2[i];
-
-        float dot = to.dot(from);
-        if(dot < 0){
-            dot *= -1;
-            from = from*-1;
-        }
-        if(dot > 0.9995f){
-            QuaternionLinearInterpolate(&from,&to,weight,&values[i],1);
-            return;
-        } 
-
-        float theta_0 = acosf(dot);
-        float theta = theta_0*weight;
-        float sin_theta = sinf(theta);
-        float sin_theta_0 = sinf(theta_0);
-        float s0 = cos(theta) - dot * sin_theta / sin_theta_0;
-        float s1 = sin_theta / sin_theta_0;
-
-        values[i] = from*s0 + to*s1;
-    }
-}
-
-void Interpolate(int type, float* from, float* to, float weight, float* values, int values_count){
-    switch (type)
-    {
-    case 0:
-        LinearInterpolate(from, to, weight, values, values_count);
-        break;
-    
-    default:
-        LinearInterpolate(from, to, weight, values, values_count);
-        break;
-    }
-}
-
-void QInterpolate(int type, float* from, float* to, float weight, float* values, int values_count){
-    switch (type)
-    {
-    case 0:
-        QuaternionSphericalInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
-        //QuaternionLinearInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
-        break;
-    
-    default:
-        QuaternionLinearInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
-        break;
-    }
-}
-
 void UpdateChannel(ClipInfo* current_clip,valptr target,AnimationChannel* channel){
     int last_keyframe =0;
     int next_keyframe=0;
@@ -317,7 +633,7 @@ void UpdateChannel(ClipInfo* current_clip,valptr target,AnimationChannel* channe
                 AnimationManager::StopClip(current_clip->target);
                 break;
             case AnimationEndAction::STOP: //end animation, pause on last frame.
-                if(value_type_is_integer){/* ^ */}
+                if(value_type_is_integer){ }
                 else{
                     memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
                 }
@@ -340,7 +656,7 @@ void UpdateChannel(ClipInfo* current_clip,valptr target,AnimationChannel* channe
                 
 
             default: //case 0
-                if(value_type_is_integer){/* ^ */}
+                if(value_type_is_integer){ }
                 else{
                     memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
                 }

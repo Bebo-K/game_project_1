@@ -1,6 +1,6 @@
 #include <game_project_1/content/base_content.hpp>
 
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 
 #include <game_project_1/component/client/animation_state.hpp>

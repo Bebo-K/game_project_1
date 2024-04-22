@@ -1,6 +1,6 @@
 #include <game_project_1/config.hpp>
 #include <game_project_1/strings.hpp>
-#include <game_project_1/types/data_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/str.hpp>
 #include <game_project_1/io/file.hpp>
 #include <game_project_1/os.hpp>

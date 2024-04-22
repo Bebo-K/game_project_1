@@ -11,8 +11,7 @@ EquipSlot::EquipSlot(){
     name=nullptr;
 }
 EquipSlot::~EquipSlot(){
-    if(name != nullptr)free(name);
-    name=nullptr;
+    DEALLOCATE(name)
 }
     
 int EquipSlot::GetIDByName(char* name){
@@ -51,8 +50,7 @@ void ItemInstance::Clear(){
 
 ItemType::ItemType(){name=nullptr;equip=nullptr;}
 ItemType::~ItemType(){
-    if(name != nullptr)free(name);
-    name=nullptr;
+    DEALLOCATE(name)
     if(equip != nullptr)delete equip;
     equip=nullptr;
 }

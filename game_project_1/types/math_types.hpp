@@ -1,9 +1,33 @@
 #ifndef MATH_TYPES_H
 #define MATH_TYPES_H
 
-#include <game_project_1/types/3d_types.hpp>
+#include <game_project_1/types/primitives.hpp>
 
+//Transforms represent a transformation matrix consisting of a translation, rotation, and scale
+// They should be used for data close to the rendering pipeline, like skeleton animations
+struct Transform{
+    float x,y,z;
+    quaternion rotation;
+    vec3 scale;
 
+    vec3 Position();
+    void Clear();
+};
+
+// Representation of an orientation in world space- generally scale is constant or managed separately
+// rotation.x = pitch of the object (tilt forward being positive axis)
+// rotation.y = turn of the object (clockwise being positive axis)
+// rotation.z = yaw of the object (towards object's right side being positive axis)
+// Where Transform.rotation has no such mappings
+struct Location{
+    float x,y,z;
+    vec3 rotation;
+
+    Location();
+    vec3 Position();
+    Location(vec3 pos,vec3 rot);
+    Transform ToTransform();
+};
 
 struct LinearGradient{
     float a,b;

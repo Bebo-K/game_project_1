@@ -35,6 +35,6 @@ Component* Inventory::Clone(){
 }
 
 void Inventory::Clear(){
-    if(items != null){free(items);items=null;}
+    DEALLOCATE(items)
     inventory_slots=0;
 }
