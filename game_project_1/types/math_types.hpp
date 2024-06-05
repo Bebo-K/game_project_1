@@ -24,6 +24,7 @@ struct Location{
     vec3 rotation;
 
     Location();
+    Location(float x,float y,float z,vec3 rotation);
     vec3 Position();
     Location(vec3 pos,vec3 rot);
     Transform ToTransform();

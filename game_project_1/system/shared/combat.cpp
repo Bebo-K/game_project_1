@@ -10,6 +10,11 @@ AttackType GetUnitAttackType(ClientEntity* e, ClientScene* s){
     return 1;//standing attack
 }
 
+char* GetAnimationForAttackType(Entity* e, AttackType type){
+    return "attack";
+}
+
+
 HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     if(attack_type ==0) return null;
 
@@ -34,18 +39,19 @@ HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     pattern->hitpaths[0]->despawn_time=0.5f;
     pattern->hitpaths[0]->path->length=0.5f;
     pattern->hitpaths[0]->path->name="sphere_forward";
-    AnimationChannel* positionChannel = &pattern->hitpaths[0]->path->channels[0];
-        positionChannel->id = ChannelID("position");
-        positionChannel->interpolate_mode = LINEAR;
-        positionChannel->keyframe_count=2;
-        positionChannel->keyframe_times = new float[2];
-            positionChannel->keyframe_times[0] = 0.0f;
-            positionChannel->keyframe_times[1] = 0.5f;
+
+    Animation::Channel* position_channel = &pattern->hitpaths[0]->path->channels[0];
+        position_channel->id = Animation::ChannelID("position");
+        position_channel->interpolate_mode = Animation::LINEAR;
+        position_channel->keyframe_count=2;
+        position_channel->keyframe_times = new float[2];
+            position_channel->keyframe_times[0] = 0.0f;
+            position_channel->keyframe_times[1] = 0.5f;
     vec3* values = new vec3[2];
         values[0]={0,0,0};
         values[1]={0,0,-1.0f};
 
-    positionChannel->keyframe_values.fval = (float*)values;
+    position_channel->keyframe_values = (float*)values;
 
     return pattern;
 }
@@ -72,8 +78,8 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
 
     if(attack_pattern){
         //terminate current pattern?
-        for(AnimationTarget* running_hitpath_anim: hitboxes->hit_collider_targets){
-            AnimationManager::StopClip(running_hitpath_anim);
+        for(Animation::Target* running_hitpath_anim: hitboxes->hit_collider_targets){
+            Animation::Stop(running_hitpath_anim);
         }
         hitboxes->hit_colliders.Clear();
         hitboxes->hit_collider_targets.Clear();
@@ -117,19 +123,13 @@ void Combat::ClientUpdate(ClientEntity* e, float delta){
             for(HitPath* hitpath: pattern->hitpaths){
                 if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta,hitpath->spawn_time)){
                     //create collider + start animation
-                    AnimationOptions anim_options;
-                        anim_options.timescale=1.0f;
-                        anim_options.end_action=AnimationEndAction::END;
-                        anim_options.next_anim=null;
-                        
                     ShapeCollider* box = new (hitboxes->hit_colliders.Allocate()) ShapeCollider(hitpath->collider);
-                    AnimationTarget* target = 
-                        BuildAnimationTargetForShapeCollider(box,hitboxes->hit_collider_targets.Allocate());
-                    AnimationManager::StartClip(hitpath->path,target, anim_options);
+                    Animation::Start(hitpath->path,
+                        BuildAnimationTargetForShapeCollider(box,hitboxes->hit_collider_targets.Allocate()));
                 }
                 else if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta,hitpath->despawn_time)){
                     int pattern_index = pattern->hitpaths.IndexOf(hitpath);
-                    AnimationManager::StopClip(hitboxes->hit_collider_targets[pattern_index]);
+                    Animation::Stop(hitboxes->hit_collider_targets[pattern_index]);
                     hitboxes->hit_colliders.Delete(pattern_index);
                     hitboxes->hit_collider_targets.Delete(pattern_index);
                 }

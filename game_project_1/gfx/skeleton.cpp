@@ -61,23 +61,9 @@ Pose::Pose(Skeleton* target):anim_target(target->bones.length*3){
         transforms[i].Clear();
         matrices[i].identity();
 
-        anim_target.hooks.Add(
-            Animation::ChannelID(skeleton->bones[i]->name,"translation"),
-            {}
-
-        )
-
-        int transform_channel_id =
-        anim_target.hooks.Add(transform_channel_id, &transforms[i].x);
-        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"translation"),transform_channel_id);
-
-        int rotate_channel_id = Animation::ChannelID(skeleton->bones[i]->name,"rotation");
-        anim_target.hooks.Add(rotate_channel_id, &transforms[i].rotation.x);
-        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"rotation"),rotate_channel_id);
-
-        int scale_channel_id = Animation::ChannelID(skeleton->bones[i]->name,"scale");
-        anim_target.hooks.Add(scale_channel_id, &transforms[i].scale.x);
-        anim_target.channel_names.Add(cstr::append(skeleton->bones[i]->name,'_',"scale"),scale_channel_id);
+        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"translation",Animation::VECTOR3);
+        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"rotation",Animation::QUATERNION);
+        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"scale",Animation::VECTOR3);
     }
 }
 
@@ -108,7 +94,7 @@ void Pose::Calculate(){
 
         matrices[bone_index].set(&bone_matrix);
     }
-    if(anim_hook.active){
+    if(anim_target.enabled){
         for(int i=0; i < bone_count;i++){
             matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
         }
@@ -121,7 +107,7 @@ void Pose::Calculate(){
 }
 
 void Pose::StartAnimation(char* name){
-    Animation::Start(skeleton->GetAnimation(name),anim_target);
+    Animation::Start(skeleton->GetAnimation(name),&anim_target);
 }
 
 

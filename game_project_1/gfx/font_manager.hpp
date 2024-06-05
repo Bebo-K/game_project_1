@@ -37,7 +37,7 @@ namespace FontManager{
         GLuint  atlas_gl_id;
         Image*  glyph_atlas;
         Texture glyph_static_textures[FontManager::precached_codepoints_range_hi-FontManager::precached_codepoints_range_lo];
-        Map<int,Texture*>   glyph_dynamic_textures;
+        Map<int,Texture>   glyph_dynamic_textures;
 
         FontCache();
         FontCache(char* font_filename,int font_size);

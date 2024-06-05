@@ -138,7 +138,7 @@ ServerEntity* SceneManager::TransitionPlayer(Player* player,int from_area, int t
 
     //Overwrite with position
     Location spawn_location = to->level.entrances[entrance_id]->GenerateLocation();
-        player_entity->SetPos(spawn_location.position);
+        player_entity->SetPos(spawn_location.Position());
         player_entity->rotation = spawn_location.rotation;
 
     player_entity->MarkChanged<Identity>();

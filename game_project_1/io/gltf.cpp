@@ -612,11 +612,11 @@ Skeleton* GLTFScene::GetSkeleton(int skeleton_id){
 	return ret;
 }
 
-void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,Skeleton* target){
-	JSONObject* animation = gltf_data->GetArray("animations")->At(animation_id)->ObjectValue();
+void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,int gltf_anim_id,Skeleton* target){
+	JSONObject* animation = gltf_data->GetArray("animations")->At(gltf_anim_id)->ObjectValue();
 	JSONArray* channels = animation->GetArray("channels");
 	 
-	dest->SetName(animation->GetString("name")->string);
+	dest->name= cstr::new_copy(animation->GetString("name")->string);
 	dest->SetChannelCount(channels->count);
 	dest->length= 0.0f;
 
@@ -633,24 +633,23 @@ void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,Skeleton* target){
 		channel->id= (target_type != null) ?
 		 	Animation::ChannelID(target_node_name,target_type) : Animation::ChannelID(target_node_name);
 
-		dest->channel_names.Add( (target_type != null) ? 
-			cstr::append(target_node_name,'_',target_type) : cstr::new_copy(target_node_name),
-			channel->id);
+		dest->channel_names.Add(channel->id, (target_type != null) ? 
+			cstr::append(target_node_name,'_',target_type) : cstr::new_copy(target_node_name));
 
 		if(cstr::compare(target_type,"translation")){
-			channel->value_type= Animation::ValueType.VECTOR3;
+			channel->value_type= Animation::VECTOR3;
 		}
 		else if(cstr::compare(target_type,"rotation")){
-			channel->value_type= Animation::ValueType.QUATERNION;
+			channel->value_type= Animation::QUATERNION;
 		}
 		else if(cstr::compare(target_type,"scale")){
-			channel->value_type= Animation::ValueType.VECTOR3;
+			channel->value_type= Animation::VECTOR3;
 		}
 		else if(cstr::compare(target_type,"weight")){
-			channel->value_type= Animation::ValueType.FLOAT;
+			channel->value_type= Animation::FLOAT;
 		}
 		else{
-			channel->value_type= Animation::ValueType.FLOAT;
+			channel->value_type= Animation::FLOAT;
 		}
 
 		int sampler_id = gltf_channel->GetInt("sampler");
@@ -660,13 +659,13 @@ void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,Skeleton* target){
 
 		char* animation_type = sampler->GetString("interpolation")->string;
 		if(cstr::compare(animation_type,"LINEAR")){
-			channel->interpolate_mode = Animation::InterpolateMode.LINEAR;
+			channel->interpolate_mode = Animation::LINEAR;
 		}
 		else if(cstr::compare(animation_type,"STEP")){
-			channel->interpolate_mode = Animation::InterpolateMode.STEP;
+			channel->interpolate_mode = Animation::STEP;
 		}
 		else if(cstr::compare(animation_type,"CUBICSPLINE")){
-			channel->interpolate_mode = Animation::InterpolateMode.CUBICORSOMETHING;
+			channel->interpolate_mode = Animation::CUBICORSOMETHING;
 		}else{
 			continue;
 		}
@@ -717,7 +716,7 @@ void GLTFScene::GetModel(ModelData* model){
 		int anim_count = gltf_data->GetArray("animations")->count;
 		model->skeleton->animations.Init(anim_count);
 		for(int i=0;i<anim_count;i++){
-			LoadAnimationToClip(model->skeleton->animations[i],model->skeleton);
+			LoadAnimationToClip(model->skeleton->animations[i],i,model->skeleton);
 		}
 	}
 

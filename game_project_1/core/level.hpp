@@ -2,6 +2,7 @@
 #define LEVEL_H
 
 #include <game_project_1/types/primitives.hpp>
+#include <game_project_1/types/math_types.hpp>
 
 struct LevelEntrance{
     vec3 pos;

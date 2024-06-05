@@ -2,6 +2,7 @@
 #define JSON_H
 
 #include <game_project_1/io/stream.hpp>
+#include <game_project_1/types/primitives.hpp>
 
 struct JSONObject;
 struct JSONArray;

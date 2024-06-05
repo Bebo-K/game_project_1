@@ -11,9 +11,9 @@ typedef void (*ClientEntityBuilder)(ClientEntity*,ClientScene*);
 
 
 namespace EntityTemplate{
-    extern IdMap template_ids;
-    extern Map<EntityType,ServerEntityBuilder> server_entity_builders;
-    extern Map<EntityType,ClientEntityBuilder> client_entity_builders;
+    extern Dictionary<char*,int> template_ids;
+    extern Dictionary<EntityType,ServerEntityBuilder> server_entity_builders;
+    extern Dictionary<EntityType,ClientEntityBuilder> client_entity_builders;
 
     void Register(char* name, EntityType id);
     EntityType FromName(char* name);

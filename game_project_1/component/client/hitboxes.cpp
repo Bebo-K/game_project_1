@@ -3,9 +3,9 @@
 
 Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot){
     Animation::Target* hitbox_pos_target = new (slot) Animation::Target(3);
-        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("position"),(float*)&s->center_offset.x);
-        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("rotation"),(float*)&s->rotation.x);
-        hitbox_pos_target->hooks.Add(Animation::ChannelID::FromObject("scale"),(float*)&s->scale.x);
+    hitbox_pos_target->AddHook((float*)&s->center_offset.x,"position",Animation::VECTOR3);
+    hitbox_pos_target->AddHook((float*)&s->rotation.x,"rotation",Animation::VECTOR3);
+    hitbox_pos_target->AddHook((float*)&s->scale.x,"scale",Animation::VECTOR3);
 
     return hitbox_pos_target;
 }

@@ -39,7 +39,7 @@ Controller::Button any_button;
 wchar* input_text=null;            
 wchar  character_code[2]  = {0,0};
 
-Map<int,char*> physical_input_map= Map<int,char*>(8);
+Dictionary<int,char*> physical_input_map= Dictionary<int,char*>(8);
 
 Pool<Input::Key_Button_Bind> button_binds;
 Pool<Input::Key_Axis_Bind> key_axis_binds;

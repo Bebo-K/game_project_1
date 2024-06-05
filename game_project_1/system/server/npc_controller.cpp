@@ -3,7 +3,7 @@
 
 #include <game_project_1/component/server/npc_properties.hpp>
 
-Map<NPCControllerType,NPCControllerCallback> npc_controllers(4);
+Dictionary<NPCControllerType,NPCControllerCallback> npc_controllers(4);
 void EmptyNPCControllerCallback(ServerEntity* e, ServerScene* s){}
 
 void NPCController::FrameUpdate(ServerEntity* e,ServerScene* s){

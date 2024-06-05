@@ -22,24 +22,28 @@ struct Tuple{
 namespace MapUtils{
     template <typename K>
     bool Compare(K k1, K k2){return k1==k2;}
-    inline bool Compare(char* k1, char* k2){return cstr::compare(k1,k2);}
+    bool Compare(char* k1, char* k2);
 
     template <typename K>
     bool IsNull(K k){return k==0;}
-    inline bool IsNull(char* k){return k==nullptr;}
+    bool IsNull(char* k);
+
+    template <typename K>
+    K NullValue(K k){return nullptr;}
+    int NullValue(int k);
 
     template <typename T>
     void Copy(T& t,T* dest){new(dest) T(t);}
-    inline void Copy(char*& t,char** dest){(*dest)=cstr::new_copy(t);}
-    inline void Copy(int& t,int* dest){(*dest)=t;}
+    void Copy(char*& t,char** dest);
+    void Copy(int& t,int* dest);
 
     template <typename T>
     void Set(T* t,T* dest){*dest = *t;}
 
     template <typename T>
     void Unset(T* t){t->~T();}
-    inline void Unset(char** t){DEALLOCATE(*t)}
-    inline void Unset(int* t){(*t)=0;}
+    void Unset(char** t);
+    void Unset(int* t);
 
     template <typename K,typename V>
     struct MapIterator{
@@ -126,7 +130,7 @@ class Map{
     void Remove(K key){
         for(int i=0;i< slots;i++){
             if(MapUtils::IsNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){
+            if(MapUtils::Compare(key,keys[i])){
                 UnsetEntry(i);
                 return;
             }
@@ -228,14 +232,14 @@ class Dictionary{
         free(keys);keys=nullptr;
         free(values);values=nullptr;
     }
-    V Get(K key){
+    V Get(K key){ 
         for(int i=0;i< slots;i++){
             if(MapUtils::IsNull(keys[i]))continue;
             if(MapUtils::Compare(key,keys[i])){return values[i];}
         }
-        return nullptr;
+        return MapUtils::NullValue(values[0]);
     }
-    bool Has(K key){return Get(key)!=nullptr;}
+    bool Has(K key){return !(MapUtils::IsNull(Get(key)));}
     bool Add(K key,V value){
         if(Has(key))return false;
         if(MapUtils::IsNull(key)){logger::exception("Dictionary.Add: Invalid Key");}
@@ -250,7 +254,7 @@ class Dictionary{
     void Remove(K key){
         for(int i=0;i< slots;i++){
             if(MapUtils::IsNull(keys[i]))continue;
-            if(CompareKey(key,keys[i])){
+            if(MapUtils::Compare(key,keys[i])){
                 UnsetEntry(i);
                 return;
             }

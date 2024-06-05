@@ -3,7 +3,7 @@
 
 #include <game_project_1/io/serializer.hpp>
 #include <game_project_1/io/json.hpp>
-#include <game_project_1/types/map.hpp>
+#include <game_project_1/types/pool.hpp>
 #include <game_project_1/game/stats.hpp>
 
 class ItemInstance{
@@ -21,10 +21,11 @@ class ItemInstance{
 };
 
 struct EquipSlot{
+    int id;
     char* name;
     EquipSlot();
     ~EquipSlot();
-    static int GetIDByName(char* name);
+    static EquipSlot* GetByName(char* name);
     void FromJson(JSONObject* json);
 };
 
@@ -57,7 +58,7 @@ struct ItemType{
     //on_remove
 };
 
-extern Map<int,EquipSlot*> EquipSlots;
-extern Map<int,ItemType*> ItemTypes;
+extern Array<EquipSlot> EquipSlots;
+extern Array<ItemType> ItemTypes;
 
 #endif

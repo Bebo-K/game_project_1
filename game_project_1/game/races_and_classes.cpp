@@ -4,8 +4,8 @@
 #include <game_project_1/io/json.hpp>
 #include <game_project_1/io/manifest.hpp>
 
-Map<int,EntityClass*> Classes(4);
-Map<int,EntityRace*> Races(4);
+Map<int,EntityClass> Classes(4);
+Map<int,EntityRace> Races(4);
 
 EntityRace::EntityRace(){name=nullptr;}
 EntityRace::~EntityRace(){

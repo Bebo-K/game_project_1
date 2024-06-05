@@ -6,8 +6,8 @@
 
 using namespace EntityCollision;
 
-Map<CollisionType,ClientHandler> ClientCollisionHandlers;
-Map<CollisionType,ServerHandler> ServerCollisionHandlers;
+Dictionary<CollisionType,ClientHandler> ClientCollisionHandlers;
+Dictionary<CollisionType,ServerHandler> ServerCollisionHandlers;
 
 CollisionResult EntityCollision::CheckCollision(Entity* e1, Entity* e2){
     if(!e1->Has<ColliderSet>() || !e2->Has<ColliderSet>())return CollisionResult(false);

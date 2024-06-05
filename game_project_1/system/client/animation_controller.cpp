@@ -4,7 +4,7 @@
 #include <game_project_1/component/client/model_set.hpp>
 #include <game_project_1/component/client/animation_state.hpp>
 
-Map<AnimationControllerType,AnimationControllerCallback> animation_controllers(4);
+Dictionary<AnimationControllerType,AnimationControllerCallback> animation_controllers(4);
 
 
 void EmptyAnimationControllerCallback(ClientEntity* e, float delta){}
@@ -29,7 +29,7 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
         }
         else{
             if(models){
-                for(Model* m: (*models)){m->StartAnimation(anim_name,loop);}
+                for(Model* m: (*models)){m->StartAnimation(anim_name);}
             }
             //TODO: sprite animation
         }
@@ -40,8 +40,8 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
 void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float percent){
     ModelSet* models = e->Get<ModelSet>();
     for(Model* m:(*models)){
-        if(m->pose != null && m->pose->anim_hook.active_clip != null){
-            m->pose->anim_hook.active_clip->timescale = percent;
+        if(m->pose != null && m->pose->anim_target.active_clip != null){
+            m->pose->anim_target.active_clip->timescale = percent;
         }
     }
 }

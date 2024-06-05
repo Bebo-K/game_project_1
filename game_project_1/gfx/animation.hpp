@@ -43,7 +43,7 @@ namespace Animation{
         float *keyframe_times;
         float *keyframe_values;
         Channel();
-        Channel(ChannelID id,ValueType channel_type,int keyframes);
+        Channel(int cid,ValueType channel_type,int keyframes);
         ~Channel();
         static ChannelBuilder& Builder();
     };
@@ -53,7 +53,11 @@ namespace Animation{
         float* value;
         char* name;
         ValueType type;
-    }
+
+        ChannelHook(float* val,char* name,ValueType value_type);
+        ~ChannelHook();
+    };
+
     struct Target{// Contains information to hook float values to animation channels, and the current clip being applied to those values
         public:
         bool enabled;//If not enabled running clips will not modify hooked values
@@ -61,6 +65,8 @@ namespace Animation{
         ActiveClip *active_clip;//TODO: store as list with blending info
 
         Target(int channel_count);
+        void AddHook(float* val,char* name,ValueType type);
+        void AddHook(float* val,char* name,char* context,ValueType type);
         ~Target();
     };
 
@@ -72,7 +78,7 @@ namespace Animation{
         bool loop;
         int channel_count;
         Channel *channels;
-        IdMap   channel_names;
+        Dictionary <int,char*> channel_names;
 
         Clip();
         Clip(char *anim_name, int num_channels);
@@ -148,7 +154,7 @@ class AnimationManager{
     public:
     static void Init();
     static void Update(float seconds);
-    static void Destroy();
+    static void Free();
 };
 // TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
 // TODO: event system integration

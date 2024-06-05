@@ -80,8 +80,8 @@ bool ShapeCollider::Intersects(Location base, vec3 base_scale, ShapeCollider *c2
         
     vec3 intersect;
 
-    vec3 scaled_origin_1 = base.position + (center_offset * base_scale);
-    vec3 scaled_origin_2 = base2.position + (c2->center_offset * base2_scale);
+    vec3 scaled_origin_1 = base.Position() + (center_offset * base_scale);
+    vec3 scaled_origin_2 = base2.Position() + (c2->center_offset * base2_scale);
 
     vec3 size_1 = scale;
     if(shape != ARC){size_1 = size_1 * base_scale;}

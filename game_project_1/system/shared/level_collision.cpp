@@ -7,8 +7,8 @@
 
 using namespace LevelCollision;
 
-Map<CollisionType,ClientHandler> ClientEntityClassCollisionHandlers;
-Map<CollisionType,ServerHandler> ServerEntityClassCollisionHandlers;
+Dictionary<CollisionType,ClientHandler> ClientEntityClassCollisionHandlers;
+Dictionary<CollisionType,ServerHandler> ServerEntityClassCollisionHandlers;
 
 
 void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){

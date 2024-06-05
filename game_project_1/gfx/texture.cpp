@@ -4,8 +4,8 @@
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/types/map.hpp>
 
-Map<int, Image*> texture_atlases(2);
-Map<char*,Texture*> cached_textures(8);
+Map<int, Image> texture_atlases(2);
+Map<char*,Texture> cached_textures(8);
 GLuint current_atlas_id =-1;
 GLuint empty_texture_id = -1;
 int atlas_x=0,atlas_y=0,atlas_h=0;
@@ -42,8 +42,8 @@ void SubmitImage(Image* image){
 
 Image* CreateAtlas() {
     glGenTextures(1,&current_atlas_id);
-    Image* img = new Image(TextureManager::ATLAS_SIZE,TextureManager::ATLAS_SIZE);
-    texture_atlases.Add((int)current_atlas_id,img);
+    Image* img = new (texture_atlases.Add((int)current_atlas_id)) Image(
+        TextureManager::ATLAS_SIZE,TextureManager::ATLAS_SIZE);
     atlas_x = 0;
     atlas_y = 0;
     atlas_h = 0;
@@ -148,7 +148,13 @@ Texture TextureManager::MapToAtlas(Image* texture_image){
         tex.tex_coords.y =0;
         tex.tex_coords.w =1;
         tex.tex_coords.h =1;
-        texture_atlases.Add((int)tex.atlas_id,texture_image);
+        //Copy image as an atlas
+        Image* atlas_image = texture_atlases.Add((int)tex.atlas_id);
+        //Take over image so original's DTOR does not destroy atlas;
+        memcpy(atlas_image,texture_image,sizeof(Image));
+        texture_image->width=0;
+        texture_image->height=0;
+        texture_image->image_data=nullptr;
     }
     else{//start a new atlas
         CreateAtlas();
@@ -177,9 +183,8 @@ Texture TextureManager::Add(char* texname,Image* texture_image){
     }
     Texture texture_to_cache = MapToAtlas(texture_image);
     if(cached_textures.Get(texname)==null){
-        Texture* cached_tex = (Texture*)malloc(sizeof(Texture));
+        Texture* cached_tex = cached_textures.Add(texname);
         memcpy(cached_tex,&texture_to_cache,sizeof(Texture));
-        cached_textures.Add(texname,cached_tex);
     }
     return texture_to_cache;
 }

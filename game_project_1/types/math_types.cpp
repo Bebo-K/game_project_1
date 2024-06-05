@@ -11,6 +11,10 @@ void Transform::Clear(){
 }
 
 Location::Location(){x=0,y=0,z=0;rotation={0,0,0};}
+Location::Location(float x,float y,float z,vec3 rotation){
+    this->x=x;this->y=y;this->z=z;this->rotation=rotation;
+}
+vec3 Location::Position(){return {x,y,z};}
 Location::Location(vec3 pos,vec3 rot){x=pos.x,y=pos.y,z=pos.z;rotation=rot;}
 Transform Location::ToTransform(){
     return {x,y,z,quaternion::of_euler(rotation.x,rotation.y,rotation.z),{1.0f,1.0f,1.0f}};

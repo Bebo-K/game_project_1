@@ -57,7 +57,7 @@ struct EntityClass{
     void FromJson(JSONObject* json);
 };
 
-extern Map<int,EntityClass*> Classes;
-extern Map<int,EntityRace*> Races;
+extern Map<int,EntityClass> Classes;
+extern Map<int,EntityRace> Races;
 
 #endif

@@ -202,7 +202,7 @@ void quaternion::set_euler(float x,float y,float z){
     z = cx * cy * sz - sx * sy * cz;
 }
 
-static quaternion of_euler(float x,float y,float z){
+quaternion quaternion::of_euler(float x,float y,float z){
     double cx = cosf(x * 0.5);
     double sx = sinf(x * 0.5);
     double cy = cosf(y * 0.5);
@@ -211,10 +211,10 @@ static quaternion of_euler(float x,float y,float z){
     double sz = sinf(z * 0.5);
 
     return{
-        cx * cy * cz + sx * sy * sz,
-        sx * cy * cz - cx * sy * sz,
-        cx * sy * cz + sx * cy * sz,
-        cx * cy * sz - sx * sy * cz
+        (float)(cx * cy * cz + sx * sy * sz),
+        (float)(sx * cy * cz - cx * sy * sz),
+        (float)(cx * sy * cz + sx * cy * sz),
+        (float)(cx * cy * sz - sx * sy * cz)
     };
 }
 

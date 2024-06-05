@@ -13,7 +13,7 @@ struct Area{
     void FromJson(JSONObject* json);
 };
 
-extern Map<int,Area*> Areas;
+extern Map<int,Area> Areas;
 extern Area* ERROR_ROOM;
 
 

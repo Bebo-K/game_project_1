@@ -1,10 +1,8 @@
 #include <game_project_1/game/items.hpp>
 #include <game_project_1/types/str.hpp>
 
-
-Map<int,EquipSlot*> EquipSlots(4);
-Map<int,ItemType*> ItemTypes(4);
-
+Array<EquipSlot> EquipSlots;
+Array<ItemType> ItemTypes;
 
 
 EquipSlot::EquipSlot(){
@@ -14,15 +12,13 @@ EquipSlot::~EquipSlot(){
     DEALLOCATE(name)
 }
     
-int EquipSlot::GetIDByName(char* name){
-    for(int i=0;i<EquipSlots.Count();i++){
-        EquipSlot* slot = EquipSlots.ValueAtIndex(i);
-        if(slot != nullptr && slot->name != nullptr 
-        && cstr::compare(name,slot->name) ){
-            return i;
+EquipSlot* EquipSlot::GetByName(char* name){
+    for(EquipSlot* slot:EquipSlots){
+        if(cstr::compare(slot->name,name)){
+            return slot;
         }
     }
-    return -1;
+    return nullptr;
 }
 
 void EquipSlot::FromJson(JSONObject* json){
@@ -70,7 +66,8 @@ EquipInfo::~EquipInfo(){
     if(stat_mod != nullptr){delete stat_mod;}
 }
 void EquipInfo::FromJson(JSONObject* json){
-    slot_id = EquipSlot::GetIDByName(json->GetString("slot")->string);
+    EquipSlot* slot = EquipSlot::GetByName(json->GetString("slot")->string);
+    slot_id = (slot)? slot->id:-1;
     damage = json->GetInt("damage");
     armor = json->GetInt("armor");
     if(json->HasJObject("stat_mod")){

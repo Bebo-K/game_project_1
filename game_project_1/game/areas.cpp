@@ -3,7 +3,7 @@
 #include <game_project_1/content/base_content.hpp>
 #include <game_project_1/core/entity.hpp>
 
-Map<int,Area*> Areas(4);
+Map<int,Area> Areas(4);
 Area* ERROR_ROOM=nullptr;
 
 

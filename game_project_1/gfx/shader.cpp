@@ -6,7 +6,7 @@
 
 Shader* DEFAULT_SHADER=nullptr;
 Shader* CURRENT_SHADER=nullptr;
-Map<char*,Shader*> CACHED_SHADERS(2);
+Map<char*,Shader> CACHED_SHADERS(2);
 
 
 Shader::Shader(char* vertex_uri,char* fragment_uri){
@@ -176,8 +176,7 @@ void Shader::SetFeature(unsigned int feature_id,bool enabled){
 
 void ShaderManager::Init(){
     logger::debug("Loading default shader..\n");
-    DEFAULT_SHADER = new Shader("default","default");
-    CACHED_SHADERS.Add("default",DEFAULT_SHADER);
+    DEFAULT_SHADER = new (CACHED_SHADERS.Add("default")) Shader("default","default");
     
     AddShader("level_debug");
     AddShader("shape_debug");
@@ -197,21 +196,15 @@ void ShaderManager::Free(){
 }
 
 Shader* ShaderManager::AddShader(char* name){
-    Shader* ret = CACHED_SHADERS.Get(name);
-    if(ret != nullptr)return ret;
+    if(CACHED_SHADERS.Has(name)){return CACHED_SHADERS.Get(name);}
     logger::debug("Caching shader %s\n",name);
-    ret = new Shader(name,name);
-    CACHED_SHADERS.Add(name,ret);
-    return ret;
+    return new (CACHED_SHADERS.Add(name)) Shader(name,name);
 }
 
 Shader* ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri){
-    Shader* ret = CACHED_SHADERS.Get(name);
-    if(ret != nullptr)return ret;
+    if(CACHED_SHADERS.Has(name)){return CACHED_SHADERS.Get(name);}
     logger::debug("Caching shader %s\n",name);
-    ret = new Shader(vertex_uri,fragment_uri);
-    CACHED_SHADERS.Add(name,ret);
-    return ret;
+    return new (CACHED_SHADERS.Add(name)) Shader(vertex_uri,fragment_uri);
 }
 
 Shader* ShaderManager::UseShader(char* name){

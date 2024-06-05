@@ -236,7 +236,7 @@ Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
     err = FT_Render_Glyph(fontface->glyph,FT_RENDER_MODE_NORMAL);
     if(err != 0){logger::warn("Unable to render glyph. Code:%d\n",err);}
 
-    Texture* glyph_tex = new Texture();
+    Texture* glyph_tex = new (glyph_dynamic_textures.Add(codepoint)) Texture();
 
     glyph_tex->atlas_id=atlas_gl_id;
     glyph_tex->height_px= fontface->glyph->bitmap.rows;
@@ -244,7 +244,6 @@ Texture FontManager::FontCache::AddDynamicGlyph(int codepoint){
     glyph_tex->tex_coords = BlitGlyphToAtlas(glyph_atlas,fontface->glyph->bitmap,atlas_next_glyph);
     SubmitAtlas(glyph_atlas,atlas_gl_id);
     
-    glyph_dynamic_textures.Add(codepoint,glyph_tex);
     return *glyph_tex;
 }
 

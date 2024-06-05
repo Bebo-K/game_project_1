@@ -6,7 +6,7 @@
 using namespace Animation;
 
 List<ActiveClip> active_clips(8);
-Map<ActiveClip*,Clip*> queued_clips(8);
+Dictionary<ActiveClip*,Clip*> queued_clips(8);
 void AddActiveClip(ActiveClip* clip){
     active_clips.Add(clip);
     if(clip->target != null){
@@ -31,14 +31,14 @@ void RemoveActiveClip(ActiveClip* clip){
     }
 }
 
-int WidthOfAnimationType(Animation::ValueType type){//number of primitive types per value
+int WidthOfAnimationType(ValueType type){//number of primitive types per value
     switch(type){
         case FLOAT: return 1;
         case VECTOR2:return 2;
         case VECTOR3:return 3;
         case QUATERNION:return 4;
         case OTHER:
-        default: return 4:
+        default: return 4;
     }
 }
 
@@ -49,7 +49,7 @@ int Animation::ChannelID(char* name,char* context){
     return CRC((byte*)name,cstr::len(name)) + CRC((byte*)context,cstr::len(context));
 }
 
-Channel::Channel(){
+Animation::Channel::Channel(){
     id=0;
     value_type=FLOAT;
     interpolate_mode=LINEAR;
@@ -57,60 +57,79 @@ Channel::Channel(){
     keyframe_times=nullptr;
     keyframe_values=nullptr;
 }
-Channel::Channel(int cid,ValueType channel_type,int keyframes){
+Animation::Channel::Channel(int cid,ValueType channel_type,int keyframes){
     id=cid;
     value_type=channel_type;
     interpolate_mode=LINEAR;
     keyframe_count=keyframes;
-    keyframe_times=malloc(sizeof(float)*WidthOfAnimationType(channel_type)*keyframes);
-    keyframe_values=malloc(sizeof(float)*keyframes);
+    keyframe_times=(float*)malloc(sizeof(float)*WidthOfAnimationType(channel_type)*keyframes);
+    keyframe_values=(float*)malloc(sizeof(float)*keyframes);
 }
-Channel::~Channel(){
+Animation::Channel::~Channel(){
     DEALLOCATE(keyframe_times)
     DEALLOCATE(keyframe_values)
 }
-ChannelBuilder& Channel::Builder(){return *new ChannelBuilder();}
+Animation::ChannelBuilder& Channel::Builder(){return *new ChannelBuilder();}
 
 
-Target::Target(int channel_count):hooks(channel_count),channel_names(channel_count){
+Animation::ChannelHook::ChannelHook(float* val,char* name,ValueType value_type){
+    logger::warn("creating hook with name %s\n",name);
+    value=val;
+    name=cstr::new_copy(name);
+    type=value_type;
+}
+Animation::ChannelHook::~ChannelHook(){
+    logger::warn("Deallocating channel hook of name %s\n",name);
+    DEALLOCATE(name)}
+
+Animation::Target::Target(int channel_count):hooks(channel_count){
     enabled=true;
     active_clip=nullptr;
 }
-Target::~Target(){}
+
+void Animation::Target::AddHook(float* val,char* name,ValueType type){
+    new (hooks.Add(ChannelID(name))) ChannelHook(val,name,type);
+}
+void Animation::Target::AddHook(float* val,char* name,char* context, ValueType type){
+    char* target_name = cstr::append(name,'_',context);
+    new (hooks.Add(ChannelID(name,context))) ChannelHook(val,target_name,type);
+    free(target_name);//hook creates a copy
+}
+Animation::Target::~Target(){}
 
 
-Clip::Clip(){
+Animation::Clip::Clip(){
     name=nullptr;
     length=0;
     loop=false;
     channel_count=0;
     channels=nullptr;
 }
-Clip::Clip(char *anim_name, int num_channels){
+Animation::Clip::Clip(char *anim_name, int num_channels){
     name = cstr::new_copy(anim_name);
     length=0;
     channel_count=num_channels;
     channels = (num_channels==0)? null : new Channel[num_channels];
 }
-Clip::~Clip(){
+Animation::Clip::~Clip(){
     DEALLOCATE(name);
     SAFE_DELETE(channels);
     channel_count=0;
 }
-void Clip::SetChannelCount(int num_channels){
+void Animation::Clip::SetChannelCount(int num_channels){
     SAFE_DELETE(channels);
     channel_count=num_channels;
     channels = new Channel[num_channels];
 }
-ClipBuilder& Clip::Builder(){return *new ClipBuilder();}
+Animation::ClipBuilder& Clip::Builder(){return *new ClipBuilder();}
 
-ActiveClip::ActiveClip(Clip* clip,Target* target,float time,float timescale){
+Animation::ActiveClip::ActiveClip(Clip* clip,Target* target,float time,float timescale){
     this->clip=clip;
     this->target=target;
     elapsed_time=time;
     this->timescale=timescale;
 }
-ActiveClip::~ActiveClip(){ RemoveActiveClip(this);}
+Animation::ActiveClip::~ActiveClip(){ RemoveActiveClip(this);}
 
 
 //nlerp, consider slerp if appropriate
@@ -159,8 +178,14 @@ void Interpolate(float* from, float* to, float weight, float* values, int values
 }
 
 void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
+    if(hook == null){
+        logger::warn("Hook does not exist for animation channel '%s' of clip '%s'",
+        current_clip->clip->channel_names.Get(channel->id),
+        current_clip->clip->name);
+        return;
+    }
     if(hook->type != channel->value_type){
-        log::warning("Animation channel '%s' of clip '%s' does not have a matching value type with target channel '%s'",
+        logger::warn("Animation channel '%s' of clip '%s' does not have a matching value type with target channel '%s'",
         current_clip->clip->channel_names.Get(channel->id),
         current_clip->clip->name,
         hook->name);
@@ -204,14 +229,14 @@ void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
             QInterpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
                 &channel->keyframe_values[next_keyframe*channel_width],
-                weight,target,channel_width);
+                weight,hook->value,channel_width);
             break;
         case LINEAR:
         default:
             Interpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
                 &channel->keyframe_values[next_keyframe*channel_width],
-                weight,target,channel_width);
+                weight,hook->value,channel_width);
             break;
     }
 }
@@ -231,8 +256,19 @@ void AnimationManager::Update(float seconds){
             clip = current_clip->clip;
             for(int j=0;j<clip->channel_count;j++){
                 channel = &clip->channels[j];
-                ChannelHook* hook = current_clip->target->hooks.Get(&channel->id);
+                ChannelHook* hook = current_clip->target->hooks.Get(channel->id);
                 UpdateChannel(current_clip,channel,hook);
+                
+                if(hook == null){
+                    logger::warn("\nFound hooks are (looking for %d):",channel->id);
+                    for(Tuple<int,ChannelHook*> entry: current_clip->target->hooks){
+                        logger::warn("\n%d: ",entry.key);
+                        if(entry.value->name != null){
+                            logger::warn(entry.value->name);
+                        }
+                    }
+                    logger::warn("-----\n");
+                }
             }
         }
         if(current_clip->elapsed_time > clip->length && !clip->loop){
@@ -241,7 +277,7 @@ void AnimationManager::Update(float seconds){
         }
     }
 }
-void AnimationManager::Destroy(){
+void AnimationManager::Free(){
     active_clips.Clear();
     queued_clips.Clear();
 }
@@ -299,8 +335,8 @@ void ChannelBuilder::BuildTo(Channel* target){
     target->value_type=this->value_type;
     target->keyframe_count=this->keyframes.Count();
     target->interpolate_mode=this->interpolate_mode;
-    target->keyframe_values=malloc(sizeof(float)*WidthOfAnimationType(channel_type)*keyframes);
-    target->keyframe_times=malloc(sizeof(float)*keyframes);
+    target->keyframe_values=(float*)malloc(sizeof(float)*WidthOfAnimationType(target->value_type)*target->keyframe_count);
+    target->keyframe_times=(float*)malloc(sizeof(float)*target->keyframe_count);
     int i=0;
     int width = WidthOfAnimationType(this->value_type);
     for(KeyframeBuilder* frame: this->keyframes){

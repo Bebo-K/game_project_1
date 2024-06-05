@@ -15,9 +15,9 @@ Drawable::~Drawable(){}
 
 
 void Drawable::SetTransform(Location l,vec3 scale){
-    x=l.position.x;
-    y=l.position.y;
-    z=l.position.z;
+    x=l.x;
+    y=l.y;
+    z=l.z;
     rotation = l.rotation;
     this->scale=scale;
 }

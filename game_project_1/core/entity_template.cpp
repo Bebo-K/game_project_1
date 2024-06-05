@@ -1,13 +1,12 @@
 #include <game_project_1/core/entity_template.hpp>
 
-Map<EntityType,ClientEntityBuilder> EntityTemplate::client_entity_builders;
+Dictionary<EntityType,ClientEntityBuilder> EntityTemplate::client_entity_builders;
 void EmptyClientEntityBuilder(ClientEntity* e,ClientScene* s){}
 
-Map<EntityType,ServerEntityBuilder> EntityTemplate::server_entity_builders;
+Dictionary<EntityType,ServerEntityBuilder> EntityTemplate::server_entity_builders;
 void EmptyServerEntityBuilder(ServerEntity* e,ServerScene* s){}
 
-IdMap EntityTemplate::template_ids;
-
+Dictionary<char*,int> EntityTemplate::template_ids;
 
 void EntityTemplate::Register(char* name, EntityType id){template_ids.Add(name,id);}
 EntityType EntityTemplate::FromName(char* name){
@@ -24,7 +23,10 @@ void EntityTemplate::RegisterBuilders(EntityType type, ServerEntityBuilder serve
 }
 
 void EntityTemplate::Build(EntityType type, ServerEntity* entity, ServerScene* scene){
-    if(!server_entity_builders.Has(type)){logger::warn("Unable to build server entity of type %d, no builder found",type);}
+    if(!server_entity_builders.Has(type)){
+        logger::warn("Unable to build server entity of type %d, no builder found",type);
+        return;
+    }
     server_entity_builders.Get(type)(entity,scene);
 }
 
