@@ -11,7 +11,7 @@ class MainMenu: public UI::Menu {
 
     void OnLoad();
     void OnUnload();
-    void OnUpdate(int frames);
+    void OnUpdate(Timestep delta);
     void OnPaint();
     bool OnInput(Input::Event event_type);
     void OnResize();

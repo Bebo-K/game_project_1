@@ -4,6 +4,7 @@
 #include <game_project_1/core/client_entity.hpp>
 #include <game_project_1/gfx/camera.hpp>
 #include <game_project_1/types/primitives.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/input.hpp>
 
@@ -31,7 +32,7 @@ class CameraManager{
     void AttachCamera(Camera* cam,ClientEntity* entity);
     void DetachCamera();
     bool HandleCameraInput(Input::Event code_type);
-    void Update(float delta);
+    void Update(Timestep delta);
     void PreDraw();
 };
 

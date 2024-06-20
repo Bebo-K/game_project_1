@@ -42,6 +42,11 @@ void DeveloperConsole::Load(){
         rects[1]->color = {0,0,0,0.8};
 }
 
+void DeveloperConsole::OnDestroy(){
+     rects.Clear();
+     texts.Clear();
+}
+
 void DeveloperConsole::OnPaint(){}
 
 void DeveloperConsole::OnMove(){
@@ -61,7 +66,7 @@ void DeveloperConsole::OnMove(){
     }
 }
 
-void DeveloperConsole::OnUpdate(int frames){}
+void DeveloperConsole::OnUpdate(Timestep delta){}
 
 bool DeveloperConsole::OnInput(Input::Event event_type){
     Controller::Button toggle = Controller::GetToggleConsole();

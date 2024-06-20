@@ -35,12 +35,12 @@ void ServerScene::Unload(){
     global_timer=0;
 }
 
-void ServerScene::Update(int frames){
-    for(int i=0;i<frames;i++){
+void ServerScene::Update(Timestep delta){
+    for(int i=0;i<delta.frames;i++){
         for(ServerEntity* entity:entities){
-            NPCController::FrameUpdate(entity,this);
-            Movement::Update(entity,Server::tick_interval);
-            Physics::ServerFrame(entity,this,Server::tick_interval);
+            NPCController::ServerUpdate(entity,this,{1,Server::tick_interval});
+            Movement::Update(entity,{1,Server::tick_interval});
+            Physics::ServerUpdate(entity,this,{1,Server::tick_interval});
         }
     }
 }

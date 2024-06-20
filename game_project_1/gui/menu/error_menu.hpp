@@ -11,7 +11,7 @@ class ErrorMenu: public UI::Menu{
     ErrorMenu();
     
     void OnLoad();
-    void OnUpdate(int frames);
+    void OnUpdate(Timestep delta);
     void SetStatusMessage(wchar* status);
 };
 

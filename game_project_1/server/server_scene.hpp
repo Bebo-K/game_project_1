@@ -3,6 +3,7 @@
 
 #include <game_project_1/core/server_entity.hpp>
 #include <game_project_1/types/list.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/server/server_level.hpp>
 
@@ -27,7 +28,7 @@ class ServerScene{
     void            DeleteEntity(int id);
     ServerEntity*   GetEntity(int id);
 
-    void            Update(int frames);
+    void            Update(Timestep delta);
 
     private:
     int GenerateEntityID();

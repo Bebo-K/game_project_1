@@ -11,7 +11,7 @@ class LoadingMenu: public UI::Menu{
     LoadingMenu();
     
     void OnLoad();
-    void OnUpdate(int frames);
+    void OnUpdate(Timestep delta);
     void SetStatusMessage(wchar* status);
 };
 

@@ -1,6 +1,7 @@
 #ifndef DEV_CONSOLE_H
 #define DEV_CONSOLE_H
 
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/gui/widget.hpp>
 #include <game_project_1/gfx/ui_shape.hpp>
 #include <game_project_1/gfx/font_manager.hpp>
@@ -30,7 +31,7 @@ class DeveloperConsole: public UI::Widget{
 
     void Load();
     void OnPaint();
-    void OnUpdate(int frames);
+    void OnUpdate(Timestep delta);
     bool OnInput(Input::Event event_type);
     void OnMove();
     void OnDestroy();

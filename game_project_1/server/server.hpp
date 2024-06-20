@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include <game_project_1/types/list.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/core/savefile.hpp>
 #include <game_project_1/core/player.hpp>
 #include <game_project_1/signal.hpp>
@@ -25,7 +26,7 @@ class Server{
     void Start();
     void StartShutdown();
 
-    void Update(int frames);
+    void Update(Timestep delta);
     void UpdatePlayers();
 
     void HandleSignals();

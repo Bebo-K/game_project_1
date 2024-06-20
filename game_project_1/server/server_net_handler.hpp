@@ -14,7 +14,7 @@ namespace ServerNetHandler{
     extern Server* server;
     
     void Init(Server* s);
-    void Update(int frames);
+    void Update(Timestep delta);
     void Free();
 
     void HandlePayload(int player_slot,Payload p);

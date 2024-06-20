@@ -52,7 +52,7 @@ class Pose{
     Pose(Skeleton* target);
     ~Pose();
     void StartAnimation(char* name);
-    //Stop Animation?
+    void StopAnimations();
     void Calculate();//sets matrices;
 };
 

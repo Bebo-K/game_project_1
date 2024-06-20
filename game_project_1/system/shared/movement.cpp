@@ -5,7 +5,7 @@
 #include <math.h>
 
 
-void Movement::Update(Entity* e, float delta){
+void Movement::Update(Entity* e, Timestep delta){
     if(!e->Has<MovementProperties>() || !e->Has<MovementState>()){return;}
     MovementProperties* move_props = e->Get<MovementProperties>();
     MovementState* move_state = e->Get<MovementState>();
@@ -28,10 +28,10 @@ void Movement::Update(Entity* e, float delta){
     vec2 horizontal_velocity = e->velocity.xz();
 
     if(horizontal_goal.length_sqr() > 0){
-        float accel_speed = (airborne)?move_props->jump_accel_speed:move_props->accel_speed;
+        float accel_speed = (airborne)? move_props->jump_accel_speed:move_props->accel_speed;
 
-        horizontal_velocity.x += move_state->move_goal.x*accel_speed*delta;
-        horizontal_velocity.y += move_state->move_goal.z*accel_speed*delta;
+        horizontal_velocity.x += move_state->move_goal.x*accel_speed*delta.seconds;
+        horizontal_velocity.y += move_state->move_goal.z*accel_speed*delta.seconds;
     }
 
     float max_speed_sqr = move_props->MaxSpeed(); max_speed_sqr *= max_speed_sqr;
@@ -62,7 +62,7 @@ void Movement::Update(Entity* e, float delta){
     }
     //Jump hold floating
     if(move_state->jump_goal && move_state->is_jumping){
-        if(e->velocity.y > 0){e->velocity.y += delta*move_props->jump_hold_boost;}
+        if(e->velocity.y > 0){e->velocity.y += delta.seconds*move_props->jump_hold_boost;}
     }
     //Jump impulse
     if(move_state->can_jump && move_state->jump_goal){

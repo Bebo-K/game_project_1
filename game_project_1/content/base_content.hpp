@@ -2,6 +2,7 @@
 #define BASE_CONTENT_ANIMATION_CONTROLLERS_H
 
 #include <game_project_1/core/client_entity.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/component/shared/identity.hpp>
 
 #include <game_project_1/component/client/animation_state.hpp>
@@ -15,7 +16,7 @@ namespace BaseContent{
     const EntityType humanoid_template = 1;
     const CollisionType humanoid_collision = 1;
     const AnimationControllerType GROUND_UNIT = 1;
-    void AnimationController_GroundUnit(ClientEntity* e,float ms);
+    void AnimationController_GroundUnit(ClientEntity* e,Timestep delta);
 
     const NPCControllerType NPC_STAND = 1;
     void NPCController_Stand(ServerEntity* e, ServerScene* s);

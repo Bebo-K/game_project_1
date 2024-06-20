@@ -12,7 +12,7 @@ void ClientSignalHandler::Init(Client* c){
 void ClientSignalHandler::Signal(EventSignal val){
     client_signals.Write((byte*)&val);
 }
-void ClientSignalHandler::Update(int frames){
+void ClientSignalHandler::Update(Timestep delta){
     EventSignal signal = {0};
     while(client_signals.Read((byte*)&signal)){
         switch(signal.type){

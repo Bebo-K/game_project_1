@@ -267,6 +267,10 @@ void Model::StartAnimation(char* anim_name){
     if(pose != null){pose->StartAnimation(anim_name);}
 }
 
+void Model::StopAnimations(){
+    if(pose != null){pose->StopAnimations();}
+}
+
 void Model::StartAnimationWithWindup(char* start_anim,char* loop_anim){
     if(pose == null){return;}
     pose->StartAnimation(start_anim);

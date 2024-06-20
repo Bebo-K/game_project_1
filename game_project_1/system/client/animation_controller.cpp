@@ -1,13 +1,14 @@
 #include <game_project_1/system/client/animation_controller.hpp>
 #include <game_project_1/types/map.hpp>
 
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/component/client/model_set.hpp>
 #include <game_project_1/component/client/animation_state.hpp>
 
 Dictionary<AnimationControllerType,AnimationControllerCallback> animation_controllers(4);
 
 
-void EmptyAnimationControllerCallback(ClientEntity* e, float delta){}
+void EmptyAnimationControllerCallback(ClientEntity* e, Timestep delta){}
 
 
 void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop){
@@ -15,6 +16,15 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
     AnimationState* anim_state = e->Get<AnimationState>();
     if(anim_state && anim_name && anim_name != anim_state->anim_name){
         anim_state->anim_name = anim_name;
+         
+        if(models){for(Model* m: (*models)){
+            m->StopAnimations();
+            if(m->pose->anim_target.active_clip != null){
+                logger::exception("how???\n");
+            }
+            
+            }}
+
         if(has_windup){
             char* windup_anim_name = cstr::append(anim_name,"_start");
             char* loop_anim_name = cstr::append(anim_name,"_loop");
@@ -47,7 +57,7 @@ void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float perce
 }
 
 
-void AnimationController::Update(ClientEntity* e, float delta){
+void AnimationController::ClientUpdate(ClientEntity* e, Timestep delta){
     if(!e->Has<AnimationState>()){return;}
     AnimationState* anim_state = e->Get<AnimationState>();
     AnimationControllerCallback callback = GetAnimationControllerCallback(anim_state->controller_type);

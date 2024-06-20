@@ -92,6 +92,9 @@ class List{
         }
         return -1;
     }
+    bool Has(T* object){
+        return GetIndex(object) >= 0;
+    }
     int NextIndex(int start_index){
         int next=start_index;
         while( ++next < length && data[next]== nullptr);

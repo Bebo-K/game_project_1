@@ -19,7 +19,7 @@ byte delta_buffer[Datagram::MAX_DATA_LENGTH];
 void ClientNetHandler::Init(Client* c){client = c;}
 void ClientNetHandler::Free(){client=nullptr;}
 
-void ClientNetHandler::Update(int frames){
+void ClientNetHandler::Update(Timestep delta){
     if(ClientNetwork::IsRunning()){
         Payload payload = ClientNetwork::Recieve();
         while(payload.type != 0){

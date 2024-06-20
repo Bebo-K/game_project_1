@@ -1,6 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/types/map.hpp>
@@ -153,7 +154,7 @@ namespace Animation{
 class AnimationManager{
     public:
     static void Init();
-    static void Update(float seconds);
+    static void Update(Timestep delta);
     static void Free();
 };
 // TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint

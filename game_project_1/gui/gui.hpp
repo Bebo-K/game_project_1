@@ -3,6 +3,7 @@
 
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/list.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/gui/layout.hpp>
 #include <game_project_1/gui/widget/dev_console.hpp>
@@ -45,7 +46,7 @@ class GUI{
     
     //Client events
     void Paint();
-    void Update(ClientScene* scene, int frames);
+    void Update(ClientScene* scene, Timestep delta);
 
     //UI interaction events
     bool OnInput(Input::Event event_type);

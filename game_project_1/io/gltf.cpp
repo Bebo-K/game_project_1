@@ -617,6 +617,8 @@ void GLTFScene::LoadAnimationToClip(Animation::Clip* dest,int gltf_anim_id,Skele
 	JSONArray* channels = animation->GetArray("channels");
 	 
 	dest->name= cstr::new_copy(animation->GetString("name")->string);
+	if(cstr::ends_with(dest->name,"_loop")){dest->loop=true;}
+	if(cstr::contains(dest->name,"run")){dest->loop=true;}
 	dest->SetChannelCount(channels->count);
 	dest->length= 0.0f;
 

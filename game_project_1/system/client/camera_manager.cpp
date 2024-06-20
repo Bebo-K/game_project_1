@@ -25,7 +25,7 @@ void CameraManager::DetachCamera(){
     camera=nullptr;target=nullptr;
 }
 
-void CameraManager::Update(float delta){
+void CameraManager::Update(Timestep delta){
     if(target != null && camera != null){
         float turn_distance_remaining = rotation_goal - camera->turn;
         float turn_delta = turn_distance_remaining*camera_turn_sqr_speed;

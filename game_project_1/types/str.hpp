@@ -20,6 +20,7 @@ namespace cstr{
     bool compare(const char* str1, const char* str2);
     bool compare_caseless(const char* str1, const char* str2);
     bool starts_with(const char* str, const char* start);
+    bool ends_with(const char* str, const char* end);
     bool contains(const char* str, const char* substr);
     char* substr(const char* str,int start,int len);
     char* substr_after(const char* str,char separator);//returns the substring after the first occurance of the separator char

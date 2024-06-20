@@ -3,6 +3,7 @@
 
 #include <game_project_1/signal.hpp>
 #include <game_project_1/client/client.hpp>
+#include <game_project_1/types/timestep.hpp>
 
 namespace ClientSignalType{
     const int CONNECTED_TO_SERVER=102;
@@ -16,7 +17,7 @@ namespace ClientSignalHandler{
     extern Client* client;
 
     void Init(Client* c);
-    void Update(int frames);
+    void Update(Timestep delta);
     void Signal(EventSignal signal);
     void Free();
 

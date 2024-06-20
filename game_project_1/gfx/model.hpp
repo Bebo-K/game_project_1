@@ -72,6 +72,7 @@ class Model: public Drawable{
     void StartAnimation(char* anim_name);
     void StartAnimationWithWindup(char* start_anim,char* loop_anim);
     //void StartAnimationFromOffset(char* anim_name,AnimationOptions options, float elapsed);
+    void StopAnimations();
 
 };
 

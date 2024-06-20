@@ -17,9 +17,9 @@ void Panel::Hide(){
     active=false;
     visible=false;
 }
-void Panel::Update(int frames){
+void Panel::Update(Timestep delta){
     if(!active)return;
-    for(Widget* w: widgets){w->Update(frames);}
+    for(Widget* w: widgets){w->Update(delta);}
 }
 void Panel::Paint(){
     if(!visible)return;

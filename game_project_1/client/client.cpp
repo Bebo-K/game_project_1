@@ -36,7 +36,7 @@ Client::Client() : scene(), ui(),players(){
     my_slot_id=-1;
     my_save_id=0;
     
-    frame_interval = config::frame_interval;
+    frame_interval = config::tick_interval;
     current_players=0;
 }
 
@@ -88,10 +88,9 @@ void Client::Resize(int screen_w,int screen_h){
 }
 
 
-void Client::Update(int frames){ 
-    float seconds = frames*config::frame_interval;
-    AnimationManager::Update(seconds);
-    int frames_to_run = (frames < FRAMESKIP_MAX)?frames:FRAMESKIP_MAX;
+void Client::Update(Timestep delta){ 
+    AnimationManager::Update(delta);
+    int frames_to_run = (delta.frames < FRAMESKIP_MAX)?delta.frames:FRAMESKIP_MAX;
     
     if(frames_to_run >0){
         for(Input::Event input = Input::NextEvent();input != Input::None;input = Input::NextEvent(input)){
@@ -100,28 +99,28 @@ void Client::Update(int frames){
         }
 
         if(scene.global_timer > 0){
-            UpdateScene(frames_to_run,seconds);
+            UpdateScene({frames_to_run,frames_to_run*frame_interval});
             ClientNetHandler::SendPlayerDelta();
         }
-        ui.Update(&scene,frames);
+        ui.Update(&scene,delta);
     }
     Input::Update();
     ClientNetwork::Update();
-    ClientNetHandler::Update(frames);
-    ClientSignalHandler::Update(frames);
+    ClientNetHandler::Update(delta);
+    ClientSignalHandler::Update(delta);
 }
 
-void Client::UpdateScene(int frames,float delta){
-    for(int i=0;i<frames;i++){
+void Client::UpdateScene(Timestep delta){
+    for(int i=0;i<delta.frames;i++){
         for(ClientEntity* entity:scene.entities){
-            Movement::Update(entity,frame_interval);
-            Physics::ClientFrame(entity,&scene,frame_interval);
-            AnimationController::Update(entity,frame_interval);
+            Movement::Update(entity,{1,frame_interval});
+            Physics::ClientUpdate(entity,&scene,{1,frame_interval});
+            AnimationController::ClientUpdate(entity,{1,frame_interval});
         }
     }
 
     scene.camera_manager.Update(delta);
-    scene.global_timer+=frames;
+    scene.global_timer+=delta.frames;
 }
 
 void Client::OnSpawnPlayer(ClientEntity* player){

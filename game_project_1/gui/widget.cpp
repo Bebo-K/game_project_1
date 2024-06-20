@@ -45,7 +45,7 @@ void Widget::Deactivate(){
     active=false;
 }
 
-void Widget::Update(int frames){
+void Widget::Update(Timestep delta){
     if(!active)return;
 }
 void Widget::Paint(){

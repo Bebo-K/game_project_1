@@ -117,7 +117,7 @@ void CharacterCreateMenu::OnLoad(){
 void CharacterCreateMenu::OnUnload(){
     charmenu=nullptr;
 }
-void  CharacterCreateMenu::OnUpdate(int frames){};
+void  CharacterCreateMenu::OnUpdate(Timestep delta){};
 void  CharacterCreateMenu::OnPaint(){}
 
 bool  CharacterCreateMenu::OnInput(Input::Event event_type){return false;}

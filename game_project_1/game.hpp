@@ -5,6 +5,7 @@
 #include <game_project_1/client/client.hpp>
 #include <game_project_1/server/server.hpp>
 #include <game_project_1/test/perf.hpp>
+#include <game_project_1/types/timestep.hpp>
 
 namespace Game{
     extern bool running;
@@ -14,12 +15,9 @@ namespace Game{
     void Start();
     void StartLocalServer();
     void Paint();
-    void Update(int frames);
+    void Update(Timestep delta);
     void Poll();
     void Exit();
-
-    float FrameInterval();
-    float DrawInterval();
 
     //OS Hooks
     void PostRender();

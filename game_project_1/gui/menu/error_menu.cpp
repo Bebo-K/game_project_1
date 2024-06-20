@@ -33,7 +33,7 @@ void ErrorMenu::OnLoad(){
     SetSelected(main_menu_button);
 }
 
-void ErrorMenu::OnUpdate(int frames){}
+void ErrorMenu::OnUpdate(Timestep delta){}
 
 void ErrorMenu::SetStatusMessage(wchar* status){
     status_text_widget->texts[0]->SetString(status);

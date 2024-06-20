@@ -282,6 +282,15 @@ class Dictionary{
         count=0;
     }
 
+    K ReverseLookup(V value){
+        for(int i=0;i< slots;i++){
+            if(MapUtils::IsNull(keys[i]))continue;
+            if(MapUtils::Compare(value,values[i])){
+                return keys[i];
+            }
+        }
+    }
+
     //range-for loop iterator methods
     MapUtils::DictionaryIterator<K,V> begin(){ return {this,NextIndex(-1)};}
     MapUtils::DictionaryIterator<K,V> end(){ return {this,slots};}

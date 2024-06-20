@@ -26,6 +26,7 @@ void ServerMain(){
     
     
     int tick_interval_ms = 1000/config::tickrate;
+    float tick_interval = config::tick_interval;
     long last_tick = OS::time_ms();
     long poll_time = OS::time_ms();
     long delta_ms = poll_time - last_tick;
@@ -41,7 +42,7 @@ void ServerMain(){
                 logger::info("Server skipping %d frames, it may be struggling to keep up.\n",elapsed_frames-FRAMESKIP_MAX);
                 elapsed_frames = FRAMESKIP_MAX;
             }
-            server->Update(elapsed_frames);
+            server->Update({elapsed_frames,elapsed_frames*tick_interval});
             last_tick = poll_time - (delta_ms%tick_interval_ms);
         }
     } while(server->state != Server::EXITING);
@@ -110,15 +111,15 @@ void Server::StartShutdown(){
     ServerNetwork::ShutdownListener();
 }
 
-void Server::Update(int frames){
+void Server::Update(Timestep delta){
     UpdatePlayers();
     for(ServerScene* scene:scene_manager.active_scenes){
-        scene->Update(frames);
+        scene->Update(delta);
         ServerNetHandler::SendEntityDeltas(scene);
     }
     ServerNetwork::Update();
-    ServerNetHandler::Update(frames);
-    ServerSignalHandler::Update(frames);
+    ServerNetHandler::Update(delta);
+    ServerSignalHandler::Update(delta);
 }
 
 void Server::UpdatePlayers(){

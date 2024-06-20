@@ -6,7 +6,7 @@
 Dictionary<NPCControllerType,NPCControllerCallback> npc_controllers(4);
 void EmptyNPCControllerCallback(ServerEntity* e, ServerScene* s){}
 
-void NPCController::FrameUpdate(ServerEntity* e,ServerScene* s){
+void NPCController::ServerUpdate(ServerEntity* e,ServerScene* s,Timestep delta){
     if(!e->Has<NPCProperties>()){return;}
     NPCProperties* npc_state = e->Get<NPCProperties>();
     NPCControllerCallback callback = GetNPCControllerCallback(npc_state->controller_type);

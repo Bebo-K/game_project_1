@@ -11,7 +11,7 @@ void ServerSignalHandler::Init(Server* s){
 void ServerSignalHandler::Signal(EventSignal val){
     server_signals.Write((byte*)&val);
 }
-void ServerSignalHandler::Update(int frames){
+void ServerSignalHandler::Update(Timestep delta){
     EventSignal signal = {0};
     while(server_signals.Read((byte*)&signal)){
         switch(signal.type){

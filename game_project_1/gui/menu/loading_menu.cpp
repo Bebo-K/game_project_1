@@ -21,7 +21,7 @@ void LoadingMenu::OnLoad(){
     AddWidget(status_text_widget);
 }
 
-void LoadingMenu::OnUpdate(int frames){}
+void LoadingMenu::OnUpdate(Timestep delta){}
 
 void LoadingMenu::SetStatusMessage(wchar* status){
     status_text_widget->texts[0]->SetString(status);

@@ -20,8 +20,8 @@ namespace LevelCollision {
 	//void ClientInit();
 	//void ServerInit();
 
-	void ClientFrame(ClientEntity* e,ClientScene* s,float delta);
-	void ServerFrame(ServerEntity* e,ServerScene* s,float delta);
+	void ClientFrame(ClientEntity* e,ClientScene* s,Timestep delta);
+	void ServerFrame(ServerEntity* e,ServerScene* s,Timestep delta);
 	
 	void RunCollisionStep(Entity* e, List<MeshCollider>* meshes,float step_delta,CollisionResult* list);
 	vec3 HandleSolidStepCollisions(Entity* e, vec3 step_movement,CollisionResult* list);

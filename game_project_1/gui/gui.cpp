@@ -79,9 +79,9 @@ void GUI::Paint(){
     }
     developer_console.Paint();
 }
-void GUI::Update(ClientScene* scene,int frames){
-    for(Menu* m: menus){m->Update(frames);}
-    developer_console.Update(frames);
+void GUI::Update(ClientScene* scene,Timestep delta){
+    for(Menu* m: menus){m->Update(delta);}
+    developer_console.Update(delta);
 }
 bool GUI::OnInput(Input::Event event_type){
     if(developer_console.OnInput(event_type))return true;

@@ -12,13 +12,15 @@
 #include <game_project_1/system/client/animation_controller.hpp>
 
 
-void BaseContent::AnimationController_GroundUnit(ClientEntity* e,float ms){
+void BaseContent::AnimationController_GroundUnit(ClientEntity* e,Timestep delta){
     AnimationState* anim_state = e->Get<AnimationState>();
     MovementState* move_state = e->Get<MovementState>();
+    if(!anim_state || !move_state)return;
+
     if(wstr::compare(e->Get<Identity>()->name,L"talkative")){
         move_state->can_jump=false;
     }
-    if(!anim_state || !move_state)return;
+
     ModelSet* models = e->Get<ModelSet>();
     MovementProperties* move_props = e->Get<MovementProperties>();
 

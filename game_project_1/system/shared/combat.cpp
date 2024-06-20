@@ -11,8 +11,13 @@ AttackType GetUnitAttackType(ClientEntity* e, ClientScene* s){
 }
 
 char* GetAnimationForAttackType(Entity* e, AttackType type){
-    return "attack";
+    return "attack_1h_h";
 }
+
+int GetCooldownForAttackType(Entity* e, AttackType type){
+    return 100;
+}
+
 
 
 HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
@@ -30,28 +35,22 @@ HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     HitPattern* pattern = new HitPattern(1);
 
     pattern->max_lifetime=60;
-    pattern->hitpaths[0]->collider.center_offset = {0,0.5*height,0};
+    pattern->hitpaths[0]->collider.center_offset = {0,0.5f*height,0};
     pattern->hitpaths[0]->collider.scale = {1,1,1};// {1.0f*height,1.0f*height,1.0f*height};
     pattern->hitpaths[0]->collider.shape = Collider::SPHERE;
-
-    pattern->hitpaths[0]->path->SetChannelCount(1);
     pattern->hitpaths[0]->spawn_time=0.0f;
     pattern->hitpaths[0]->despawn_time=0.5f;
-    pattern->hitpaths[0]->path->length=0.5f;
-    pattern->hitpaths[0]->path->name="sphere_forward";
-
-    Animation::Channel* position_channel = &pattern->hitpaths[0]->path->channels[0];
-        position_channel->id = Animation::ChannelID("position");
-        position_channel->interpolate_mode = Animation::LINEAR;
-        position_channel->keyframe_count=2;
-        position_channel->keyframe_times = new float[2];
-            position_channel->keyframe_times[0] = 0.0f;
-            position_channel->keyframe_times[1] = 0.5f;
-    vec3* values = new vec3[2];
-        values[0]={0,0,0};
-        values[1]={0,0,-1.0f};
-
-    position_channel->keyframe_values = (float*)values;
+    pattern->hitpaths[0]->path =Animation::Clip::Builder()
+    .Name("sphere_forward")
+    .Duration(0.5f)
+    .Loop(false)
+    .AddChannel(Animation::ChannelBuilder()
+        .ID(Animation::ChannelID("position"))
+        .InterpolateMode(Animation::LINEAR)
+        .Type(Animation::VECTOR3)
+        .Keyframe(0.0f,{0,0,0})
+        .Keyframe(0.5f,{0,0,-1.0f})
+    ).Build();
 
     return pattern;
 }
@@ -63,11 +62,10 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     ActionState* action_state = e->Get<ActionState>();
     ColliderSet* colliders = e->Get<ColliderSet>();
 
-
     HitBoxes* hitboxes = e->Get<HitBoxes>();
-    ModelSet* models = e->Get<ModelSet>();
+    //ModelSet* models = e->Get<ModelSet>();
 
-    if(!colliders || !action_state || !stats || !char_info)return;
+    if(!colliders || !action_state || !stats || !char_info ||!hitboxes)return;
     if(action_state->action_cooldown != 0)return;
     action_state->action_impulse = true;
     action_state->action_cooldown = 100;
@@ -75,6 +73,7 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     AttackType attack_type = GetUnitAttackType(e,s);
     HitPattern* attack_pattern = GetHitPatternForAttackType(e, attack_type);
     char* attack_animation_name = GetAnimationForAttackType(e, attack_type);
+    action_state->action_cooldown = GetCooldownForAttackType(e, attack_type);
 
     if(attack_pattern){
         //terminate current pattern?
@@ -105,7 +104,7 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
 
 void Combat::ServerStartAttack(ServerEntity* e, ServerScene* s){}
 
-void Combat::ServerUpdate(Entity* e, float delta){
+void Combat::ServerFrame(Entity* e,Timestep delta){
     if(!e->Has<ColliderSet>()){return;}
 }
 
@@ -113,28 +112,34 @@ bool FloatCrossesThreshhold(float base,float add,float threshhold){
     return base <= threshhold && (base+add) > threshhold;
 }
 
-void Combat::ClientUpdate(ClientEntity* e, float delta){
-    if(!e->Has<HitBoxes>()){return;}
-     
+void Combat::ClientFrame(ClientEntity* e,Timestep delta){
+    ActionState* action_state = e->Get<ActionState>();
+    if(!action_state){return;}
+    if(action_state->action_cooldown > 0){
+        action_state->action_cooldown --;
+    }
+
     HitBoxes* hitboxes = e->Get<HitBoxes>();
+    if(!hitboxes){return;}
+     
     if(hitboxes->current_pattern != null){
         HitPattern* pattern = hitboxes->current_pattern;
         if(hitboxes->current_pattern_active_time < hitboxes->current_pattern->max_lifetime){
             for(HitPath* hitpath: pattern->hitpaths){
-                if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta,hitpath->spawn_time)){
+                if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta.seconds,hitpath->spawn_time)){
                     //create collider + start animation
                     ShapeCollider* box = new (hitboxes->hit_colliders.Allocate()) ShapeCollider(hitpath->collider);
                     Animation::Start(hitpath->path,
                         BuildAnimationTargetForShapeCollider(box,hitboxes->hit_collider_targets.Allocate()));
                 }
-                else if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta,hitpath->despawn_time)){
+                else if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta.seconds,hitpath->despawn_time)){
                     int pattern_index = pattern->hitpaths.IndexOf(hitpath);
                     Animation::Stop(hitboxes->hit_collider_targets[pattern_index]);
                     hitboxes->hit_colliders.Delete(pattern_index);
                     hitboxes->hit_collider_targets.Delete(pattern_index);
                 }
             }
-            hitboxes->current_pattern_active_time += delta;
+            hitboxes->current_pattern_active_time += delta.seconds;
         }
         else{ hitboxes->CleanupPattern(); }
     }

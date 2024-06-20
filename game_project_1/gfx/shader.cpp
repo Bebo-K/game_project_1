@@ -189,9 +189,6 @@ void ShaderManager::Init(){
 }
 
 void ShaderManager::Free(){
-    for(Tuple<char*,Shader*> shader: CACHED_SHADERS){
-        if(shader.value) delete shader.value;
-    }
     CACHED_SHADERS.Clear();
 }
 

@@ -23,8 +23,8 @@ namespace Combat{
 
     void ClientStartAttack(ClientEntity* e, ClientScene* s);
     void ServerStartAttack(ServerEntity* e, ServerScene* s);
-    void ServerUpdate(Entity* e, float delta);
-    void ClientUpdate(ClientEntity* e, float delta);
+    void ServerFrame(Entity* e, Timestep delta);
+    void ClientFrame(ClientEntity* e, Timestep delta);
 
 };
 

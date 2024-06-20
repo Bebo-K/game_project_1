@@ -11,13 +11,13 @@ Dictionary<CollisionType,ClientHandler> ClientEntityClassCollisionHandlers;
 Dictionary<CollisionType,ServerHandler> ServerEntityClassCollisionHandlers;
 
 
-void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
+void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, Timestep delta){
     if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
     PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
 
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
-    float step_delta = delta/VELOCITY_STEPS;
+    float step_delta = delta.seconds/VELOCITY_STEPS;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
         RunCollisionStep(e,&s->level.collmeshes,step_delta,collision_results);
@@ -32,13 +32,13 @@ void LevelCollision::ClientFrame(ClientEntity* e,ClientScene* s, float delta){
     }  
 }
 
-void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,float delta){
+void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,Timestep delta){
     if(!e->Has<PhysicsProperties>() || !e->Has<PhysicsState>())return;
     PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
 
     CollisionResult collision_results[CollisionResult::MAX_PER_FRAME];
     for(int i=0;i<CollisionResult::MAX_PER_FRAME;i++){collision_results[i].Clear();}
-    float step_delta = delta/VELOCITY_STEPS;
+    float step_delta = delta.seconds/VELOCITY_STEPS;
 
     for(int i=0;i< VELOCITY_STEPS;i++){
         RunCollisionStep(e,&s->level.collmeshes,step_delta,collision_results);

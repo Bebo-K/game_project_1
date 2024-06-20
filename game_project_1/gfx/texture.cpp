@@ -97,10 +97,6 @@ void TextureManager::Init(){
 void TextureManager::Free(){
     for(Tuple<int,Image*> img:texture_atlases){
         glDeleteTextures(1,(GLuint*)&img.key);
-        if(img.value)delete img.value;
-    }
-    for(Tuple<char*,Texture*> tex:cached_textures){
-        if(tex.value)delete tex.value;
     }
     texture_atlases.Clear();
     cached_textures.Clear();

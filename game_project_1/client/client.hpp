@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/gui/gui.hpp>
 #include <game_project_1/signal.hpp>
 #include <game_project_1/gfx/renderer.hpp>
@@ -34,8 +35,8 @@ class Client{
 
     void Paint();
     void Resize(int screen_w,int screen_h);
-    void Update(int frames);
-    void UpdateScene(int frames,float delta);
+    void Update(Timestep delta);
+    void UpdateScene(Timestep delta);
     
     void HandleSignals();
 

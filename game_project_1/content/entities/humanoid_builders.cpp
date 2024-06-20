@@ -64,6 +64,7 @@ void HumanoidClientBuilder(ClientEntity* entity, ClientScene* scene){
         //CustomizeRaceModel(race_model,erm,char_info->appearance);
 
     entity->Set<ModelSet>(models);
+    entity->Set(new HitBoxes());
 }
 
 void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){

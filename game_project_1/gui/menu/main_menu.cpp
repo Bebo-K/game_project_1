@@ -65,7 +65,7 @@ void MainMenu::OnLoad(){
 void MainMenu::OnUnload(){
 
 }
-void  MainMenu::OnUpdate(int frames){};
+void  MainMenu::OnUpdate(Timestep delta){};
 void  MainMenu::OnPaint(){}
 
 bool  MainMenu::OnInput(Input::Event event_type){return false;}

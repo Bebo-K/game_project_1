@@ -5,12 +5,12 @@
 #include <game_project_1/component/client/animation_state.hpp>
 
 
-typedef void (*AnimationControllerCallback)(ClientEntity*,float);
+typedef void (*AnimationControllerCallback)(ClientEntity*,Timestep);
 namespace AnimationController{
 
     const AnimationControllerType NO_CONTROLLER = 0;
 
-    void Update(ClientEntity* e, float delta);
+    void ClientUpdate(ClientEntity* e, Timestep delta);
     void RegisterAnimationControllerCallback(AnimationControllerType type,AnimationControllerCallback);
     AnimationControllerCallback GetAnimationControllerCallback(AnimationControllerType type);
 

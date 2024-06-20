@@ -29,10 +29,10 @@ void Menu::Unload(){
     OnUnload();
     widgets.Clear();
 }
-void Menu::Update(int frames){
+void Menu::Update(Timestep delta){
     if(!active)return;
-    OnUpdate(frames);
-    for(Widget* w: widgets){w->Update(frames);}
+    OnUpdate(delta);
+    for(Widget* w: widgets){w->Update(delta);}
 }
 void Menu::Paint(){
     if(!visible)return;
@@ -152,7 +152,7 @@ void Menu::OnOpen(){}
 void Menu::OnClose(){}
 void Menu::OnLoad(){}
 void Menu::OnUnload(){}
-void Menu::OnUpdate(int frames){}
+void Menu::OnUpdate(Timestep delta){}
 void Menu::OnPaint(){}
 bool Menu::OnInput(Input::Event event_type){return false;}
 void Menu::OnResize(){}

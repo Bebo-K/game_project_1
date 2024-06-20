@@ -13,23 +13,33 @@ void AddActiveClip(ActiveClip* clip){
         if(clip->target->active_clip != null && queued_clips.Has(clip->target->active_clip)){ 
             queued_clips.Remove(clip->target->active_clip);
         }
+        if(clip->target->active_clip != null && clip->target->active_clip != clip){
+            delete clip->target->active_clip;
+        }
         clip->target->active_clip=clip;
     }
 }
-void QueueClip(ActiveClip* after,Clip* newClip){
-    if(active_clips.GetIndex(after) >= 0){
-        queued_clips.Add(after,newClip);
-    }
-}
+
 void RemoveActiveClip(ActiveClip* clip){
     active_clips.Remove(clip);
     if(clip->target != null && clip->target->active_clip==clip){clip->target->active_clip=nullptr;}
     if(queued_clips.Has(clip)){
-        Clip* transition_clup = queued_clips.Get(clip);
         AddActiveClip(new ActiveClip(queued_clips.Get(clip),clip->target,0,clip->timescale));
-        queued_clips.Remove(clip);
     }
 }
+
+
+void QueueClip(ActiveClip* after,Clip* newClip){
+    if(active_clips.Has(after)){
+        queued_clips.Add(after,newClip);
+    }
+}
+
+void UnqueueClip(Clip* c){
+    ActiveClip* before = queued_clips.ReverseLookup(c);
+    if(before != null){queued_clips.Remove(before);}
+}
+
 
 int WidthOfAnimationType(ValueType type){//number of primitive types per value
     switch(type){
@@ -73,13 +83,13 @@ Animation::ChannelBuilder& Channel::Builder(){return *new ChannelBuilder();}
 
 
 Animation::ChannelHook::ChannelHook(float* val,char* name,ValueType value_type){
-    logger::warn("creating hook with name %s\n",name);
+    //logger::warn("creating hook with name %s\n",name);
     value=val;
     name=cstr::new_copy(name);
     type=value_type;
 }
 Animation::ChannelHook::~ChannelHook(){
-    logger::warn("Deallocating channel hook of name %s\n",name);
+    //logger::warn("Deallocating channel hook of name %s\n",name);
     DEALLOCATE(name)}
 
 Animation::Target::Target(int channel_count):hooks(channel_count){
@@ -113,7 +123,7 @@ Animation::Clip::Clip(char *anim_name, int num_channels){
 }
 Animation::Clip::~Clip(){
     DEALLOCATE(name);
-    SAFE_DELETE(channels);
+    if(channels != null){delete[] channels;channels=null;}
     channel_count=0;
 }
 void Animation::Clip::SetChannelCount(int num_channels){
@@ -224,14 +234,13 @@ void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
         if(weight < 0.0f){weight = 0.0f;}
     }
 
-    switch(channel->interpolate_mode){
-        case QUATERNION:
+    switch(channel->value_type){
+        case QUATERNION :
             QInterpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
                 &channel->keyframe_values[next_keyframe*channel_width],
                 weight,hook->value,channel_width);
             break;
-        case LINEAR:
         default:
             Interpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
@@ -244,11 +253,11 @@ void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
 ///////////Animation / Animation Manager
 
 void AnimationManager::Init(){}
-void AnimationManager::Update(float seconds){
+void AnimationManager::Update(Timestep delta){
     Clip* clip; 
     Channel* channel;
     for(ActiveClip* current_clip: active_clips){
-        current_clip->elapsed_time += seconds*current_clip->timescale;
+        current_clip->elapsed_time += delta.seconds*current_clip->timescale;
 
         if(current_clip->target != null &&
          current_clip->target->enabled &&
@@ -271,7 +280,11 @@ void AnimationManager::Update(float seconds){
                 }
             }
         }
-        if(current_clip->elapsed_time > clip->length && !clip->loop){
+        else{
+            logger::warn("Stray animation clip was removed");//TODO: info on this?
+            delete current_clip;
+        }
+        if(current_clip->elapsed_time > current_clip->clip->length && !current_clip->clip->loop){
             //DoPostAnimAction(current_clip);
             delete current_clip;
         }
@@ -285,6 +298,9 @@ void AnimationManager::Free(){
 void Animation::Start(Clip *clip, Target *target){ StartAt(clip,target,0.0f); }
 void Animation::StartAt(Clip* clip,Target* target,float start_time){ StartAt(clip,target,start_time,1.0f); }
 void Animation::StartAt(Clip* clip,Target* target,float start_time,float timescale){
+    if(clip == null){
+        logger::warn("Started empty clip for target");
+    }
     AddActiveClip(new ActiveClip(clip,target,start_time,timescale));
 }
 
@@ -292,8 +308,17 @@ void Animation::Queue(Clip* clip,ActiveClip* after){
     QueueClip(after,clip);
 }
 void Animation::Pause(Target *target){if(target->active_clip != null)target->active_clip->timescale=0.0f;}
-void Animation::Stop(Target *target){if(target->active_clip != null)delete target->active_clip;}
-
+void Animation::Stop(Target *target){
+    if(target->active_clip != null){
+        ActiveClip* active_clip = target->active_clip;
+        queued_clips.Remove(active_clip);
+        target->active_clip=null;
+        delete active_clip;
+        while(target->active_clip != null){
+            delete target->active_clip;
+        }
+    }
+}
 
 KeyframeBuilder::KeyframeBuilder(float time,vec4 value){this->time=time;this->value=value;}
 ChannelBuilder::ChannelBuilder(){
@@ -348,7 +373,6 @@ void ChannelBuilder::BuildTo(Channel* target){
     }
 }
 
-
 ClipBuilder::ClipBuilder(){name=nullptr; loop=false; length=0.0f;}
 ClipBuilder& ClipBuilder::Name(char* name){this->name = name;return *this;}
 ClipBuilder& ClipBuilder::Duration(float length){this->length = length;return *this;}
@@ -376,419 +400,3 @@ void ClipBuilder::BuildTo(Clip* target){
         i++;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-List<ClipInfo> managed_clips(8);
-int active_layer=0;
-bool layer_is_active[ANIMATION_LAYER_COUNT];
-
-int WidthOfAnimationType(AnimationType type){//number of primitive types per value
-    switch(type){
-        case SINGLE_FLOAT: return 1;
-        case SINGLE_INT:return 1;
-        case VECTOR3:return 3;
-        case QUATERNION:return 4;
-        case VECTOR2:return 2;
-    }
-    return 1;
-}
-size_t SizeOfAnimationType(AnimationType type){
-    switch(type){
-        case SINGLE_FLOAT: return sizeof(float);
-        case SINGLE_INT:return sizeof(int);
-        case VECTOR3:return sizeof(vec3);
-        case QUATERNION:return sizeof(quaternion);
-        case VECTOR2:return sizeof(vec2);
-    }
-    return sizeof(float);
-}
-
-bool AnimationTypeIsOfInteger(AnimationType type){
-    switch(type){
-        case SINGLE_FLOAT: return false;
-        case SINGLE_INT:return true;
-        case VECTOR3:return false;
-        case QUATERNION:return false;
-        case VECTOR2:return false;
-    }
-    return false;
-}
-
-ChannelID::ChannelID(char* name){
-    id= CRC((byte*)name,cstr::len(name));
-    optional_channel_name = name;
-}
-
-bool ChannelID::Compare(ChannelID& other){
-    return other.id==id;
-}
-
-
-ClipInfo::ClipInfo(){
-    animation = null;
-    target = null;
-    elapsed_time=0;
-    timescale=0;
-    end_action=0;
-    next_anim = null;
-    layer=0;
-}
-ClipInfo::~ClipInfo(){
-    managed_clips.Remove(this);
-}
-
-AnimationOptions::AnimationOptions(){
-    next_anim=null;
-    timescale = 1.0f;
-    end_action = AnimationEndAction::STOP;
-}
-
-AnimationChannel::AnimationChannel():id(nullptr){
-    value_type = SINGLE_FLOAT;
-    interpolate_mode = LINEAR;
-
-    keyframe_count=0;
-    keyframe_times=null;
-    keyframe_values.fval=null;
-}
-
-AnimationChannel::AnimationChannel(char* channel_name,AnimationType channel_type,int keyframes):id(channel_name){
-    value_type = channel_type;
-    interpolate_mode=LINEAR;
-    keyframe_times = (float*)calloc(keyframes,sizeof(float));
-    keyframe_values.fval = (float*)calloc(keyframes,SizeOfAnimationType(channel_type));
-}
-
-AnimationChannel::~AnimationChannel(){
-    DEALLOCATE(keyframe_times)
-    DEALLOCATE(keyframe_values.fval)
-}
-
-void AnimationChannel::SetKeyframeCount(int keyframes){
-    if(keyframe_times != null){free(keyframe_times);keyframe_times=null;}
-    if(keyframe_values.fval != null){free(keyframe_values.fval);keyframe_values.fval=null;}
-    keyframe_count = keyframes;
-    keyframe_times = (float*)calloc(keyframes,sizeof(float));
-    keyframe_values.fval = (float*)calloc(keyframes,SizeOfAnimationType(value_type));
-}
-
-
-AnimationTarget::AnimationTarget(int channel_count):values(channel_count){
-    active_clip = null;
-    active=false;
-}
-
-AnimationTarget::~AnimationTarget(){
-    if(active_clip != null){delete active_clip; active_clip=null;}
-}
-
-ChannelValue* AnimationTarget::GetValueForChannel(ChannelID& id){
-    for(ChannelValue* val: values){
-        if(val->channel_id.Compare(id)) return val;
-    }
-    return null;
-}
-
-Animation::Animation(){
-    name=null;
-    channels=null;
-    channel_count=0;
-}
-
-Animation::Animation(char* anim_name,int num_channels){
-    if(anim_name==null){name=null;}
-    else{name = cstr::new_copy(anim_name);}
-    channel_count = num_channels;
-    channels = new AnimationChannel[num_channels]();
-}
-
-Animation::~Animation(){
-    if(name != null){free(name);name=null;}
-    delete[] channels;
-    channels=null;
-}
-
-void Animation::SetName(char* anim_name){
-    if(anim_name==null){name=null;}
-    else{name = cstr::new_copy(anim_name);}
-}
-void Animation::SetChannelCount(int num_channels){
-    channel_count = num_channels;
-    channels = new AnimationChannel[num_channels]();
-}
-
-void Animation::DebugPrint(){
-    logger::info("....Animation Name: %s\n",name);
-    logger::info("....Channel Count: %d\n",channel_count);
-    //for(int i=0; i< channel_count;i++){
-    //   logger::info("Animation %d:\n",i);
-    //    channels[i].DebugPrint();
-    //}
-}
-
-//------------------------------------------------//
-//            Animation manager code              //
-//------------------------------------------------//
-
-
-void AnimationManager::Init(){
-    for(int i=0;i< ANIMATION_LAYER_COUNT;i++){
-        layer_is_active[i] = true;
-    }
-}
-void AnimationManager::Free(){
-    managed_clips.Clear();
-}
-
-void AnimationManager::SetActiveLayer(int layer){
-    if(layer > 0 && layer < ANIMATION_LAYER_COUNT){active_layer=layer;}
-}
-int AnimationManager::GetActiveLayer(){
-    return active_layer;
-}
-
-void AnimationManager::StartClip(Animation* anim, AnimationTarget* target){
-    if(target == null)return;
-    if(target->active_clip != null){
-        delete target->active_clip;
-        target->active_clip = null;
-    }
-    if(anim == null)return;//just stop active clip if no animation is supplied.
-    ClipInfo* clip = new ClipInfo();
-    
-    clip->animation=anim;
-    clip->target=target;
-    clip->elapsed_time=0.0f;
-    clip->end_action=AnimationEndAction::STOP;
-    clip->timescale=1.0f;
-    clip->layer=active_layer; 
-    clip->next_anim=null;
-
-    target->active_clip = clip;
-    managed_clips.Add(clip);
-}
-void AnimationManager::StartClip(Animation* anim, AnimationTarget* target, AnimationOptions options){
-    if(target == null)return;
-    if(target->active_clip != null){
-        delete target->active_clip;
-        target->active_clip = null;
-    }
-    if(anim == null)return;//just stop active clip if no animation is supplied.
-    ClipInfo* clip = new ClipInfo();
-    
-    clip->animation=anim;
-    clip->target=target;
-    clip->elapsed_time=0.0f;
-    clip->end_action=options.end_action;
-    clip->timescale=options.timescale;
-    clip->layer=active_layer; 
-    clip->next_anim = options.next_anim;
-
-    target->active_clip = clip;
-    managed_clips.Add(clip);
-}
-
-void AnimationManager::StopClip(AnimationTarget* target){
-    if(target->active_clip != null){delete target->active_clip;target->active_clip=null;}
-}
-
-void UpdateChannel(ClipInfo* current_clip,valptr target,AnimationChannel* channel){
-    int last_keyframe =0;
-    int next_keyframe=0;
-    AnimationType value_type = channel->value_type;
-    int channel_width=WidthOfAnimationType(value_type);
-    bool value_type_is_integer = AnimationTypeIsOfInteger(value_type);
-
-    for(int k=0;k < channel->keyframe_count; k++){
-        if(channel->keyframe_times[k] < current_clip->elapsed_time){last_keyframe = k;}
-    }
-
-    next_keyframe = last_keyframe+1;
-    if(next_keyframe >= channel->keyframe_count){
-        //TODO: end of animation event
-        switch(current_clip->end_action){
-            case AnimationEndAction::END: //end animation and stop
-                //set target to last keyframe position exactly
-                if(value_type_is_integer){
-                    //TODO: lazy dev doesn't care about animating integers 
-                }
-                else{
-                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
-                }
-                current_clip->target->active=false;
-                AnimationManager::StopClip(current_clip->target);
-                break;
-            case AnimationEndAction::STOP: //end animation, pause on last frame.
-                if(value_type_is_integer){ }
-                else{
-                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
-                }
-                AnimationManager::StopClip(current_clip->target);
-                break;
-            case AnimationEndAction::LOOP: //loop animation.
-                while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
-                    current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];
-                }
-                UpdateChannel(current_clip,target,channel);
-                break;
-            case AnimationEndAction::GOTO: //switch to another animation and loop.
-                while(current_clip->elapsed_time >= channel->keyframe_times[last_keyframe]){
-                    current_clip->elapsed_time -= channel->keyframe_times[last_keyframe];
-                }
-                current_clip->end_action= AnimationEndAction::LOOP;
-                if(current_clip->next_anim != null){current_clip->animation = current_clip->next_anim;}
-                current_clip->next_anim = null;
-                break;
-                
-
-            default: //case 0
-                if(value_type_is_integer){ }
-                else{
-                    memcpy(target.fval,&channel->keyframe_values.fval[last_keyframe*channel_width],sizeof(float)*channel_width);
-                }
-                AnimationManager::StopClip(current_clip->target);
-            break;
-        } 
-    }
-    else{
-        float last_time = channel->keyframe_times[last_keyframe];
-        float next_time = channel->keyframe_times[next_keyframe];
-        float weight = (current_clip->elapsed_time - last_time) / (next_time-last_time);
-        if(weight > 1.0f){weight = 1.0f;}
-        if(weight < 0.0f){weight = 0.0f;}
-        //weight = 0;
-        //quaternion interpolation
-        if(value_type == AnimationType::QUATERNION){
-            QInterpolate(channel->interpolate_mode,
-            &channel->keyframe_values.fval[last_keyframe*channel_width],
-            &channel->keyframe_values.fval[next_keyframe*channel_width],
-            weight,
-            target.fval,
-            channel_width
-            );
-        }
-        else if(value_type_is_integer){
-            //IntInterpolate();//TODO: also how do you abbreviate "integer interpolation"?
-        }
-        else{
-            //floating point interpolation(s)
-            Interpolate(channel->interpolate_mode,
-                &channel->keyframe_values.fval[last_keyframe*channel_width],
-                &channel->keyframe_values.fval[next_keyframe*channel_width],
-                weight,
-                target.fval,
-                channel_width
-                );
-        }
-    }
-}
-
-void AnimationManager::Update(float seconds){
-    Animation *animation;
-    AnimationTarget *target;
-    AnimationChannel *channel;
-    valptr value;
-
-    for(ClipInfo* current_clip: managed_clips){
-        if(!layer_is_active[current_clip->layer])continue;
-
-        current_clip->elapsed_time += seconds*current_clip->timescale;
-
-        target = current_clip->target;
-        if(target == null)continue;
-        target->active=true;
-        
-        animation = current_clip->animation;   
-
-        for(int j=0;j<animation->channel_count;j++){
-            channel = &animation->channels[j];
-            value = target->GetValueForChannel(channel->id)->value;
-            UpdateChannel(current_clip,value,channel);
-            if(target->active_clip==null)break;
-            if(animation != current_clip->animation){
-                animation = current_clip->animation;  
-                j=0;
-            }
-        }
-    }
-}
-
-
-/*
-void Animation::Destroy(){
-    if(name != nullptr){free(name);name=nullptr;}
-    for(int i=0;i<channel_count;i++){
-        channels[i].Destroy();
-    }
-    if(channels != nullptr){free(channels);channels=nullptr;}
-}
-void AnimationTarget::Destroy(){
-    if(targets != nullptr){
-        for(int i=0;i<num_targets;i++){targets[i].Destroy();}
-        free(targets);targets=nullptr;}
-    if(values != nullptr){free(values);values=nullptr;}
-}
-void AnimationChannel::Destroy(){
-    target.Destroy();
-    if(keyframe_times != nullptr){free(keyframe_times);keyframe_times=nullptr;}
-    if(keyframe_values != nullptr){free(keyframe_values);keyframe_values=nullptr;}
-}
-void AnimationTarget::Destroy(){
-     This would result in a lot of extra copies of bone names being needed
-    if(object_name!= nullptr){
-        free(object_name);
-        object_name=nullptr;
-    }
-    
-}
-*/

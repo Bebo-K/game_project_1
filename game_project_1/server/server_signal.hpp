@@ -11,7 +11,7 @@ namespace ServerSignalHandler{
     extern Server* server;
 
     void Init(Server* c);
-    void Update(int frames);
+    void Update(Timestep delta);
     void Signal(EventSignal signal);
     void Free();
 

@@ -154,6 +154,16 @@ bool cstr::starts_with(const char* str, const char* start){
     if(str[i]==0 && start[i] != 0)return false;
     return true;
 }
+bool cstr::ends_with(const char* str, const char* end){
+    int i=cstr::len(str)-1;
+    int j=cstr::len(end)-1;
+    for(;i>=0 && j>=0; i--,j--){
+        if(str[i] != end[j])return false;
+    }
+    if(i < 0)return false;
+    return true;
+}
+
 bool cstr::contains(const char* str, const char* substr){
     int i,j;
     for(i=0;str[i] != 0;i++){

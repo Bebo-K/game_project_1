@@ -3,6 +3,7 @@
 
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/primitives.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/types/list.hpp>
 #include <game_project_1/gui/layout.hpp>
 #include <game_project_1/gui/widget.hpp>
@@ -29,7 +30,7 @@ namespace UI{
         //Load/Unload happen for all menus at once at client load/reload
         void Load();
         void Unload();
-        void Update(int frames);
+        void Update(Timestep delta);
         void Paint();
         bool HandleInput(Input::Event event_type);
         bool HandleSelectionInput(Input::Event event_type);
@@ -41,7 +42,7 @@ namespace UI{
         virtual void OnUnload();
         virtual void OnOpen();
         virtual void OnClose();
-        virtual void OnUpdate(int frames);
+        virtual void OnUpdate(Timestep delta);
         virtual void OnPaint();
         virtual bool OnInput(Input::Event event_type);
         virtual void OnResize();

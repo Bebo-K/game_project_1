@@ -20,7 +20,7 @@ ServerComponentMask ServerNetHandler::delta_components = ServerComponentMask(bit
 
 void ServerNetHandler::Init(Server* s){server = s;}
 void ServerNetHandler::Free(){server = nullptr;}
-void ServerNetHandler::Update(int frames){
+void ServerNetHandler::Update(Timestep delta){
     if(!ServerNetwork::IsRunning())return;
     for(int i=0;i<server->max_players;i++){
         if(!ServerNetwork::PlayerConnected(i))continue;

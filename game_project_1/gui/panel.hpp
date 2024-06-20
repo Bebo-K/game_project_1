@@ -20,7 +20,7 @@ namespace UI{
 
         void Show();
         void Hide();
-        void Update(int frames);
+        void Update(Timestep delta);
         void Paint();
         bool OnInput(Input::Event event_type);
         bool OnSignal(EventSignal signal);

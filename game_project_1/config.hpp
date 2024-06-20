@@ -10,8 +10,6 @@ namespace config{
     
     extern int framerate;
     extern float frame_interval;
-    extern int max_drawrate;
-    extern float draw_interval;
     extern int tickrate;
     extern float tick_interval;
 

@@ -5,6 +5,7 @@
 #include <game_project_1/signal.hpp>
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/list.hpp>
+#include <game_project_1/types/timestep.hpp>
 #include <game_project_1/gfx/ui_shape.hpp>
 #include <game_project_1/gfx/sprite.hpp>
 #include <game_project_1/gfx/text.hpp>
@@ -62,7 +63,7 @@ class Widget{
 
     void Activate();
     void Deactivate();
-    void Update(int frames);
+    void Update(Timestep delta);
     void Paint();
     bool HandleInput(Input::Event event_type);
     void HandleResize();

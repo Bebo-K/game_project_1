@@ -21,7 +21,7 @@ class ActionState: public Component{
 	public:
 	
 	Action::ID action_id;
-	int		action_cooldown;//how long until another action can be taken (-1 for infinite)
+	int		action_cooldown;//how long until another action can be taken (negative for infinite)
 	int		action_timer;//how many frames action has been happening 
 	bool	action_impulse;
 	//int target_entity

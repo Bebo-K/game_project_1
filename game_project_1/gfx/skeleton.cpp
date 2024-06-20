@@ -62,8 +62,8 @@ Pose::Pose(Skeleton* target):anim_target(target->bones.length*3){
         matrices[i].identity();
 
         anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"translation",Animation::VECTOR3);
-        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"rotation",Animation::QUATERNION);
-        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"scale",Animation::VECTOR3);
+        anim_target.AddHook(&transforms[i].rotation.x,skeleton->bones[i]->name,"rotation",Animation::QUATERNION);
+        anim_target.AddHook(&transforms[i].scale.x,skeleton->bones[i]->name,"scale",Animation::VECTOR3);
     }
 }
 
@@ -107,7 +107,18 @@ void Pose::Calculate(){
 }
 
 void Pose::StartAnimation(char* name){
-    Animation::Start(skeleton->GetAnimation(name),&anim_target);
+    Animation::Clip* c = skeleton->GetAnimation(name);
+    if(c != null){
+        Animation::Start(c,&anim_target);
+    }
+    else{
+        logger::warn("Cannot start animation '%s', no matching clip found\n", name);
+    }
+    
+}
+
+void Pose::StopAnimations(){
+    Animation::Stop(&anim_target);
 }
 
 
