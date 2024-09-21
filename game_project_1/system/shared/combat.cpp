@@ -1,5 +1,6 @@
 #include <game_project_1/system/shared/combat.hpp>
-
+#include <game_project_1/anim/animator.hpp>
+#include <game_project_1/anim/animation_builders.hpp>
 
 AttackType GetUnitAttackType(ClientEntity* e, ClientScene* s){
     MovementState* movement = e->Get<MovementState>();
@@ -61,11 +62,11 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     Equip* equip = e->Get<Equip>();
     ActionState* action_state = e->Get<ActionState>();
     ColliderSet* colliders = e->Get<ColliderSet>();
+    AnimationState* anim_state = e->Get<AnimationState>();
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();
-    //ModelSet* models = e->Get<ModelSet>();
 
-    if(!colliders || !action_state || !stats || !char_info ||!hitboxes)return;
+    if(!colliders || !action_state || !stats || !char_info ||!hitboxes || !anim_state)return;
     if(action_state->action_cooldown != 0)return;
     action_state->action_impulse = true;
     action_state->action_cooldown = 100;
@@ -85,21 +86,20 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
         hitboxes->current_pattern_active_time=0.0f;
         hitboxes->current_pattern = attack_pattern;
     }
-    if(attack_animation_name){
-        AnimationController::SetAnimationForEntity(e,attack_animation_name,/*windup*/false,/*loop*/false);
+    
+    ModelSet* models = e->Get<ModelSet>();
+    if(attack_animation_name && models){
+        models->StartAnimation(attack_animation_name);
     }
 
     //Start here
     
-
     //TODO-BUT-NOT-NOW: async attack (windup, draw/aim + fire)
     //Client initiates attack
     //Client-side hurtbox is generated + motion started                         X
         //On anim completion, destroy all remaining pattern hitboxes            X
     //Client-side accompanying model animations are played                      ?
         //On anim completion, return to idle                                    X
-    
-
 }
 
 void Combat::ServerStartAttack(ServerEntity* e, ServerScene* s){}

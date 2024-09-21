@@ -22,6 +22,37 @@ void ModelSet::SetPosition(vec3 pos){
     x=pos.x;y=pos.y;z=pos.z;
 }
 
+void ModelSet::StartAnimation(char* animation_name){
+    for(Model* m: (*this)){
+        m->StartAnimation(animation_name);
+    }
+}
+
+void ModelSet::QueueAnimation(char* animation_name){
+    for(Model* m: (*this)){
+        m->SetQueuedAnimation(animation_name);
+    }
+}
+
+void ModelSet::StopAnimation(){
+    for(Model* m: (*this)){
+        m->StopAnimation();
+    }
+}
+
+void ModelSet::PauseAnimation(){
+    for(Model* m: (*this)){
+        m->PauseAnimation();
+    }
+}
+
+//Modifies the play speed of the current clip only 
+void ModelSet::SetAnimationTimescale(float timescale){
+    for(Model* m: (*this)){
+        m->SetAnimationTimescale(timescale);
+    }
+}
+
 Component* ModelSet::Clone(){
     ModelSet* copy = new ModelSet();
     copy->SetPosition({x,y,z});

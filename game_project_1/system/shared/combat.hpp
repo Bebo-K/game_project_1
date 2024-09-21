@@ -6,7 +6,6 @@
 #include <game_project_1/server/server_scene.hpp>
 
 #include <game_project_1/phys/collider.hpp>
-#include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/component/client/hitboxes.hpp>
 
 

@@ -1,6 +1,7 @@
 #include <game_project_1/gfx/skeleton.hpp>
 #include <game_project_1/io/log.hpp>
 #include <stdlib.h>
+#include <game_project_1/anim/animator.hpp>
 
 Skeleton::Skeleton(int num_bones):bones(num_bones),animations(){
     if(num_bones <= 0){
@@ -113,9 +114,34 @@ void Pose::StartAnimation(char* name){
     }
     else{
         logger::warn("Cannot start animation '%s', no matching clip found\n", name);
-    }
-    
+    } 
 }
+
+void Pose::StartAnimation(char* name, float elapsed){
+    Animation::Clip* c = skeleton->GetAnimation(name);
+    if(c != null){
+        Animation::StartAt(c,&anim_target,elapsed);
+    }
+    else{
+        logger::warn("Cannot start animation '%s', no matching clip found\n", name);
+    } 
+}
+
+void Pose::SetQueuedAnimation(char* name){
+    Animation::Clip* c = skeleton->GetAnimation(name);
+    if(c == null){
+        logger::warn("Cannot queue animation '%s', no matching clip found\n", name);
+        return;
+    }
+    if(anim_target.active_clip){
+        Animation::Queue(c,anim_target.active_clip);
+    }
+    else{
+        logger::warn("Cannot set queue animation '%s', no active clip to queue after\n", name);
+        return;
+    }
+}
+
 
 void Pose::StopAnimations(){
     Animation::Stop(&anim_target);

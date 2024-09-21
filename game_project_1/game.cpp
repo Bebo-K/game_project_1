@@ -3,7 +3,6 @@
 #include <game_project_1/gfx/texture.hpp>
 #include <game_project_1/gfx/shader.hpp>
 #include <game_project_1/gfx/model.hpp>
-#include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/io/log.hpp>
 #include <math.h>
 

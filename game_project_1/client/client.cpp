@@ -12,6 +12,7 @@
 #include <game_project_1/game/content.hpp>
 #include <game_project_1/content/base_content.hpp>
 #include <game_project_1/gfx/debugdraw.hpp>
+#include <game_project_1/anim/animator.hpp>
 
 
 Client* Client::instance = nullptr;
@@ -24,7 +25,7 @@ Client::Client() : scene(), ui(),players(){
     ShaderManager::Init();
     TextureManager::Init();
     ModelManager::Init();
-    AnimationManager::Init();  
+    Animator::Init();  
     FontManager::Init();
     ModelManager::Init();
     ClientNetwork::Init();
@@ -48,7 +49,7 @@ Client::~Client(){
     ShaderManager::Free();
     TextureManager::Free();
     ModelManager::Free();
-    AnimationManager::Free();
+    Animator::Free();  
     ClientNetwork::Free();
     ClientNetHandler::Free();
     ClientSignalHandler::Free();
@@ -89,7 +90,7 @@ void Client::Resize(int screen_w,int screen_h){
 
 
 void Client::Update(Timestep delta){ 
-    AnimationManager::Update(delta);
+    Animator::Update(delta);
     int frames_to_run = (delta.frames < FRAMESKIP_MAX)?delta.frames:FRAMESKIP_MAX;
     
     if(frames_to_run >0){

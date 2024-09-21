@@ -8,7 +8,6 @@
 #include <game_project_1/gfx/camera.hpp>
 #include <game_project_1/gfx/model.hpp>
 #include <game_project_1/gfx/sprite.hpp>
-#include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/gfx/drawable.hpp>
 
 
@@ -20,6 +19,11 @@ class ModelSet: public Pool<Model>,public Component,public Drawable{
 	Model* Add(ModelID model_id);
 	virtual void Draw(Camera* cam);
 	void SetPosition(vec3 pos);
+	void StartAnimation(char* animation_name);
+	void QueueAnimation(char* animation_name);
+	void StopAnimation();
+	void PauseAnimation();
+	void SetAnimationTimescale(float timescale);
 
     Component* Clone();
     virtual void Clear();

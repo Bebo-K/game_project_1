@@ -10,52 +10,48 @@
 #include <game_project_1/component/shared/movement_properties.hpp>
 
 #include <game_project_1/system/client/animation_controller.hpp>
+#include <math.h>       /* fmax */
 
 
 void BaseContent::AnimationController_GroundUnit(ClientEntity* e,Timestep delta){
     AnimationState* anim_state = e->Get<AnimationState>();
     MovementState* move_state = e->Get<MovementState>();
-    if(!anim_state || !move_state)return;
-
-    if(wstr::compare(e->Get<Identity>()->name,L"talkative")){
-        move_state->can_jump=false;
-    }
-
     ModelSet* models = e->Get<ModelSet>();
-    MovementProperties* move_props = e->Get<MovementProperties>();
+    if(!anim_state || models)return;
 
-    char* new_anim_name = null;
-    bool loop=true;
-    bool windup=false;
+    if(move_state){
+        MovementProperties* move_props = e->Get<MovementProperties>();
 
-    if(anim_state->movement_type != move_state->current_movement){
-        switch(move_state->current_movement){
-            case IDLE:{new_anim_name="idle";break;}
-            case WALKING:{new_anim_name="walk";break;}
-            case RUNNING:{new_anim_name="run";break;}
-            case JUMPING:{new_anim_name="jump";windup=true;break;}
-            case FALLING:{new_anim_name="fall";windup=true;break;}
-            case LANDING:{new_anim_name="land";loop=false;break;}
-            default: break;
-        }
-        anim_state->movement_type = move_state->current_movement;
-        AnimationController::SetAnimationForEntity(e,new_anim_name,windup,loop);
-    }        
-    
-    if(models && move_props){
-        vec3 velocity = e->velocity;
-        MovementType anim_movement = anim_state->movement_type;
-        float anim_slow_cutoff = 0.5f;
-        //Run/walk animation speed modulation (Only when moving at (anim_slow_cutoff*100)% run/walk speed or less)
-        if(anim_movement==RUNNING || anim_movement==WALKING){
-            float percent_speed = velocity.length()/
-                (anim_movement==RUNNING)? move_props->MaxSpeed():move_props->WalkSpeed();
-            if(percent_speed > anim_slow_cutoff){percent_speed=1.0f;}
-            AnimationController::SetAnimationSpeedForEntity(e,percent_speed);
-        }
-        //Jump apex
-        if(anim_movement==JUMPING && velocity.y < 0.5f){
-            AnimationController::SetAnimationForEntity(e,"fall_start",false,false);
+        if(wstr::compare(e->Get<Identity>()->name,L"talkative")){move_state->can_jump=false;}
+
+        if(anim_state->movement_type != move_state->current_movement){
+            switch(move_state->current_movement){
+                case IDLE:{models->StartAnimation("idle");break;}
+                case WALKING:{models->StartAnimation("walk");break;}
+                case RUNNING:{models->StartAnimation("run");break;}
+                case JUMPING:{
+                    models->StartAnimation("jump_start");
+                    models->QueueAnimation("jump_loop");break;}
+                case FALLING:{
+                    models->StartAnimation("fall_start");
+                    models->QueueAnimation("fall_loop");break;}
+                case LANDING:{models->StartAnimation("land");break;}
+                default: break;
+            }
+            anim_state->movement_type = move_state->current_movement;
+        }    
+        switch(anim_state->movement_type){
+            case WALKING:{
+                models->SetAnimationTimescale(fmin(1.0f,e->velocity.length()/move_props->WalkSpeed()));
+            }
+            case RUNNING:{
+                models->SetAnimationTimescale(fmin(1.0f,e->velocity.length()/move_props->MaxSpeed()));
+            }
+            case JUMPING:{//Start jump apex before capping velocity, should this be in animation?
+                if(e->velocity.length() < 0.5f){
+                    move_state->current_movement = FALLING;
+                }
+            }
         }
     }
 }

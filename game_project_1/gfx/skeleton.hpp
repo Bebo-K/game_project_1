@@ -3,7 +3,7 @@
 
 #include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/math_types.hpp>
-#include <game_project_1/gfx/animation.hpp>
+#include <game_project_1/anim/animation_types.hpp>
 #include <game_project_1/types/arrays.hpp>
 
 //https://www.youtube.com/watch?v=aBN_dEA4jO0
@@ -52,6 +52,8 @@ class Pose{
     Pose(Skeleton* target);
     ~Pose();
     void StartAnimation(char* name);
+    void StartAnimation(char* name,float elapsed);
+    void SetQueuedAnimation(char* name);
     void StopAnimations();
     void Calculate();//sets matrices;
 };

@@ -4,6 +4,7 @@
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/io/log.hpp>
+#include <game_project_1/anim/animator.hpp>
 #include <string.h>
 
 
@@ -267,14 +268,22 @@ void Model::StartAnimation(char* anim_name){
     if(pose != null){pose->StartAnimation(anim_name);}
 }
 
-void Model::StopAnimations(){
-    if(pose != null){pose->StopAnimations();}
+void Model::StartAnimation(char* anim_name,float elapsed){
+    if(pose != null){pose->StartAnimation(anim_name,elapsed);}
 }
 
-void Model::StartAnimationWithWindup(char* start_anim,char* loop_anim){
-    if(pose == null){return;}
-    pose->StartAnimation(start_anim);
-    Animation::Queue(data->skeleton->GetAnimation(loop_anim),pose->anim_target.active_clip);
+void Model::SetQueuedAnimation(char* anim_name){
+    if(pose == null){pose->SetQueuedAnimation(anim_name);}
+}
+
+void Model::StopAnimation(){
+    if(pose != null){pose->StopAnimations();}
+}
+void Model::PauseAnimation(){
+    if(pose != null && pose->anim_target.active_clip != null){pose->anim_target.active_clip->timescale = 0.0f;}
+}
+void Model::SetAnimationTimescale(float timescale){
+    if(pose != null && pose->anim_target.active_clip != null){pose->anim_target.active_clip->timescale = timescale;}
 }
 
 void ModelManager::Init(){

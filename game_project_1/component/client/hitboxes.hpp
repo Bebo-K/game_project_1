@@ -3,9 +3,9 @@
 
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/phys/collider.hpp>
-#include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/types/pool.hpp>
+#include <game_project_1/anim/animation_types.hpp>
 
 Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot);
 

@@ -1,5 +1,5 @@
-#include "game_project_1/component/client/hitboxes.hpp"
-
+#include <game_project_1/component/client/hitboxes.hpp>
+#include <game_project_1/anim/animator.hpp>
 
 Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot){
     Animation::Target* hitbox_pos_target = new (slot) Animation::Target(3);

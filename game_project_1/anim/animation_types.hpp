@@ -1,5 +1,5 @@
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#ifndef ANIMATION_TYPES_H
+#define ANIMATION_TYPES_H
 
 #include <game_project_1/types/timestep.hpp>
 #include <game_project_1/types/primitives.hpp>
@@ -14,6 +14,7 @@ const int ANIMATION_LAYER_SCENE = 1;
 const int ANIMATION_LAYER_UI = 2;
 const int ANIMATION_LAYER_USER = 3;
 
+
 namespace Animation{
 
     enum ValueType : short {
@@ -23,6 +24,8 @@ namespace Animation{
         QUATERNION,
         OTHER,
     };
+
+    int WidthOfAnimationType(ValueType type);
 
     enum InterpolateMode : short {
         LINEAR,
@@ -89,78 +92,29 @@ namespace Animation{
         static ClipBuilder& Builder();
     };
 
+    class Sequence;
     struct ActiveClip
     { // Info about the currently running animation
         Clip *clip;
         Target *target;
         float elapsed_time;
         float timescale;
+        Sequence* parent_sequence;
 
-        ActiveClip(Clip* clip,Target* target,float time,float timescale);
+        ActiveClip(Clip* clip,Target* target);
+        ActiveClip(Clip* clip,Target* target,float time,float timescale,Sequence* parent);
         ~ActiveClip();
+        private: 
     };
 
-    struct KeyframeBuilder{
-        float time;
-        vec4 value;
-        KeyframeBuilder(float time,vec4 value);
-    };
-    class ChannelBuilder{
-        private:
-        int id;
-        ValueType value_type;
-        InterpolateMode interpolate_mode;
-        List<KeyframeBuilder> keyframes;
 
-        public:
-        ChannelBuilder();
-        ChannelBuilder& ID(int cid);
-        ChannelBuilder& Type(ValueType type);
-        ChannelBuilder& InterpolateMode(InterpolateMode mode);
-        ChannelBuilder& Keyframe(float time, float val);
-        ChannelBuilder& Keyframe(float time, vec2 val);
-        ChannelBuilder& Keyframe(float time, vec3 val);
-        ChannelBuilder& Keyframe(float time, vec4 val);
-        ChannelBuilder& Keyframe(float time, float* values);
-        Channel* Build();
-        void BuildTo(Channel* target);
-    };
-
-    class ClipBuilder{
-        private:
-        char *name;
-        float length;
-        bool loop;
-        List<Channel> channels;
-
-        public:
-        ClipBuilder();
-        ClipBuilder& Name(char* name);
-        ClipBuilder& Duration(float length);
-        ClipBuilder& Loop(bool loop);
-        ClipBuilder& AddChannel(ChannelBuilder& channelbuilder);
-        Clip* Build();
-        void BuildTo(Clip* target);
-    };
-
-    void Start(Clip *clip, Target *target);
-    void StartAt(Clip* clip,Target* target,float start_time);
-    void StartAt(Clip* clip,Target* target,float start_time,float timescale);
-    void Queue(Clip* clip,ActiveClip* after);
-    void Stop(Target *target);
-    void Pause(Target *target);
 }
 
-class AnimationManager{
-    public:
-    static void Init();
-    static void Update(Timestep delta);
-    static void Free();
-};
+
+
 // TODO: behaviors for starting clips on existings targets. Replace clip/Layer clips/Start new clip from same timepoint
 // TODO: event system integration
 // TODO: pause layer
-
 
 
 // TODO: AnimationBuilder

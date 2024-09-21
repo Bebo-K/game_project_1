@@ -10,53 +10,6 @@ Dictionary<AnimationControllerType,AnimationControllerCallback> animation_contro
 
 void EmptyAnimationControllerCallback(ClientEntity* e, Timestep delta){}
 
-
-void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop){
-    ModelSet* models = e->Get<ModelSet>();
-    AnimationState* anim_state = e->Get<AnimationState>();
-    if(anim_state && anim_name && anim_name != anim_state->anim_name){
-        anim_state->anim_name = anim_name;
-         
-        if(models){for(Model* m: (*models)){
-            m->StopAnimations();
-            if(m->pose->anim_target.active_clip != null){
-                logger::exception("how???\n");
-            }
-            
-            }}
-
-        if(has_windup){
-            char* windup_anim_name = cstr::append(anim_name,"_start");
-            char* loop_anim_name = cstr::append(anim_name,"_loop");
-
-            if(models){
-                for(Model* m: (*models)){m->StartAnimationWithWindup(windup_anim_name,loop_anim_name);}
-            }
-            //TODO: sprite animation
-
-            free(loop_anim_name);
-            free(windup_anim_name);
-        }
-        else{
-            if(models){
-                for(Model* m: (*models)){m->StartAnimation(anim_name);}
-            }
-            //TODO: sprite animation
-        }
-    }
-}
-
-//Modifies the play speed of the current clip only 
-void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float percent){
-    ModelSet* models = e->Get<ModelSet>();
-    for(Model* m:(*models)){
-        if(m->pose != null && m->pose->anim_target.active_clip != null){
-            m->pose->anim_target.active_clip->timescale = percent;
-        }
-    }
-}
-
-
 void AnimationController::ClientUpdate(ClientEntity* e, Timestep delta){
     if(!e->Has<AnimationState>()){return;}
     AnimationState* anim_state = e->Get<AnimationState>();
