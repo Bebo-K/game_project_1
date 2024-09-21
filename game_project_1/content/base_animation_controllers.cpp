@@ -29,17 +29,20 @@ void BaseContent::AnimationController_GroundUnit(ClientEntity* e,Timestep delta)
     bool windup=false;
 
     if(anim_state->movement_type != move_state->current_movement){
-        switch(move_state->current_movement){
-            case IDLE:{new_anim_name="idle";break;}
-            case WALKING:{new_anim_name="walk";break;}
-            case RUNNING:{new_anim_name="run";break;}
-            case JUMPING:{new_anim_name="jump";windup=true;break;}
-            case FALLING:{new_anim_name="fall";windup=true;break;}
-            case LANDING:{new_anim_name="land";loop=false;break;}
-            default: break;
+
+        if(anim_state->action_state == 0){
+            switch(move_state->current_movement){
+                case IDLE:{new_anim_name="idle";break;}
+                case WALKING:{new_anim_name="walk";break;}
+                case RUNNING:{new_anim_name="run";break;}
+                case JUMPING:{new_anim_name="jump";windup=true;break;}
+                case FALLING:{new_anim_name="fall";windup=true;break;}
+                case LANDING:{new_anim_name="land";loop=false;break;}
+                default: break;
+            }
+            anim_state->movement_type = move_state->current_movement;
+            AnimationController::SetAnimationForEntity(e,new_anim_name,windup,loop);
         }
-        anim_state->movement_type = move_state->current_movement;
-        AnimationController::SetAnimationForEntity(e,new_anim_name,windup,loop);
     }        
     
     if(models && move_props){

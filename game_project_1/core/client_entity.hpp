@@ -6,7 +6,7 @@
 
 class ClientEntity: public Entity{
     private:
-    const static int    cli_component_slots = 3;
+    const static int    cli_component_slots = 4;
     Component*          cli_components[cli_component_slots];
 
     template<typename T>

@@ -6,9 +6,9 @@
 #include <game_project_1/types/timestep.hpp>
 #include <game_project_1/client/client_scene.hpp>
 #include <game_project_1/gui/layout.hpp>
-#include <game_project_1/gui/widget/dev_console.hpp>
 
 #include <game_project_1/gui/menu.hpp>
+#include <game_project_1/gui/menu/developer_layer.hpp>
 #include <game_project_1/gui/menu/main_menu.hpp>
 #include <game_project_1/gui/menu/options_menu.hpp>
 #include <game_project_1/gui/menu/loading_menu.hpp>
@@ -23,17 +23,15 @@ class GUI{
     public:
 
     List<UI::Menu>      menus;
-    DeveloperConsole    developer_console;
-
     //List<Widget>      world_anchored_elements; TODO: things like player nameplates
 
+    DeveloperLayer*      developer_layer;
     MainMenu*            main_menu;
     OptionsMenu*         options_menu;
     LoadingMenu*         loading_menu;
     ErrorMenu*           error_menu;
     IngameMenu*          ingame_menu;
     CharacterCreateMenu* character_create_menu;
-
 
     GUI();
     void Load();
@@ -52,9 +50,6 @@ class GUI{
     bool OnInput(Input::Event event_type);
     void OnSignal(EventSignal signal);
     void OnResize(int screen_w,int screen_h);
-
-    //Debug
-    void DebugLog(wchar* str);
 };
 
 

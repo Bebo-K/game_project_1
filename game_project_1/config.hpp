@@ -20,6 +20,7 @@ namespace config{
     extern int network_ping_interval;
     extern int network_packet_expiry;
     extern int network_timeout;
+    extern bool enable_dev_console;
     extern bool show_console;
     extern bool show_fps_counter;
     extern bool debug_mode;
@@ -51,7 +52,6 @@ struct ConfigEntry{
     char* name;
     config::ConfigEntryType type;
     void* primitive;
-
 
     ConfigEntry(const char* entry_name,config::ConfigEntryType entry_type,void* entry_data);
     ~ConfigEntry();

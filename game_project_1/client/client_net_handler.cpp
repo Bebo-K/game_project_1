@@ -9,6 +9,8 @@
 #include <game_project_1/component/shared/movement_state.hpp>
 #include <game_project_1/component/shared/action_state.hpp>
 
+#include <game_project_1/gui/widget/dev_console.hpp>
+
 
 Client* ClientNetHandler::client=nullptr;
 
@@ -52,7 +54,7 @@ void ClientNetHandler::HandlePayload(Payload payload){
             break;
         }
         case PacketID::CHAT:{
-            client->ui.DebugLog((wchar*)payload.data);
+            DeveloperConsole::Write((wchar*)payload.data);
             break;
         }
         case PacketID::PLYR:{
@@ -80,7 +82,7 @@ void ClientNetHandler::HandlePayload(Payload payload){
             wchar* persona = player_disconnect.GetPlayerName();
             wchar* reason = player_disconnect.GetReason();
 
-            client->ui.DebugLog(wstr::allocf(L"Player %ls disconnected (%ls)",persona,reason));
+            DeveloperConsole::Write((wstr::allocf(L"Player %ls disconnected (%ls)",persona,reason)));
 
             if(player_id > 0 && player_id < client->players.length){
                 client->players[player_id]->Clear();

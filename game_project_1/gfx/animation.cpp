@@ -10,9 +10,6 @@ Dictionary<ActiveClip*,Clip*> queued_clips(8);
 void AddActiveClip(ActiveClip* clip){
     active_clips.Add(clip);
     if(clip->target != null){
-        if(clip->target->active_clip != null && queued_clips.Has(clip->target->active_clip)){ 
-            queued_clips.Remove(clip->target->active_clip);
-        }
         if(clip->target->active_clip != null && clip->target->active_clip != clip){
             delete clip->target->active_clip;
         }
@@ -25,6 +22,7 @@ void RemoveActiveClip(ActiveClip* clip){
     if(clip->target != null && clip->target->active_clip==clip){clip->target->active_clip=nullptr;}
     if(queued_clips.Has(clip)){
         AddActiveClip(new ActiveClip(queued_clips.Get(clip),clip->target,0,clip->timescale));
+        queued_clips.Remove(clip);
     }
 }
 

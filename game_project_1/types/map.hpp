@@ -82,6 +82,7 @@ class Map{
         if(MapUtils::IsNull(keys[slot]))return;
         MapUtils::Unset(&keys[slot]);
         MapUtils::Unset(&values[slot]);
+        keys[slot]=MapUtils::NullValue(keys[slot]);
     }
     void SetKey(int slot,K key){MapUtils::Copy(key,&keys[slot]);}
     void SetValue(int slot,V value){MapUtils::Set(value,&values[slot]);}
@@ -204,7 +205,9 @@ class Dictionary{
     void UnsetEntry(int slot){
         if(MapUtils::IsNull(keys[slot]))return;
         MapUtils::Unset(&keys[slot]);
+        memset(&keys[slot],0,sizeof(K));
         MapUtils::Unset(&values[slot]);
+        memset(&keys[slot],0,sizeof(K));
     }
     void SetKey(int slot,K key){MapUtils::Copy(key,&keys[slot]);}
     void SetValue(int slot,V value){MapUtils::Copy(value,&values[slot]);}

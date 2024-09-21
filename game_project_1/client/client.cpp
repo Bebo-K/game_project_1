@@ -8,6 +8,7 @@
 
 #include <game_project_1/system/shared/physics.hpp>
 #include <game_project_1/system/shared/movement.hpp>
+#include <game_project_1/system/shared/combat.hpp>
 
 #include <game_project_1/game/content.hpp>
 #include <game_project_1/content/base_content.hpp>
@@ -116,6 +117,7 @@ void Client::UpdateScene(Timestep delta){
             Movement::Update(entity,{1,frame_interval});
             Physics::ClientUpdate(entity,&scene,{1,frame_interval});
             AnimationController::ClientUpdate(entity,{1,frame_interval});
+            Combat::ClientUpdate(entity,{1,frame_interval});
         }
     }
 

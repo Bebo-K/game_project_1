@@ -10,9 +10,10 @@ GUI* GUI::instance = nullptr;
 
 using namespace UI;
 
-GUI::GUI():menus(),developer_console(){
+GUI::GUI():menus(),developer_layer(){
     GUI::instance=this;
 
+    developer_layer = new DeveloperLayer();
     main_menu = new MainMenu();
     options_menu = new OptionsMenu();
     loading_menu = new LoadingMenu();
@@ -20,6 +21,7 @@ GUI::GUI():menus(),developer_console(){
     ingame_menu = new IngameMenu();
     character_create_menu = new CharacterCreateMenu();
 
+    menus.Add(developer_layer);
     menus.Add(main_menu);
     menus.Add(options_menu);
     menus.Add(loading_menu);
@@ -31,7 +33,7 @@ GUI::GUI():menus(),developer_console(){
 void GUI::Load(){
     logger::info("Loading GUI...");
 
-    developer_console.Load();
+    developer_layer->Load();
     main_menu->Load();
     options_menu->Load();
     loading_menu->Load();
@@ -39,25 +41,21 @@ void GUI::Load(){
     error_menu->Load();
     character_create_menu->Load();
 
-    developer_console.MoveTo(nullptr,Top,Left,{2,2});
-    
-    
-    DeveloperConsole::Write(L"Hello World! GUI Initialized.");
-
     OnResize(Window::width,Window::height);
     logger::info("done\n");
 }
 
 void GUI::Unload(){
     for(Menu* m: menus){m->Unload();}
-    
 }
+
 void GUI::Reload(){
     Unload();
     Load();
 }
 
 void GUI::CloseAll(){
+    developer_layer->Close();
     main_menu->Close();
     options_menu->Close();
     loading_menu->Close();
@@ -71,33 +69,32 @@ GUI* GUI::GetGUI(){return instance;}
 Menu* GUI::GetMenu(int id){
     for(Menu* m: menus){if(id == m->id)return m;}
     return null;
-}
-    
+}   
 void GUI::Paint(){
     for(Menu* m: menus){
         m->Paint();
     }
-    developer_console.Paint();
 }
 void GUI::Update(ClientScene* scene,Timestep delta){
     for(Menu* m: menus){m->Update(delta);}
-    developer_console.Update(delta);
 }
 bool GUI::OnInput(Input::Event event_type){
-    if(developer_console.OnInput(event_type))return true;
+    Controller::Button toggle = Controller::GetToggleConsole();
+    if(event_type == Input::Event::ToggleConsole && 
+    toggle.IsJustPressed() &&
+    !developer_layer->active &&
+    config::enable_dev_console){
+        developer_layer->active=true;
+        developer_layer->visible=true;
+        return true;
+    }
     for(Menu* m: menus){if(m->HandleInput(event_type))return true;}
     return false;
 }
 void GUI::OnSignal(EventSignal signal){
-    if(developer_console.HandleSignal(signal))return;
     for(Menu* m: menus){if(m->HandleSignal(signal))return;}
 }
 
 void GUI::OnResize(int screen_w,int screen_h){
-    developer_console.HandleResize();
     for(Menu* m: menus){m->HandleResize();}
-}
-
-void GUI::DebugLog(wchar* str){
-    DeveloperConsole::Write(str);
 }

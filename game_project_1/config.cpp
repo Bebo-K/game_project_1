@@ -24,6 +24,7 @@ int config::network_ping_interval   = 2000;
 int config::network_packet_expiry   = 10000;//10 s
 int config::network_timeout         = 30000;
 
+bool config::enable_dev_console=true;
 bool config::show_console=false;
 bool config::show_fps_counter=false;
 bool config::debug_mode=true;

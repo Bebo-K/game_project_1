@@ -4,10 +4,12 @@
 AnimationState::AnimationState(){
     movement_type=NONE;
     controller_type=0;
+    action_state=0;
 }
 AnimationState::AnimationState(AnimationControllerType type){
     movement_type=NONE;
     controller_type=type;
+    action_state=0;
 }
 
 AnimationState::~AnimationState(){}

@@ -18,17 +18,6 @@ DeveloperConsole::DeveloperConsole() : Widget("developer_console") {
     memset(line_buffers,0,sizeof(wchar)*CACHED_LINE_COUNT*MAX_LINE_LENGTH);
     memset(entry_buffer,0,sizeof(wchar)*MAX_LINE_LENGTH);
 
- 
-    //Start inactive by default
-    visible = false;
-    active = false;
-    text_selected=false;
-}
-DeveloperConsole::~DeveloperConsole(){
-    if(DeveloperConsole::instance == this){DeveloperConsole::instance = null;}
-}
-
-void DeveloperConsole::Load(){
     console_font = FontManager::LoadFontFace("Merriweather/Merriweather-Regular",14);
     texts.Resize(1+SHOWN_LINE_COUNT);
     for(int i=0;i< (1+SHOWN_LINE_COUNT);i++){
@@ -40,6 +29,11 @@ void DeveloperConsole::Load(){
         rects[0]->color = {0,0,0,0.6};
         rects.Set(1,new UI_Rect(256,18));
         rects[1]->color = {0,0,0,0.8};
+
+    text_selected=false;
+}
+DeveloperConsole::~DeveloperConsole(){
+    if(DeveloperConsole::instance == this){DeveloperConsole::instance = null;}
 }
 
 void DeveloperConsole::OnDestroy(){
@@ -47,7 +41,9 @@ void DeveloperConsole::OnDestroy(){
      texts.Clear();
 }
 
-void DeveloperConsole::OnPaint(){}
+void DeveloperConsole::OnPaint(){
+        rects[1]->color.r= text_selected ? 0.3f : 0;
+}
 
 void DeveloperConsole::OnMove(){
     rect_i layoutrect = layout.Rect();
@@ -70,13 +66,8 @@ void DeveloperConsole::OnUpdate(Timestep delta){}
 
 bool DeveloperConsole::OnInput(Input::Event event_type){
     Controller::Button toggle = Controller::GetToggleConsole();
-    if(event_type == Input::ToggleConsole && toggle.IsJustPressed()){
-        active = !active;
-        visible = !visible;
-        return true;
-    }
-    if(!active)return false;
-    if(event_type == Input::PC_Text && !toggle.IsDown()){
+    if(text_selected &&
+    event_type == Input::PC_Text && !toggle.IsDown()){
         int cursor;
         wchar* input = Controller::GetTextInput();
         for(cursor=0;entry_buffer[cursor]!=0;cursor++);
@@ -113,7 +104,7 @@ bool DeveloperConsole::OnInput(Input::Event event_type){
     }
     
     if(event_type == Input::PC_LClick && Controller::GetPCLeftMouse().IsJustPressed()){
-        text_selected= (rects[1]->rect.contains(Controller::GetPCCursor()));
+        text_selected= (rects[1]->rect.contains(ScreenToClientSpace(Controller::GetPCCursor())));
     }
 
     return text_selected;///catch all other inputs while text is selected

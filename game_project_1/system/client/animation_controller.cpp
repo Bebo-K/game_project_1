@@ -17,13 +17,7 @@ void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,
     if(anim_state && anim_name && anim_name != anim_state->anim_name){
         anim_state->anim_name = anim_name;
          
-        if(models){for(Model* m: (*models)){
-            m->StopAnimations();
-            if(m->pose->anim_target.active_clip != null){
-                logger::exception("how???\n");
-            }
-            
-            }}
+        if(models){for(Model* m: (*models)){m->StopAnimations();}}
 
         if(has_windup){
             char* windup_anim_name = cstr::append(anim_name,"_start");

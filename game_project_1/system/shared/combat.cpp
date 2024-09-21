@@ -1,5 +1,5 @@
 #include <game_project_1/system/shared/combat.hpp>
-
+#include <game_project_1/gui/menu/developer_layer.hpp>
 
 AttackType GetUnitAttackType(ClientEntity* e, ClientScene* s){
     MovementState* movement = e->Get<MovementState>();
@@ -15,7 +15,7 @@ char* GetAnimationForAttackType(Entity* e, AttackType type){
 }
 
 int GetCooldownForAttackType(Entity* e, AttackType type){
-    return 100;
+    return 10;
 }
 
 
@@ -61,6 +61,7 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     Equip* equip = e->Get<Equip>();
     ActionState* action_state = e->Get<ActionState>();
     ColliderSet* colliders = e->Get<ColliderSet>();
+    AnimationState* anim_state = e->Get<AnimationState>();
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();
     //ModelSet* models = e->Get<ModelSet>();
@@ -74,6 +75,10 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     HitPattern* attack_pattern = GetHitPatternForAttackType(e, attack_type);
     char* attack_animation_name = GetAnimationForAttackType(e, attack_type);
     action_state->action_cooldown = GetCooldownForAttackType(e, attack_type);
+
+    if(anim_state != null){
+        anim_state->action_state = Action::ID::ATTACK;
+    }
 
     if(attack_pattern){
         //terminate current pattern?
@@ -91,7 +96,6 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
 
     //Start here
     
-
     //TODO-BUT-NOT-NOW: async attack (windup, draw/aim + fire)
     //Client initiates attack
     //Client-side hurtbox is generated + motion started                         X
@@ -104,7 +108,7 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
 
 void Combat::ServerStartAttack(ServerEntity* e, ServerScene* s){}
 
-void Combat::ServerFrame(Entity* e,Timestep delta){
+void Combat::ServerUpdate(Entity* e,Timestep delta){
     if(!e->Has<ColliderSet>()){return;}
 }
 
@@ -112,11 +116,16 @@ bool FloatCrossesThreshhold(float base,float add,float threshhold){
     return base <= threshhold && (base+add) > threshhold;
 }
 
-void Combat::ClientFrame(ClientEntity* e,Timestep delta){
+void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
     ActionState* action_state = e->Get<ActionState>();
     if(!action_state){return;}
+    DeveloperLayer::SetLabelText(0,L"Action Cooldown: %d",action_state->action_cooldown);
     if(action_state->action_cooldown > 0){
         action_state->action_cooldown --;
+        if(action_state->action_cooldown == 0 && e->Has<AnimationState>()){
+              e->Get<AnimationState>()->action_state=0;
+        
+        }
     }
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();
@@ -142,5 +151,8 @@ void Combat::ClientFrame(ClientEntity* e,Timestep delta){
             hitboxes->current_pattern_active_time += delta.seconds;
         }
         else{ hitboxes->CleanupPattern(); }
+    }
+    if(action_state->action_impulse){
+        action_state->action_impulse=false;
     }
 }

@@ -32,6 +32,7 @@ HitPattern::~HitPattern(){}
 
 HitBoxes::HitBoxes():hit_colliders(2),hit_collider_targets(2){
     current_pattern=null;
+    current_pattern_active_time=0.0f;
 }
 
 HitBoxes::~HitBoxes(){
