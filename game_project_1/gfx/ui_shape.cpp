@@ -31,7 +31,7 @@ void BuildShapePrimitives(){
 
 UI_Rect::UI_Rect(){
     if(!rect_vertices.Valid()){BuildShapePrimitives();}
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
+    color={1.0f,1.0f,1.0f,1.0f};
     rect={0,0,1,1};
     center={0,0};
     scale=1.0f;
@@ -39,7 +39,7 @@ UI_Rect::UI_Rect(){
 }
 UI_Rect::UI_Rect(int w,int h){
     if(!rect_vertices.Valid()){BuildShapePrimitives();}
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
+    color={1.0f,1.0f,1.0f,1.0f};
     rect={0,0,w,h};
     center={0,0};
     scale=1.0f;

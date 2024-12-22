@@ -14,7 +14,7 @@ void CharacterInfo::Read(Deserializer& dat){
     appearance.style1 = dat.GetInt();
     appearance.style2 = dat.GetInt();
     appearance.style3 = dat.GetInt();
-    appearance.color1.rgba(dat.GetInt());
+    appearance.color1=color(dat.GetInt());
 }
 
 void CharacterInfo::Write(Serializer& dat){

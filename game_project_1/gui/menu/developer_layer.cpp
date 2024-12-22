@@ -61,7 +61,7 @@ bool DeveloperLayer::OnSignal(EventSignal signal)
 }
 
 void DeveloperLayer::SetLabelText(int label_id, wchar *text, ...)
-{
+{//FIXME: label_id
     if (instance == null)
         return;
 
@@ -69,7 +69,7 @@ void DeveloperLayer::SetLabelText(int label_id, wchar *text, ...)
     va_start(args, text);
     wchar *buffer = new wchar[128];
     vswprintf(buffer, 128, text, args);
-    instance->footer_label->texts[0]->SetString(buffer);
+    instance->footer_label->texts[label_id]->SetString(buffer);
     delete buffer;
     va_end(args);
 }

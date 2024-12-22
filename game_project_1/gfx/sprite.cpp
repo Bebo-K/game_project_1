@@ -6,7 +6,7 @@
 
 
 
-Sprite::Sprite(char* ui_texturename){
+Sprite::Sprite(char* ui_texturename):color(1.0f,1.0f,1.0f,1.0f){
     texture = TextureManager::GetUI(ui_texturename);
     max_frames=max_strips=1;
     img_width = texture.width_px;
@@ -15,11 +15,10 @@ Sprite::Sprite(char* ui_texturename){
     x=y=0;
     width=img_width;
     height=img_height;
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }
-Sprite::Sprite(Texture spritesheet){
+Sprite::Sprite(Texture spritesheet):color(1.0f,1.0f,1.0f,1.0f){
     texture = spritesheet;
     max_frames=max_strips=1;
     img_width = texture.width_px;
@@ -28,11 +27,10 @@ Sprite::Sprite(Texture spritesheet){
     x=y=0;
     width=img_width;
     height=img_height;
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }
-Sprite::Sprite(Texture spritesheet,int frames,int strips){
+Sprite::Sprite(Texture spritesheet,int frames,int strips):color(1.0f,1.0f,1.0f,1.0f){
     texture = spritesheet;
     max_frames=frames;if(max_frames < 1)max_frames=1;
     max_strips=strips;if(max_strips < 1)max_strips=1;
@@ -42,7 +40,6 @@ Sprite::Sprite(Texture spritesheet,int frames,int strips){
     x=y=0;
     width=img_width/max_frames;
     height=img_height/max_strips;
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
     rotate_center = {0.5,0.5f};
     rotation=0;
 }

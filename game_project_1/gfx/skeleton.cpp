@@ -114,7 +114,16 @@ void Pose::StartAnimation(char* name){
     else{
         logger::warn("Cannot start animation '%s', no matching clip found\n", name);
     }
-    
+}
+
+void Pose::QueueAnimation(char* name){
+        Animation::Clip* c = skeleton->GetAnimation(name);
+    if(c != null){
+        Animation::Queue(c,anim_target.active_clip);
+    }
+    else{
+        logger::warn("Cannot queue animation '%s', no matching clip found\n", name);
+    }
 }
 
 void Pose::StopAnimations(){

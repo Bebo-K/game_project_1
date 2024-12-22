@@ -14,7 +14,7 @@ namespace DebugDraw{
     void Draw3DRect(Camera* cam,Transform center_transform,vec3 size,color_f color);
     void DrawSphere(Camera* cam,Transform center_transform,float height,color_f color);
     void DrawEllipse(Camera* cam,Transform center_transform,float height,float radius,color_f color);
-    void DrawCapsule(Camera* cam,Transform center_transform,float height,float radius,color_f color);
+    void DrawCylinder(Camera* cam,Transform center_transform,float height,float radius,color_f color);
 
 };
 

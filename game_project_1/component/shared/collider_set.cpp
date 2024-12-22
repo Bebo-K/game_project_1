@@ -77,7 +77,7 @@ void ColliderSet::Draw(Camera* cam){
             case Collider::Shape::AABB: DebugDraw::Draw3DRect(cam,center_transform,
                 coll->scale, {0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::ARC:break;//?
-            case Collider::Shape::CAPSULE: DebugDraw::DrawCapsule(cam,center_transform,
+            case Collider::Shape::CAPSULE: DebugDraw::DrawCylinder(cam,center_transform,
                 coll->scale.y,coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
             case Collider::Shape::SPHERE: DebugDraw::DrawSphere(cam,center_transform,
                 coll->scale.x,{0.8f,0.85f,1.0f,0.7f} ); break;
@@ -85,5 +85,5 @@ void ColliderSet::Draw(Camera* cam){
         }
     }
 
-        //DebugDraw::DrawCapsule(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,0.3f} );
+        //DebugDraw::DrawCylinder(cam,center_transform,bounds.height,bounds.radius, {0.5f,0.3f,0.8f,0.3f} );
 }

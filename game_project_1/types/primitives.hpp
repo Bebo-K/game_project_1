@@ -42,6 +42,7 @@ struct vec2{
     float angle();
 };
 
+struct quaternion;
 struct vec3{
     public:
     float x,y,z;
@@ -60,6 +61,7 @@ struct vec3{
     void rotate_x(float theta);
     void rotate_y(float theta);
     void rotate_z(float theta);
+    vec3 rotate(quaternion angle);
     vec3 operator +(vec3 v2);
     vec3 operator -(vec3 v2);
     vec3 operator *(float scl);
@@ -97,6 +99,7 @@ struct quaternion{
     quaternion operator + (quaternion q2);
     quaternion operator - (quaternion q2);
     quaternion operator * (float weight);
+    quaternion operator * (quaternion q2);
     //vec3 get_euler();
 };
 
@@ -179,18 +182,21 @@ struct rect_f{
     bool intersects(rect_f b);
 };
 
+struct color_f;
 struct color{
     byte r,g,b,a;
-    void rgba(byte R, byte G, byte B, byte A);
-    void rgba(int color_code);
+    color();
+    color(byte R, byte G, byte B, byte A);
+    color(int color_code);
+    color(color_f c);
     int as_code();
 };
 
 struct color_f{
     float r,g,b,a;
-    void rgba(float R,float G,float B,float A);
-    void from_color(color c);
-    color to_color();
+    color_f();
+    color_f(float R,float G,float B,float A);
+    color_f(color c);
     color_f mult(color_f c2);
 };
 

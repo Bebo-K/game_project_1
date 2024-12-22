@@ -34,7 +34,7 @@ void CharacterCreateMenu::OnLoad(){
     styles[0]=0;
     styles[1]=0;
     styles[2]=0;
-    color1.rgba(0,0,0,255);
+    color1={0,0,0,255};
 
     AddWidget(new MenuBackground());
     

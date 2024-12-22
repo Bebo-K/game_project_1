@@ -53,6 +53,7 @@ class Pose{
     ~Pose();
     void StartAnimation(char* name);
     void StopAnimations();
+    void QueueAnimation(char* name);
     void Calculate();//sets matrices;
 };
 

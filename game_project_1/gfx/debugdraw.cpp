@@ -131,7 +131,7 @@ void DebugDraw::Draw3DRect(Camera* cam,Transform t,vec3 size,color_f color){
     view_matrix.scale(size);
 
     glBindVertexArray(rect3d_vertex_array_id);
-    CheckForGLError("DebugDraw.DrawCapsule: GL Error %d binding vertex array\n");
+    CheckForGLError("DebugDraw.DrawCylinder: GL Error %d binding vertex array\n");
 
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
@@ -139,7 +139,7 @@ void DebugDraw::Draw3DRect(Camera* cam,Transform t,vec3 size,color_f color){
     rect3d_vertices.Bind(Shader::ATTRIB_VERTEX);
     glDrawArrays(GL_TRIANGLES,0,rect3d_vert_count);
  
-    CheckForGLError("Debug.DrawCapsule: GL Error %d during draw\n");
+    CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }
 
 void DebugDraw::DrawSphere(Camera* cam,Transform t,float radius,color_f color){ DrawEllipse(cam,t,radius,radius,color);}
@@ -153,17 +153,17 @@ void DebugDraw::DrawEllipse(Camera* cam,Transform t,float height,float radius,co
     view_matrix.scale(radius,height,radius);
 
     glBindVertexArray(sphere_vertex_array_id);
-    CheckForGLError("DebugDraw.DrawCapsule: GL Error %d binding vertex array\n");
+    CheckForGLError("DebugDraw.DrawCylinder: GL Error %d binding vertex array\n");
 
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
     glUniformMatrix4fv(shape_shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glDrawArrays(GL_TRIANGLES,0,sphere_vert_count);
  
-    CheckForGLError("Debug.DrawCapsule: GL Error %d during draw\n");
+    CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }
 
-void DebugDraw::DrawCapsule(Camera* cam,Transform t,float height,float radius,color_f color){
+void DebugDraw::DrawCylinder(Camera* cam,Transform t,float height,float radius,color_f color){
     Shader* shape_shader = ShaderManager::UseShader("shape_debug");
     mat4 view_matrix = cam->view_matrix.copy();
     
@@ -173,7 +173,7 @@ void DebugDraw::DrawCapsule(Camera* cam,Transform t,float height,float radius,co
     view_matrix.scale(radius,height,radius);
 
     glBindVertexArray(cylinder_vertex_array_id);
-    CheckForGLError("DebugDraw.DrawCapsule: GL Error %d binding vertex array\n");
+    CheckForGLError("DebugDraw.DrawCylinder: GL Error %d binding vertex array\n");
 
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
     glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
@@ -181,5 +181,5 @@ void DebugDraw::DrawCapsule(Camera* cam,Transform t,float height,float radius,co
     glDrawArrays(GL_TRIANGLES,0,cylinder_vert_count);
     
     //Draw end caps
-    CheckForGLError("Debug.DrawCapsule: GL Error %d during draw\n");
+    CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }

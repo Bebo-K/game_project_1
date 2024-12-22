@@ -6,6 +6,7 @@
 #include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/types/pool.hpp>
+#include <game_project_1/gfx/drawable.hpp>
 
 Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot);
 
@@ -28,7 +29,7 @@ class HitPattern {
     ~HitPattern();
 };
 
-class HitBoxes: public Component{
+class HitBoxes: public Component,public Drawable{
     public: 
     HitPattern* current_pattern;
     float       current_pattern_active_time;
@@ -40,6 +41,8 @@ class HitBoxes: public Component{
 	public: 
 	HitBoxes();
 	~HitBoxes();
+
+    void StartPattern(HitPattern* pattern);
     void CleanupPattern();
 
     Component* Clone();
@@ -49,6 +52,8 @@ class HitBoxes: public Component{
     inline void Read(Deserializer& dat){}
     inline void Write(Serializer& dat){}
 
+    
+    void Draw(Camera* cam);
     
 };
 

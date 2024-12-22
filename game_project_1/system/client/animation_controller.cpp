@@ -11,31 +11,29 @@ Dictionary<AnimationControllerType,AnimationControllerCallback> animation_contro
 void EmptyAnimationControllerCallback(ClientEntity* e, Timestep delta){}
 
 
-void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop){
+void AnimationController::SetAnimationForEntity(ClientEntity* e,char* anim_name){
     ModelSet* models = e->Get<ModelSet>();
     AnimationState* anim_state = e->Get<AnimationState>();
     if(anim_state && anim_name && anim_name != anim_state->anim_name){
         anim_state->anim_name = anim_name;
-         
-        if(models){for(Model* m: (*models)){m->StopAnimations();}}
-
-        if(has_windup){
-            char* windup_anim_name = cstr::append(anim_name,"_start");
-            char* loop_anim_name = cstr::append(anim_name,"_loop");
-
-            if(models){
-                for(Model* m: (*models)){m->StartAnimationWithWindup(windup_anim_name,loop_anim_name);}
+        if(models){
+            for(Model* m: (*models)){
+                m->StopAnimations();
+                m->StartAnimation(anim_name);
             }
-            //TODO: sprite animation
-
-            free(loop_anim_name);
-            free(windup_anim_name);
         }
-        else{
-            if(models){
-                for(Model* m: (*models)){m->StartAnimation(anim_name);}
+    }
+}
+
+void AnimationController::QueueAnimationForEntity(ClientEntity* e,char* anim_name){
+    ModelSet* models = e->Get<ModelSet>();
+    AnimationState* anim_state = e->Get<AnimationState>();
+    if(anim_state && anim_name && anim_name != anim_state->anim_name){
+        anim_state->anim_name = anim_name;
+        if(models){
+            for(Model* m: (*models)){
+                m->QueueAnimation(anim_name);
             }
-            //TODO: sprite animation
         }
     }
 }

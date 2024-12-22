@@ -44,7 +44,7 @@ void BuildCubePrimitive(){
     cube_normals.Create(cube_normal_data,GL_FLOAT,3,36,GL_ARRAY_BUFFER);
 }
 
-ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d):mat(){
+ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d):mat(),color(1.0f,1.0f,1.0f,1.0f){
     scale.x=w;
     scale.y=h;
     scale.z=d;
@@ -63,7 +63,7 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
     }
 }
 
-ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d):mat(){
+ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d):mat(),color(1.0f,1.0f,1.0f,1.0f){
     scale.x=w;
     scale.y=h;
     scale.z=d;
@@ -86,8 +86,7 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h
 ShapePrimitive::~ShapePrimitive(){
 }
 
-WirePrimitive::WirePrimitive(EPrimitiveShape shape,color_f prim_color,float w,float h,float d):mat(){
-    color=prim_color;
+WirePrimitive::WirePrimitive(EPrimitiveShape shape,color_f prim_color,float w,float h,float d):mat(),color(prim_color){
     scale.x=w;
     scale.y=h;
     scale.z=d;

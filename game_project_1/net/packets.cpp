@@ -80,9 +80,8 @@ Payload CHAT::GetPayload(){
     return Payload(PacketID::CHAT, sizeof(int)*2+ sizeof(wchar)*(wstr::len(chat_msg)+1), (byte*)this); 
 }
 
-SNPS::SNPS(){
+SNPS::SNPS():color_1(0),color_2(0),color_3(0){
     save_id=race_id=class_id=style_1=style_2=style_3=0;
-    color_1.rgba(0);color_2.rgba(0);color_3.rgba(0);
     memset(player_name,0,sizeof(wchar)*(PLAYERNAME_MAX+1));
 }
 SNPS::SNPS(Payload p){memcpy(this,p.data,p.length);}

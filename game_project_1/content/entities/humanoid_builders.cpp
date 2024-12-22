@@ -40,7 +40,7 @@ void SetColorForMeshGroupMatches(Model* m,EntityRaceColor* erc,color col){
         for(int i=0;i<m->data->mesh_groups.length;i++){
             char* current_mg_name =m->data->mesh_groups[i]->name;
             if(!cstr::starts_with(current_mg_name,group_prefix)){continue;}
-            m->mgro[i]->color.from_color(col);
+            m->mgro[i]->color = color_f(col);
         }
     }
 }

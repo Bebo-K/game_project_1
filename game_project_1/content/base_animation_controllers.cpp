@@ -14,42 +14,51 @@
 
 void BaseContent::AnimationController_GroundUnit(ClientEntity* e,Timestep delta){
     AnimationState* anim_state = e->Get<AnimationState>();
+    ActionState* action_state = e->Get<ActionState>();
     MovementState* move_state = e->Get<MovementState>();
     if(!anim_state || !move_state)return;
 
-    if(wstr::compare(e->Get<Identity>()->name,L"talkative")){
-        move_state->can_jump=false;
-    }
-
     ModelSet* models = e->Get<ModelSet>();
     MovementProperties* move_props = e->Get<MovementProperties>();
+
+    bool refresh_anim = false;
+
+    if(anim_state && anim_state->movement_type != move_state->current_movement){
+        refresh_anim = true;
+        anim_state->movement_type = move_state->current_movement;
+    }
+    if(action_state && anim_state->action_state != action_state->action_id){
+        refresh_anim = true;
+        anim_state->action_state = action_state->action_id;
+    }
 
     char* new_anim_name = null;
     bool loop=true;
     bool windup=false;
 
-    if(anim_state->movement_type != move_state->current_movement){
-
+    if(refresh_anim){
         if(anim_state->action_state == 0){
-            switch(move_state->current_movement){
-                case IDLE:{new_anim_name="idle";break;}
-                case WALKING:{new_anim_name="walk";break;}
-                case RUNNING:{new_anim_name="run";break;}
-                case JUMPING:{new_anim_name="jump";windup=true;break;}
-                case FALLING:{new_anim_name="fall";windup=true;break;}
-                case LANDING:{new_anim_name="land";loop=false;break;}
+            switch(anim_state->movement_type){
+                case IDLE:{AnimationController::SetAnimationForEntity(e,"idle");break;}
+                case WALKING:{AnimationController::SetAnimationForEntity(e,"walk");break;}
+                case RUNNING:{AnimationController::SetAnimationForEntity(e,"run");break;}
+                case JUMPING:{
+                    AnimationController::SetAnimationForEntity(e,"jump_start");
+                    AnimationController::QueueAnimationForEntity(e,"jump_loop");break;}
+                case FALLING:{
+                    AnimationController::SetAnimationForEntity(e,"fall_start");
+                    AnimationController::QueueAnimationForEntity(e,"fall_loop");break;}
+                case LANDING:{AnimationController::SetAnimationForEntity(e,"land");break;}
                 default: break;
             }
-            anim_state->movement_type = move_state->current_movement;
-            AnimationController::SetAnimationForEntity(e,new_anim_name,windup,loop);
         }
     }        
     
-    if(models && move_props){
+    if(models && move_props && anim_state->action_state == 0){//Movement anim modulation
         vec3 velocity = e->velocity;
         MovementType anim_movement = anim_state->movement_type;
         float anim_slow_cutoff = 0.5f;
-        //Run/walk animation speed modulation (Only when moving at (anim_slow_cutoff*100)% run/walk speed or less)
+        //Run/walk animation speed (Only when moving at (anim_slow_cutoff*100)% run/walk speed or less)
         if(anim_movement==RUNNING || anim_movement==WALKING){
             float percent_speed = velocity.length()/
                 (anim_movement==RUNNING)? move_props->MaxSpeed():move_props->WalkSpeed();
@@ -58,7 +67,7 @@ void BaseContent::AnimationController_GroundUnit(ClientEntity* e,Timestep delta)
         }
         //Jump apex
         if(anim_movement==JUMPING && velocity.y < 0.5f){
-            AnimationController::SetAnimationForEntity(e,"fall_start",false,false);
+            AnimationController::SetAnimationForEntity(e,"fall_start");
         }
     }
 }

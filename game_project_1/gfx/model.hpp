@@ -70,7 +70,7 @@ class Model: public Drawable{
     ~Model();
     virtual void Draw(Camera* cam);
     void StartAnimation(char* anim_name);
-    void StartAnimationWithWindup(char* start_anim,char* loop_anim);
+    void QueueAnimation(char* anim_name);
     //void StartAnimationFromOffset(char* anim_name,AnimationOptions options, float elapsed);
     void StopAnimations();
 

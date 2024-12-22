@@ -9,7 +9,11 @@ void Transform::Clear(){
     rotation.x=rotation.y=rotation.z=0;
     scale.x=scale.y=scale.z=1.0f;
 }
-
+void Transform::operator+= (vec3 position){
+    x += position.x;
+    y += position.y;
+    z += position.z;
+}
 Location::Location(){x=0,y=0,z=0;rotation={0,0,0};}
 Location::Location(float x,float y,float z,vec3 rotation){
     this->x=x;this->y=y;this->z=z;this->rotation=rotation;

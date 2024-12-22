@@ -94,7 +94,7 @@ point_i Glyph::Set(int code_point){
     glyph_texture = FontManager::GetGlyph(codepoint);
     offset.x = (fontface->glyph->metrics.horiBearingX/64);
     offset.y = - (fontface->glyph->metrics.height - fontface->glyph->metrics.horiBearingY)/64;
-    color.rgba(1.0f,1.0f,1.0f,1.0f);
+    color={1.0f,1.0f,1.0f,1.0f};
     point_i advance = {(fontface->glyph->metrics.horiAdvance/64),(fontface->glyph->advance.y/64)};//advance is 1/64th of a pixel
     //if(codepoint != ' '){advance.x--;}else{advance.x++;}//don't know why but I promise this is a thing
     return advance;

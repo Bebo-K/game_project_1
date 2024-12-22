@@ -147,9 +147,8 @@ void MeshGroup::DebugPrint(){
 }
 
 
-MeshGroupRenderOptions::MeshGroupRenderOptions(){
+MeshGroupRenderOptions::MeshGroupRenderOptions():color(1.0f,1.0f,1.0f,1.0f){
     hide=false;
-    color = {1.0f,1.0f,1.0f,1.0f};
 }
 
 ModelData::ModelData():mesh_groups(){
@@ -271,10 +270,9 @@ void Model::StopAnimations(){
     if(pose != null){pose->StopAnimations();}
 }
 
-void Model::StartAnimationWithWindup(char* start_anim,char* loop_anim){
+void Model::QueueAnimation(char* anim_name){
     if(pose == null){return;}
-    pose->StartAnimation(start_anim);
-    Animation::Queue(data->skeleton->GetAnimation(loop_anim),pose->anim_target.active_clip);
+    pose->QueueAnimation(anim_name);
 }
 
 void ModelManager::Init(){

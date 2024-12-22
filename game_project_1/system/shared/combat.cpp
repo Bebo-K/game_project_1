@@ -14,6 +14,10 @@ char* GetAnimationForAttackType(Entity* e, AttackType type){
     return "attack_1h_h";
 }
 
+int GetDurationForAttackType(ClientEntity* e, AttackType type){
+    return 30*(*e->Get<ModelSet>())[0]->pose->skeleton->GetAnimation("attack_1h_h")->length;
+}
+
 int GetCooldownForAttackType(Entity* e, AttackType type){
     return 10;
 }
@@ -61,43 +65,32 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     Equip* equip = e->Get<Equip>();
     ActionState* action_state = e->Get<ActionState>();
     ColliderSet* colliders = e->Get<ColliderSet>();
-    AnimationState* anim_state = e->Get<AnimationState>();
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();
     //ModelSet* models = e->Get<ModelSet>();
 
     if(!colliders || !action_state || !stats || !char_info ||!hitboxes)return;
     if(action_state->action_cooldown != 0)return;
+    action_state->action_id = Action::ID::ATTACK;
     action_state->action_impulse = true;
-    action_state->action_cooldown = 100;
 
     AttackType attack_type = GetUnitAttackType(e,s);
     HitPattern* attack_pattern = GetHitPatternForAttackType(e, attack_type);
     char* attack_animation_name = GetAnimationForAttackType(e, attack_type);
     action_state->action_cooldown = GetCooldownForAttackType(e, attack_type);
-
-    if(anim_state != null){
-        anim_state->action_state = Action::ID::ATTACK;
-    }
+    action_state->action_timer = GetDurationForAttackType(e,attack_type);
 
     if(attack_pattern){
-        //terminate current pattern?
-        for(Animation::Target* running_hitpath_anim: hitboxes->hit_collider_targets){
-            Animation::Stop(running_hitpath_anim);
-        }
-        hitboxes->hit_colliders.Clear();
-        hitboxes->hit_collider_targets.Clear();
-        hitboxes->current_pattern_active_time=0.0f;
-        hitboxes->current_pattern = attack_pattern;
+        hitboxes->StartPattern(attack_pattern);
     }
     if(attack_animation_name){
-        AnimationController::SetAnimationForEntity(e,attack_animation_name,/*windup*/false,/*loop*/false);
+        AnimationController::SetAnimationForEntity(e,attack_animation_name);
     }
 
     //Start here
     
-    //TODO-BUT-NOT-NOW: async attack (windup, draw/aim + fire)
-    //Client initiates attack
+    //TODO-BUT-NOT-NOW: async attack (windup, draw/aim + fire)                  
+    //Client initiates attack                                                   
     //Client-side hurtbox is generated + motion started                         X
         //On anim completion, destroy all remaining pattern hitboxes            X
     //Client-side accompanying model animations are played                      ?
@@ -119,13 +112,20 @@ bool FloatCrossesThreshhold(float base,float add,float threshhold){
 void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
     ActionState* action_state = e->Get<ActionState>();
     if(!action_state){return;}
-    DeveloperLayer::SetLabelText(0,L"Action Cooldown: %d",action_state->action_cooldown);
-    if(action_state->action_cooldown > 0){
-        action_state->action_cooldown --;
-        if(action_state->action_cooldown == 0 && e->Has<AnimationState>()){
-              e->Get<AnimationState>()->action_state=0;
-        
+    if(action_state->action_timer > 0){ //TODO: other action end conditions
+        DeveloperLayer::SetLabelText(0,L"Action Timer: %d",action_state->action_timer);
+        action_state->action_timer -= delta.frames;
+        if(action_state->action_timer <=0){
+            action_state->action_id = Action::ID::NONE;
+            action_state->action_timer = 0;
         }
+    }
+    else if(action_state->action_cooldown > 0){
+        action_state->action_cooldown -= delta.frames;
+        if(action_state->action_cooldown <= 0){
+            action_state->action_cooldown = 0;
+        }
+        DeveloperLayer::SetLabelText(0,L"Action Cooldown: %d",action_state->action_cooldown);
     }
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();

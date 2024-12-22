@@ -22,6 +22,10 @@ void Drawable::SetTransform(Location l,vec3 scale){
     this->scale=scale;
 }
 
+Transform Drawable::GetTransform(){
+    return {x,y,z,quaternion::of_euler(rotation.x,rotation.y,rotation.z),scale};
+}
+
 VBO::VBO(){
     buffer_id=0;
     element_type=0;

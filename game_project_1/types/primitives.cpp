@@ -131,6 +131,14 @@ void vec3::rotate_z(float theta){
     x = _x; y = _y; z = _z;
 }
 
+vec3 vec3::rotate(quaternion angle){
+    angle.normalize();
+    quaternion v = {x,y,z,0};
+    quaternion conjugate = {-angle.x,-angle.y,-angle.z,angle.w};
+    quaternion result = conjugate * (angle*v);
+    return {result.x,result.y,result.z};
+}
+
 vec3 vec3::operator +(vec3 v2){return{x+v2.x,y+v2.y,z+v2.z};}
 vec3 vec3::operator -(vec3 v2){return{x-v2.x,y-v2.y,z-v2.z};}
 vec3 vec3::operator *(float scl){return {x*scl,y*scl,z*scl};}
@@ -255,6 +263,16 @@ quaternion quaternion::operator - (quaternion q2){
 
 quaternion quaternion::operator * (float weight){
     return {x*weight,y*weight,z*weight,w*weight};
+}
+
+//gives the product a*b where a = this and b = q2
+quaternion quaternion::operator* (quaternion q2){
+    return {
+        w*q2.x + x*q2.w  + y*q2.z - z*q2.y,
+        w*q2.y + y*q2.w  + z*q2.x - x*q2.z,
+        w*q2.z + z*q2.w  + x*q2.y - y*q2.x,
+        w*q2.w - x*q2.x  - y*q2.y - z*q2.z
+    };
 }
 
 mat4 quaternion::to_matrix(){
@@ -535,15 +553,23 @@ void bitmask::and_with(bitmask& b2){val &= b2.val;}
 void bitmask::or_with(bitmask& b2){val |= b2.val;}
 bitmask bitmask::invert(bitmask& b2){return {~b2.val};}
 
-void color::rgba(byte R, byte G, byte B, byte A){
+color::color(){r=255;g=0;b=255;a=255;}
+color::color(byte R, byte G, byte B, byte A){
     r=R;b=B;g=G;a=A;
 }
-void color::rgba(int color_code){
+color::color(int color_code){
     r = (color_code>>24) | 255;
     g = (color_code>>16) | 255;
     b = (color_code>>8) | 255;
     a = (color_code) | 255;
 }
+color::color(color_f colorf){
+    r=colorf.r*255.0f;
+    g=colorf.g*255.0f;
+    b=colorf.b*255.0f;
+    a=colorf.a*255.0f;
+}
+
 int color::as_code(){
     int color_code=0;
     color_code |= r;
@@ -556,16 +582,13 @@ int color::as_code(){
 
     return color_code;
 }
-
-void color_f::rgba(float R,float G,float B,float A){r=R;g=G;b=B;a=A;}
-void color_f::from_color(color c){
+color_f::color_f(){r=1.0f;g=0.0f;1.0f;a=1.0f;}
+color_f::color_f(float R,float G,float B,float A){r=R;g=G;b=B;a=A;}
+color_f::color_f(color c){
     r = c.r/255.0f;
     g = c.g/255.0f;
     b = c.b/255.0f;
     a = c.a/255.0f;
-}
-color color_f::to_color(){
-    return {(byte)(r*255.0f),(byte)(g*255.0f),(byte)(b*255.0f),(byte)(a*255.0f)};
 }
 
 color_f color_f::mult(color_f c2){

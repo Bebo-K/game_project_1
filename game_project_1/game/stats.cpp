@@ -102,5 +102,5 @@ void CharacterAppearance::Copy(CharacterAppearance* a2){
 void CharacterAppearance::Clear(){
     body_type=0;
     style1=0;style2=0;style3=0;
-    color1.rgba(0,0,0,255);
+    color1={0,0,0,255};
 }

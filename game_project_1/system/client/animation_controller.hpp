@@ -14,7 +14,8 @@ namespace AnimationController{
     void RegisterAnimationControllerCallback(AnimationControllerType type,AnimationControllerCallback);
     AnimationControllerCallback GetAnimationControllerCallback(AnimationControllerType type);
 
-    void SetAnimationForEntity(ClientEntity* e,char* anim_name,bool has_windup, bool loop);
+    void SetAnimationForEntity(ClientEntity* e,char* anim_name);
+    void QueueAnimationForEntity(ClientEntity* e,char* anim_name);
     void SetAnimationSpeedForEntity(ClientEntity* e,float percent);
 
     

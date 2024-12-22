@@ -2,13 +2,14 @@
 #define COLLIDER_H
 
 #include <game_project_1/types/math_types.hpp>
+#include <game_project_1/gfx/camera.hpp>
 
 namespace Collider{
 	enum Shape{
-		CAPSULE=0, //scale.z is ignored (=scale.x)
+		CAPSULE=0, //scale.x = cap radius, scale.y = cap distance, scale.z is ignored (=scale.x)
 		AABB=1,
-		SPHERE=2,
-		ARC=3 //scale.x = radius, scale.y = height, scale.z= arc length 
+		SPHERE=2, //scale.x = radius
+		ARC=3, //scale.x = radius, scale.y = height, scale.z= arc length 
 	};
 };
 
@@ -28,6 +29,8 @@ class ShapeCollider{
 	
     bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale);
     bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale,vec3* intersect_point);
+
+	void Draw(Camera* cam);
 };
 
 
