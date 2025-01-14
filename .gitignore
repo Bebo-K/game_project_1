@@ -11,3 +11,4 @@ obj/*
 *.exe
 log.txt
 win/resource.o
+docs/doodles/*

@@ -120,14 +120,15 @@ void DebugDraw::DrawUIRect(int x,int y,int w,int h,color_f color){
     //TODO;
 }
 
-void DebugDraw::DrawCube(Camera* cam,Transform t,float size,color_f color){ Draw3DRect(cam,t,vec3(size,size,size),color);}
-void DebugDraw::Draw3DRect(Camera* cam,Transform t,vec3 size,color_f color){
+void DebugDraw::DrawCube(Camera* cam,Transform* t,float size,color_f color){ Draw3DRect(cam,t,vec3(size,size,size),color);}
+void DebugDraw::Draw3DRect(Camera* cam,Transform* t,vec3 size,color_f color){
     Shader* shape_shader = ShaderManager::UseShader("shape_debug");
     mat4 view_matrix = cam->view_matrix.copy();
 
     view_matrix.translate(t.x,t.y,t.z);
     //view_matrix.rotate(t.rotation);
     view_matrix.scale(t.scale);
+    //
     view_matrix.scale(size);
 
     glBindVertexArray(rect3d_vertex_array_id);
@@ -142,28 +143,31 @@ void DebugDraw::Draw3DRect(Camera* cam,Transform t,vec3 size,color_f color){
     CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }
 
-void DebugDraw::DrawSphere(Camera* cam,Transform t,float radius,color_f color){ DrawEllipse(cam,t,radius,radius,color);}
-void DebugDraw::DrawEllipse(Camera* cam,Transform t,float height,float radius,color_f color){
+void DebugDraw::DrawSphere(Camera* cam,Transform* t,float radius,color_f color){ DrawEllipse(cam,t,radius,radius,color);}
+void DebugDraw::DrawEllipse(Camera* cam,Transform* t,float height,float radius,color_f color){
+    mat4 model;
+    mat3 normal;
+    
     Shader* shape_shader = ShaderManager::UseShader("shape_debug");
-    mat4 view_matrix = cam->view_matrix.copy();
 
-    view_matrix.translate(t.x,t.y,t.z);
-    //view_matrix.rotate(t.rotation);
-    view_matrix.scale(t.scale);
-    view_matrix.scale(radius,height,radius);
+    model.identity();
+    model.translate(t.x,t.y,t.z);
+    //model.rotate(t.rotation);
+    model.scale(t.scale);
+    cam->view_matrix.multiply_by(&model);
 
     glBindVertexArray(sphere_vertex_array_id);
     CheckForGLError("DebugDraw.DrawCylinder: GL Error %d binding vertex array\n");
 
     glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
-    glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
+    glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
     glUniformMatrix4fv(shape_shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
     glDrawArrays(GL_TRIANGLES,0,sphere_vert_count);
  
     CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }
 
-void DebugDraw::DrawCylinder(Camera* cam,Transform t,float height,float radius,color_f color){
+void DebugDraw::DrawCylinder(Camera* cam,Transform* t,float height,float radius,color_f color){
     Shader* shape_shader = ShaderManager::UseShader("shape_debug");
     mat4 view_matrix = cam->view_matrix.copy();
     

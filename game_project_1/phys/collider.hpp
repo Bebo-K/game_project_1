@@ -16,9 +16,7 @@ namespace Collider{
 class ShapeCollider{
 	public:
 	Collider::Shape	shape;
-    vec3			center_offset;
-	vec3			scale;
-	vec3			rotation;
+	Transform		transform;
 
 	ShapeCollider();//Empty constructor is zero size sphere
 	ShapeCollider(ShapeCollider* c2);//copy constructor

@@ -43,17 +43,17 @@ HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     pattern->hitpaths[0]->collider.scale = {1,1,1};// {1.0f*height,1.0f*height,1.0f*height};
     pattern->hitpaths[0]->collider.shape = Collider::SPHERE;
     pattern->hitpaths[0]->spawn_time=0.0f;
-    pattern->hitpaths[0]->despawn_time=0.5f;
+    pattern->hitpaths[0]->despawn_time=2.5f;
     pattern->hitpaths[0]->path =Animation::Clip::Builder()
     .Name("sphere_forward")
-    .Duration(0.5f)
+    .Duration(2.5f)
     .Loop(false)
     .AddChannel(Animation::ChannelBuilder()
         .ID(Animation::ChannelID("position"))
         .InterpolateMode(Animation::LINEAR)
         .Type(Animation::VECTOR3)
-        .Keyframe(0.0f,{0,0,0})
-        .Keyframe(0.5f,{0,0,-1.0f})
+        .Keyframe(0.0f,{0,0.5,0})
+        .Keyframe(2.5f,{0,0.5,-1.0f})
     ).Build();
 
     return pattern;

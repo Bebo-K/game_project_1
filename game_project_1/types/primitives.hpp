@@ -66,6 +66,7 @@ struct vec3{
     vec3 operator -(vec3 v2);
     vec3 operator *(float scl);
     vec3 operator *(vec3 scl);
+    vec3 operator /(vec3 scl);
     vec3 of_length(float newlen);
     vec3 normalized();
     vec3 horizontal();
@@ -90,32 +91,42 @@ struct quaternion{
 
     void clear();
     void set_euler(float x,float y,float z);
+    void set_euler_radians(float x,float y,float z);
     static quaternion of_euler(float x,float y,float z);
+    static quaternion of_euler_radians(float x,float y,float z);
+    static quaternion identity();
     mat4 to_matrix();
     void rotate_by(quaternion q2);
     void rotate_by(float x,float y,float z);
     void normalize();
+    quaternion normalized();
     float dot(quaternion q2);
+    float theta_difference(quaternion q2);
+    float theta_difference_radians(quaternion q2);
     quaternion operator + (quaternion q2);
     quaternion operator - (quaternion q2);
     quaternion operator * (float weight);
     quaternion operator * (quaternion q2);
+    quaternion inverse();
     //vec3 get_euler();
 };
 
 struct mat4{
     float m[16];
 
+    static mat4  ortho(float width,float height,float near,float far);
+    static mat4  frustum(float l,float r,float b,float t,float n,float f);
+    static mat4  perspective(float width,float height,float near,float far,float fov);
+
     void identity();
     void transpose();
-    void ortho(float width,float height,float near,float far);
-    void frustum(float l,float r,float b,float t,float n,float f);
-    void perspective(float width,float height,float near,float far,float fov);
     void transform(float x,float y,float z,vec3 rotation, vec3 scale);
     void transform(float x,float y,float z,quaternion rotation, vec3 scale);
 
-    void set(mat4* m2);
     mat4 copy();
+    void operator= (mat4& m2);
+    
+    void set(mat4* m2);
     void multiply_vec3(vec3* vec);
 
     void multiply_by(mat4* mat);

@@ -13,6 +13,7 @@ SynchronousBuffer::SynchronousBuffer(int block_size,int block_count){
 }
 
 SynchronousBuffer::~SynchronousBuffer(){
+    blocks=0;
     free(occupancy);occupancy=nullptr;
     free(data);data=nullptr;
 }

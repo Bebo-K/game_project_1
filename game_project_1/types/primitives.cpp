@@ -134,8 +134,7 @@ void vec3::rotate_z(float theta){
 vec3 vec3::rotate(quaternion angle){
     angle.normalize();
     quaternion v = {x,y,z,0};
-    quaternion conjugate = {-angle.x,-angle.y,-angle.z,angle.w};
-    quaternion result = conjugate * (angle*v);
+    quaternion result = (angle * v) * angle.inverse();
     return {result.x,result.y,result.z};
 }
 
@@ -143,6 +142,7 @@ vec3 vec3::operator +(vec3 v2){return{x+v2.x,y+v2.y,z+v2.z};}
 vec3 vec3::operator -(vec3 v2){return{x-v2.x,y-v2.y,z-v2.z};}
 vec3 vec3::operator *(float scl){return {x*scl,y*scl,z*scl};}
 vec3 vec3::operator *(vec3 scl){return {x*scl.x,y*scl.y,z*scl.z};}
+vec3 vec3::operator /(vec3 scl){return {x/scl.x,y/scl.y,z/scl.z};}
 vec3 vec3::of_length(float newlen){
     float len = length();
     if(newlen == 0 || len ==0){return {0,0,0};}
@@ -196,7 +196,11 @@ void quaternion::clear(){
     w=1;
 }
 
+
 void quaternion::set_euler(float x,float y,float z){
+    set_euler_radians(PI_OVER_180*x,PI_OVER_180*y,PI_OVER_180*z);
+}
+void quaternion::set_euler_radians(float x,float y,float z){
     double cx = cosf(x * 0.5);
     double sx = sinf(x * 0.5);
     double cy = cosf(y * 0.5);
@@ -211,6 +215,9 @@ void quaternion::set_euler(float x,float y,float z){
 }
 
 quaternion quaternion::of_euler(float x,float y,float z){
+    return of_euler_radians(PI_OVER_180*x,PI_OVER_180*y,PI_OVER_180*z);
+}
+quaternion quaternion::of_euler_radians(float x,float y,float z){
     double cx = cosf(x * 0.5);
     double sx = sinf(x * 0.5);
     double cy = cosf(y * 0.5);
@@ -226,7 +233,17 @@ quaternion quaternion::of_euler(float x,float y,float z){
     };
 }
 
+quaternion quaternion::identity(){
+    return {0,0,0,1f};
+}
+
 void quaternion::rotate_by(quaternion q2){
+    quaternion rotated = (*this)*q2;
+    x=rotated.x;
+    y=rotated.y;
+    z=rotated.z;
+    w=rotated.w;
+    /* where'd I get this math?
     float qx,qy,qz,qw;
     qx = x*q2.x - y*q2.y - z*q2.z - w*q2.w;
     qy = x*q2.x + y*q2.y - z*q2.z + w*q2.w;
@@ -234,7 +251,27 @@ void quaternion::rotate_by(quaternion q2){
     qw = x*q2.x - y*q2.y + z*q2.z + w*q2.w;
 
     x=qx;y=qy;z=qz;w=qw;
+    */
 }
+
+
+//gives the product a*b where a = this and b = q2
+quaternion quaternion::operator* (quaternion q2){
+    return {
+        w*q2.x + x*q2.w  + y*q2.z - z*q2.y,
+        w*q2.y - x*q2.z  + y*q2.w + z*q2.x,
+        w*q2.z + x*q2.y  - y*q2.x + z*q2.w,
+        w*q2.w - x*q2.x  - y*q2.y - z*q2.z
+    };
+}
+
+//gives the quaternion q2 that (this)*q2 = identity
+quaternion quaternion::inverse(){
+    return {-x,-y,-z,w};
+}
+
+
+
 void quaternion::rotate_by(float x,float y,float z){
     quaternion q2;
     q2.set_euler(x,y,z);
@@ -249,9 +286,24 @@ void quaternion::normalize(){
     w /= length;
 }
 
+quaternion quaternion::normalized(){
+    float length = sqrtf(x*x+y*y+z*z+w*w);
+    return {x/length,y/length,z/length,w/length};
+}
+
 float quaternion::dot(quaternion q2){
     return x*q2.x + y*q2.y + z*q2.z + w*q2.w;
 }
+
+float quaternion::theta_difference(quaternion q2){
+    return theta_difference_radians(q2)*PI_OVER_180;
+}
+float quaternion::theta_difference_radians(quaternion q2){
+    quaternion diff = inverse()*q2
+    float diff_vec = ((vec3){diff.x,diff.y,diff.z}).length();
+    return abs(atan2(diff_vec,w));
+}
+
 
 quaternion quaternion::operator + (quaternion q2){
     return {x+q2.x,y+q2.y,z+q2.z,w+q2.w};
@@ -263,16 +315,6 @@ quaternion quaternion::operator - (quaternion q2){
 
 quaternion quaternion::operator * (float weight){
     return {x*weight,y*weight,z*weight,w*weight};
-}
-
-//gives the product a*b where a = this and b = q2
-quaternion quaternion::operator* (quaternion q2){
-    return {
-        w*q2.x + x*q2.w  + y*q2.z - z*q2.y,
-        w*q2.y + y*q2.w  + z*q2.x - x*q2.z,
-        w*q2.z + z*q2.w  + x*q2.y - y*q2.x,
-        w*q2.w - x*q2.x  - y*q2.y - z*q2.z
-    };
 }
 
 mat4 quaternion::to_matrix(){
@@ -294,6 +336,12 @@ mat4 mat4::copy(){
     for(int i=0;i<16;i++){new_m.m[i]=m[i];}
     return new_m;
 }
+
+
+void mat4::operator=(mat4& m2){
+    for(int i=0;i<16;i++){m[i]=m2.m[i];}
+}
+
 
 void mat4::multiply_by(mat4* mat){
     float new_m[] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
@@ -393,7 +441,7 @@ void mat4::identity(){
     m[15] = 1.0;
 }
 
-void mat4::ortho(float width,float height,float near,float far){
+mat4 mat4::ortho(float width,float height,float near,float far){
     float l = (-width/2.0); float r = width/2.0;
     float t = height/2.0; float b = -height/2.0;
     float n = near; float f = far;

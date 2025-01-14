@@ -2,6 +2,7 @@
 #include <game_project_1/io/crc.hpp>
 #include <game_project_1/io/log.hpp>
 #include <math.h>
+#include <game_project_1/types/interpolaters.hpp>
 
 using namespace Animation;
 
@@ -140,51 +141,6 @@ Animation::ActiveClip::ActiveClip(Clip* clip,Target* target,float time,float tim
 Animation::ActiveClip::~ActiveClip(){ RemoveActiveClip(this);}
 
 
-//nlerp, consider slerp if appropriate
-void QuaternionLinearInterpolate(quaternion* from,quaternion* to, float weight,quaternion* values, int values_count){
-    for(int i=0;i<values_count;i++){ 
-        values[i].x = to[i].x*weight + from[i].x*(1.0f-weight);
-        values[i].y = to[i].y*weight + from[i].y*(1.0f-weight);
-        values[i].z = to[i].z*weight + from[i].z*(1.0f-weight);
-        values[i].w = to[i].w*weight + from[i].w*(1.0f-weight);
-        values[i].normalize();
-    }
-}
-void QuaternionSphericalInterpolate(quaternion* q1,quaternion* q2, float weight,quaternion* values, int values_count){
-    for(int i=0;i<values_count;i++){ 
-        quaternion from = q1[i];
-        quaternion to = q2[i];
-
-        float dot = to.dot(from);
-        if(dot < 0){
-            dot *= -1;
-            from = from*-1;
-        }
-        if(dot > 0.9995f){
-            QuaternionLinearInterpolate(&from,&to,weight,&values[i],1);
-            return;
-        } 
-
-        float theta_0 = acosf(dot);
-        float theta = theta_0*weight;
-        float sin_theta = sinf(theta);
-        float sin_theta_0 = sinf(theta_0);
-        float s0 = cos(theta) - dot * sin_theta / sin_theta_0;
-        float s1 = sin_theta / sin_theta_0;
-
-        values[i] = from*s0 + to*s1;
-    }
-}
-void QInterpolate(float* from, float* to, float weight, float* values, int values_count){
-    QuaternionSphericalInterpolate((quaternion*)from,(quaternion*)to, weight,(quaternion*)values, values_count/4);
-}
-
-void Interpolate(float* from, float* to, float weight, float* values, int values_count){
-    for(int i=0;i<values_count;i++){
-        values[i] = to[i]*weight + from[i]*(1.0f-weight);
-    }
-}
-
 void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
     if(hook == null){
         logger::warn("Hook does not exist for animation channel '%s' of clip '%s'",
@@ -234,13 +190,13 @@ void UpdateChannel(ActiveClip* current_clip,Channel* channel,ChannelHook* hook){
 
     switch(channel->value_type){
         case QUATERNION :
-            QInterpolate(
+            Interpolators::MultiQInterpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
                 &channel->keyframe_values[next_keyframe*channel_width],
                 weight,hook->value,channel_width);
             break;
         default:
-            Interpolate(
+            Interpolators::MultiInterpolate(
                 &channel->keyframe_values[last_keyframe*channel_width],
                 &channel->keyframe_values[next_keyframe*channel_width],
                 weight,hook->value,channel_width);

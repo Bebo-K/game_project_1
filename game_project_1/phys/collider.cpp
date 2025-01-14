@@ -3,17 +3,11 @@
 #include <math.h>
 
 
-ShapeCollider::ShapeCollider(){
+ShapeCollider::ShapeCollider():transform(){
     shape=Collider::SPHERE;
-    center_offset={0,0,0};
-    scale.x = scale.y = scale.z = 0;
-    rotation={0,0,0};
 }
-ShapeCollider::ShapeCollider(ShapeCollider* c2){
+ShapeCollider::ShapeCollider(ShapeCollider* c2):transform(c2->transform){
     shape=c2->shape;
-    center_offset=c2->center_offset;
-    scale=c2->scale;
-    rotation=c2->rotation;
 }
 ShapeCollider::ShapeCollider(vec3 center,float r){
     shape=Collider::SPHERE;

@@ -3,6 +3,8 @@
 
 #include <game_project_1/types/primitives.hpp>
 
+/*
+
 // Transforms represent a transformation matrix consisting of a translation, rotation, and scale
 //  They should be used for data close to the rendering pipeline, like skeleton animations
 struct Transform
@@ -14,7 +16,6 @@ struct Transform
     vec3 Position(); 
     void Clear();
 
-    void operator+= (vec3 position);
 };
 
 // Representation of an orientation in world space- generally scale is constant or managed separately
@@ -33,6 +34,8 @@ struct Location
     Location(vec3 pos, vec3 rot);
     Transform ToTransform();
 };
+
+*/
 
 struct LinearGradient
 {

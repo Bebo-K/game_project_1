@@ -89,9 +89,10 @@ Component *HitBoxes::Clone()
     return copy;
 }
 
-void DrawShapeCollider(Camera *cam,Transform worldspace_transform, ShapeCollider *collider)
+void DrawShapeCollider(Camera *cam,Transform transform, ShapeCollider *collider)
 {
-    worldspace_transform += collider->center_offset.rotate(worldspace_transform.rotation);
+    vec3 rotated_offset = (collider->center_offset*).rotate(worldspace_transform.rotation);
+    worldspace_transform += rotated_offset;
 
     color unique_color( seeded_rand(uuid(collider)) );
     unique_color.a = 128;

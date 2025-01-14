@@ -13,18 +13,19 @@ class CameraManager{
     ClientEntity*   target;
     Camera*         camera;
 
-    float camera_turn_speed=200;
-    float camera_turn_sqr_speed = 0.222;
+    float           camera_turn_speed=200;
+    float           camera_zoom_speed=0.1f;
 
     bool            lock_camera;
     bool            cam_moving;
 
-    float           rotation_goal;
+    float           current_turn;
+    float           turn_goal;
+    float           current_zoom;
 	float		    zoom_goal;
 
-	vec3		    offset;
-    quaternion      rotation;
-    float           zoom;
+	Transform       transform_goal;
+
 	LinearGradient	zoom_range;
 	LinearGradient	zoom_pitch;
 

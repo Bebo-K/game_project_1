@@ -13,15 +13,6 @@ Drawable::Drawable(){
 
 Drawable::~Drawable(){}
 
-
-void Drawable::SetTransform(Location l,vec3 scale){
-    x=l.x;
-    y=l.y;
-    z=l.z;
-    rotation = l.rotation;
-    this->scale=scale;
-}
-
 Transform Drawable::GetTransform(){
     return {x,y,z,quaternion::of_euler(rotation.x,rotation.y,rotation.z),scale};
 }

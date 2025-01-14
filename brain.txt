@@ -1,9 +1,61 @@
+Hitboxes and Interaction:
 
-Combat
-...
+Working on management system for moving hit/hurtshapes
+
+My current plan (1/2/25)is to simplify the position/location/scale transform pipeline to something that can work across
+    - rendering pipeline    
+    - physics pipeline
+    - network synchronization
+    so I don't have to keep rewriting algorithms to put X in Y space for:
+        (A) skeletal animations
+        (B) entity parenting
+        (C) hitbox parenting
+        (D) physics/kinematics relative to (A) and (B)
+        (E) re-using animation across non-skeletal instances. (e.g. animations that can target any transform, includuing camera, lights, level elements)
+
+
+Big issue is managing chains of transforms- do transform know about their parents? How is that link persisted across client/server boundaries?
+    curent plan is to make entity either BE or OWN 1 transform (their "local space transform").
+    Things to plan for:
+        - hit/hurtboxes parented to entities (sub-transform)
+        - bone transforms for entities (sub-transform)
+        - entities parented to other entities, ESPECIALLY if parented to part of the skeleton (how to parent an entity transform to another's sub-transform?)
+            - An entity is holding something that interacts from the world. Does that interaction originate:
+                - From the entity's position/a fixed offset of the entity's position?
+                - From the offset of a bone the entity has, client side, on each client? (Is this a useful casE?)
+        - detached, global bones (projectiles?)
+        - detached, global hitboxes (triggers?)
+        - Are there any future cases for needed transforms other than entities, bones and hitboxes
+
+
+        Entity-
+            TransformList[]
+                PublicTransforms:
+                    0: Local Space Transform (Accessors for "position", "x/y/z", etc.)
+                    ...
+                    M: Hitbox #4 Transform
+                    ...
+                    N: Synced Bone Transform for boneId "ASDF" 
+                        (..is transmitting this state even helpful when accounting for network lag? Other clients would just recalculate their own based on their animation state)
+                PrivateTransforms:
+                    ...
+                    Q: Bone Transform for boneId "FDSA"
+
+
+Actually... scrap the network registry part. There's no good way to dedup that across client/server without making all transforms require a registry instance as part of their ctor
+and all we really care about server side for an entity is:
+    - Their base position
+    - What hitboxes they have active
+    - What animation those hitboxes are playing, and when they started.
+    The server can calculate out the rest, and clients will have their own, different bone positions.
+
+Keep transform chains, but use pointers instead. And it'll be up to the usage context to make sure they're done correctly (e.g client + server both would need to parent the transforms for two attached objects)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+So in short, just finish writing implementation for Transforms, remove Locations/Bones, and fix AnimationTargets to be targetable to any Transform.e
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Then do:
 Unit-independent hit patterns
 Hit patterns as animations
 Collision object create/destroy frame
-> timescale as a float vs as a frame integer
-
-actually just cop out and use floats

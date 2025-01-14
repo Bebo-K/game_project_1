@@ -25,14 +25,16 @@ void ClientLevel::Draw(Camera* cam){
 
     Shader* shader = ShaderManager::UseShader(shader_name);
 
-    mat3 normal;
-    normal.set(&cam->view_matrix);
-    normal.transpose();
-    normal.invert();
+    mat3 view_matrix = cam->ViewMatrix();
+    mat3 projection_matrix = cam->ProjectionMatrix();
+    mat3 normal_matrix;
+    normal_matrix.set(&view_matrix);
+    normal_matrix.transpose();
+    normal_matrix.invert();
     
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
-    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
+    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&projection_matrix);
+    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal_matrix);
 
     MeshGroupRenderOptions default_mgro;
     default_mgro.hide=false;
@@ -46,6 +48,7 @@ void ClientLevel::Draw(Camera* cam){
         }
     }
 }
+
 void ClientLevel::Unload(){
     models.Clear();
     collmeshes.Clear();

@@ -34,12 +34,6 @@ void ClientScene::Unload(){
 
 void ClientScene::Draw(){
     camera_manager.PreDraw();
-    for(ClientEntity* e:entities){        
-        if(e->Has<ModelSet>()){e->Get<ModelSet>()->SetTransform(e->GetLocation(),e->scale);}
-        if(e->Has<SpriteSet>()){e->Get<SpriteSet>()->SetTransform(e->GetLocation(),e->scale);}
-        if(e->Has<ColliderSet>()){e->Get<ColliderSet>()->SetTransform(e->GetLocation(),e->scale);}
-        if(e->Has<HitBoxes>()&& config::debug_mode){e->Get<HitBoxes>()->SetTransform(e->GetLocation(),e->scale);}
-    }
     renderer.Draw();
 }
 
@@ -73,7 +67,7 @@ void ClientScene::BuildEntity(ClientEntity* e){
 }
 
 void ClientScene::AddToRender(ClientEntity* e){
-     if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
+    if(e->Has<ModelSet>()){renderer.Add(e->Get<ModelSet>());}
     if(e->Has<SpriteSet>()){renderer.Add(e->Get<SpriteSet>());}
     if(config::debug_mode && e->Has<ColliderSet>()){renderer.Add(e->Get<ColliderSet>());}
     if(config::debug_mode && e->Has<HitBoxes>()){renderer.Add(e->Get<HitBoxes>());}

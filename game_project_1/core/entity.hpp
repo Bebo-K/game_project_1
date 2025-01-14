@@ -2,6 +2,7 @@
 #define ENTITY_H
 
 #include <game_project_1/types/str.hpp>
+#include <game_project_1/types/transform.hpp>
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/component/all_components.hpp>
 
@@ -9,7 +10,7 @@ class ComponentMask;
 class ClientComponentMask;
 class ServerComponentMask;
 
-class Entity{
+class Entity, public Transform{
     private:
     const static int    component_slots = 13;
     Component*          components[component_slots];
@@ -27,20 +28,17 @@ class Entity{
     friend ServerComponentMask;
     
     public:
+    /*
     int                 id;
 
     float               x,y,z;
     vec3                scale;
     vec3                rotation;
+    */
     vec3                velocity;
 
     Entity(int id);
     ~Entity();
-
-    vec3 GetPos();
-    Location GetLocation();
-    void SetPos(vec3 pos);
-    void SetLocation(Location loc);
 
     template<typename T>
     inline T* Get(){return (T*)components[Slot(IdOf<T>())];}

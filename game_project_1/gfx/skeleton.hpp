@@ -45,7 +45,6 @@ class Pose{
     Transform*        transforms;
     mat4*             matrices;
     Skeleton*         skeleton;
-    Animation::Target anim_target;
     bool              animating;
 
 

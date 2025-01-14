@@ -5,12 +5,8 @@
 #include <game_project_1/gfx/shader.hpp>
 
 class Camera{
-    private:
-    vec3  rotation;
     public:
-    
-    float x,y,z;
-    float turn,pitch,yaw;
+    Transform transform;
     
     bool ortho;
     float width,height;
@@ -18,16 +14,11 @@ class Camera{
     float near_clip;
     float far_clip;
 
-    mat4 view_matrix;
-    mat4 projection_matrix;
+    mat4 ViewMatrix();
+    mat4 ProjectionMatrix();
 
     Camera();
-
-    vec3 FromCameraSpace(vec3 v);
-    void ToCameraSpace(mat4* m);
-
-    void ApplyTransforms();
-    void ResetViewMatrix(mat4* view);
+    ~Camera();
 };
 
 
