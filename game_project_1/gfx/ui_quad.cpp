@@ -10,7 +10,7 @@ VBO vertices;
 VBO texcoords;
 
 void BuildQuadPrimitive(){
-    ShaderManager::UseShader("ui_2d_quad");
+    ShaderManager::UseShader((ShaderRef)ShaderDef::UI_2D_QUAD);
 
     glGenVertexArrays(1,&vertex_array_id);
     glBindVertexArray(vertex_array_id);

@@ -11,19 +11,19 @@ int ActionState::SerializedLength(){
 
 void ActionState::Read(Deserializer& dat){
     action_id = (Action::ID)dat.GetInt();
-    action_cooldown = dat.GetInt();
-    action_timer = dat.GetInt();
+    action_cooldown.frames_left = dat.GetInt();
+    action_timer.frames_left = dat.GetInt();
     action_impulse = (dat.GetInt()!=0);
 }
 
 void ActionState::Write(Serializer& dat){
     dat.PutInt(action_id);
-    dat.PutInt(action_cooldown);
-    dat.PutInt(action_timer);
+    dat.PutInt(action_cooldown.frames_left);
+    dat.PutInt(action_cooldown.frames_left);
     dat.PutInt(action_impulse?1:0);
 }
 
-Component* ActionState::Clone(){
+Component* ActionState::Clone(ComponentParentContext context){
     ActionState* copy = new ActionState();
     copy->action_id = action_id;
     copy->action_cooldown = action_cooldown;
@@ -34,7 +34,7 @@ Component* ActionState::Clone(){
 
 void ActionState::Clear(){ 
     action_id=Action::NONE;
-    action_cooldown=0;
-	action_timer=0;
+    action_cooldown.frames_left=0;
+	action_timer.frames_left=0;
 	action_impulse=false;
 }

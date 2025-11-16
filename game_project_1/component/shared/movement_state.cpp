@@ -34,7 +34,7 @@ void MovementState::Write(Serializer& dat){
     dat.PutInt(flags);
 }
 
-Component* MovementState::Clone(){
+Component* MovementState::Clone(ComponentParentContext context){
     MovementState* copy = new MovementState();
 	copy->current_movement = current_movement;
     copy->move_goal = move_goal;

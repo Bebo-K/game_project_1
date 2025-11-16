@@ -58,7 +58,7 @@ void ServerEntity::Clear(){
 void ServerEntity::CloneTo(ServerEntity* copy){
     Entity::CloneTo((Entity*)copy);
     for(int i=0;i<svr_component_slots;i++){
-        if(svr_components[i]!=null){copy->svr_components[i]=svr_components[i]->Clone();};
+        if(svr_components[i]!=null){copy->svr_components[i]=svr_components[i]->Clone(ComponentParentContext{copy});};
     }
     
     copy->changed_component_ids=changed_component_ids;

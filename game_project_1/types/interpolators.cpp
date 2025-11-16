@@ -1,15 +1,16 @@
 #include <game_project_1/types/interpolaters.hpp>
+#include <math.h>
 
 using namespace Interpolators;
 
 
 
 quaternion QuaternionLinearInterpolate(quaternion from,quaternion to, float weight){
-    return ((quaternion){ 
+    return (quaternion{ 
         to.x*weight + from.x*(1.0f-weight),
-        to.y*weight + from.y*(1.0f-weight);
-        to.z*weight + from.z*(1.0f-weight);
-        to.w*weight + from.w*(1.0f-weight)} ).normalized();
+        to.y*weight + from.y*(1.0f-weight),
+        to.z*weight + from.z*(1.0f-weight),
+        to.w*weight + from.w*(1.0f-weight)}).normalized();
 }
 
 quaternion QuaternionSphericalInterpolate(quaternion from,quaternion to, float weight){
@@ -43,7 +44,7 @@ quaternion QInterpolate(quaternion from,quaternion to, float weight){
 
 void Interpolators::MultiQInterpolate(float* from, float* to, float weight, float* values, int values_count){
     for(int i=0;i<values_count;i+4){ 
-        quaternion res = QInterpolate({from[i],from[i+1],from[i+2],from[i+3]},{to[i],to[i+1],to[i+2],to[i+3]},weight)
+        quaternion res = QInterpolate({from[i],from[i+1],from[i+2],from[i+3]},{to[i],to[i+1],to[i+2],to[i+3]},weight);
         values[i]=res.x;
         values[i+1]=res.y;
         values[i+2]=res.z;
@@ -82,7 +83,7 @@ Transform Interpolators::TransformInterpolate(Transform* from, Transform* to, fl
         WeightInterpolate(from->y,to->y,weight),
         WeightInterpolate(from->z,to->z,weight),
         
-        QInterpolate(from->rotation,to->rotation,weight,angle_cutoff),
+        QInterpolate(from->rotation,to->rotation,weight),
 
         {WeightInterpolate(from->scale.x,to->scale.x,weight),
         WeightInterpolate(from->scale.y,to->scale.y,weight),
@@ -99,5 +100,5 @@ Transform Interpolators::TransformInterpolate(Transform* from, Transform* to, fl
     if( res.rotation.theta_difference(to->rotation) < angle_snap){
         res.rotation = to->rotation;
     }
-    return result;
+    return res;
 }

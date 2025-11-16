@@ -1,15 +1,13 @@
 #include <game_project_1/client/client_level.hpp>
 #include <game_project_1/io/level_loader.hpp>
-char* ClientLevel::default_shader = "level_debug";
 
 ClientLevel::ClientLevel():Drawable(),skybox(),models(),collmeshes(){
     layer = 120;
-    shader_name = default_shader;
+    shader = (ShaderRef)ShaderDef::LEVEL_DEBUG;
 }
 
 ClientLevel::~ClientLevel(){
     Unload();
-    if(shader_name != default_shader){free(shader_name);shader_name=default_shader;}
 }
 
 void ClientLevel::LoadArea(int area_id){
@@ -23,18 +21,18 @@ void ClientLevel::LoadArea(int area_id){
 void ClientLevel::Draw(Camera* cam){
     skybox.Draw(cam);
 
-    Shader* shader = ShaderManager::UseShader(shader_name);
+    Shader* s = ShaderManager::UseShader(shader);
 
-    mat3 view_matrix = cam->ViewMatrix();
-    mat3 projection_matrix = cam->ProjectionMatrix();
+    mat4 view_matrix = cam->ViewMatrix();
+    mat4 projection_matrix = cam->ProjectionMatrix();
     mat3 normal_matrix;
     normal_matrix.set(&view_matrix);
     normal_matrix.transpose();
     normal_matrix.invert();
     
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&projection_matrix);
-    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal_matrix);
+    glUniformMatrix4fv(s->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
+    glUniformMatrix4fv(s->PROJECTION_MATRIX,1,true,(GLfloat*)&projection_matrix);
+    glUniformMatrix3fv(s->NORMAL_MATRIX,1,true,(GLfloat*)&normal_matrix);
 
     MeshGroupRenderOptions default_mgro;
     default_mgro.hide=false;
@@ -43,7 +41,7 @@ void ClientLevel::Draw(Camera* cam){
     for(ModelData* model:models){
         for(MeshGroup* group:model->mesh_groups){
             for(Mesh* mesh:group->meshes){
-                mesh->Draw(shader,&default_mgro);
+                mesh->Draw(s,&default_mgro);
             }
         }
     }

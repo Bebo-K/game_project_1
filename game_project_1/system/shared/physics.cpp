@@ -112,7 +112,7 @@ void Physics::ServerUpdate(ServerEntity* e,ServerScene* s,Timestep delta){
     if(e->Has<MovementState>())UpdateMovementState(e);
     EntityCollision::ServerFrame(e,s,delta);
 
-    if((e->last_position - e->GetPos()).length_sqr() > 3.0 ||
+    if((e->last_position - e->Position()).length_sqr() > 3.0 ||
         (e->last_velocity - e->velocity).length_sqr() > 0.1){
         e->MarkMoved();
     }

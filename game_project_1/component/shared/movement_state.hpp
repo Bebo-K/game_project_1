@@ -33,7 +33,7 @@ class MovementState: public Component{
 	MovementState();
 	~MovementState();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

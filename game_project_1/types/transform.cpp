@@ -18,19 +18,25 @@ Transform::Transform(vec3 pos,quaternion _rotation,vec3 _scale):x(pos.x),y(pos.y
 Transform::Transform(vec3 pos,quaternion _rotation,vec3 _scale,Transform* parent):x(pos.x),y(pos.y),z(pos.z),rotation(_rotation),scale(_scale),parent(parent){}
 
 Transform::Transform(Transform* _parent):x(0),y(0),z(0),rotation(),scale(1.0f,1.0f,1.0f),parent(_parent){}
+
+Transform::Transform(const Transform& other){
+    x=other.x;y=other.y;z=other.z;
+    rotation=other.rotation;
+    scale=other.scale;
+    parent=other.parent;
+}
+Transform& Transform::operator= (const Transform& other){
+    x=other.x;y=other.y;z=other.z;
+    rotation=other.rotation;
+    scale=other.scale;
+    parent=other.parent;
+    return *this;
+}
 Transform::~Transform(){
     parent=null;
     x=y=z=0;
     scale={1.0f,1.0f,1.0f};
     rotation=quaternion::identity();
-}
-
-
-void Transform::operator= (Transform& copy){
-    x=copy.x;y=copy.y;z=copy.z;
-    rotation=copy.rotation;
-    scale=copy.scale;
-    parent=copy.parent;
 }
 void Transform::Copy(Transform* copy){
     x=copy->x;y=copy->y;z=copy->z;
@@ -39,10 +45,10 @@ void Transform::Copy(Transform* copy){
     parent=copy->parent;
 }
 
-void Clear(){
+void Transform::Clear(){
     x=y=z=0;
-    scale={1f,1f,1f};
-    rotation = quaternion:identity();
+    scale= {1.0f,1.0f,1.0f};
+    rotation = quaternion::identity();
 }
 
 //converts this transform to local space of a new parent, setting it's parent while maintaining it's position in global space
@@ -60,9 +66,9 @@ void Transform::Unattach(){
     quaternion new_rot = GlobalRotation();
     vec3 new_scale = GlobalScale();
 
-    this.x=new_pos.x;
-    this.y=new_pos.y;
-    this.z=new_pos.z;
+    x=new_pos.x;
+    y=new_pos.y;
+    z=new_pos.z;
 
     rotation = new_rot;
     scale = new_scale;
@@ -70,8 +76,8 @@ void Transform::Unattach(){
 
 
 vec3 Transform::ToGlobalSpace(vec3 local_point){
-    vec3 parent_point = ( (local_point + {x,y,z}).rotate(rotation) ) * scale;
-    if(parent != null){return parent->ToGlobalSpace(parent_point)}
+    vec3 parent_point = ( (local_point + vec3{x,y,z}).rotate(rotation) ) * scale;
+    if(parent != null){return parent->ToGlobalSpace(parent_point);}
     return parent_point;
 }
 vec3 Transform::ToLocalSpace(vec3 world_point){
@@ -96,7 +102,7 @@ mat4 Transform::ApplyFrom(mat4 view_matrix){
     return parent_mat;
 }
 
-vec3 Transform::GlobalPosition(){return ToGlobalSpace(0,0,0);}
+vec3 Transform::GlobalPosition(){return ToGlobalSpace({0,0,0});}
 quaternion Transform::GlobalRotation(){
     if(parent != null){return parent->GlobalRotation() * rotation;}
     return rotation;
@@ -108,14 +114,14 @@ vec3 Transform::GlobalScale(){
 
 vec3 Transform::Position(){return {x,y,z};}
 void Transform::SetPosition(vec3 pos){x=pos.x; y=pos.y; z=pos.z;}
-void Transform::SetLocation(vec3 pos,vec3 rotation){x=pos.x; y=pos.y; z=pos.z; rotation = quaternion::of_euler(rotation.x,rotation.y,rotation.z);}
+void Transform::SetLocation(vec3 pos,vec3 rot){x=pos.x; y=pos.y; z=pos.z; rotation = quaternion::of_euler(rot.x,rot.y,rot.z);}
 
-void Transform::operator+= (vec3 position){x+=pos.x; y+=pos.y; z+=pos.z;}
-void Transform::operator-= (vec3 position){x-=pos.x; y-=pos.y; z-=pos.z;}
+void Transform::operator+= (vec3 pos){x+=pos.x; y+=pos.y; z+=pos.z;}
+void Transform::operator-= (vec3 pos){x-=pos.x; y-=pos.y; z-=pos.z;}
 void Transform::Translate(float _x,float _y,float _z){x+=_x; y+=_y; z+=_z;}
 
-void Transform::Rotate(float rx,float ry,float rz){rotation.rotate_by(r);}
-void Transform::Rotate(vec3 r){rotation.rotate_by(r);}
+void Transform::Rotate(float rx,float ry,float rz){rotation.rotate_by(rx,ry,rz);}
+void Transform::Rotate(vec3 r){rotation.rotate_by(r.x,r.y,r.z);}
 void Transform::RotateRadians(vec3 r){rotation.rotate_by(quaternion::of_euler_radians(r.x,r.y,r.z));}
 void Transform::Rotate(quaternion r){rotation.rotate_by(r);}
 

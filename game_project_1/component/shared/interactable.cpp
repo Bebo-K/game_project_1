@@ -24,7 +24,7 @@ void Interactable::Write(Serializer& dat){
     dat.PutFloat(valid_interact_angle.max);
 }
 
-Component* Interactable::Clone(){
+Component* Interactable::Clone(ComponentParentContext context){
     Interactable* copy = new Interactable();
     
     copy->type=type;

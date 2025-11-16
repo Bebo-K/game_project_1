@@ -8,8 +8,6 @@
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/gfx/drawable.hpp>
 
-Animation::Target* BuildAnimationTargetForShapeCollider(ShapeCollider* s,Animation::Target* slot);
-
 struct HitPath{
     ShapeCollider collider;
     Animation::Clip* path;
@@ -39,13 +37,13 @@ class HitBoxes: public Component,public Drawable{
     //List<ShapeCollider> hittable_colliders; for now only the world hit capsule can recieve hits
     
 	public: 
-	HitBoxes();
+	HitBoxes(Transform* parent);
 	~HitBoxes();
 
     void StartPattern(HitPattern* pattern);
     void CleanupPattern();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return 0;}

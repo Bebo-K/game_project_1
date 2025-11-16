@@ -20,7 +20,7 @@ namespace Interpolators
     
     //step-based interpolators that adds [step] to [from] until [to] is reached
     float StepInterpolate(float from, float to,float step);
-    float StepQInterpolate(quaternion from, quaternion to,float theta_step);
+    quaternion StepQInterpolate(quaternion from, quaternion to,float theta_step);
 
     //Weight based transform interpolator
     Transform TransformInterpolate(Transform* from, Transform* to, float weight,float pos_snap,float angle_snap,float scale_snap);

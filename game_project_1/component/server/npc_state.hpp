@@ -18,7 +18,7 @@ class NPCState: public Component{
 	NPCState();
 	~NPCState();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     //Cannot be serialized as we can't know what constants/paramters will be (possibly void*)

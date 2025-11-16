@@ -39,9 +39,7 @@ HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     HitPattern* pattern = new HitPattern(1);
 
     pattern->max_lifetime=60;
-    pattern->hitpaths[0]->collider.center_offset = {0,0.5f*height,0};
-    pattern->hitpaths[0]->collider.scale = {1,1,1};// {1.0f*height,1.0f*height,1.0f*height};
-    pattern->hitpaths[0]->collider.shape = Collider::SPHERE;
+    pattern->hitpaths[0]->collider= ShapeCollider(e,{0,0.5f*height,0},width);
     pattern->hitpaths[0]->spawn_time=0.0f;
     pattern->hitpaths[0]->despawn_time=2.5f;
     pattern->hitpaths[0]->path =Animation::Clip::Builder()
@@ -49,7 +47,7 @@ HitPattern* GetHitPatternForAttackType(Entity* e,AttackType attack_type){
     .Duration(2.5f)
     .Loop(false)
     .AddChannel(Animation::ChannelBuilder()
-        .ID(Animation::ChannelID("position"))
+        .ID(Animation::ChannelID("hitbox","position"))
         .InterpolateMode(Animation::LINEAR)
         .Type(Animation::VECTOR3)
         .Keyframe(0.0f,{0,0.5,0})
@@ -70,15 +68,15 @@ void Combat::ClientStartAttack(ClientEntity* e, ClientScene* s){
     //ModelSet* models = e->Get<ModelSet>();
 
     if(!colliders || !action_state || !stats || !char_info ||!hitboxes)return;
-    if(action_state->action_cooldown != 0)return;
+    if(!action_state->action_cooldown.Expired())return;
     action_state->action_id = Action::ID::ATTACK;
     action_state->action_impulse = true;
 
     AttackType attack_type = GetUnitAttackType(e,s);
     HitPattern* attack_pattern = GetHitPatternForAttackType(e, attack_type);
     char* attack_animation_name = GetAnimationForAttackType(e, attack_type);
-    action_state->action_cooldown = GetCooldownForAttackType(e, attack_type);
-    action_state->action_timer = GetDurationForAttackType(e,attack_type);
+    action_state->action_cooldown.Set(GetCooldownForAttackType(e, attack_type));
+    action_state->action_timer.Set(GetDurationForAttackType(e,attack_type));
 
     if(attack_pattern){
         hitboxes->StartPattern(attack_pattern);
@@ -112,20 +110,19 @@ bool FloatCrossesThreshhold(float base,float add,float threshhold){
 void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
     ActionState* action_state = e->Get<ActionState>();
     if(!action_state){return;}
-    if(action_state->action_timer > 0){ //TODO: other action end conditions
-        DeveloperLayer::SetLabelText(0,L"Action Timer: %d",action_state->action_timer);
-        action_state->action_timer -= delta.frames;
-        if(action_state->action_timer <=0){
-            action_state->action_id = Action::ID::NONE;
-            action_state->action_timer = 0;
-        }
+
+    if(action_state->action_timer.Countdown(delta)){
+        action_state->action_id = Action::ID::NONE;
     }
-    else if(action_state->action_cooldown > 0){
-        action_state->action_cooldown -= delta.frames;
-        if(action_state->action_cooldown <= 0){
-            action_state->action_cooldown = 0;
-        }
-        DeveloperLayer::SetLabelText(0,L"Action Cooldown: %d",action_state->action_cooldown);
+    else if(action_state->action_timer.Expired() && action_state->action_cooldown.Countdown(delta)){
+        //cooldown ended
+    }
+
+    if(!action_state->action_timer.Expired()){
+        DeveloperLayer::SetLabelText(0,L"Action Timer: %d",action_state->action_timer.frames_left);
+    }
+    else if(!action_state->action_cooldown.Expired()){
+        DeveloperLayer::SetLabelText(0,L"Action Cooldown: %d",action_state->action_cooldown.frames_left);
     }
 
     HitBoxes* hitboxes = e->Get<HitBoxes>();
@@ -133,13 +130,19 @@ void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
      
     if(hitboxes->current_pattern != null){
         HitPattern* pattern = hitboxes->current_pattern;
-        if(hitboxes->current_pattern_active_time < hitboxes->current_pattern->max_lifetime){
+        char hibox_name_buffer[16] = {0};
+        if(hitboxes->current_pattern_active_time < pattern->max_lifetime){
             for(HitPath* hitpath: pattern->hitpaths){
                 if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta.seconds,hitpath->spawn_time)){
                     //create collider + start animation
                     ShapeCollider* box = new (hitboxes->hit_colliders.Allocate()) ShapeCollider(hitpath->collider);
-                    Animation::Start(hitpath->path,
-                        BuildAnimationTargetForShapeCollider(box,hitboxes->hit_collider_targets.Allocate()));
+                    Animation::Target* target = hitboxes->hit_collider_targets.Allocate();
+
+                    int box_index = pattern->hitpaths.IndexOf(hitpath);
+                    sprintf(hibox_name_buffer,"hitbox_%d",box_index);
+                    
+                    target->AddTransformHooks(&box->transform,hibox_name_buffer);
+                    Animation::Start(hitpath->path,target);
                 }
                 else if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta.seconds,hitpath->despawn_time)){
                     int pattern_index = pattern->hitpaths.IndexOf(hitpath);
@@ -152,7 +155,5 @@ void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
         }
         else{ hitboxes->CleanupPattern(); }
     }
-    if(action_state->action_impulse){
-        action_state->action_impulse=false;
-    }
+    action_state->action_impulse=false;
 }

@@ -3,6 +3,7 @@
 #include <game_project_1/io/log.hpp>
 #include <math.h>
 #include <game_project_1/types/interpolaters.hpp>
+#include <new>
 
 using namespace Animation;
 
@@ -95,7 +96,11 @@ Animation::Target::Target(int channel_count):hooks(channel_count){
     enabled=true;
     active_clip=nullptr;
 }
-
+void Animation::Target::AddTransformHooks(Transform* target,char* name){
+    AddHook(&target->x,name,"translation",VECTOR3);
+    AddHook(&target->rotation.x,name,"rotation",QUATERNION);
+    AddHook(&target->scale.x,name,"scale",VECTOR3);
+}   
 void Animation::Target::AddHook(float* val,char* name,ValueType type){
     new (hooks.Add(ChannelID(name))) ChannelHook(val,name,type);
 }

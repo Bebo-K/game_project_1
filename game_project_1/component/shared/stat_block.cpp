@@ -19,7 +19,7 @@ void StatBlock::Write(Serializer& dat){
     base_stats.Write(dat);
 }
 
-Component* StatBlock::Clone(){
+Component* StatBlock::Clone(ComponentParentContext context){
     StatBlock* copy = new StatBlock(level);
     copy->base_stats.Copy(&base_stats);
     return copy;

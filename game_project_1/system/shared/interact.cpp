@@ -20,7 +20,7 @@ ClientEntity* Interact::ClientPollInteract(ClientEntity* e,ClientScene* s){
         if(e2 == e)continue;
         if(e2->Has<Interactable>()){
             Interactable* e2_interact = e2->Get<Interactable>();
-            vec3 offset = (e2->GetPos() - e->GetPos());
+            vec3 offset = e2->Position() - e->Position();
             float dist = offset.length_sqr();
             if(dist < e2_interact->interact_range){
                 //float interact_angle = offset.xz_angle()-90.0-e2->rotation.y;

@@ -18,7 +18,7 @@ class Equip: public Component{
     Equip();
     ~Equip();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

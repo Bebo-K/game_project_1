@@ -3,6 +3,7 @@
 
 #include <game_project_1/types/primitives.hpp>
 #include <game_project_1/types/str.hpp>
+#include <game_project_1/types/transform.hpp>
 
 class Serializer{
     bool allocated;
@@ -22,8 +23,10 @@ class Serializer{
     void PutInt(int i);
     void PutFloat(float f);
     void PutVec3(vec3 v);
+    void PutQuaternion(quaternion q);
     void PutString(char* str);
     void PutWString(wchar* str);
+    void WriteTransform(Transform* t);
     void WriteBytes(byte* dat,int len);
     byte* Bytes();
 };
@@ -39,8 +42,10 @@ class Deserializer{
     int GetInt();
     float GetFloat();
     vec3 GetVec3();
+    quaternion GetQuaternion();
     char* GetString();
     wchar* GetWString();
+    void ReadTransform(Transform* t);
     byte* CopyBytes(int bytes);
     void CopyBytesTo(byte* dest,int bytes);
     int  AmountRead();

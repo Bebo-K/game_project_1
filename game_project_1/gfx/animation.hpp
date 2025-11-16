@@ -6,6 +6,7 @@
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/types/map.hpp>
 #include <game_project_1/types/list.hpp>
+#include <game_project_1/types/transform.hpp>
 
 const int ANIMATION_LAYER_COUNT = 4;
 
@@ -66,6 +67,7 @@ namespace Animation{
         ActiveClip *active_clip;//TODO: store as list with blending info
 
         Target(int channel_count);
+        void AddTransformHooks(Transform* target,char* name);
         void AddHook(float* val,char* name,ValueType type);
         void AddHook(float* val,char* name,char* context,ValueType type);
         ~Target();

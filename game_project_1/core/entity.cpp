@@ -29,7 +29,7 @@ void Entity::Add(int slot){
         case 4: components[slot] = new PhysicsState();break;
         case 5: components[slot] = new MovementState();break;
         case 6: components[slot] = new ActionState();break;
-        case 7: components[slot] = new ColliderSet();break;
+        case 7: components[slot] = new ColliderSet(this);break;
         case 8: components[slot] = new StatBlock();break;
         case 9: components[slot] = new Equip();break;
         case 10: components[slot] = new Inventory();break;
@@ -50,23 +50,6 @@ Entity::Entity(int eid){
 }
 Entity::~Entity(){Clear();}
 
-vec3 Entity::GetPos(){return {x,y,z};}
-Location Entity::GetLocation(){
-    Location ret = {x,y,z,rotation};
-    ret.x=x;
-    ret.y=y;
-    ret.z=z;
-    ret.rotation = this->rotation;
-    return {x,y,z,rotation};}
-void Entity::SetPos(vec3 pos){
-    x=pos.x;y=pos.y;z=pos.z;
-}
-void Entity::SetLocation(Location loc){
-    x = loc.x; y = loc.y; z = loc.z;
-    rotation = loc.rotation;
-}
-
-
 void Entity::Clear(){
     for(int i=0;i<component_slots;i++){
         if(components[i]!=nullptr){
@@ -78,12 +61,14 @@ void Entity::Clear(){
 
 void Entity::CloneTo(Entity* copy){
     copy->id = id;
-    copy->SetPos({x,y,z});
+    copy->x = x;
+    copy->y = y;    
+    copy->z = z;
     copy->rotation = rotation;
     copy->scale = scale;
     copy->velocity = velocity;
     for(int i=0;i<component_slots;i++){
-        if(components[i]!=null){copy->components[i]=components[i]->Clone();};
+        if(components[i]!=null){copy->components[i]=components[i]->Clone(ComponentParentContext{copy});};
     }
 }
 
@@ -102,7 +87,7 @@ bool Entity::HasAll(ComponentMask mask){return HasComponents(mask.Mask());}
 
 int  Entity::SerializedLength(bitmask mask){
     int length = sizeof(bitmask);
-    if(mask.get_bit(0)){ length += sizeof(float)*3 + sizeof(vec3)*3; }
+    if(mask.get_bit(0)){ length += Transform::SerializedLength() + sizeof(vec3);}
     for(int slot=0;slot<component_slots;slot++){
         if(mask.get_bit(Id(slot)) && components[slot] != null){length += (sizeof(int) + components[slot]->SerializedLength());}
     }
@@ -112,7 +97,10 @@ int  Entity::SerializedLength(bitmask mask){
 void Entity::Write(Serializer& dat, bitmask id_mask){
     bitmask write_mask = AllExistingComponents();write_mask.and_with(id_mask);
     dat.PutInt(write_mask.val);
-    if(id_mask.get_bit(0)){ dat.PutVec3({x,y,z});dat.PutVec3(rotation);dat.PutVec3(scale);dat.PutVec3(velocity);}
+    if(id_mask.get_bit(0)){
+        dat.WriteTransform(this);
+        dat.PutVec3(velocity);
+    }
     for(int slot=0;slot<component_slots;slot++){
         if(id_mask.get_bit(Id(slot)) && components[slot] != null){components[slot]->Write(dat);}
     }
@@ -121,10 +109,8 @@ void Entity::Write(Serializer& dat, bitmask id_mask){
 void Entity::Read(Deserializer& dat, int timestamp){
     bitmask read_mask(dat.GetInt());
     if(read_mask.get_bit(0) ){
-        vec3 pos = dat.GetVec3(); x=pos.x; y=pos.y; z=pos.z;
-        rotation = dat.GetVec3();
-        scale = dat.GetVec3();
-        velocity = dat.GetVec3();
+        dat.ReadTransform(this);
+        velocity=dat.GetVec3();
     }
     for(int slot=0;slot<component_slots;slot++){
         if(read_mask.get_bit(Id(slot))){
@@ -134,7 +120,7 @@ void Entity::Read(Deserializer& dat, int timestamp){
                 components[slot]->MarkUpdated(timestamp);
             }
             else{
-                Component* skip = components[slot]->Clone();
+                Component* skip = components[slot]->Clone(ComponentParentContext{this});
                 skip->Read(dat);
                 delete skip;
             }

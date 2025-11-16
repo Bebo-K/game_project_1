@@ -25,7 +25,7 @@ class MovementProperties: public Component{
     MovementProperties();
     ~MovementProperties();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

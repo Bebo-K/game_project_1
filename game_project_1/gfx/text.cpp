@@ -101,7 +101,7 @@ point_i Glyph::Set(int code_point){
 }
 
 void Glyph::Draw(point_i draw_offset){
-    Shader* text_shader = ShaderManager::UseShader("ui_2d_quad");
+    Shader* text_shader = ShaderManager::UseShader((ShaderRef)ShaderDef::UI_2D_QUAD);
 
     BindUIQuad();
 

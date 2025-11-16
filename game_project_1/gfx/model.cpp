@@ -4,6 +4,7 @@
 #include <game_project_1/io/gltf.hpp>
 #include <game_project_1/types/pool.hpp>
 #include <game_project_1/io/log.hpp>
+#include <game_project_1/gfx/primitive_shapes.h>
 #include <string.h>
 
 
@@ -16,7 +17,7 @@ Mesh::Mesh(){
 };
 
 void Mesh::Init(){
-    ShaderManager::UseShader("model_dynamic_lighting");
+    ShaderManager::UseShader((ShaderRef)ShaderDef::MODEL_DYNAMIC_LIGHTING);
     glGenVertexArrays(1,&vertex_array_id);
     glBindVertexArray(vertex_array_id);
     CheckForGLError("GL error initializing mesh(1): %d\n");
@@ -178,26 +179,26 @@ void ModelData::DebugPrint(){
     logger::info("End model printout:---------------\n");
 }
 
-Model::Model(ModelID type){
-    shader_name = "model_dynamic_lighting";
-    type_id = type;
+Model::Model(Transform* parent,ModelRef type):Drawable(parent){
+    shader = (ShaderRef)ShaderDef::MODEL_DYNAMIC_LIGHTING;
+    type = type;
     data = ModelManager::Use(type);
     mgro.Init(data->mesh_groups.length);
     if(data->skeleton != null){
-        pose = new Pose(data->skeleton);
+        pose = new Pose(&offset,data->skeleton);
     }
     else{
         pose = null;
     }
 }
 
-Model::Model(ModelData* dat){//Does not use cache. 
-    shader_name = "model_dynamic_lighting";
-    type_id=0;
+Model::Model(Transform* parent,ModelData* dat):Drawable(parent){//Does not use cache. 
+    shader = (ShaderRef)ShaderDef::MODEL_DYNAMIC_LIGHTING;
+    type=0;
     data = dat;
     mgro.Init(data->mesh_groups.length);
     if(data->skeleton != null){
-        pose = new Pose(data->skeleton);
+        pose = new Pose(&offset,data->skeleton);
     }
     else{
         pose = null;
@@ -205,7 +206,7 @@ Model::Model(ModelData* dat){//Does not use cache.
 }
 
 Model::~Model(){
-    ModelManager::Return(type_id);
+    ModelManager::Return(type);
     data = null;
     if(pose != null){
         delete pose;
@@ -214,7 +215,7 @@ Model::~Model(){
 }
 
 void Model::Draw(Camera* cam){
-    Shader* shader = ShaderManager::UseShader(shader_name);
+    Shader* s = ShaderManager::UseShader(shader);
     
     mat4 model;
     mat3 normal;
@@ -224,32 +225,35 @@ void Model::Draw(Camera* cam){
     identity.identity();
 
     model.identity();
-    model.translate(x,y,z);
-    model.rotate(rotation);
-    model.scale(scale);
-    cam->view_matrix.multiply_by(&model);
+    offset.ApplyTo(model);
+    //model.translate(x,y,z);
+    //model.rotate(rotation);
+    //model.scale(scale);
+    mat4 modelview = cam->ViewMatrix();
+    modelview.multiply_by(&model);
 
-    normal.set(&cam->view_matrix);
+    normal.set(&modelview);
     normal.transpose();
     normal.invert();
+
+    mat4 projection = cam->ProjectionMatrix();
     
     if(pose != null){
         pose->Calculate(); 
-        
         for(int i=0;i< bones;i++){
-            glUniformMatrix4x3fv(shader->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
+            glUniformMatrix4x3fv(s->POSE_MATRICES+i,1,true,(GLfloat*)&pose->matrices[i]);
         } 
     }
 
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
-    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(s->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
+    glUniformMatrix4fv(s->PROJECTION_MATRIX,1,true,(GLfloat*)&projection);
+    glUniformMatrix3fv(s->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
 
     int i=0;
     for(MeshGroup* group:data->mesh_groups){
         for(Mesh* mesh:group->meshes){
             if(!mgro[i]->hide){
-                mesh->Draw(shader,mgro[i]);
+                mesh->Draw(s,mgro[i]);
             }
         }
         i++;
@@ -257,7 +261,7 @@ void Model::Draw(Camera* cam){
 
     if(pose != null){
         for(int i=0;i< bones;i++){ 
-            glUniformMatrix4x3fv(shader->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
+            glUniformMatrix4x3fv(s->POSE_MATRICES+i,1,true,(GLfloat*)&identity);
         }
     }
 }
@@ -304,7 +308,7 @@ void ModelManager::Free(){
     model_registry.Clear();
 }
 
-ModelData* ModelManager::Use(ModelID id){
+ModelData* ModelManager::Use(ModelRef id){
     if(id < 0){return ErrorModel();}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
@@ -330,7 +334,7 @@ ModelData* ModelManager::Use(ModelID id){
     return ErrorModel();
 }
 
-void ModelManager::Return(ModelID id){
+void ModelManager::Return(ModelRef id){
     if(id < 0){return;}
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id == id){
@@ -349,7 +353,7 @@ void ModelManager::Clean(){//deletes all model data not in use.
     }
 }
 
-void ModelManager::Register(ModelID id, char* uri){
+void ModelManager::Register(ModelRef id, char* uri){
     ModelCacheEntry* cache = model_registry.Add();
     cache->data=null;
     cache->uri=uri;
@@ -357,14 +361,14 @@ void ModelManager::Register(ModelID id, char* uri){
     cache->id=id;
 }
 
-ModelID ModelManager::GetByName(char* name){
+ModelRef ModelManager::GetByName(char* name){
     for(ModelCacheEntry* cache:model_registry){
         if(cstr::compare(name,cache->uri)){return cache->id;}
     }
     return -1;
 }
 
-void ModelManager::Unregister(ModelID id){
+void ModelManager::Unregister(ModelRef id){
     for(ModelCacheEntry* cache:model_registry){
         if(cache->id== id){
             if(cache->users != 0){

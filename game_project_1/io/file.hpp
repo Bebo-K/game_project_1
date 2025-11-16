@@ -1,6 +1,9 @@
 #ifndef FILE_H
 #define FILE_H
 
+//Workaround for debug compile, hopefully it doesn't break things
+//#define RC_INVOKED
+
 #include <fstream>
 #include <stdio.h>
 
@@ -30,6 +33,7 @@ class IFile{
 	static char* GetPathOf(const char* filename);
 	static bool Exists(const char* filename);
 };
+
 
 
 //File type for reading/writing files outside of game directory.

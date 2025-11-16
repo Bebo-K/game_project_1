@@ -2,19 +2,36 @@
 #include <game_project_1/io/log.hpp>
 
 
-Drawable::Drawable(){ 
-    x=0;y=0;z=0;
-    scale={1,1,1};
-    rotation={0,0,0};
+Drawable::Drawable():offset(){
     hidden=false;
     layer=1;
-    shader_name=null;
+    shader=(ShaderRef)ShaderDef::DEFAULT;
+}
+Drawable::Drawable(Transform* parent):offset(parent){
+    hidden=false;
+    layer=1;
+    shader=(ShaderRef)ShaderDef::DEFAULT;
+}
+Drawable::Drawable(const Drawable& other):offset(other.offset){
+    hidden=other.hidden;
+    layer=other.layer;
+    shader=other.shader;
+}
+Drawable& Drawable::operator= (const Drawable& other){
+    offset=other.offset;
+    hidden=other.hidden;
+    layer=other.layer;
+    shader=other.shader;
+    return *this;
 }
 
 Drawable::~Drawable(){}
 
-Transform Drawable::GetTransform(){
-    return {x,y,z,quaternion::of_euler(rotation.x,rotation.y,rotation.z),scale};
+void Drawable::Copy(Drawable* copy){
+    offset.Copy(&copy->offset);
+    hidden=copy->hidden;
+    layer=copy->layer;
+    shader=copy->shader;
 }
 
 VBO::VBO(){

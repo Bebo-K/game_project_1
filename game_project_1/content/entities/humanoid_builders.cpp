@@ -57,14 +57,14 @@ void HumanoidClientBuilder(ClientEntity* entity, ClientScene* scene){
     CharacterInfo* char_info = entity->Get<CharacterInfo>();
 
     EntityRaceModel* erm = Races.Get(char_info->race_id)->models[char_info->appearance.body_type];
-    ModelID race_model_id = ModelManager::GetByName(erm->model_name);
+    ModelRef race_model_id = ModelManager::GetByName(erm->model_name);
 
-    ModelSet* models = new ModelSet();
+    ModelSet* models = new ModelSet(entity);
         Model* race_model = models->Add(race_model_id);
         //CustomizeRaceModel(race_model,erm,char_info->appearance);
 
     entity->Set<ModelSet>(models);
-    entity->Set(new HitBoxes());
+    entity->Set(new HitBoxes(entity));
 }
 
 void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
@@ -92,11 +92,11 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
     entity->Set(phys_props);
     entity->Set(new MovementProperties());
     entity->Get<MovementProperties>()->base_speed=10;
-    ColliderSet* colliders = new ColliderSet();
+    ColliderSet* colliders = new ColliderSet(entity);
         colliders->entity_collision_handler_id = BaseContent::humanoid_collision;
         colliders->bounds.height=my_race->hitsphere_height;
         colliders->bounds.radius=my_race->hitsphere_radius;
-        new (colliders->Allocate()) ShapeCollider(
+        new (colliders->Allocate()) ShapeCollider(entity,
                 {0,my_race->hitsphere_height/2.0f,0},
                 my_race->hitsphere_height,my_race->hitsphere_radius);
     entity->Set(colliders);

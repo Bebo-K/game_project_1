@@ -23,7 +23,7 @@ namespace BaseContent{
     const NPCControllerType NPC_WANDER = 2;
     void NPCController_Wander(ServerEntity* e, ServerScene* s);
 
-    const ModelID HUMAN_1 =1;
+    const ModelRef HUMAN_1 =1;
 
     void LoadCommon();
     void LoadClient();

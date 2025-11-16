@@ -17,7 +17,7 @@ bool PlayerInput::HandleMovementInput(ClientEntity* player,ClientScene* scene){
     float move_amount = move_input.length_sqr();
     
     if(move_amount > 0){
-        move_input.rotate(-scene->renderer.camera.turn);
+        move_input.rotate(-scene->renderer.camera.tracked_rotation.y);
         move_state->move_goal =  {move_input.x,0,-move_input.y};
     }
     else{

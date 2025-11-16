@@ -11,14 +11,14 @@
 
 class SpriteSet: public Component, public Pool<Sprite>,public Drawable{
 	public:
-	SpriteSet();
+	SpriteSet(Transform* parent);
 	~SpriteSet();
 
 	//Sprite* Add(char* name);
 	virtual void Draw(Camera* cam);
 	void SetPosition(vec3 pos);
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return 0;}

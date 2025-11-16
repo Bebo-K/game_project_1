@@ -1,4 +1,4 @@
-#include <game_project_1/gfx/drawable.hpp>
+#include <game_project_1/gfx/primitive_shapes.h>
 #include <game_project_1/io/log.hpp>
 
 const float lo = 0.0f;
@@ -45,9 +45,7 @@ void BuildCubePrimitive(){
 }
 
 ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w,float h,float d):mat(),color(1.0f,1.0f,1.0f,1.0f){
-    scale.x=w;
-    scale.y=h;
-    scale.z=d;
+    offset.scale={w,h,d};
 
     switch(shape){
         case EPrimitiveShape::CUBE:
@@ -64,9 +62,7 @@ ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,const char* texture,float w
 }
 
 ShapePrimitive::ShapePrimitive(EPrimitiveShape shape,Texture tex,float w,float h,float d):mat(),color(1.0f,1.0f,1.0f,1.0f){
-    scale.x=w;
-    scale.y=h;
-    scale.z=d;
+    offset.scale={w,h,d};
     mat.texture=tex;
 
     switch(shape){
@@ -87,9 +83,7 @@ ShapePrimitive::~ShapePrimitive(){
 }
 
 WirePrimitive::WirePrimitive(EPrimitiveShape shape,color_f prim_color,float w,float h,float d):mat(),color(prim_color){
-    scale.x=w;
-    scale.y=h;
-    scale.z=d;
+    offset.scale={w,h,d};
 
     switch(shape){
         case EPrimitiveShape::CUBE:
@@ -109,37 +103,40 @@ WirePrimitive::~WirePrimitive(){}
 
 
 void ShapePrimitive::Draw(Camera* cam){
-    Shader* shader = ShaderManager::UseShader(shader_name);
-    glEnableVertexAttribArray(shader->ATTRIB_VERTEX);
-    glEnableVertexAttribArray(shader->ATTRIB_TEXCOORD);
-    glEnableVertexAttribArray(shader->ATTRIB_NORMAL);
+    Shader* s = ShaderManager::UseShader(shader);
+    glEnableVertexAttribArray(s->ATTRIB_VERTEX);
+    glEnableVertexAttribArray(s->ATTRIB_TEXCOORD);
+    glEnableVertexAttribArray(s->ATTRIB_NORMAL);
     
-    glUniform3fv(shader->AMBIENT,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(shader->SPECULAR,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->AMBIENT,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->DIFFUSE,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->SPECULAR,1,(GLfloat*)&mat.base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
-    glUniform1i(shader->TEXTURE_0,0);
-    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform1i(s->TEXTURE_0,0);
+    glUniform4fv(s->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
     mat4 model;
     mat3 normal;
+    mat4 projection = cam->ProjectionMatrix();
 
     model.identity();
-    model.scale(scale);
-    model.rotate(rotation);
-    model.translate(x,y,z);
+    offset.ApplyTo(model);
+    mat4 modelview = cam->ViewMatrix();
+    modelview.multiply_by(&model);
+    //model.scale(scale);
+    //model.rotate(transform.rotation);
+    //model.translate(x,y,z);
 
-    normal.set(&cam->view_matrix);
+    normal.set(&modelview);
     normal.transpose();
     normal.invert();
 
-    cam->view_matrix.multiply_by(&model);
     
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
-    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(s->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
+    glUniformMatrix4fv(s->PROJECTION_MATRIX,1,true,(GLfloat*)&projection);
+    glUniformMatrix3fv(s->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
     
     vertices.Bind(0);
     tex_coords.Bind(1);
@@ -151,35 +148,38 @@ void ShapePrimitive::Draw(Camera* cam){
 }
 
 void WirePrimitive::Draw(Camera* cam){
-    Shader* shader = ShaderManager::UseShader(shader_name);
+    Shader* s = ShaderManager::UseShader(shader);
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     
-    glUniform3fv(shader->AMBIENT,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(shader->DIFFUSE,1,(GLfloat*)&mat.base_color);
-    glUniform3fv(shader->SPECULAR,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->AMBIENT,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->DIFFUSE,1,(GLfloat*)&mat.base_color);
+    glUniform3fv(s->SPECULAR,1,(GLfloat*)&mat.base_color);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
-    glUniform1i(shader->TEXTURE_0,0);
-    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform1i(s->TEXTURE_0,0);
+    glUniform4fv(s->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
     mat4 model;
     mat3 normal;
+    mat4 projection = cam->ProjectionMatrix();
 
     model.identity();
-    model.scale(scale);
-    model.rotate(rotation);
-    model.translate(x,y,z);
+    offset.ApplyTo(model);
+    mat4 modelview = cam->ViewMatrix();
+    modelview.multiply_by(&model);
+    //model.scale(scale);
+    //model.rotate(transform.rotation);
+    //model.translate(x,y,z);
 
-    normal.set(&cam->view_matrix);
+    normal.set(&modelview);
     normal.transpose();
     normal.invert();
 
-    cam->view_matrix.multiply_by(&model);
     
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&cam->view_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&cam->projection_matrix);
-    glUniformMatrix3fv(shader->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
+    glUniformMatrix4fv(s->MODELVIEW_MATRIX,1,true,(GLfloat*)&modelview);
+    glUniformMatrix4fv(s->PROJECTION_MATRIX,1,true,(GLfloat*)&projection);
+    glUniformMatrix3fv(s->NORMAL_MATRIX,1,true,(GLfloat*)&normal);
     
     vertices.Bind(0);
     tex_coords.Bind(1);

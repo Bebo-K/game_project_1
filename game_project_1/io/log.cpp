@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <game_project_1/io/log.hpp>
 #include <game_project_1/config.hpp>
+#include <stdexcept>
 
 #define MAX_ERRSPRINTF_LENGTH 256
 

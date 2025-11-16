@@ -2,10 +2,6 @@
 #include <stdlib.h>
 
 
-Location LevelEntrance::GenerateLocation(){
-    return {pos,{0,y_turn,0}};
-}
-
 LevelExit::LevelExit(){trigger_collider=nullptr;}
 LevelExit::~LevelExit(){
     DEALLOCATE(trigger_collider)

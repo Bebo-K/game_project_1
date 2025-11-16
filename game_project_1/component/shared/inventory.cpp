@@ -22,7 +22,7 @@ void Inventory::Write(Serializer& dat){
     for(int i=0;i<inventory_slots;i++){items[i].Write(dat);}
 }
 
-Component* Inventory::Clone(){
+Component* Inventory::Clone(ComponentParentContext context){
     Inventory* copy = new Inventory();
     copy->inventory_slots = inventory_slots;
     if(inventory_slots != 0){

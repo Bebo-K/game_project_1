@@ -42,8 +42,8 @@ void AnimationController::QueueAnimationForEntity(ClientEntity* e,char* anim_nam
 void AnimationController::SetAnimationSpeedForEntity(ClientEntity* e,float percent){
     ModelSet* models = e->Get<ModelSet>();
     for(Model* m:(*models)){
-        if(m->pose != null && m->pose->anim_target.active_clip != null){
-            m->pose->anim_target.active_clip->timescale = percent;
+        if(m->pose != null && m->pose->animation_target.active_clip != null){
+            m->pose->animation_target.active_clip->timescale = percent;
         }
     }
 }

@@ -19,8 +19,8 @@ class Identity: public Component{
 
     Identity();
     ~Identity();
-
-    Component* Clone();
+    
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

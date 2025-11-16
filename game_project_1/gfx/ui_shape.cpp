@@ -10,7 +10,7 @@ VBO rect_vertices;
 VBO rect_texcoords;
 
 void BuildShapePrimitives(){
-    ShaderManager::UseShader("ui_shape");
+    ShaderManager::UseShader((ShaderRef) ShaderDef::UI_SHAPE);
 
     glGenVertexArrays(1,&rect_vertex_array_id);
     glBindVertexArray(rect_vertex_array_id);
@@ -49,7 +49,7 @@ UI_Rect::~UI_Rect(){
 }
 
 void UI_Rect::Draw(){
-    Shader* shape_shader = ShaderManager::UseShader("ui_shape");
+    Shader* shape_shader = ShaderManager::UseShader((ShaderRef) ShaderDef::UI_SHAPE);
     Texture no_tex = TextureManager::DefaultTexture();
 
     glBindVertexArray(rect_vertex_array_id); 

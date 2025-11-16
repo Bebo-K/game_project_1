@@ -16,7 +16,7 @@ class AnimationState: public Component{
     AnimationState(AnimationControllerType type);
     ~AnimationState();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return 0;}

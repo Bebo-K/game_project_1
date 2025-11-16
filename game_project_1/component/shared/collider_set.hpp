@@ -14,10 +14,10 @@ class ColliderSet: public Component, public Pool<ShapeCollider>,public Drawable{
     Ellipse_t   bounds;
     int         entity_collision_handler_id;//handler ID for entity/entity collision
 
-    ColliderSet();
+    ColliderSet(Transform* parent);
     ~ColliderSet();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

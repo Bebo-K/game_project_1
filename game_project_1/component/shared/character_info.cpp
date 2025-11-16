@@ -27,7 +27,7 @@ void CharacterInfo::Write(Serializer& dat){
     dat.PutInt(appearance.color1.as_code());
 }
 
-Component* CharacterInfo::Clone(){
+Component* CharacterInfo::Clone(ComponentParentContext context){
     CharacterInfo* copy = new CharacterInfo();
     copy->race_id = race_id;
     copy->class_id = class_id;

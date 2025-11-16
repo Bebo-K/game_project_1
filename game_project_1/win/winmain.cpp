@@ -96,11 +96,13 @@ void OS::SleepThread(int ms){
     Sleep(ms);
 }
 
+
+#include <cstdint>
 void* OS::GetMutexLock(void* object,int timeout){
-    wchar_t objname[sizeof(void*)*2 +3];
-    memset(objname,0,(sizeof(void*)*2 +3)*sizeof(wchar_t));
-    swprintf(objname,L"%p",object);
-    HANDLE os_mtx_lock = CreateMutexW(null,true,objname);
+    //LPCWSTR mutex_name[16] = {0};
+    //long approx_addr = (long)reinterpret_cast<std::uintptr_t>(object);
+    //swprintf(mutex_name,L"%08x",approx_addr);
+    HANDLE os_mtx_lock = CreateMutexW(null,true,null);
     if(GetLastError()==ERROR_ALREADY_EXISTS){
         if(WaitForSingleObject(os_mtx_lock,timeout)!= WAIT_OBJECT_0){return nullptr;}
     }

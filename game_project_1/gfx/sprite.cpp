@@ -65,7 +65,7 @@ void Sprite::CopyTo(Sprite* s){
 }
 
 void Sprite::Draw(){
-    Shader* sprite_shader = ShaderManager::UseShader("ui_2d_quad");
+    Shader* sprite_shader = ShaderManager::UseShader((ShaderRef)ShaderDef::UI_2D_QUAD);
     
     int abs_frame = (frame < 0)?(-frame)-1:frame; 
     int abs_strip = (strip < 0)?(-strip)-1:strip;

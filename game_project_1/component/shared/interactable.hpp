@@ -21,7 +21,7 @@ class Interactable: public Component{
     Interactable();
     ~Interactable();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

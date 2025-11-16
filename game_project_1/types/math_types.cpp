@@ -2,28 +2,6 @@
 #include <game_project_1/io/log.hpp>
 #include <math.h>
 
-
-vec3 Transform::Position(){return {x,y,z};}
-void Transform::Clear(){
-    x=y=z=0;
-    rotation.x=rotation.y=rotation.z=0;
-    scale.x=scale.y=scale.z=1.0f;
-}
-void Transform::operator+= (vec3 position){
-    x += position.x;
-    y += position.y;
-    z += position.z;
-}
-Location::Location(){x=0,y=0,z=0;rotation={0,0,0};}
-Location::Location(float x,float y,float z,vec3 rotation){
-    this->x=x;this->y=y;this->z=z;this->rotation=rotation;
-}
-vec3 Location::Position(){return {x,y,z};}
-Location::Location(vec3 pos,vec3 rot){x=pos.x,y=pos.y,z=pos.z;rotation=rot;}
-Transform Location::ToTransform(){
-    return {x,y,z,quaternion::of_euler(rotation.x,rotation.y,rotation.z),{1.0f,1.0f,1.0f}};
-}
-
 LinearGradient::LinearGradient(){a=b=0;}
 LinearGradient::LinearGradient(float v1,float v2){a=v1;b=v2;}
 float LinearGradient::Percent(float value){

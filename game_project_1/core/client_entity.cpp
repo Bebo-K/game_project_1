@@ -13,9 +13,9 @@ template<> int ClientEntity::IdOf<HitBoxes>(){return -4;}
 void ClientEntity::Add(int cid){
     switch(cid){
         case -1: cli_components[-cid]= new AnimationState(); break;
-        case -2: cli_components[-cid]= new ModelSet(); break;
-        case -3: cli_components[-cid]= new SpriteSet(); break;
-        case -4: cli_components[-cid]= new HitBoxes(); break;
+        case -2: cli_components[-cid]= new ModelSet(this); break;
+        case -3: cli_components[-cid]= new SpriteSet(this); break;
+        case -4: cli_components[-cid]= new HitBoxes(this); break;
         default: 
             logger::warn("Could not add component ID %d to client entity ID %d, id is invalid",-cid,id);
         break;
@@ -55,7 +55,7 @@ void ClientEntity::Clear(){
 void ClientEntity::CloneTo(ClientEntity* copy){
     Entity::CloneTo((Entity*)copy);
     for(int i=0;i<cli_component_slots;i++){
-        if(cli_components[i]!=null){copy->cli_components[i]=cli_components[i]->Clone();};
+        if(cli_components[i]!=null){copy->cli_components[i]=cli_components[i]->Clone(ComponentParentContext{copy});};
     }
 }
 

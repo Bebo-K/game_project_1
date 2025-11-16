@@ -4,8 +4,6 @@
 #include <game_project_1/io/asset_manager.hpp>
 #include <game_project_1/types/pool.hpp>
 
-char* ServerLevel::default_shader = "level_debug";
-
 ServerLevel::ServerLevel(){
 }
 ServerLevel::~ServerLevel(){

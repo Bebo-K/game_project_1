@@ -36,7 +36,7 @@ void MovementProperties::Write(Serializer& dat){
     dat.PutFloat(multiplier);
 }
 
-Component* MovementProperties::Clone(){
+Component* MovementProperties::Clone(ComponentParentContext context){
     MovementProperties* copy = new MovementProperties();
     copy->base_speed = base_speed;
     copy->jump_speed = jump_speed;

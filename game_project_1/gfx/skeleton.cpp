@@ -51,19 +51,25 @@ Animation::Clip* Skeleton::GetAnimation(char* name){
     return null;
 }
 
-Pose::Pose(Skeleton* target):anim_target(target->bones.length*3){
+Pose::Pose(Transform* parent,Skeleton* target):animation_target(target->bones.length*3){
     skeleton=target;
     bone_count=target->bones.length;
     transforms= (Transform*)calloc(bone_count,sizeof(Transform));
     matrices =  (mat4*)calloc(bone_count,sizeof(mat4));
-
     for(int i=0;i<bone_count;i++){
         transforms[i].Clear();
-        matrices[i].identity();
 
-        anim_target.AddHook(&transforms[i].x,skeleton->bones[i]->name,"translation",Animation::VECTOR3);
-        anim_target.AddHook(&transforms[i].rotation.x,skeleton->bones[i]->name,"rotation",Animation::QUATERNION);
-        anim_target.AddHook(&transforms[i].scale.x,skeleton->bones[i]->name,"scale",Animation::VECTOR3);
+        int parent_index = target->bones[i]->parent_index;
+        if(parent_index >= 0 && parent_index < bone_count){
+            transforms[i].parent = &transforms[target->bones[i]->parent_index];
+        }
+        else{
+            //Should the parent be null or the entity transform?
+            transforms[i].parent = parent;
+        }
+
+        matrices[i].identity();
+        animation_target.AddTransformHooks(&transforms[i],skeleton->bones[i]->name);
     }
 }
 
@@ -91,15 +97,16 @@ void Pose::Calculate(){
                                 transforms[bone_index].y,
                                 transforms[bone_index].z);
         bone_matrix.rotate(transforms[bone_index].rotation);
+        bone_matrix.scale(transforms[bone_index].scale);
 
         matrices[bone_index].set(&bone_matrix);
     }
-    if(anim_target.enabled){
+    if(animation_target.active_clip != null){
         for(int i=0; i < bone_count;i++){
             matrices[i].multiply_by(&skeleton->inverse_bind_mats[i]);
         }
     }
-    else{
+    else{//this shouldn't be neccesary if all transforms are zeroed
         for(int i=0; i < bone_count;i++){
             matrices[i].identity();
         }
@@ -109,7 +116,7 @@ void Pose::Calculate(){
 void Pose::StartAnimation(char* name){
     Animation::Clip* c = skeleton->GetAnimation(name);
     if(c != null){
-        Animation::Start(c,&anim_target);
+        Animation::Start(c,&animation_target);
     }
     else{
         logger::warn("Cannot start animation '%s', no matching clip found\n", name);
@@ -119,7 +126,7 @@ void Pose::StartAnimation(char* name){
 void Pose::QueueAnimation(char* name){
         Animation::Clip* c = skeleton->GetAnimation(name);
     if(c != null){
-        Animation::Queue(c,anim_target.active_clip);
+        Animation::Queue(c,animation_target.active_clip);
     }
     else{
         logger::warn("Cannot queue animation '%s', no matching clip found\n", name);
@@ -127,7 +134,10 @@ void Pose::QueueAnimation(char* name){
 }
 
 void Pose::StopAnimations(){
-    Animation::Stop(&anim_target);
+    Animation::Stop(&animation_target);
+    for(int i=0;i< bone_count;i++){
+        transforms[i].Clear();
+    }
 }
 
 

@@ -27,11 +27,8 @@ void Renderer::Remove(Drawable* p){
 void Renderer::Draw(){
     if(primitives.Count() <= 0){return;}
     
-    camera.ApplyTransforms();
-    mat4 view_matrix = camera.view_matrix.copy();
     Drawable** sorted_list = SortPrimitives();
     for(int p=0; p < primitives.Count(); p++){
-        camera.ResetViewMatrix(&view_matrix);
         sorted_list[p]->Draw(&camera);
     }
     free(sorted_list);
@@ -40,8 +37,8 @@ void Renderer::Draw(){
 boolean PrimitiveIsFarther(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera_axis){
     if(p1->layer < p2->layer)return false;
     if(p1->layer > p2->layer)return true;
-    float p1_zdist = camera_axis.dot({p1->x-camera_pos.x, p1->y-camera_pos.y, p1->z-camera_pos.z});
-    float p2_zdist = camera_axis.dot({p2->x-camera_pos.x, p2->y-camera_pos.y, p2->z-camera_pos.z});
+    float p1_zdist = camera_axis.dot({p1->offset.x-camera_pos.x, p1->offset.y-camera_pos.y, p1->offset.z-camera_pos.z});
+    float p2_zdist = camera_axis.dot({p2->offset.x-camera_pos.x, p2->offset.y-camera_pos.y, p2->offset.z-camera_pos.z});
 
     return p1_zdist >= p2_zdist;
 }
@@ -52,9 +49,9 @@ Drawable** Renderer::SortPrimitives(){
 	Drawable** ret = new Drawable*[primitives.Count()];
 
     vec3 camera_axis = {0.0f,0.0f,1.0f};
-    vec3 camera_pos = {camera.x,camera.y,camera.z};
+    vec3 camera_pos = {camera.transform.x,camera.transform.y,camera.transform.z};
 
-    camera.view_matrix.multiply_vec3(&camera_axis);	
+    camera.ViewMatrix().multiply_vec3(&camera_axis);
     
     //insertion sort because it's quick and works well if we pre-sort. Also am lazy
     Drawable* to_insert =  null;

@@ -52,17 +52,38 @@ class Shader{
 	void OnFinishUse();
 };
 
+typedef int ShaderRef;
+
+enum class ShaderDef:ShaderRef{
+	ERROR_SHADER=0,
+	DEFAULT=1,
+	LEVEL_DEBUG=2,
+	SHAPE_DEBUG=3,
+	MODEL_DYNAMIC_LIGHTING=4,
+	MODEL_STATIC_SHADELESS=5,
+	SKYBOX=6,
+	SKYBOX_FLAT=7,
+	UI_2D_QUAD=8,
+	UI_SHAPE=9
+};
+
+
 namespace ShaderManager{
 	void Init();
 	void Free();
-	Shader* AddShader(char* name);
-    Shader* AddShader(char* name,char* vertex_uri,char* fragment_uri);
-	Shader* UseShader(char* name);
-    void RemoveShader(char* name);
+
+	Shader* AddShader(ShaderRef id_constant,char* name);
+    Shader* AddShader(ShaderRef id_constant,char* vertex_uri,char* fragment_uri);
+	ShaderRef RegisterShader(char* vertex_uri,char* fragment_uri);
+	ShaderRef Get(char* name);//TODO remove
+
+	Shader* UseShader(ShaderRef id);
+	Shader* GetShader(ShaderRef id);
+    void RemoveShader(ShaderRef id);
     //Shader* GetShader(char* name);
     //Shader* DefaultShader();
-	bool IsCurrentShader(char* name);
-	Shader* CurrentShader();
+	bool IsCurrentShader(ShaderRef id);
+	ShaderRef CurrentShader();
 
 }
 

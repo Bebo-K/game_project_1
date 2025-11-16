@@ -7,7 +7,7 @@ Identity::Identity(){
 }
 Identity::~Identity(){Clear();}
 
-Component* Identity::Clone(){
+Component* Identity::Clone(ComponentParentContext context){
     Identity* copy = new Identity();
     copy->name = wstr::new_copy(name);
     copy->type = type;

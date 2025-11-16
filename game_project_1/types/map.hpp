@@ -292,6 +292,8 @@ class Dictionary{
                 return keys[i];
             }
         }
+        logger::exception("Dictionary::ReverseLookup: No matching value found, returning key at index 0. This is undefined behavior.");
+        return keys[0];
     }
 
     //range-for loop iterator methods

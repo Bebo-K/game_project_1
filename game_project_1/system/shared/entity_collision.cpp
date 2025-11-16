@@ -16,7 +16,7 @@ CollisionResult EntityCollision::CheckCollision(Entity* e1, Entity* e2){
     ColliderSet* e2_coll = e2->Get<ColliderSet>();
     for(ShapeCollider* c1:(*e1_coll)){
         for(ShapeCollider* c2:(*e2_coll)){
-            if(c1->Intersects(e1->GetLocation(),e1->scale,c2,e2->GetLocation(),e2->scale,&point)){
+            if(c1->Intersects(c2,&point)){
                 return CollisionResult(point,e1_coll->IndexOf(c1),e2_coll->IndexOf(c2));
             }
         }

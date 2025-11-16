@@ -23,7 +23,7 @@ class PhysicsProperties: public Component{
     PhysicsProperties();
     ~PhysicsProperties();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

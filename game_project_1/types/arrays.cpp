@@ -1,6 +1,7 @@
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/io/log.hpp>
 #include <string.h>
+#include <stdlib.h>
 
 //////////////////////////
 //////***BitArray***/////

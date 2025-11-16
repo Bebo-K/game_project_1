@@ -58,6 +58,14 @@ void Serializer::PutVec3(vec3 v){
     place += sizeof(vec3);
 }
 
+void Serializer::PutQuaternion(quaternion v){
+    if((int)(place + sizeof(quaternion)) > data_length){
+        logger::exception("Serializer.PutQuaternion(%f,%f,%f) writes past the end of the data buffer (pos:%d,len%d)",v.x,v.y,v.z,place,data_length);}
+    quaternion* ptr = (quaternion*)&raw_data[place];
+    *ptr =  v;
+    place += sizeof(quaternion);
+}
+
 
 void Serializer::PutString(char* str){
     char* ptr = (char*)&raw_data[place];
@@ -80,6 +88,11 @@ void Serializer::PutWString(wchar* str){
     if(str_len > 0){ memcpy(ptr,str,write_len); }
     else{ptr[0] = (wchar)0;}
     place += write_len;
+}
+void Serializer::WriteTransform(Transform* t){
+    PutVec3({t->x,t->y,t->z});
+    PutQuaternion(t->rotation);
+    PutVec3(t->scale);
 }
 void Serializer::WriteBytes(byte* dat,int len){
     if(place + len > data_length){
@@ -113,6 +126,11 @@ vec3 Deserializer::GetVec3(){
     place += sizeof(vec3);
     return *ret;
 }
+quaternion Deserializer::GetQuaternion(){
+    quaternion* ret = (quaternion*)&raw_data[place];
+    place += sizeof(quaternion);
+    return *ret;
+}
 char* Deserializer::GetString(){
     char* str = cstr::new_copy((char*)&raw_data[place]);
     place += cstr::len(str)+1;
@@ -122,6 +140,14 @@ wchar* Deserializer::GetWString(){
     wchar* str = wstr::new_copy((wchar*)&raw_data[place]);
     place += (wstr::len(str)+1)*sizeof(wchar);
     return str;
+}
+void Deserializer::ReadTransform(Transform* t){
+    vec3 pos = GetVec3();
+    t->x=pos.x;
+    t->y=pos.y;
+    t->z=pos.z;
+    t->rotation = GetQuaternion();
+    t->scale    = GetVec3();
 }
 
 byte* Deserializer::CopyBytes(int bytes){

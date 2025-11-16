@@ -14,7 +14,7 @@ void NPCState::Clear(){
 }
 
 
-Component* NPCState::Clone(){
+Component* NPCState::Clone(ComponentParentContext context){
     NPCState* s2 = new NPCState();
     s2->init=init;
     s2->current_action=current_action;

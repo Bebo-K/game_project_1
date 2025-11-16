@@ -13,7 +13,7 @@ class NPCProperties: public Component{
 	NPCProperties(int controller);
 	~NPCProperties();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return sizeof(int);}

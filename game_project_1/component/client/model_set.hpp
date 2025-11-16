@@ -14,14 +14,13 @@
 
 class ModelSet: public Pool<Model>,public Component,public Drawable{
 	public:
-	ModelSet();
+	ModelSet(Transform* parent);
 	~ModelSet();
 
-	Model* Add(ModelID model_id);
+	Model* Add(ModelRef model_id);
 	virtual void Draw(Camera* cam);
-	void SetPosition(vec3 pos);
-
-    Component* Clone();
+	
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return 0;}

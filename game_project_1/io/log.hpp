@@ -1,7 +1,6 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <stdexcept>
 #include <game_project_1/types/str.hpp>
 
 namespace logger{

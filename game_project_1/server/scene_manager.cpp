@@ -137,10 +137,10 @@ ServerEntity* SceneManager::TransitionPlayer(Player* player,int from_area, int t
     player_save->last_scene=to_area;
 
     //Overwrite with position
-    Location spawn_location = to->level.entrances[entrance_id]->GenerateLocation();
-        player_entity->SetPos(spawn_location.Position());
-        player_entity->rotation = spawn_location.rotation;
-
+    player_entity->SetPosition(to->level.entrances[entrance_id]->pos);
+    float turn = to->level.entrances[entrance_id]->y_turn;
+    player_entity->rotation.set_euler(0,turn,0);
+    
     player_entity->MarkChanged<Identity>();
     player_entity->MarkMoved();
     player_entity->changed_component_ids = player_entity->AllExistingComponents();
@@ -178,19 +178,18 @@ ServerEntity* SceneManager::TransitionGlobalEntity(ServerEntity* e,int from_area
     //else just deload, will be loaded on next scene load.
 
     LevelEntrance* entrance = to->level.entrances[entrance_id];
-    Location spawn_location({0,0,0},{0,0,0});
-    int spawn_type = 0;
+    vec3 spawn_pos={0,0,0};
+    vec3 spawn_rot={0,0,0};
     if(entrance != null){
-        spawn_location = entrance->GenerateLocation();
-        spawn_type = entrance->style;
+        spawn_pos = entrance->pos;
+        spawn_rot = {0,entrance->y_turn,0};
     }
 
     ServerEntity* target = to->NewEntity();
     save_entity->Instantiate(target);
 
     //Overwrite with position
-    target->SetLocation(spawn_location);
-    if(spawn_type == -1){target->rotation.z=180.0f;}//TODO: actually use spawn type
+    target->SetLocation(spawn_pos,spawn_rot);
     
     //build, then
     //target->changed_components = target->AllExistingComponents();

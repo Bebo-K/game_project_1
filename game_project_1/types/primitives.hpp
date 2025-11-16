@@ -40,6 +40,7 @@ struct vec2{
     vec2 normalized();
     void rotate(float theta);
     float angle();
+    vec2 operator *(float scl);
 };
 
 struct quaternion;
@@ -65,6 +66,8 @@ struct vec3{
     vec3 operator +(vec3 v2);
     vec3 operator -(vec3 v2);
     vec3 operator *(float scl);
+    vec3& operator *=(float scl);
+    vec3& operator *=(vec3 s);
     vec3 operator *(vec3 scl);
     vec3 operator /(vec3 scl);
     vec3 of_length(float newlen);
@@ -89,12 +92,17 @@ struct mat4;
 struct quaternion{
     float x,y,z,w;
 
+    quaternion();
+    quaternion(float rx,float ry,float rz);
+    quaternion(float x,float y,float z,float w);
+
     void clear();
     void set_euler(float x,float y,float z);
     void set_euler_radians(float x,float y,float z);
     static quaternion of_euler(float x,float y,float z);
     static quaternion of_euler_radians(float x,float y,float z);
     static quaternion identity();
+    static quaternion from_to(vec3 from,vec3 to);
     mat4 to_matrix();
     void rotate_by(quaternion q2);
     void rotate_by(float x,float y,float z);
@@ -117,6 +125,7 @@ struct mat4{
     static mat4  ortho(float width,float height,float near,float far);
     static mat4  frustum(float l,float r,float b,float t,float n,float f);
     static mat4  perspective(float width,float height,float near,float far,float fov);
+    static mat4  get_identity();
 
     void identity();
     void transpose();

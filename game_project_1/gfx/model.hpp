@@ -57,16 +57,16 @@ class ModelData{
 };
 
 
-typedef int ModelID;//0 is reserved for no/error model
+typedef int ModelRef;//0 is reserved for no/error model
 class Model: public Drawable{
     public:
-    ModelID     type_id;
+    ModelRef    type;
     ModelData*  data;
     Pose*       pose;
     Array<MeshGroupRenderOptions> mgro;
 
-    Model(ModelID type);
-    Model(ModelData* dat);
+    Model(Transform* parent,ModelRef type);
+    Model(Transform* parent,ModelData* dat);
     ~Model();
     virtual void Draw(Camera* cam);
     void StartAnimation(char* anim_name);
@@ -78,7 +78,7 @@ class Model: public Drawable{
 
 
 struct ModelCacheEntry{
-    ModelID     id;
+    ModelRef     id;
     char* uri;
     ModelData*  data;
     int         users;
@@ -87,12 +87,12 @@ struct ModelCacheEntry{
 namespace ModelManager{
     void Init();
     void Free();
-    void Register(ModelID id,char* uri);
-    ModelID GetByName(char* name);
-    ModelData* Use(ModelID type);
-    void Return(ModelID type);
+    void Register(ModelRef id,char* uri);
+    ModelRef GetByName(char* name);
+    ModelData* Use(ModelRef type);
+    void Return(ModelRef type);
     void Clean();
-    void Unregister(ModelID id);
+    void Unregister(ModelRef id);
     ModelData* ErrorModel();
 };
 

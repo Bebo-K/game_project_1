@@ -118,7 +118,7 @@ void LevelLoader::LoadEntrances(List<LevelEntrance>& entrances){
 
             entrances.Set(i,new LevelEntrance());
             LevelEntrance* entrance = entrances[i];
-            entrance->y_turn = 0;entrance->style = 0;
+            entrance->y_turn = 0;entrance->style = LevelEntranceStyle::DEFAULT;
             vec3 pos= {0,0,0};vec3 size= {0,0,0};vec3 target= {0,0,0};
 
             if(current_entrance->HasFloat("x")){pos.x = current_entrance->GetFloat("x");}
@@ -133,22 +133,23 @@ void LevelLoader::LoadEntrances(List<LevelEntrance>& entrances){
                 if(size_object->HasFloat("z")){size.z = size_object->GetFloat("z");}
             }
 
-            if(current_entrance->HasJObject("target_pos")){
+            if(current_entrance->HasInt("param")){entrance->entrance_param = current_entrance->GetInt("param");}
+            /*
                 JSONObject* target_object = current_entrance->GetJObject("target_pos");
                 if(target_object->HasFloat("x")){target.x = target_object->GetFloat("x");}
                 if(target_object->HasFloat("y")){target.y = target_object->GetFloat("y");}
                 if(target_object->HasFloat("z")){target.z = target_object->GetFloat("z");}
             }
+            */
             
-            int style_id=0;
+            LevelEntranceStyle style_id=LevelEntranceStyle::DEFAULT;
             if(current_entrance->HasString("style")){
                 char* style = current_entrance->GetString("style")->string;
-                if(cstr::compare_caseless(style,"walk")){style_id=1;}
+                if(cstr::compare_caseless(style,"walk")){style_id=LevelEntranceStyle::PATH_TO;}
             }
 
             entrance->size = size;
             entrance->pos = pos;
-            entrance->target_pos = target;
             entrance->style=style_id;
         }
     }
@@ -166,8 +167,8 @@ void LevelLoader::LoadExits(List<LevelExit>& exits){
             lvl_exit->mesh_index=-1;
             lvl_exit->new_area_id=0;
             lvl_exit->entrance_id=0;
-            lvl_exit->style=0;
-            lvl_exit->target_pos={0,0,0};
+            lvl_exit->style=LevelExitStyle::DEFAULT;
+            lvl_exit->exit_param=0;
             
             if(current_exit->HasInt("area_id")){
                 lvl_exit->new_area_id = current_exit->GetInt("area_id");
@@ -178,21 +179,16 @@ void LevelLoader::LoadExits(List<LevelExit>& exits){
             if(current_exit->HasString("trigger_mesh")){
                 lvl_exit->trigger_collider = cstr::new_copy(current_exit->GetString("trigger_mesh")->string);
             }
-            vec3 target= {0,0,0};
-            if(current_exit->HasJObject("target_pos")){
-                JSONObject* target_object = current_exit->GetJObject("target_pos");
-                if(target_object->HasFloat("x")){target.x = target_object->GetFloat("x");}
-                if(target_object->HasFloat("y")){target.y = target_object->GetFloat("y");}
-                if(target_object->HasFloat("z")){target.z = target_object->GetFloat("z");}
+            else if(current_exit->HasInt("param")){
+                lvl_exit->exit_param = current_exit->GetInt("param");
             }
             
-            int style_id=0;
+            LevelExitStyle style_id=LevelExitStyle::DEFAULT;
             if(current_exit->HasString("style")){
                 char* style = current_exit->GetString("style")->string;
-                if(cstr::compare_caseless(style,"walk")){style_id=1;}
+                if(cstr::compare_caseless(style,"walk")){LevelExitStyle::PATH_TO;}
             }
 
-            lvl_exit->target_pos = target;
             lvl_exit->style=style_id;
         }
     }

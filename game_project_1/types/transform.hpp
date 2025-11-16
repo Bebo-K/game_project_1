@@ -27,6 +27,10 @@ class Transform{
     Transform(vec3 pos,quaternion rotation,vec3 scale);
     Transform(vec3 pos,quaternion rotation,vec3 scale,Transform* parent);
     Transform(Transform* parent);
+
+    
+    Transform(const Transform& other);
+    Transform& operator= (const Transform& other);
     ~Transform();
 
     void operator= (Transform& copy);
@@ -63,6 +67,7 @@ class Transform{
     void Scale(vec3 s);
     void Scale(float s);
     
+    static inline int SerializedLength(){return sizeof(vec3)*2+ sizeof(quaternion);}
 };
 
 

@@ -21,7 +21,7 @@ void PhysicsState::Write(Serializer& dat){
     dat.PutByte(flags);
 }
 
-Component* PhysicsState::Clone(){
+Component* PhysicsState::Clone(ComponentParentContext context){
     PhysicsState* copy = new PhysicsState();
     copy->in_bounds =in_bounds;
     copy->midair =midair;

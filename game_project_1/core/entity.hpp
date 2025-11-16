@@ -10,7 +10,7 @@ class ComponentMask;
 class ClientComponentMask;
 class ServerComponentMask;
 
-class Entity, public Transform{
+class Entity: public Transform{
     private:
     const static int    component_slots = 13;
     Component*          components[component_slots];
@@ -28,12 +28,13 @@ class Entity, public Transform{
     friend ServerComponentMask;
     
     public:
-    /*
     int                 id;
 
+    /*from Transform 
     float               x,y,z;
     vec3                scale;
-    vec3                rotation;
+    quaternion          rotation;
+    Transform*          parent;
     */
     vec3                velocity;
 

@@ -207,7 +207,7 @@ void MeshCollider::CheckCollisions(Entity* e,vec3 step_pos,vec3 step_velocity,Co
 }
 
 void MeshCollider::CheckOOB(Entity* e){
-    vec3 step_pos = e->GetPos();
+    vec3 step_pos = {e->x,e->y,e->z};
     PhysicsState* phys_state = e->Get<PhysicsState>();
     PhysicsProperties* phys_props = e->Get<PhysicsProperties>();
     if(!bounds.ContainsCircle_XZ(step_pos,phys_props->world_hitsphere.radius))return;

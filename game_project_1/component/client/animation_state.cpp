@@ -14,7 +14,8 @@ AnimationState::AnimationState(AnimationControllerType type){
 
 AnimationState::~AnimationState(){}
 
-Component* AnimationState::Clone(){
+
+Component* AnimationState::Clone(ComponentParentContext context){
     AnimationState* copy = new AnimationState(controller_type);
     copy->action_state = action_state;
     copy->anim_name = cstr::new_copy(anim_name);

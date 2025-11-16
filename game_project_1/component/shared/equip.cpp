@@ -25,7 +25,7 @@ void Equip::Write(Serializer& dat){
     left_hand.Write(dat);
 }
 
-Component* Equip::Clone(){
+Component* Equip::Clone(ComponentParentContext context){
     Equip* copy = new Equip();
     copy->head = head;
     copy->body = body;

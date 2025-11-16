@@ -14,7 +14,7 @@ class Inventory: public Component{
     Inventory();
     ~Inventory();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

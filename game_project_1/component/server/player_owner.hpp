@@ -11,7 +11,7 @@ class PlayerOwner: public Component{
 	PlayerOwner(int player);
 	~PlayerOwner();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     inline int SerializedLength(){return 0;}

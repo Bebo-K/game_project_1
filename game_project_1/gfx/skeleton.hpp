@@ -5,6 +5,8 @@
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/gfx/animation.hpp>
 #include <game_project_1/types/arrays.hpp>
+#include <game_project_1/types/transform.hpp>
+#include <game_project_1/gfx/animation.hpp>
 
 //https://www.youtube.com/watch?v=aBN_dEA4jO0
 
@@ -18,13 +20,12 @@ struct Bone{
     void DebugPrint();
 };
 
+//Shared armature info across model instances
 class Skeleton{
     public:
-    Array<Bone> bones;//Pointer shared across clones
-    Array<Animation::Clip> animations;//Pointer shared across clones
-	mat4*       inverse_bind_mats;//Pointer shared across clones
-    //Transform*  pose_transforms;
-	//mat4*       pose_matrices;//matrix form of bones transform.
+    Array<Bone>             bones;
+    Array<Animation::Clip>  animations;
+	mat4*                   inverse_bind_mats;
      
     Skeleton(int num_bones);
     ~Skeleton();
@@ -32,23 +33,20 @@ class Skeleton{
     void SetBoneName(int bone_id,char* bone_name);
     void DebugPrint();
 
-    //void Clone(Skeleton* dest);
-    //void DestroySharedData();
-    //void CalculatePose();
-
     Animation::Clip* GetAnimation(char* name);
 };
 
+//Instance of a skeleton that tracks bone transforms for a model instance
 class Pose{
     public:
     int               bone_count;
     Transform*        transforms;
     mat4*             matrices;
     Skeleton*         skeleton;
-    bool              animating;
+    Animation::Target animation_target;
 
 
-    Pose(Skeleton* target);
+    Pose(Transform* parent, Skeleton* target);
     ~Pose();
     void StartAnimation(char* name);
     void StopAnimations();

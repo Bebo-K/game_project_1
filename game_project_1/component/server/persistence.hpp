@@ -11,7 +11,7 @@ class Persistence: public Component{
     Persistence(int guid);
     ~Persistence();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     void Clear();
 
     //Cannot be serialized as it's a circular reference

@@ -12,7 +12,7 @@ class PhysicsState: public Component{
 	PhysicsState();
 	~PhysicsState();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

@@ -46,12 +46,13 @@ void CameraManager::Update(Timestep delta){
             current_zoom = Interpolators::StepInterpolate(current_zoom,zoom_goal,camera_zoom_speed);
         }
 
+        float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
         if(cam_moving){
-            float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
-            transform_goal.Copy(camera->transform);
+            transform_goal.Copy(&camera->transform);
             transform_goal.SetPosition(((vec3){0,0,current_zoom}).rotate(quaternion::of_euler(current_pitch,0,0)));
             transform_goal.rotation = quaternion::of_euler(current_pitch,current_turn,0);
         }
+        camera->tracked_rotation={current_pitch,current_turn,0};
     }
     //TODO: raycast entity to camera to find if we're occluded
 }

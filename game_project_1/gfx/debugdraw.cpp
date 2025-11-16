@@ -20,6 +20,17 @@ GLuint cylinder_vertex_array_id=0;
 VBO cylinder_vertices;
 
 
+float rect2d_vert_data[6*3];
+int rect2d_vert_count = 6;
+GLuint rect2d_vertex_array_id=0;
+VBO rect2d_vertices;
+
+float line_vert_data[2*3];
+int line_vert_count = 2;
+GLuint line_vertex_array_id=0;
+VBO line_vertices;
+
+
 void InitDebugVertexBuffer(GLuint* array,VBO* buffer,float* verts,int vert_count){
     glGenVertexArrays(1,array);
     GLuint arrayNum = *array;
@@ -103,31 +114,110 @@ void CalcualateSphereVertices(){
     }
 }
 
+void Calculate2DRectVertices(){
+    float l= -0.5f, h=0.5f;
+    vec3 verts[] = { {l,l,0},{l,h,0},{h,h,0}, {h,l,0}};
+    int indices[] = {1,2,3, 1,3,4};
+    
+    for(int i=0;i<6;i++){
+        memcpy(&rect2d_vert_data[i*3],(float*)&verts[indices[i]-1],sizeof(float)*3);
+    }
+}
+
+void CalculateLineVertices(){
+    line_vert_data[0]=0.0f;line_vert_data[1]=0.0f;line_vert_data[2]=0.0f;
+    line_vert_data[3]=1.0f;line_vert_data[4]=0.0f;line_vert_data[5]=0.0f;
+}
+
 void DebugDraw::Init(){
-    ShaderManager::UseShader("default");
+    ShaderManager::UseShader((ShaderRef)ShaderDef::DEFAULT);
     
     CalculateCubeVertices();
     CalcualateCylinderVertices();
     CalcualateSphereVertices();
+    Calculate2DRectVertices();
+    CalculateLineVertices();
 
     InitDebugVertexBuffer(&rect3d_vertex_array_id,&rect3d_vertices,rect3d_vert_data,rect3d_vert_count);
     InitDebugVertexBuffer(&sphere_vertex_array_id,&sphere_vertices,sphere_vert_data,sphere_vert_count);
     InitDebugVertexBuffer(&cylinder_vertex_array_id,&cylinder_vertices,cylinder_vert_data,cylinder_vert_count);
-    
+    InitDebugVertexBuffer(&rect2d_vertex_array_id,&rect2d_vertices,rect2d_vert_data,rect2d_vert_count);
+    InitDebugVertexBuffer(&line_vertex_array_id,&line_vertices,line_vert_data,line_vert_count);
 }
+
+void DrawDebugShapeBase(Camera* cam,vec3 position,quaternion rotation,vec3 scale,GLuint vertex_array,int vert_count,color_f color){
+    Shader* shape_shader = ShaderManager::UseShader((ShaderRef)ShaderDef::SHAPE_DEBUG);
+    mat4 view_matrix = cam->ViewMatrix();
+    mat4 projection_matrix = cam->ProjectionMatrix();
+
+    view_matrix.translate(position);
+    view_matrix.rotate(rotation);
+    view_matrix.scale(scale);
+
+    glBindVertexArray(vertex_array);
+    CheckForGLError("DebugDraw.Draw: GL Error %d binding vertex array\n");
+
+    glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
+    glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
+    glUniformMatrix4fv(shape_shader->PROJECTION_MATRIX,1,true,(GLfloat*)&projection_matrix);
+    rect3d_vertices.Bind(Shader::ATTRIB_VERTEX);
+    glDrawArrays(GL_TRIANGLES,0,vert_count);
+    CheckForGLError("Debug.Draw: GL Error %d during draw\n");
+}
+
+void DrawDebug2DShapeBase(/*params*/){
+    //TODO
+}
+ 
 
 void DebugDraw::DrawUIRect(int x,int y,int w,int h,color_f color){
     //TODO;
 }
+void DebugDraw::DrawCube(Camera* cam,vec3 center,quaternion rotation,float size,color_f color){
+    Draw3DRect(cam,center,rotation,vec3(size,size,size),color);
+}
+void DebugDraw::Draw3DRect(Camera* cam,vec3 center,quaternion rotation,vec3 size,color_f color){
+    DrawDebugShapeBase(cam,center,rotation,size,rect3d_vertex_array_id,rect3d_vert_count,color);
+}
+void DebugDraw::DrawSphere(Camera* cam,vec3 center,float radius,color_f color){
+    DrawEllipse(cam,center,radius,radius,color);
+}
+void DebugDraw::DrawEllipse(Camera* cam,vec3 center,float height,float radius,color_f color){
+    DrawDebugShapeBase(cam,center,quaternion::identity(),vec3(radius,height,radius),sphere_vertex_array_id,sphere_vert_count,color);
+}
+void DebugDraw::DrawCylinder(Camera* cam,vec3 center,float height,float radius,color_f color){
+    DrawDebugShapeBase(cam,center,quaternion::identity(),vec3(radius,height,radius),cylinder_vertex_array_id,cylinder_vert_count,color);
+}
+void DebugDraw::DrawLine(Camera* cam,vec3 start,vec3 end,color_f color){
+    Shader* shape_shader = ShaderManager::UseShader((ShaderRef)ShaderDef::SHAPE_DEBUG);
+    mat4 view_matrix = cam->ViewMatrix();
+    mat4 projection_matrix = cam->ProjectionMatrix();
+
+    vec3 line = end - start;
+
+    quaternion line_rot = quaternion::from_to((vec3){1,0,0},line.normalized());
+    view_matrix.translate(start);
+    view_matrix.rotate(line_rot);
+    view_matrix.scale(vec3(line.length(),1,1));
+
+    glBindVertexArray(line_vertex_array_id);
+    CheckForGLError("DebugDraw.DrawLine: GL Error %d binding vertex array\n");
+
+    glUniform4fv(shape_shader->COLOR,1,(GLfloat*)&color);
+    glUniformMatrix4fv(shape_shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&view_matrix);
+    glUniformMatrix4fv(shape_shader->PROJECTION_MATRIX,1,true,(GLfloat*)&projection_matrix);
+    rect3d_vertices.Bind(Shader::ATTRIB_VERTEX);
+    glDrawArrays(GL_LINES,0,line_vert_count);
+    CheckForGLError("Debug.DrawLine: GL Error %d during draw\n");
+}
+
+
+
+
+/*
 
 void DebugDraw::DrawCube(Camera* cam,Transform* t,float size,color_f color){ Draw3DRect(cam,t,vec3(size,size,size),color);}
 void DebugDraw::Draw3DRect(Camera* cam,Transform* t,vec3 size,color_f color){
-    Shader* shape_shader = ShaderManager::UseShader("shape_debug");
-    mat4 view_matrix = cam->view_matrix.copy();
-
-    view_matrix.translate(t.x,t.y,t.z);
-    //view_matrix.rotate(t.rotation);
-    view_matrix.scale(t.scale);
     //
     view_matrix.scale(size);
 
@@ -187,3 +277,4 @@ void DebugDraw::DrawCylinder(Camera* cam,Transform* t,float height,float radius,
     //Draw end caps
     CheckForGLError("Debug.DrawCylinder: GL Error %d during draw\n");
 }
+*/

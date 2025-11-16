@@ -4,9 +4,8 @@
 #include <game_project_1/types/map.hpp>
 #include <game_project_1/types/primitives.hpp>
 
-Shader* DEFAULT_SHADER=nullptr;
-Shader* CURRENT_SHADER=nullptr;
-Map<char*,Shader> CACHED_SHADERS(2);
+ShaderRef CURRENT_SHADER=(ShaderRef)ShaderDef::DEFAULT;
+Map<int,Shader> CACHED_SHADERS(2);
 
 
 Shader::Shader(char* vertex_uri,char* fragment_uri){
@@ -175,23 +174,76 @@ void Shader::SetFeature(unsigned int feature_id,bool enabled){
 }
 
 void ShaderManager::Init(){
-    logger::debug("Loading default shader..\n");
-    DEFAULT_SHADER = new (CACHED_SHADERS.Add("default")) Shader("default","default");
-    
-    AddShader("level_debug");
-    AddShader("shape_debug");
-    AddShader("model_dynamic_lighting");
-    AddShader("model_static_shadeless");
-    AddShader("skybox");
-    AddShader("skybox_flat");
-    AddShader("ui_2d_quad")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
-    AddShader("ui_shape")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
+    logger::debug("Loading default shaders..\n");
+    AddShader((int)ShaderDef::DEFAULT,"default","default");
+    AddShader((int)ShaderDef::LEVEL_DEBUG,"level_debug");
+    AddShader((int)ShaderDef::SHAPE_DEBUG,"shape_debug");
+    AddShader((int)ShaderDef::MODEL_DYNAMIC_LIGHTING,"model_dynamic_lighting");
+    AddShader((int)ShaderDef::MODEL_STATIC_SHADELESS,"model_static_shadeless");
+    AddShader((int)ShaderDef::SKYBOX,"skybox");
+    AddShader((int)ShaderDef::SKYBOX_FLAT,"skybox_flat");
+    AddShader((int)ShaderDef::UI_2D_QUAD,"ui_2d_quad")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
+    AddShader((int)ShaderDef::UI_SHAPE,"ui_shape")->SetFeature(Shader::FEATURE_DISABLE_DEPTH_TEST,true);
+    UseShader((int)ShaderDef::DEFAULT);
 }
 
 void ShaderManager::Free(){
     CACHED_SHADERS.Clear();
 }
 
+Shader* ShaderManager::AddShader(ShaderRef id_constant,char* name){
+    AddShader(id_constant,name,name);
+    logger::debug("Caching shader %s\n",name);
+    return CACHED_SHADERS.Get(id_constant);
+}
+ShaderRef ShaderManager::RegisterShader(char* vertex_uri,char* fragment_uri){
+    ShaderRef new_id = (ShaderRef)CACHED_SHADERS.Count();
+    AddShader(new_id,vertex_uri,fragment_uri);
+    return new_id;
+}
+Shader* ShaderManager::AddShader(ShaderRef id_constant,char* vertex_uri,char* fragment_uri){
+    if(CACHED_SHADERS.Has(id_constant)){return CACHED_SHADERS.Get(id_constant);}
+    return new (CACHED_SHADERS.Add(id_constant)) Shader(vertex_uri,fragment_uri);
+}
+ShaderRef ShaderManager::Get(char* name){
+    //Remove calls to this function?
+    return -1;
+}
+
+Shader* ShaderManager::UseShader(ShaderRef id){
+    Shader* ret = GetShader(id);
+    if(id != CURRENT_SHADER){
+        GetShader(CURRENT_SHADER)->OnFinishUse();
+        ret->Use();
+        CURRENT_SHADER=id;
+    }
+    ret->OnStartUse();
+    return ret;
+}
+
+Shader* ShaderManager::GetShader(ShaderRef id){
+    Shader* ret = CACHED_SHADERS.Get((int)id);
+    if(ret== nullptr){
+        logger::warn("ShaderManager.GetShader: Shader id '%d' not found, returning default.",id);
+        ret=CACHED_SHADERS.Get((ShaderRef)ShaderDef::DEFAULT);
+    }
+    return ret;
+}
+void ShaderManager::RemoveShader(ShaderRef id){
+    if(CURRENT_SHADER == id){
+        UseShader((ShaderRef)ShaderDef::DEFAULT);
+    }
+    Shader* ret = CACHED_SHADERS.Get(id);
+    CACHED_SHADERS.Remove(id);
+    if(ret != nullptr){
+        delete ret;
+    }   
+}
+bool ShaderManager::IsCurrentShader(ShaderRef id){return CURRENT_SHADER == id;}
+ShaderRef ShaderManager::CurrentShader(){return CURRENT_SHADER;}
+//Shader* GetShader(char* name);
+//Shader* DefaultShader();
+/*
 Shader* ShaderManager::AddShader(char* name){
     if(CACHED_SHADERS.Has(name)){return CACHED_SHADERS.Get(name);}
     logger::debug("Caching shader %s\n",name);
@@ -205,19 +257,6 @@ Shader* ShaderManager::AddShader(char* name,char* vertex_uri,char* fragment_uri)
 }
 
 Shader* ShaderManager::UseShader(char* name){
-    Shader* ret = CACHED_SHADERS.Get(name);
-    if(ret== nullptr){
-        logger::warn("Shader not found, using default.");
-        ret=DEFAULT_SHADER;
-    }
-    
-    if(ret != CURRENT_SHADER){
-        if(CURRENT_SHADER !=nullptr)CURRENT_SHADER->OnFinishUse();
-        ret->Use();
-        CURRENT_SHADER=ret;
-    }
-    ret->OnStartUse();
-    return ret;
 }
 
 void ShaderManager::RemoveShader(char* name){
@@ -236,3 +275,4 @@ bool ShaderManager::IsCurrentShader(char* name){
 }
 
 Shader* ShaderManager::CurrentShader(){return CURRENT_SHADER;}
+*/

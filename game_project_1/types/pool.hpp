@@ -5,6 +5,7 @@
 #include <string.h>
 #include <game_project_1/types/arrays.hpp>
 #include <game_project_1/io/log.hpp>
+#include <new>
 
 
 template <typename T>

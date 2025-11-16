@@ -47,6 +47,9 @@ float vec2::angle(){
     float theta = atan2f(x/len,y/len)/PI_OVER_180;
     return (theta > 0)? theta: theta+360.0f;
 }
+vec2 vec2::operator*(float v){
+    return {x*v,y*v};
+}
 
 vec3::vec3(){
     x=y=z=0;
@@ -141,6 +144,8 @@ vec3 vec3::rotate(quaternion angle){
 vec3 vec3::operator +(vec3 v2){return{x+v2.x,y+v2.y,z+v2.z};}
 vec3 vec3::operator -(vec3 v2){return{x-v2.x,y-v2.y,z-v2.z};}
 vec3 vec3::operator *(float scl){return {x*scl,y*scl,z*scl};}
+vec3& vec3::operator *=(float scl){x*=scl;y*=scl;z*=scl;return *this;}
+vec3& vec3::operator *=(vec3 s){x*=s.x;y*=s.y;z*=s.z;return *this;}
 vec3 vec3::operator *(vec3 scl){return {x*scl.x,y*scl.y,z*scl.z};}
 vec3 vec3::operator /(vec3 scl){return {x/scl.x,y/scl.y,z/scl.z};}
 vec3 vec3::of_length(float newlen){
@@ -191,22 +196,26 @@ vec4::vec4(float _x,float _y,float _z,float _w){
     w=_w;
 }
 
+quaternion::quaternion(){x=y=z=0;w=1;}
+quaternion::quaternion(float rx,float ry,float rz){x=y=z=0;w=1;set_euler(rx,ry,rz);}
+quaternion::quaternion(float qx,float qy,float qz,float qw){x=qx;y=qy;z=qz;w=qw;}
+
 void quaternion::clear(){
     x=y=z=0;
     w=1;
 }
 
 
-void quaternion::set_euler(float x,float y,float z){
-    set_euler_radians(PI_OVER_180*x,PI_OVER_180*y,PI_OVER_180*z);
+void quaternion::set_euler(float rx,float ry,float rz){
+    set_euler_radians(PI_OVER_180*rx,PI_OVER_180*ry,PI_OVER_180*rz);
 }
-void quaternion::set_euler_radians(float x,float y,float z){
-    double cx = cosf(x * 0.5);
-    double sx = sinf(x * 0.5);
-    double cy = cosf(y * 0.5);
-    double sy = sinf(y * 0.5);
-    double cz = cosf(z * 0.5);
-    double sz = sinf(z * 0.5);
+void quaternion::set_euler_radians(float rx,float ry,float rz){
+    double cx = cosf(rx * 0.5);
+    double sx = sinf(rx * 0.5);
+    double cy = cosf(ry * 0.5);
+    double sy = sinf(ry * 0.5);
+    double cz = cosf(rz * 0.5);
+    double sz = sinf(rz * 0.5);
 
     w = cx * cy * cz + sx * sy * sz;
     x = sx * cy * cz - cx * sy * sz;
@@ -214,16 +223,16 @@ void quaternion::set_euler_radians(float x,float y,float z){
     z = cx * cy * sz - sx * sy * cz;
 }
 
-quaternion quaternion::of_euler(float x,float y,float z){
-    return of_euler_radians(PI_OVER_180*x,PI_OVER_180*y,PI_OVER_180*z);
+quaternion quaternion::of_euler(float rx,float ry,float rz){
+    return of_euler_radians(PI_OVER_180*rx,PI_OVER_180*ry,PI_OVER_180*rz);
 }
-quaternion quaternion::of_euler_radians(float x,float y,float z){
-    double cx = cosf(x * 0.5);
-    double sx = sinf(x * 0.5);
-    double cy = cosf(y * 0.5);
-    double sy = sinf(y * 0.5);
-    double cz = cosf(z * 0.5);
-    double sz = sinf(z * 0.5);
+quaternion quaternion::of_euler_radians(float rx,float ry,float rz){
+    double cx = cosf(rx * 0.5);
+    double sx = sinf(rx * 0.5);
+    double cy = cosf(ry * 0.5);
+    double sy = sinf(ry * 0.5);
+    double cz = cosf(rz * 0.5);
+    double sz = sinf(rz * 0.5);
 
     return{
         (float)(cx * cy * cz + sx * sy * sz),
@@ -234,7 +243,35 @@ quaternion quaternion::of_euler_radians(float x,float y,float z){
 }
 
 quaternion quaternion::identity(){
-    return {0,0,0,1f};
+    return {0,0,0,1.0f};
+}
+
+quaternion quaternion::from_to(vec3 from,vec3 to){
+    vec3 nfrom = from.normalized();
+    vec3 nto = to.normalized();
+
+    vec3 cross = nfrom.cross(nto);
+    float dot = nfrom.dot(nto);//cos theta between vectors
+
+    if(dot < -0.9999f){
+        //180 degree turn
+        vec3 ortho = {1,0,0};
+        if(fabs(nfrom.x) > fabs(nfrom.z)){
+            ortho = {0,0,1};
+        }
+        vec3 axis = nfrom.cross(ortho).normalized();
+        return {axis.x,axis.y,axis.z,0};
+    }
+    if(dot > 0.9999f){
+        //no rotation
+        return quaternion::identity();
+    }   
+
+    float theta = acosf(dot);
+    float w = cosf(theta/2.0f);
+    float s = sinf(theta/2.0f);
+
+    return (quaternion{cross.x*s,cross.y*s,cross.z*s,w}).normalized();
 }
 
 void quaternion::rotate_by(quaternion q2){
@@ -269,12 +306,15 @@ quaternion quaternion::operator* (quaternion q2){
 quaternion quaternion::inverse(){
     return {-x,-y,-z,w};
 }
+/*
+vec3 quaternion::get_euler(){
+    
+}
+*/
 
-
-
-void quaternion::rotate_by(float x,float y,float z){
+void quaternion::rotate_by(float rx,float ry,float rz){
     quaternion q2;
-    q2.set_euler(x,y,z);
+    q2.set_euler(rx,ry,rz);
     rotate_by(q2);
 }
 
@@ -299,8 +339,8 @@ float quaternion::theta_difference(quaternion q2){
     return theta_difference_radians(q2)*PI_OVER_180;
 }
 float quaternion::theta_difference_radians(quaternion q2){
-    quaternion diff = inverse()*q2
-    float diff_vec = ((vec3){diff.x,diff.y,diff.z}).length();
+    quaternion diff = inverse()*q2;
+    float diff_vec = (vec3{diff.x,diff.y,diff.z}).length();
     return abs(atan2(diff_vec,w));
 }
 
@@ -446,40 +486,52 @@ mat4 mat4::ortho(float width,float height,float near,float far){
     float t = height/2.0; float b = -height/2.0;
     float n = near; float f = far;
 
-    for(int i=0;i<16;i++){m[i]=0.0f;}
-    m[0] =  2.0/(r-l);          
-    m[3] = -(r+l)/(r-l);        
-    m[5] =  2.0/(t-b);          
-    m[7] = -(t+b)/(t-b);        
-    m[10] =-2.0/(f-n);          
-    m[11] =-(f+n)/(f-n);        
-    m[15] = 1.0;
+    mat4 ortho;
+    for(int i=0;i<16;i++){ortho.m[i]=0.0f;}
+    ortho.m[0] =  2.0/(r-l);          
+    ortho.m[3] = -(r+l)/(r-l);        
+    ortho.m[5] =  2.0/(t-b);          
+    ortho.m[7] = -(t+b)/(t-b);        
+    ortho.m[10] =-2.0/(f-n);          
+    ortho.m[11] =-(f+n)/(f-n);        
+    ortho.m[15] = 1.0;
+    return ortho;
 }
 
-void mat4::frustum(float l,float r,float b,float t,float n,float f){
+mat4 mat4::get_identity(){
+    mat4 identity;
+    identity.identity();
+    return identity;
+}
+
+mat4 mat4::frustum(float l,float r,float b,float t,float n,float f){
     // Row Major Frustum Matrix
     //	X	0 	A 	0 	
     //  0 	Y 	B 	0 
     //  0 	0 	C 	D 	
     //  0 	0 	-1 	0
-        
-    m[0] = (2*n)/(r-l);	    //X
-    m[2] =  (r+l)/(r-l);    //A
-    
-    m[5] = (2*n)/(t-b); 	 //Y
-    m[6] = (t+b)/(t-b);      //B
-    
-    m[10] = -((f+n)/(f-n));	 //C
-    m[11] = -((2*f*n)/(f-n));//D
 
-    m[14] = -1;
-    m[15] = 0;
+    mat4 frustum;
+    for(int i=0;i<16;i++){frustum.m[i]=0.0f;}
+        
+    frustum.m[0] = (2*n)/(r-l);	    //X
+    frustum.m[2] =  (r+l)/(r-l);    //A
+    
+    frustum.m[5] = (2*n)/(t-b); 	 //Y
+    frustum.m[6] = (t+b)/(t-b);      //B
+    
+    frustum.m[10] = -((f+n)/(f-n));	 //C
+    frustum.m[11] = -((2*f*n)/(f-n));//D
+
+    frustum.m[14] = -1;
+    frustum.m[15] = 0;
+    return frustum;
 }
 
-void mat4::perspective(float width,float height,float near,float far,float fov){
+mat4 mat4::perspective(float width,float height,float near,float far,float fov){
     float nearsize = tanf((fov/2)*PI_OVER_180)*near;
     float aspect = height/width;
-    frustum(-nearsize,nearsize,-nearsize*aspect,nearsize*aspect,near,far);
+    return frustum(-nearsize,nearsize,-nearsize*aspect,nearsize*aspect,near,far);
 }
 
 void mat4::transform(float x,float y,float z,vec3 rotation, vec3 scl){

@@ -38,7 +38,7 @@ void PhysicsProperties::Write(Serializer& dat){
     dat.PutByte(flags);
 }
 
-Component* PhysicsProperties::Clone(){
+Component* PhysicsProperties::Clone(ComponentParentContext context){
     PhysicsProperties* copy = new PhysicsProperties();
     copy->world_hitsphere = world_hitsphere;
     copy->collision_type = collision_type;

@@ -13,9 +13,9 @@ Camera::Camera():transform(){
 Camera::~Camera(){}
 
 mat4 Camera::ProjectionMatrix(){
-    return (ortho) ? projection_matrix.ortho(width,height,near_clip,far_clip)
-    : projection_matrix.perspective(width,height,near_clip,far_clip,fov);
+    return (ortho) ? mat4::ortho(width,height,near_clip,far_clip)
+    : mat4::perspective(width,height,near_clip,far_clip,fov);
 }
 mat4 Camera::ViewMatrix(){
-    return transform.ApplyFrom(mat4::identity());
+    return transform.ApplyFrom(mat4::get_identity());
 }

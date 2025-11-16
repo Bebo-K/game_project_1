@@ -1,7 +1,7 @@
 #include <game_project_1/component/client/sprite_set.hpp>
 
 
-SpriteSet::SpriteSet(){}
+SpriteSet::SpriteSet(Transform* parent):Drawable(parent){}
 SpriteSet::~SpriteSet(){Clear();}
 
 void SpriteSet::Draw(Camera* cam){
@@ -9,18 +9,12 @@ void SpriteSet::Draw(Camera* cam){
         s->Draw();
     }
 }
-void SpriteSet::SetPosition(vec3 pos){
-    x=pos.x;y=pos.y;z=pos.z;
-}
 
-Component* SpriteSet::Clone(){
-    SpriteSet* copy = new SpriteSet();
-    copy->SetPosition({x,y,z});
-    copy->rotation =rotation;
-    copy->scale = scale;
+Component* SpriteSet::Clone(ComponentParentContext context){
+    SpriteSet* copy = new SpriteSet(context.transform);
     copy->layer = layer;
     copy->hidden = hidden;
-    copy->shader_name = copy->shader_name;
+    copy->shader = copy->shader;
     for(Sprite* s: (*this)){
         Sprite* s2 = new (copy->Allocate()) Sprite(s->texture);
         s->CopyTo(s2);

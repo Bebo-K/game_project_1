@@ -8,7 +8,7 @@ NPCProperties::NPCProperties(int controller){Clear();controller_type=controller;
 
 NPCProperties::~NPCProperties(){Clear();}
 
-Component* NPCProperties::Clone(){
+Component* NPCProperties::Clone(ComponentParentContext context){
     NPCProperties* prop = new NPCProperties(controller_type);
     prop->controller_type=controller_type;
     return prop;

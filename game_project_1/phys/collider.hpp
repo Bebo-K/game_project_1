@@ -1,32 +1,34 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
+#include <game_project_1/types/transform.hpp>
 #include <game_project_1/types/math_types.hpp>
 #include <game_project_1/gfx/camera.hpp>
 
-namespace Collider{
-	enum Shape{
-		CAPSULE=0, //scale.x = cap radius, scale.y = cap distance, scale.z is ignored (=scale.x)
-		AABB=1,
-		SPHERE=2, //scale.x = radius
-		ARC=3, //scale.x = radius, scale.y = height, scale.z= arc length 
-	};
+
+enum class ColliderShape{
+	CYLINDER=0, //(Axis-aligned) scale.x = radius, scale.y = height, scale.z is ignored (=scale.x)
+	CAPSULE=1, //(Unaligned, two connected spheres)  scale.x = radius, scale.y = height, scale.z is ignored (=scale.x)
+	AABB=2,		//(Axis-aligned bounding box) scale = full size in each dimension
+	SPHERE=3, //(Alignment doesn't matter) scale.x = radius
+	ARC=4, //(Vertically aligned, only y rotation matters) scale.x = radius, scale.y = height, scale.z= arc length 
 };
 
 class ShapeCollider{
 	public:
-	Collider::Shape	shape;
+	ColliderShape	shape;
 	Transform		transform;
 
 	ShapeCollider();//Empty constructor is zero size sphere
-	ShapeCollider(ShapeCollider* c2);//copy constructor
-	ShapeCollider(vec3 center,float r);//assumes SPHERE
-	ShapeCollider(vec3 center,float h, float r);//assumes CAPSULE
-	ShapeCollider(vec3 center,vec3 size);//assumes AABB
-	ShapeCollider(vec3 center,float h,float r,float arc_angle,vec3 rotation);//assumes ARC
+	ShapeCollider(Transform* parent,vec3 center,float r);//assumes SPHERE
+	ShapeCollider(Transform* parent,vec3 center,float h, float r);//assumes CAPSULE
+	ShapeCollider(Transform* parent,vec3 center,vec3 size);//assumes AABB
+	ShapeCollider(Transform* parent,vec3 center,float h,float r,float arc_angle,vec3 rotation);//assumes ARC
+
+	ShapeCollider(Transform* parent,ShapeCollider* copy);//Copy constructor
 	
-    bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale);
-    bool Intersects(Location base, vec3 base_scale, ShapeCollider *c2, Location base2, vec3 base2_scale,vec3* intersect_point);
+    bool Intersects(ShapeCollider *c2);
+    bool Intersects(ShapeCollider *c2,vec3* intersect_point);
 
 	void Draw(Camera* cam);
 };

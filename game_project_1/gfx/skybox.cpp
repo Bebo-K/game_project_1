@@ -14,7 +14,7 @@ void BuildSkyboxPrimitive(){
 
 Skybox::Skybox() : mat(){
     layer=-128;
-    scale={1,1,1};
+    offset.scale={1,1,1};
     if(!skybox_vertices.Valid()){BuildSkyboxPrimitive();}
     glGenVertexArrays(1,&vertex_array_id);
     glBindVertexArray(vertex_array_id);
@@ -29,7 +29,7 @@ Skybox::Skybox() : mat(){
 void Skybox::SetTexture(Texture sky_tex){mat.texture = sky_tex;}
 
 void Skybox::Draw(Camera* cam){
-    Shader* shader = ShaderManager::UseShader("skybox");//TODO: opt between skybox and skybox_flat
+    Shader* s = ShaderManager::UseShader((ShaderRef)ShaderDef::SKYBOX);//TODO: opt between skybox and skybox_flat
     glBindVertexArray(vertex_array_id);
     glDisable(GL_DEPTH_TEST);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
@@ -47,14 +47,14 @@ void Skybox::Draw(Camera* cam){
     //if(cam->rotation.z != 0){modelview.rotate_z(cam->rotation.z);}
     */
 
-    glUniformMatrix4fv(shader->MODELVIEW_MATRIX,1,true,(GLfloat*)&turn_matrix);
-    glUniformMatrix4fv(shader->PROJECTION_MATRIX,1,true,(GLfloat*)&pitch_matrix);
+    glUniformMatrix4fv(s->MODELVIEW_MATRIX,1,true,(GLfloat*)&turn_matrix);
+    glUniformMatrix4fv(s->PROJECTION_MATRIX,1,true,(GLfloat*)&pitch_matrix);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,mat.texture.atlas_id);
 
-    glUniform1i(shader->TEXTURE_0,0);
-    glUniform4fv(shader->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
+    glUniform1i(s->TEXTURE_0,0);
+    glUniform4fv(s->TEXTURE_LOCATION,1,(GLfloat*)&mat.texture.tex_coords);
 
     vertices.Bind(0);
     

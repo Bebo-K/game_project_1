@@ -15,7 +15,7 @@ class StatBlock: public Component{
     StatBlock(int start_level);
     ~StatBlock();
 
-    Component* Clone();
+    Component* Clone(ComponentParentContext context);
     virtual void Clear();
 
     int SerializedLength();

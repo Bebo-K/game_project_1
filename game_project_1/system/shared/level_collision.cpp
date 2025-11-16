@@ -55,7 +55,7 @@ void LevelCollision::ServerFrame(ServerEntity* e,ServerScene* s,Timestep delta){
 
 
 void LevelCollision::RunCollisionStep(Entity* e,List<MeshCollider>* meshes, float step_delta,CollisionResult* list){
-    vec3 start_position = e->GetPos();
+    vec3 start_position = e->Position();
     vec3 step_velocity =  e->velocity*step_delta;
     vec3 step_position = start_position+step_velocity;
     PhysicsState* phys_state = e->Get<PhysicsState>();
