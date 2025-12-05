@@ -238,6 +238,7 @@ bool NetTarget::OnRecieve(Payload payload)
 Payload NetTarget::Recieve()
 {
     Datagram datagram;
+    datagram.Clear();
     while (inbound_buffer.Read((byte *)&datagram))
     {
         if (IsLocal())

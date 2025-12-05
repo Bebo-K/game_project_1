@@ -47,6 +47,7 @@ boolean PrimitiveIsFarther(Drawable* p1,Drawable* p2,vec3 camera_pos,vec3 camera
 //From farthest/highest layer to closest/lowest layer
 Drawable** Renderer::SortPrimitives(){
 	Drawable** ret = new Drawable*[primitives.Count()];
+    memset(ret,0,sizeof(Drawable*)*primitives.Count());
 
     vec3 camera_axis = {0.0f,0.0f,1.0f};
     vec3 camera_pos = {camera.transform.x,camera.transform.y,camera.transform.z};

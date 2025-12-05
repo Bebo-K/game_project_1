@@ -17,6 +17,8 @@ const int ANIMATION_LAYER_USER = 3;
 
 namespace Animation{
 
+    const int TRANSFORM_HOOK_COUNT= 3;
+
     enum ValueType : short {
         FLOAT,
         VECTOR2,

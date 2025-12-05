@@ -68,13 +68,14 @@ void SceneManager::UnloadAllScenes(){
         SaveSceneToSavefile(scene);
         scene->Unload();
     }
+    active_scenes.Clear();
 }
 
 void SceneManager::SaveSceneToSavefile(ServerScene* scene){
     int area_id = scene->area_id;
     
     SaveScene* new_scene_save = save.GetScene(scene->area_id);
-    scene->Load(area_id,(new_scene_save != nullptr));
+    ///scene->Load(area_id,(new_scene_save != nullptr));
 
     if(new_scene_save != nullptr){
         for(SaveEntity* entity: new_scene_save->local_entities){

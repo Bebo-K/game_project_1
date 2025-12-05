@@ -86,20 +86,18 @@ vec3 Transform::ToLocalSpace(vec3 world_point){
     return (parent_point / scale).rotate(rotation.inverse()) - Position();
 }
 
-mat4 Transform::ApplyTo(mat4 space_matrix){
+void Transform::ApplyTo(mat4& space_matrix){
     space_matrix.translate(x,y,z);
     space_matrix.rotate(rotation);
     space_matrix.scale(scale.x,scale.y,scale.z);
-    if(parent != null){return parent->ApplyTo(space_matrix);}
-    return space_matrix;
+    if(parent != null){parent->ApplyTo(space_matrix);}
 }
 
-mat4 Transform::ApplyFrom(mat4 view_matrix){
-    mat4 parent_mat = (parent != null)?parent->ApplyFrom(view_matrix): view_matrix;
-    parent_mat.scale(1.0f/scale.x,1.0f/scale.y,1.0f/scale.z);
-    parent_mat.rotate(rotation.inverse());
-    parent_mat.translate(-x,-y,-z);
-    return parent_mat;
+void Transform::ApplyFrom(mat4& view_matrix){
+    if(parent != null){parent->ApplyFrom(view_matrix);}
+    view_matrix.scale(1.0f/scale.x,1.0f/scale.y,1.0f/scale.z);
+    view_matrix.rotate(rotation.inverse());
+    view_matrix.translate(-x,-y,-z);
 }
 
 vec3 Transform::GlobalPosition(){return ToGlobalSpace({0,0,0});}

@@ -136,7 +136,7 @@ void Combat::ClientUpdate(ClientEntity* e,Timestep delta){
                 if(FloatCrossesThreshhold(hitboxes->current_pattern_active_time,delta.seconds,hitpath->spawn_time)){
                     //create collider + start animation
                     ShapeCollider* box = new (hitboxes->hit_colliders.Allocate()) ShapeCollider(hitpath->collider);
-                    Animation::Target* target = hitboxes->hit_collider_targets.Allocate();
+                    Animation::Target* target = new(hitboxes->hit_collider_targets.Allocate()) Animation::Target(Animation::TRANSFORM_HOOK_COUNT);
 
                     int box_index = pattern->hitpaths.IndexOf(hitpath);
                     sprintf(hibox_name_buffer,"hitbox_%d",box_index);

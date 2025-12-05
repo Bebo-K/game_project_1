@@ -11,7 +11,7 @@
 #include <game_project_1/core/entity_template.hpp>
 
 
-ServerScene::ServerScene():entities(8),just_spawned(8),just_deleted(8){
+ServerScene::ServerScene():level(),entities(8),just_spawned(8),just_deleted(8){
     area_id=0;
     global_timer=0;
 }

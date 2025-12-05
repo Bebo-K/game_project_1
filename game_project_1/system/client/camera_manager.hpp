@@ -13,7 +13,7 @@ class CameraManager{
     ClientEntity*   target;
     Camera*         camera;
 
-    float           camera_turn_speed=200;
+    float           camera_turn_speed=8.0f;
     float           camera_zoom_speed=0.1f;
 
     bool            lock_camera;
@@ -24,8 +24,6 @@ class CameraManager{
     float           current_zoom;
 	float		    zoom_goal;
 
-	Transform       transform_goal;
-
 	LinearGradient	zoom_range;
 	LinearGradient	zoom_pitch;
 
@@ -35,6 +33,8 @@ class CameraManager{
     bool HandleCameraInput(Input::Event code_type);
     void Update(Timestep delta);
     void PreDraw();
+    vec3 CurrentPosition();
+    quaternion CurrentRotation();
 };
 
 

@@ -104,14 +104,16 @@ void Server::Start(){
 
 void Server::StartShutdown(){
     logger::info("Server shutting down...\n");
-    scene_manager.save.Save(server_config::save_name);
-    scene_manager.UnloadAllScenes();
-    scene_manager.active_scenes.Clear();
-    state=EXITING;
-    ServerNetwork::ShutdownListener();
+    if(state != EXITING){        
+        state=EXITING;
+        scene_manager.save.Save(server_config::save_name);
+        scene_manager.UnloadAllScenes();
+        ServerNetwork::ShutdownListener();
+    }
 }
 
-void Server::Update(Timestep delta){
+void Server::Update(Timestep delta){ 
+    if(state == EXITING)return;
     UpdatePlayers();
     for(ServerScene* scene:scene_manager.active_scenes){
         scene->Update(delta);

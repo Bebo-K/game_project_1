@@ -43,8 +43,8 @@ class Transform{
     vec3 ToGlobalSpace(vec3 local_point);
     vec3 ToLocalSpace(vec3 global_point);
 
-    mat4 ApplyTo(mat4 space_matrix);//forward-applies transformations to a matrix, resulting in a global transform matrix including this transform
-    mat4 ApplyFrom(mat4 view_matrix);//reverse-applies transformations to a matrix, resulting in a matrix relative to this transform
+    void ApplyTo(mat4& space_matrix);//forward-applies transformations to a matrix, resulting in a global transform matrix including this transform
+    void ApplyFrom(mat4& view_matrix);//reverse-applies transformations to a matrix, resulting in a matrix relative to this transform
 
     vec3 GlobalPosition();
     quaternion GlobalRotation();

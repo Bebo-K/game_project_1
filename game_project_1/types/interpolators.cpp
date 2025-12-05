@@ -100,5 +100,6 @@ Transform Interpolators::TransformInterpolate(Transform* from, Transform* to, fl
     if( res.rotation.theta_difference(to->rotation) < angle_snap){
         res.rotation = to->rotation;
     }
+    res.parent=from->parent;
     return res;
 }

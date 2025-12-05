@@ -17,5 +17,7 @@ mat4 Camera::ProjectionMatrix(){
     : mat4::perspective(width,height,near_clip,far_clip,fov);
 }
 mat4 Camera::ViewMatrix(){
-    return transform.ApplyFrom(mat4::get_identity());
+    mat4 view = mat4::get_identity();
+    transform.ApplyFrom(view);
+    return view;
 }

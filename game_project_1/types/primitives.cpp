@@ -233,12 +233,20 @@ quaternion quaternion::of_euler_radians(float rx,float ry,float rz){
     double sy = sinf(ry * 0.5);
     double cz = cosf(rz * 0.5);
     double sz = sinf(rz * 0.5);
-
+    /*
     return{
         (float)(cx * cy * cz + sx * sy * sz),
         (float)(sx * cy * cz - cx * sy * sz),
         (float)(cx * sy * cz + sx * cy * sz),
         (float)(cx * cy * sz - sx * sy * cz)
+    };
+    */
+   
+    return{
+        (float)(sx * cy * cz - cx * sy * sz),
+        (float)(cx * sy * cz + sx * cy * sz),
+        (float)(cx * cy * sz - sx * sy * cz),
+        (float)(cx * cy * cz + sx * sy * sz)
     };
 }
 

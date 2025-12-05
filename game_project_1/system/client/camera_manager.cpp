@@ -2,7 +2,7 @@
 #include <game_project_1/input.hpp>
 #include <game_project_1/types/interpolaters.hpp>
 
-CameraManager::CameraManager():transform_goal(){
+CameraManager::CameraManager(){
     target=nullptr;
     camera=nullptr;
 
@@ -34,32 +34,34 @@ void CameraManager::DetachCamera(){
 }
 
 void CameraManager::Update(Timestep delta){
-    if(camera != null){
-        cam_moving = false;
-        if(current_turn != turn_goal){
-            cam_moving = true;
-            current_turn= Interpolators::StepInterpolate(current_turn,turn_goal,camera_turn_speed);;
-        }
-
-        if(current_zoom != zoom_goal){
-            cam_moving = true;
-            current_zoom = Interpolators::StepInterpolate(current_zoom,zoom_goal,camera_zoom_speed);
-        }
-
-        float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
-        if(cam_moving){
-            transform_goal.Copy(&camera->transform);
-            transform_goal.SetPosition(((vec3){0,0,current_zoom}).rotate(quaternion::of_euler(current_pitch,0,0)));
-            transform_goal.rotation = quaternion::of_euler(current_pitch,current_turn,0);
-        }
-        camera->tracked_rotation={current_pitch,current_turn,0};
+    if(current_turn != turn_goal){
+        current_turn= Interpolators::StepInterpolate(current_turn,turn_goal,camera_turn_speed);;
     }
-    //TODO: raycast entity to camera to find if we're occluded
+    if(current_zoom != zoom_goal){
+        current_zoom = Interpolators::StepInterpolate(current_zoom,zoom_goal,camera_zoom_speed);
+    }
+}
+
+
+vec3 CameraManager::CurrentPosition(){
+    return ((vec3){0,0,current_zoom}).rotate(CurrentRotation());
+}
+
+quaternion CameraManager::CurrentRotation(){
+    float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
+    quaternion rotation = quaternion::of_euler(0,current_turn,0);
+    rotation.rotate_by(current_pitch,0,0);
+    return rotation;
 }
 
 void CameraManager::PreDraw(){
     if(camera != null){
-        camera->transform = Interpolators::TransformInterpolate(&camera->transform,&transform_goal,0.95f,0.01f,0.01f,0.01f);
+        //TODO: raycast entity to camera to find if we're occluded
+        float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
+        camera->tracked_rotation={current_pitch,current_turn,0};
+        camera->transform.SetPosition( CurrentPosition() );
+        camera->transform.rotation = CurrentRotation();
+        //camera->transform = Interpolators::TransformInterpolate(&camera->transform,&transform_goal,0.95f,0.01f,0.01f,0.01f);
     }
 }
 
