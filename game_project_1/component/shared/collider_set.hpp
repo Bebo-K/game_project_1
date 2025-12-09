@@ -23,6 +23,12 @@ class ColliderSet: public Component, public Pool<ShapeCollider>,public Drawable{
     int SerializedLength();
     void Read(Deserializer& dat);
     void Write(Serializer& dat);
+
+    ShapeCollider* AddEmptyCollider();
+    ShapeCollider* AddSphereCollider(vec3 center,float r);
+    ShapeCollider* AddCapsuleCollider(vec3 center,float h, float r);
+    ShapeCollider* AddAABBCollider(vec3 center,vec3 size);
+    ShapeCollider* AddArcCollider(vec3 center,float h,float r,float arc_angle,vec3 rotation);
     
 	virtual void Draw(Camera* cam);
 };

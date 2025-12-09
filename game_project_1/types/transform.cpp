@@ -17,7 +17,7 @@ Transform::Transform(vec3 pos,vec3 _rotation,vec3 _scale):x(pos.x),y(pos.y),z(po
 Transform::Transform(vec3 pos,quaternion _rotation,vec3 _scale):x(pos.x),y(pos.y),z(pos.z),rotation(_rotation),scale(_scale),parent(null){}
 Transform::Transform(vec3 pos,quaternion _rotation,vec3 _scale,Transform* parent):x(pos.x),y(pos.y),z(pos.z),rotation(_rotation),scale(_scale),parent(parent){}
 
-Transform::Transform(Transform* _parent):x(0),y(0),z(0),rotation(),scale(1.0f,1.0f,1.0f),parent(_parent){}
+Transform::Transform(Transform* _parent):x(0),y(0),z(0),rotation(),scale(1.0f,1.0f,1.0f){parent = _parent;}
 
 Transform::Transform(const Transform& other){
     x=other.x;y=other.y;z=other.z;
@@ -76,28 +76,28 @@ void Transform::Unattach(){
 
 
 vec3 Transform::ToGlobalSpace(vec3 local_point){
-    vec3 parent_point = ( (local_point + vec3{x,y,z}).rotate(rotation) ) * scale;
+    vec3 parent_point = (local_point*scale).rotate(rotation)+vec3{x,y,z}; 
     if(parent != null){return parent->ToGlobalSpace(parent_point);}
     return parent_point;
 }
 vec3 Transform::ToLocalSpace(vec3 world_point){
     vec3 parent_point = (parent != null)?parent->ToLocalSpace(world_point): world_point;
-    //reverse operations in reverse order, de-scale, then inverser rotation, then translate backwards
-    return (parent_point / scale).rotate(rotation.inverse()) - Position();
+    //reverse operations in reverse order, de-translate, then inverse rotation, then de-scale
+    return (parent_point-vec3{x,y,z}).rotate(rotation.inverse()) / scale;
 }
 
 void Transform::ApplyTo(mat4& space_matrix){
+    if(parent != null){parent->ApplyTo(space_matrix);}
     space_matrix.translate(x,y,z);
     space_matrix.rotate(rotation);
     space_matrix.scale(scale.x,scale.y,scale.z);
-    if(parent != null){parent->ApplyTo(space_matrix);}
 }
 
 void Transform::ApplyFrom(mat4& view_matrix){
-    if(parent != null){parent->ApplyFrom(view_matrix);}
     view_matrix.scale(1.0f/scale.x,1.0f/scale.y,1.0f/scale.z);
     view_matrix.rotate(rotation.inverse());
     view_matrix.translate(-x,-y,-z);
+    if(parent != null){parent->ApplyFrom(view_matrix);}
 }
 
 vec3 Transform::GlobalPosition(){return ToGlobalSpace({0,0,0});}

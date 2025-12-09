@@ -49,10 +49,10 @@ void Movement::Update(Entity* e, Timestep delta){
     if(horizontal_velocity.length_sqr() > 0){
         move_state->is_moving = true;
         horizontal_velocity.normalize();
-        e->rotation.y = atan2(-horizontal_velocity.x, horizontal_velocity.y) /(PI_OVER_180);
+        e->rotation = quaternion::of_euler(0,atan2(horizontal_velocity.x, horizontal_velocity.y) /(PI_OVER_180),0);//TODO: how to integrate with lean rotation?
     }
     else{
-        e->rotation.y = atan2(-horizontal_goal.x, horizontal_goal.y) /(PI_OVER_180);
+        e->rotation =  quaternion::of_euler(0,atan2(horizontal_goal.x, horizontal_goal.y) /(PI_OVER_180),0);
         move_state->is_moving = false;
     }
 

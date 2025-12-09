@@ -11,30 +11,28 @@ ShapeCollider::ShapeCollider():transform(){
 }
 ShapeCollider::ShapeCollider(Transform* parent,ShapeCollider* copy):transform(copy->transform){
     shape=copy->shape;
+    size=copy->size;
 }
 ShapeCollider::ShapeCollider(Transform* parent,vec3 center,float r):transform(parent){
     shape=ColliderShape::SPHERE;
     transform.SetPosition(center);
-    transform.scale={r,r,r};
-    transform.rotation={0,0,0};
+    size={r,r,r};
 }
 ShapeCollider::ShapeCollider(Transform* parent,vec3 center,float h, float r):transform(parent){
     shape=ColliderShape::CAPSULE;
     transform.SetPosition(center);
-    transform.scale={r,h,r};
-    transform.rotation={0,0,0};
+    size={r,h,r};
 }
 ShapeCollider::ShapeCollider(Transform* parent,vec3 center,vec3 size):transform(parent){
     shape=ColliderShape::AABB;
     transform.SetPosition(center);
-    transform.scale=size;
-    transform.rotation={0,0,0};
+    this->size=size;
 }
 ShapeCollider::ShapeCollider(Transform* parent,vec3 center,float h,float r,float arc_angle,vec3 rotation):transform(parent){
     shape=ColliderShape::ARC;
     transform.SetPosition(center);
-    transform.scale={r,h,arc_angle};
-    rotation=rotation;
+    transform.rotation = quaternion::of_euler(rotation.x,rotation.y,rotation.z);
+    size={r,h,arc_angle};
 }
 
 bool ShapeCollider::Intersects(ShapeCollider *c2){
@@ -140,8 +138,8 @@ void ShapeCollider::Draw(Camera* cam){
     }
     case ColliderShape::CAPSULE:
     {
-        vec3 cap_a_offset = world_pos + transform.ToGlobalSpace((vec3){0, 1, 0});
-        vec3 cap_b_offset = world_pos + transform.ToGlobalSpace((vec3){0, -1, 0});
+        vec3 cap_a_offset = transform.ToGlobalSpace((vec3){0, 0.5f, 0});
+        vec3 cap_b_offset = transform.ToGlobalSpace((vec3){0, -0.5f, 0});
 
         //Until we implment oriented capsules, just draw the caps as spheres
         DebugDraw::DrawSphere(cam,cap_a_offset, world_scale.x,unique_color_f);

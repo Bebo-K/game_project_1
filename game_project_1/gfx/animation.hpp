@@ -136,6 +136,7 @@ namespace Animation{
         float length;
         bool loop;
         List<Channel> channels;
+        Dictionary <int,char*> channel_names;
 
         public:
         ClipBuilder();
@@ -143,6 +144,7 @@ namespace Animation{
         ClipBuilder& Duration(float length);
         ClipBuilder& Loop(bool loop);
         ClipBuilder& AddChannel(ChannelBuilder& channelbuilder);
+        ClipBuilder& WithChannelName(char* target,char* context);
         Clip* Build();
         void BuildTo(Clip* target);
     };

@@ -33,7 +33,7 @@ class CameraManager{
     bool HandleCameraInput(Input::Event code_type);
     void Update(Timestep delta);
     void PreDraw();
-    vec3 CurrentPosition();
+    vec3 CurrentOffset();
     quaternion CurrentRotation();
 };
 

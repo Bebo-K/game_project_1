@@ -90,7 +90,7 @@ void Client::Resize(int screen_w,int screen_h){
 
 
 void Client::Update(Timestep delta){ 
-    //AnimationManager::Update(delta);
+    AnimationManager::Update(delta);
     int frames_to_run = (delta.frames < FRAMESKIP_MAX)?delta.frames:FRAMESKIP_MAX;
     
     if(frames_to_run >0){

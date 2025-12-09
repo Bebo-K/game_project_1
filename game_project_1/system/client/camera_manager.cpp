@@ -20,16 +20,9 @@ CameraManager::CameraManager(){
 
 void CameraManager::AttachCamera(Camera* cam,ClientEntity* entity){
     camera=cam;target=entity;
-    if(camera->transform.parent != null){
-        camera->transform.Unattach();
-    }
-    camera->transform.parent=target;
 }
 
 void CameraManager::DetachCamera(){
-    if(camera != null){
-        camera->transform.Unattach();
-    }
     camera=nullptr;target=nullptr;
 }
 
@@ -43,7 +36,7 @@ void CameraManager::Update(Timestep delta){
 }
 
 
-vec3 CameraManager::CurrentPosition(){
+vec3 CameraManager::CurrentOffset(){
     return ((vec3){0,0,current_zoom}).rotate(CurrentRotation());
 }
 
@@ -59,7 +52,7 @@ void CameraManager::PreDraw(){
         //TODO: raycast entity to camera to find if we're occluded
         float current_pitch = zoom_pitch.ScaleTo(current_zoom,zoom_range);
         camera->tracked_rotation={current_pitch,current_turn,0};
-        camera->transform.SetPosition( CurrentPosition() );
+        camera->transform.SetPosition( target->Position() +CurrentOffset() );
         camera->transform.rotation = CurrentRotation();
         //camera->transform = Interpolators::TransformInterpolate(&camera->transform,&transform_goal,0.95f,0.01f,0.01f,0.01f);
     }
@@ -86,11 +79,11 @@ bool CameraManager::HandleCameraInput(Input::Event code_type){
         return true;
     }
     else{
-        if(Controller::GetButton(Controller::L1).IsJustPressed()){
+        if(Controller::GetButton(Controller::L1).IsJustPressed() && (current_turn == turn_goal)){
             turn_goal += 45.0f;
             return true;
         }
-        if(Controller::GetButton(Controller::R1).IsJustPressed()){
+        if(Controller::GetButton(Controller::R1).IsJustPressed() && (current_turn == turn_goal)){
             turn_goal -= 45.0f;
             return true;
         }

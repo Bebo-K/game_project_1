@@ -23,9 +23,12 @@ void EntityLoader::LoadTo(ServerEntity* entity,ServerScene* scene){
         AssignIfExists(e_pos,"y",&entity->y);
         AssignIfExists(e_pos,"z",&entity->z);
 
-        AssignIfExists(e_pos,"xr",&entity->rotation.x);
-        AssignIfExists(e_pos,"yr",&entity->rotation.y);
-        AssignIfExists(e_pos,"zr",&entity->rotation.z);
+        vec3 euler_rotation;
+
+        AssignIfExists(e_pos,"xr",&euler_rotation.x);
+        AssignIfExists(e_pos,"yr",&euler_rotation.y);
+        AssignIfExists(e_pos,"zr",&euler_rotation.z);
+        entity->rotation = quaternion::of_euler(euler_rotation.x,euler_rotation.y,euler_rotation.z);
 
         AssignIfExists(e_pos,"xs",&entity->scale.x);
         AssignIfExists(e_pos,"ys",&entity->scale.y);

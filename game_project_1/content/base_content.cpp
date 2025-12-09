@@ -46,7 +46,7 @@ void BaseContent::LoadServer(){
 
 
 void BaseContent::LoadTestArea(ServerScene* scene){
-    /*
+    
     ServerEntity* friendly = scene->NewEntity(humanoid_template);
         Identity* friendly_id = friendly->GetOrAdd<Identity>();
             friendly_id->name = wstr::new_copy(L"friendly");
@@ -58,7 +58,7 @@ void BaseContent::LoadTestArea(ServerScene* scene){
         friendly->Set(new NPCProperties(BaseContent::NPC_WANDER));
         friendly->Set(new NPCState());
 
-    friendly->SetPos({7,4,1});
+    friendly->SetPosition({7,4,1});
     friendly->rotation = {0,183,0};
 
     ServerEntity* talkative = scene->NewEntity(humanoid_template);
@@ -77,7 +77,7 @@ void BaseContent::LoadTestArea(ServerScene* scene){
         talkative->Set(new NPCState());
         
 
-    talkative->SetPos({-3,4,1});
+    talkative->SetPosition({-3,4,1});
     talkative->rotation = {0,47,0};
-    */
+    
 }

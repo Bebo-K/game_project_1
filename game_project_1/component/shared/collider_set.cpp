@@ -22,7 +22,9 @@ void ColliderSet::Read(Deserializer& dat){
     for(int i=0;i<colliders;i++){
         ShapeCollider* c = Add();
         c->shape = (ColliderShape)dat.GetInt();
+        c->size = dat.GetVec3();
         dat.ReadTransform(&c->transform);
+        c->transform.parent=&offset;
     }
 }
 
@@ -34,6 +36,7 @@ void ColliderSet::Write(Serializer& dat){
     dat.PutInt(num_colliders);
     for(ShapeCollider* c: *this){
         dat.PutInt((int)c->shape);
+        dat.PutVec3(c->size);
         dat.WriteTransform(&c->transform);
     }
 }
@@ -61,4 +64,27 @@ void ColliderSet::Draw(Camera* cam){
     for(ShapeCollider* coll:(*this)){
         coll->Draw(cam);
     }
+}
+
+
+ShapeCollider* ColliderSet::AddEmptyCollider(){
+    ShapeCollider* ret = new (this->Allocate()) ShapeCollider();
+    ret->transform.parent = &offset;
+    return ret;
+}
+ShapeCollider* ColliderSet::AddSphereCollider(vec3 center,float r){
+    ShapeCollider* ret = new (this->Allocate()) ShapeCollider(&offset,center,r);
+    return ret;
+}
+ShapeCollider* ColliderSet::AddCapsuleCollider(vec3 center,float h, float r){
+    ShapeCollider* ret = new (this->Allocate()) ShapeCollider(&offset,center,h,r);
+    return ret;
+}
+ShapeCollider* ColliderSet::AddAABBCollider(vec3 center,vec3 size){
+    ShapeCollider* ret = new (this->Allocate()) ShapeCollider(&offset,center,size);
+    return ret;
+}
+ShapeCollider* ColliderSet::AddArcCollider(vec3 center,float h,float r,float arc_angle,vec3 rotation){
+    ShapeCollider* ret = new (this->Allocate()) ShapeCollider(&offset,center,h,r,arc_angle,rotation);
+    return ret;
 }

@@ -82,15 +82,16 @@ Animation::Channel::~Channel(){
 Animation::ChannelBuilder& Channel::Builder(){return *new ChannelBuilder();}
 
 
-Animation::ChannelHook::ChannelHook(float* val,char* name,ValueType value_type){
-    //logger::warn("creating hook with name %s\n",name);
+Animation::ChannelHook::ChannelHook(float* val,char* hookname,ValueType value_type){
+    //logger::warn("creating hook with name %s\n",hookname);
     value=val;
-    name=cstr::new_copy(name);
+    name=cstr::new_copy(hookname);
     type=value_type;
 }
 Animation::ChannelHook::~ChannelHook(){
     //logger::warn("Deallocating channel hook of name %s\n",name);
-    DEALLOCATE(name)}
+    DEALLOCATE(name)
+}
 
 Animation::Target::Target(int channel_count):hooks(channel_count){
     enabled=true;
@@ -337,6 +338,11 @@ ClipBuilder& ClipBuilder::Name(char* name){this->name = name;return *this;}
 ClipBuilder& ClipBuilder::Duration(float length){this->length = length;return *this;}
 ClipBuilder& ClipBuilder::Loop(bool loop){this->loop = loop;return *this;}
 ClipBuilder& ClipBuilder::AddChannel(ChannelBuilder& channelbuilder){this->channels.Add(channelbuilder.Build());return *this;}
+ClipBuilder& ClipBuilder::WithChannelName(char* target,char* context){
+    int channel_id = Animation::ChannelID(target,context);
+    this->channel_names.Add(channel_id,cstr::append(target,'_',context));
+    return *this;
+}
 Clip* ClipBuilder::Build(){
     Clip* ret = new Clip(this->name,this->channels.Count());
     ret->loop=this->loop;
@@ -345,6 +351,9 @@ Clip* ClipBuilder::Build(){
     for(Channel* channel: this->channels){
         ret->channels[i] = *channel;
         i++;
+    }
+    for(Tuple<int,char*> entry: this->channel_names){
+        ret->channel_names.Add(entry.key,entry.value);
     }
     return ret;
 }
@@ -357,5 +366,8 @@ void ClipBuilder::BuildTo(Clip* target){
     for(Channel* channel: this->channels){
         target->channels[i] = *channel;
         i++;
+    }
+    for(Tuple<int,char*> entry: this->channel_names){
+        target->channel_names.Add(entry.key,entry.value);
     }
 }

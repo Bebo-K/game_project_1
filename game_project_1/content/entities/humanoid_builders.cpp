@@ -96,9 +96,7 @@ void HumanoidServerBuilder(ServerEntity* entity, ServerScene* scene){
         colliders->entity_collision_handler_id = BaseContent::humanoid_collision;
         colliders->bounds.height=my_race->hitsphere_height;
         colliders->bounds.radius=my_race->hitsphere_radius;
-        new (colliders->Allocate()) ShapeCollider(entity,
-                {0,my_race->hitsphere_height/2.0f,0},
-                my_race->hitsphere_height,my_race->hitsphere_radius);
+        colliders->AddCapsuleCollider({0,my_race->hitsphere_height/2.0f,0},my_race->hitsphere_height,my_race->hitsphere_radius);
     entity->Set(colliders);
     entity->Set(new Equip());
     entity->Set(new Inventory());

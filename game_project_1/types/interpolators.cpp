@@ -43,7 +43,7 @@ quaternion QInterpolate(quaternion from,quaternion to, float weight){
 
 
 void Interpolators::MultiQInterpolate(float* from, float* to, float weight, float* values, int values_count){
-    for(int i=0;i<values_count;i+4){ 
+    for(int i=0;i<values_count;i+=4){ 
         quaternion res = QInterpolate({from[i],from[i+1],from[i+2],from[i+3]},{to[i],to[i+1],to[i+2],to[i+3]},weight);
         values[i]=res.x;
         values[i+1]=res.y;

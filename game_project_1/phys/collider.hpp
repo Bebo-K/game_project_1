@@ -7,17 +7,18 @@
 
 
 enum class ColliderShape{
-	CYLINDER=0, //(Axis-aligned) scale.x = radius, scale.y = height, scale.z is ignored (=scale.x)
-	CAPSULE=1, //(Unaligned, two connected spheres)  scale.x = radius, scale.y = height, scale.z is ignored (=scale.x)
-	AABB=2,		//(Axis-aligned bounding box) scale = full size in each dimension
-	SPHERE=3, //(Alignment doesn't matter) scale.x = radius
-	ARC=4, //(Vertically aligned, only y rotation matters) scale.x = radius, scale.y = height, scale.z= arc length 
+	CYLINDER=0, //(Axis-aligned) size.x = radius, size.y = height, size.z is ignored (=size.x)
+	CAPSULE=1, //(Unaligned, two connected spheres)  size.x = radius, size.y = height, size.z is ignored (=size.x)
+	AABB=2,		//(Axis-aligned bounding box) size = full size in each dimension
+	SPHERE=3, //(Alignment doesn't matter) size.x = radius
+	ARC=4, //(Vertically aligned, only y rotation matters) size.x = radius, size.y = height, size.z= arc length 
 };
 
 class ShapeCollider{
 	public:
 	ColliderShape	shape;
 	Transform		transform;
+	vec3 			size;
 
 	ShapeCollider();//Empty constructor is zero size sphere
 	ShapeCollider(Transform* parent,vec3 center,float r);//assumes SPHERE
