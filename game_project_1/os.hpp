@@ -18,6 +18,9 @@ namespace OS{
     // External filesystem access
     bool BuildGameFolderPath();
     wchar_t* GetGameFolderPath();
+
+    // Program Terminate
+    void Exit(int code);
 };
 
 

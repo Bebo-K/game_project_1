@@ -1,16 +1,17 @@
-#include <game_project_1/types/uuid.hpp>
-#include <stdlib.h> 
-#include <time.h>
-#include <cstdint>
+export module UUID;
 
-int seeded_rand(int seed){
+import <stdlib>;
+import <time>;
+import <cstdint>;
+
+export int seeded_rand(int seed){
     srand(seed);
     int result = rand();
     srand(time(NULL));
     return result;
 }
 
-int uuid(void* ptr){
+export int uuid(void* ptr){
     auto i = reinterpret_cast<std::uintptr_t>(ptr);
     return (int)i;
 }

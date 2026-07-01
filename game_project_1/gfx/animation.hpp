@@ -19,7 +19,7 @@ namespace Animation{
 
     const int TRANSFORM_HOOK_COUNT= 3;
 
-    enum ValueType : short {
+    enum class ValueType : short {
         FLOAT,
         VECTOR2,
         VECTOR3,
@@ -27,7 +27,7 @@ namespace Animation{
         OTHER,
     };
 
-    enum InterpolateMode : short {
+    enum class InterpolateMode : short {
         LINEAR,
         STEP,
         SPHERICAL,

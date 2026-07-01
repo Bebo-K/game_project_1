@@ -3,7 +3,7 @@
 
 #include <game_project_1/gfx/drawable.hpp>
 
-enum EPrimitiveShape{CUBE=0,SPHERE,CONE};
+enum class EPrimitiveShape{CUBE=0,SPHERE,CONE};
 
 class ShapePrimitive : public Drawable{
     public:

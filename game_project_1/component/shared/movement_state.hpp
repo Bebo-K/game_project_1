@@ -4,7 +4,7 @@
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/types/primitives.hpp>
 
-enum MovementType: int{
+enum class MovementType: int{
     NONE,
 	IDLE,
 	WALKING,

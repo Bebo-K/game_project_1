@@ -1,16 +1,23 @@
-#include <game_project_1/client/client_net_handler.hpp>
-#include <game_project_1/io/serializer.hpp>
+module ClientNet:Packets;
 
-using namespace ClientNetHandler;
+import Logger;
+import Serializer;
+import ClientScene;
+import ClientAsync;
+import ClientEntity;
+import Player;
+import LocalPlayer;
 
-void ClientNetHandler::ParseNewScenePacket(ClientScene* scene, Payload payload){
+
+void ParseNewScenePacket(ClientScene* scene, Payload payload){
     Deserializer scene_in(payload.data);
     int new_area_id = scene_in.GetInt();
     logger::debug("Recieved server scene transition to area %d\n",new_area_id);
     scene->Load(new_area_id);
-    Player* me = client->Me();
-    me->entity_id = scene_in.GetInt();
-    me->entity_scene = new_area_id;
+
+    Player* me = LocalPlayer::Me();
+        me->entity_id = scene_in.GetInt();
+        me->entity_scene = new_area_id;
     int entity_count = scene_in.GetInt();
     for(int i=0;i<entity_count;i++){
         ClientEntity* new_entity = scene->AddEntity(scene_in.GetInt());
@@ -18,18 +25,19 @@ void ClientNetHandler::ParseNewScenePacket(ClientScene* scene, Payload payload){
         scene->BuildEntity(new_entity);
         scene->AddToRender(new_entity);
         if(new_entity->id == me->entity_id){client->OnSpawnPlayer(new_entity);}
+        if (LocalPlayer::IsPlayerEntity(new_entity)){ClientAsync::SpawnPlayer(new_entity);}
         logger::info("Client: new scene has entity %d\n",new_entity->id);
     }
 }
 
-void ClientNetHandler::ParseServerDeltaPacket(ClientScene* scene, Payload payload){
+void ParseServerDeltaPacket(ClientScene* scene, Payload payload){
     Deserializer delta_in(payload.data);
     int updated_entities = delta_in.GetInt();
     for(int i=0;i<updated_entities;i++){
         int entity_id = delta_in.GetInt();
         ClientEntity* e = scene->GetEntity(entity_id);
-        if(e != null){
-            if(e->id == client->Me()->entity_id){
+        if(e != nullptr){
+            if(LocalPlayer::IsPlayerEntity(e)){
                 //TODO: reconcile server/client 
                 Entity::SkipRead(delta_in);//don't overwrite my player
             }
@@ -44,7 +52,7 @@ void ClientNetHandler::ParseServerDeltaPacket(ClientScene* scene, Payload payloa
     }
 }
 
-void ClientNetHandler::ParseSpawnEntitiesPacket(ClientScene* scene, Payload payload){
+void ParseSpawnEntitiesPacket(ClientScene* scene, Payload payload){
     Deserializer spawn_in(payload.data);
     int create_count = spawn_in.GetInt();
     for(int i=0;i<create_count;i++){
@@ -63,12 +71,11 @@ void ClientNetHandler::ParseSpawnEntitiesPacket(ClientScene* scene, Payload payl
             //TODO: system to resolve entities spawned during connect, or temp delta entities
         }
 
-        if(entity->id == client->Me()->entity_id){client->OnSpawnPlayer(entity);}
-
+        if (LocalPlayer::IsPlayerEntity(entity))ClientAsync::SpawnPlayer(entity);
     }
 }
 
-void ClientNetHandler::ParseDespawnEntitiesPacket(ClientScene* scene, Payload payload){
+void ParseDespawnEntitiesPacket(ClientScene* scene, Payload payload){
     Deserializer despawn_in(payload.data);
     int delete_count = despawn_in.GetInt();
     for(int i=0;i<delete_count;i++){

@@ -9,8 +9,8 @@
 #include <game_project_1/core/entity.hpp>
 
 namespace LevelCollision{
-    enum SurfaceType{SOLID,NOCLIP,TRIGGER,WATER,DAMAGE,DEATH};
-    enum Material{NONE,STONE,DIRT,SAND};
+    enum class SurfaceType{SOLID,NOCLIP,TRIGGER,WATER,DAMAGE,DEATH};
+    enum class Material{NONE,STONE,DIRT,SAND};
     struct Surface{
         SurfaceType type;//Action to take on colliding
         Material  material;//Particles, sound effects, etc 
@@ -23,7 +23,7 @@ namespace LevelCollision{
         void SetMaterial(char* type_name,char* material_name);
     };
 
-    enum CollisionCase{WALL=1,FLOOR=2,CEILING=4,CANCEL_VELOCITY=8};
+    enum class CollisionCase{WALL=1,FLOOR=2,CEILING=4,CANCEL_VELOCITY=8};
 
     struct CollisionResult{
         const static int    MAX_PER_FRAME=16;//Max # of collisions to handle per frame 

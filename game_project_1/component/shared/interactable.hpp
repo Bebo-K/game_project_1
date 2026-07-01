@@ -4,7 +4,7 @@
 #include <game_project_1/component/component.hpp>
 #include <game_project_1/types/math_types.hpp>
 
-enum InteractionType{
+enum class InteractionType{
     PICKUP,
     TALK,
     CUSTOM

@@ -4,6 +4,12 @@
 #include <game_project_1/types/map.hpp>
 #include <game_project_1/types/primitives.hpp>
 
+
+//TODO- deprecate in this file, use Bit.Set etc. instead.
+#define SET_BIT(val,place)   ((val) |=  (1<<(place)))
+#define CLEAR_BIT(val,place) ((val) &= ~(1<<(place)))
+#define GET_BIT(val,place) ((val & (1 << place)) != 0)
+
 ShaderRef CURRENT_SHADER=(ShaderRef)ShaderDef::DEFAULT;
 Map<int,Shader> CACHED_SHADERS(2);
 

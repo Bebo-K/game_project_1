@@ -1,0 +1,231 @@
+export module LevelLoader;
+
+import AssetManager;
+import GLTF;
+import List;
+import EntityLoader;
+
+
+export class LevelLoader{
+    JSONObject* json;
+public:
+
+    LevelLoader(int area_id){
+        Stream* stream = AssetManager::Level(area_id);
+        json = JSON::Parse(stream);
+    }
+    ~LevelLoader(){
+        if(json != nullptr){delete json;json=nullptr;}
+    }
+
+    void LoadSkybox(Skybox* skybox){
+        if(json->HasString("skybox")){
+            skybox->SetTexture(TextureManager::GetSkybox(json->GetString("skybox")->string));
+        }
+    }
+    void LoadModels(List<ModelData>& models){
+        if(json->HasArray("models")){
+            JSONArray* model_array = json->GetArray("models");
+
+            models.Resize(model_array->count);
+
+            for(int i=0;i<model_array->count;i++){
+                JSONObject* current_model = model_array->At(i)->ObjectValue();
+
+                FileStream* model_file = new FileStream(current_model->GetString("uri")->string);
+                if(model_file->error){
+                    logger::exception("Failed to load level mesh: %s\n",current_model->GetString("file")->string);
+                    continue;
+                }
+                GLTFScene* model_loader = new GLTFScene(model_file);
+                models.Set(i,new ModelData);
+                model_loader->LoadIn(models[i]);
+                delete model_loader;
+                delete model_file;
+            }
+        }
+    }
+    void LoadCollisionMeshes(List<MeshCollider>& collmeshes){
+    List<MeshCollider> loaded_collmeshes(1);
+
+    if(json->HasArray("models")){
+        JSONArray* model_array = json->GetArray("models");
+
+        for(int i=0;i<model_array->count;i++){
+            JSONObject* current_model = model_array->At(i)->ObjectValue();
+
+            FileStream* model_file = new FileStream(current_model->GetString("uri")->string);
+            if(model_file->error){
+                logger::exception("Failed to load level mesh: %s\n",current_model->GetString("file")->string);
+                continue;
+            }
+            GLTFScene* model_loader = new GLTFScene(model_file);
+            if(current_model->HasArray("collision_meshes")){
+                JSONArray* collision_mesh_array = current_model->GetArray("collision_meshes");
+
+                for(int j=0;j<collision_mesh_array->count;j++){
+                    JSONObject* collision_mesh_object = collision_mesh_array->At(i)->ObjectValue();
+
+                    char* material = "stone";
+                    if(collision_mesh_object->HasString("material")){material= collision_mesh_object->GetString("material")->string;}
+                    char* type = "solid";
+                    if(collision_mesh_object->HasString("type")){type= collision_mesh_object->GetString("type")->string;}
+                    int   damage=0;
+                    if(collision_mesh_object->HasInt("damage")){damage= collision_mesh_object->GetInt("damage");}
+
+                    LevelCollision::Surface surface;
+
+                    surface.SetMaterial(material,type);
+                    surface.damage = damage;
+
+                    char* collision_mesh_name = collision_mesh_object->GetString("name")->string;
+                    MeshCollider* collmesh = model_loader->GetMeshGroupAsCollider(collision_mesh_name);
+                    if(collmesh != nullptr){
+                        collmesh->SetSurface(&surface);
+                        loaded_collmeshes.Add(collmesh);
+                    }
+                }
+            }
+            delete model_loader;
+            delete model_file;
+        }
+    }
+    collmeshes.Resize(loaded_collmeshes.Count());
+    int collmesh_index=0;
+    for(MeshCollider* mesh:loaded_collmeshes){
+        //transfer + clear pointed memory blocks from List to Array without triggering ctor/dtors
+        collmeshes.Set(collmesh_index,new MeshCollider());
+        collmeshes[collmesh_index]->ShallowCopy(mesh);
+        free(mesh);
+        collmesh_index++;
+    }
+}
+    void LoadHeightmaps(List<HeightMapCollider>& heightmaps){
+        if(json->HasArray("heightmaps")){
+            JSONArray* hmaps = json->GetArray("heightmaps");
+            heightmaps.Resize(hmaps->count);
+            for(int i=0;i<hmaps->count;i++){
+                //TODO: load heightmaps
+            }
+        }
+    }
+    void LoadEntrances(List<LevelEntrance>& entrances){
+    if(json->HasArray("entrances")){
+        JSONArray* entrance_array = json->GetArray("entrances");
+        entrances.Resize(entrance_array->count);
+        for(int i=0;i<entrance_array->count;i++){
+            JSONObject* current_entrance = entrance_array->At(i)->ObjectValue();
+
+            entrances.Set(i,new LevelEntrance());
+            LevelEntrance* entrance = entrances[i];
+            entrance->y_turn = 0;entrance->style = LevelEntranceStyle::DEFAULT;
+            vec3 pos= {0,0,0};vec3 size= {0,0,0};vec3 target= {0,0,0};
+
+            if(current_entrance->HasFloat("x")){pos.x = current_entrance->GetFloat("x");}
+            if(current_entrance->HasFloat("y")){pos.y = current_entrance->GetFloat("y");}
+            if(current_entrance->HasFloat("z")){pos.z = current_entrance->GetFloat("z");}
+            if(current_entrance->HasFloat("y_facing")){entrance->y_turn = current_entrance->GetFloat("y_facing");}
+
+            if(current_entrance->HasJObject("size")){
+                JSONObject* size_object = current_entrance->GetJObject("size");
+                if(size_object->HasFloat("x")){size.x = size_object->GetFloat("x");}
+                if(size_object->HasFloat("y")){size.y = size_object->GetFloat("y");}
+                if(size_object->HasFloat("z")){size.z = size_object->GetFloat("z");}
+            }
+
+            if(current_entrance->HasInt("param")){entrance->entrance_param = current_entrance->GetInt("param");}
+            /*
+                JSONObject* target_object = current_entrance->GetJObject("target_pos");
+                if(target_object->HasFloat("x")){target.x = target_object->GetFloat("x");}
+                if(target_object->HasFloat("y")){target.y = target_object->GetFloat("y");}
+                if(target_object->HasFloat("z")){target.z = target_object->GetFloat("z");}
+            }
+            */
+
+            LevelEntranceStyle style_id=LevelEntranceStyle::DEFAULT;
+            if(current_entrance->HasString("style")){
+                char* style = current_entrance->GetString("style")->string;
+                if(cstr::compare_caseless(style,"walk")){style_id=LevelEntranceStyle::PATH_TO;}
+            }
+
+            entrance->size = size;
+            entrance->pos = pos;
+            entrance->style=style_id;
+        }
+    }
+}
+    void LoadExits(List<LevelExit>& exits){
+        if(json->HasArray("exits")){
+            JSONArray* exit_array = json->GetArray("exits");
+            exits.Resize(exit_array->count);
+            for(int i=0;i<exit_array->count;i++){
+                JSONObject* current_exit = exit_array->At(i)->ObjectValue();
+
+                exits.Set(i,new LevelExit());
+                LevelExit* lvl_exit = exits[i];
+                lvl_exit->mesh_index=-1;
+                lvl_exit->new_area_id=0;
+                lvl_exit->entrance_id=0;
+                lvl_exit->style=LevelExitStyle::DEFAULT;
+                lvl_exit->exit_param=0;
+
+                if(current_exit->HasInt("area_id")){
+                    lvl_exit->new_area_id = current_exit->GetInt("area_id");
+                }
+                else if(current_exit->HasInt("to_entrance")){
+                    lvl_exit->entrance_id = current_exit->GetInt("to_entrance");
+                }
+                if(current_exit->HasString("trigger_mesh")){
+                    lvl_exit->trigger_collider = cstr::new_copy(current_exit->GetString("trigger_mesh")->string);
+                }
+                else if(current_exit->HasInt("param")){
+                    lvl_exit->exit_param = current_exit->GetInt("param");
+                }
+
+                LevelExitStyle style_id=LevelExitStyle::DEFAULT;
+                if(current_exit->HasString("style")){
+                    char* style = current_exit->GetString("style")->string;
+                    if(cstr::compare_caseless(style,"walk")){LevelExitStyle::PATH_TO;}
+                }
+
+                lvl_exit->style=style_id;
+            }
+        }
+    }
+    void LoadTriggers(List<LevelTrigger>& triggers){
+        if(json->HasArray("triggers")){
+            JSONArray* trigger_array = json->GetArray("triggers");
+            triggers.Resize(trigger_array->count);
+            for(int i=0;i<trigger_array->count;i++){
+                JSONObject* current_trigger = trigger_array->At(i)->ObjectValue();
+
+                triggers.Set(i,new LevelTrigger());
+                LevelTrigger* lvl_trigger = triggers[i];
+                lvl_trigger->effect_id=0;
+                lvl_trigger->mesh_index=-1;
+
+                if(current_trigger->HasInt("effect_id")){
+                    lvl_trigger->effect_id = current_trigger->GetInt("effect_id");
+                }
+                if(current_trigger->HasString("trigger_mesh")){
+                    lvl_trigger->trigger_collider = cstr::new_copy(current_trigger->GetString("trigger_mesh")->string);
+                }
+            }
+        }
+    }
+    void LoadEntities(ServerScene* scene, bool firstLoad){
+        if(json->HasArray("entities")){
+            JSONArray* entity_array = json->GetArray("entities");
+            int entityID =0;
+
+            for(int i=0;i<entity_array->count;i++){
+                JSONObject* current_entity = entity_array->At(i)->ObjectValue();
+                if(!firstLoad && current_entity->HasBool("save") && current_entity->GetBool("save")){continue;}
+                EntityLoader e_loader(current_entity);
+                ServerEntity *serverEntity = new (scene->entities.Allocate()) ServerEntity(entityID);
+                e_loader.LoadTo(serverEntity,scene);
+                entityID++;
+            }
+        }
+    }
+};
